@@ -157,27 +157,25 @@ const HowItWorks = () => {
                     <div key={index} className="flex items-center flex-1">
                       {/* Step Card */}
                       <div className="relative flex-1 max-w-xs">
-                        <Card className="border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 hover:-translate-y-2 h-48">
-                          <div className={`bg-gradient-to-r ${step.color} p-1 rounded-lg h-full`}>
-                            <CardContent className="bg-background p-4 rounded-md h-full flex flex-col items-center justify-center text-center">
-                              {/* Large Step Number */}
-                              <div className="w-12 h-12 bg-accent text-accent-foreground rounded-full flex items-center justify-center mb-3 text-xl font-bold shadow-[var(--shadow-button)]">
-                                {step.number}
+                        <Card className="border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 hover:-translate-y-2 h-48 bg-gradient-to-r from-primary to-secondary">
+                          <CardContent className="p-4 h-full flex flex-col items-center justify-center text-center text-primary-foreground">
+                            {/* Large Step Number */}
+                            <div className="w-12 h-12 bg-accent text-accent-foreground rounded-full flex items-center justify-center mb-3 text-xl font-bold shadow-[var(--shadow-button)]">
+                              {step.number}
+                            </div>
+                            
+                            {/* Icon */}
+                            <div className="mb-3">
+                              <div className="w-8 h-8 flex items-center justify-center text-primary-foreground">
+                                {step.icon}
                               </div>
-                              
-                              {/* Icon */}
-                              <div className="mb-3">
-                                <div className="w-8 h-8 flex items-center justify-center">
-                                  {step.icon}
-                                </div>
-                              </div>
-                              
-                              {/* Title Only */}
-                              <h3 className="text-lg font-bold font-sans text-primary leading-tight">
-                                {step.title}
-                              </h3>
-                            </CardContent>
-                          </div>
+                            </div>
+                            
+                            {/* Title Only */}
+                            <h3 className="text-lg font-bold font-sans text-primary-foreground leading-tight">
+                              {step.title}
+                            </h3>
+                          </CardContent>
                         </Card>
                       </div>
                       
