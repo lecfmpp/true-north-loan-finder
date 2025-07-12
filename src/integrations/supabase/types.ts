@@ -50,44 +50,70 @@ export type Database = {
       blog_posts: {
         Row: {
           author: string
+          author_id: string | null
           content: string
           created_at: string
           excerpt: string | null
           featured_image_url: string | null
           id: string
-          published: boolean
+          meta_description: string | null
+          meta_keywords: string[] | null
+          meta_title: string | null
+          reading_time: number | null
           slug: string
+          status: string | null
           tags: string[] | null
           title: string
           updated_at: string
+          view_count: number | null
         }
         Insert: {
           author?: string
+          author_id?: string | null
           content: string
           created_at?: string
           excerpt?: string | null
           featured_image_url?: string | null
           id?: string
-          published?: boolean
+          meta_description?: string | null
+          meta_keywords?: string[] | null
+          meta_title?: string | null
+          reading_time?: number | null
           slug: string
+          status?: string | null
           tags?: string[] | null
           title: string
           updated_at?: string
+          view_count?: number | null
         }
         Update: {
           author?: string
+          author_id?: string | null
           content?: string
           created_at?: string
           excerpt?: string | null
           featured_image_url?: string | null
           id?: string
-          published?: boolean
+          meta_description?: string | null
+          meta_keywords?: string[] | null
+          meta_title?: string | null
+          reading_time?: number | null
           slug?: string
+          status?: string | null
           tags?: string[] | null
           title?: string
           updated_at?: string
+          view_count?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "blog_posts_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       profiles: {
         Row: {
