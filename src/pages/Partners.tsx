@@ -317,63 +317,129 @@ const Partners = () => {
             </p>
           </div>
 
-          <div className="overflow-x-auto">
-            <Table className="w-full bg-background rounded-lg shadow-sm">
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[200px] font-semibold">Lender</TableHead>
-                  <TableHead className="font-semibold">Products</TableHead>
-                  <TableHead className="font-semibold">Funding Range</TableHead>
-                  <TableHead className="font-semibold">Min. Time in Business</TableHead>
-                  <TableHead className="font-semibold">Min. Revenue</TableHead>
-                  <TableHead className="font-semibold">Best For</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {lenders.map((lender) => (
-                  <TableRow key={lender.id} className="hover:bg-muted/20">
-                    <TableCell className="font-medium">
-                      <div className="flex items-center space-x-3">
-                        {lender.logo ? (
-                          <img 
-                            src={lender.logo} 
-                            alt={`${lender.name} logo`} 
-                            className="w-20 h-20 object-contain"
-                          />
-                        ) : (
-                          <div className="w-20 h-20 rounded bg-primary/10 flex items-center justify-center">
-                            <lender.icon className="h-6 w-6 text-primary" />
-                          </div>
-                        )}
-                        <span className="text-sm font-medium">{lender.name}</span>
+          {/* Mobile Cards for smaller screens */}
+          <div className="md:hidden space-y-4">
+            {lenders.map((lender) => (
+              <Card key={lender.id} className="bg-white border border-muted/20">
+                <CardContent className="p-4">
+                  <div className="flex items-center mb-3">
+                    {lender.logo ? (
+                      <img 
+                        src={lender.logo} 
+                        alt={`${lender.name} logo`} 
+                        className="w-12 h-8 object-contain mr-3"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center mr-3">
+                        <lender.icon className="h-4 w-4 text-primary" />
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {lender.products.slice(0, 2).map((product, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {product}
-                          </Badge>
-                        ))}
-                        {lender.products.length > 2 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{lender.products.length - 2} more
-                          </Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-sm">{lender.fundingRange}</TableCell>
-                    <TableCell className="text-sm">{lender.minTimeInBusiness || "N/A"}</TableCell>
-                    <TableCell className="text-sm">{lender.minRevenue || "N/A"}</TableCell>
-                    <TableCell className="text-sm max-w-[200px]">
-                      <div className="truncate" title={lender.idealProfile}>
-                        {lender.idealProfile}
-                      </div>
-                    </TableCell>
+                    )}
+                    <div>
+                      <h4 className="font-semibold text-sm text-primary">{lender.name}</h4>
+                      <Badge variant="outline" className="text-xs mt-1">{lender.badge}</Badge>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <span className="text-muted-foreground">Funding:</span>
+                      <div className="font-medium">{lender.fundingRange}</div>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Min. Time:</span>
+                      <div className="font-medium">{lender.minTimeInBusiness || "N/A"}</div>
+                    </div>
+                    <div className="col-span-2">
+                      <span className="text-muted-foreground">Min. Revenue:</span>
+                      <div className="font-medium">{lender.minRevenue || "N/A"}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Desktop Table for larger screens */}
+          <div className="hidden md:block overflow-x-auto">
+            <div className="max-w-5xl mx-auto">
+              <Table className="w-full bg-white rounded-lg shadow-sm border border-muted/20">
+                <TableHeader>
+                  <TableRow className="bg-muted/50 border-b border-muted/30">
+                    <TableHead className="font-semibold text-muted-foreground w-[140px] py-3 px-3 text-xs uppercase tracking-wide border-r border-muted/20">
+                      Lender
+                    </TableHead>
+                    <TableHead className="font-semibold text-muted-foreground w-[120px] py-3 px-3 text-xs uppercase tracking-wide border-r border-muted/20">
+                      Best For
+                    </TableHead>
+                    <TableHead className="font-semibold text-muted-foreground w-[130px] py-3 px-3 text-xs uppercase tracking-wide border-r border-muted/20">
+                      Funding Range
+                    </TableHead>
+                    <TableHead className="font-semibold text-muted-foreground w-[100px] py-3 px-3 text-xs uppercase tracking-wide border-r border-muted/20">
+                      Min. Time
+                    </TableHead>
+                    <TableHead className="font-semibold text-muted-foreground w-[110px] py-3 px-3 text-xs uppercase tracking-wide border-r border-muted/20">
+                      Min. Revenue
+                    </TableHead>
+                    <TableHead className="font-semibold text-muted-foreground w-[80px] py-3 px-3 text-xs uppercase tracking-wide">
+                      Speed
+                    </TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {lenders.map((lender, index) => (
+                    <TableRow 
+                      key={lender.id} 
+                      className={`hover:bg-muted/20 border-b border-muted/10 ${
+                        index % 2 === 0 ? 'bg-white' : 'bg-muted/5'
+                      }`}
+                    >
+                      <TableCell className="py-3 px-3 border-r border-muted/10">
+                        <div className="flex items-center space-x-2">
+                          {lender.logo ? (
+                            <img 
+                              src={lender.logo} 
+                              alt={`${lender.name} logo`} 
+                              className="w-10 h-6 object-contain shrink-0"
+                            />
+                          ) : (
+                            <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center shrink-0">
+                              <lender.icon className="h-3 w-3 text-primary" />
+                            </div>
+                          )}
+                          <span className="text-xs font-medium text-primary truncate">{lender.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-3 px-3 border-r border-muted/10">
+                        <Badge variant="outline" className="text-xs whitespace-nowrap">
+                          {lender.badge}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="py-3 px-3 text-xs font-medium border-r border-muted/10">
+                        <div className="whitespace-nowrap">{lender.fundingRange}</div>
+                      </TableCell>
+                      <TableCell className="py-3 px-3 text-xs border-r border-muted/10">
+                        <div className="whitespace-nowrap">{lender.minTimeInBusiness || "N/A"}</div>
+                      </TableCell>
+                      <TableCell className="py-3 px-3 text-xs border-r border-muted/10">
+                        <div className="whitespace-nowrap">{lender.minRevenue || "N/A"}</div>
+                      </TableCell>
+                      <TableCell className="py-3 px-3 text-xs">
+                        <div className="whitespace-nowrap">
+                          {lender.fundingSpeed ? (
+                            <span className="text-accent font-medium">
+                              {lender.fundingSpeed.includes('24') ? '24hrs' : 
+                               lender.fundingSpeed.includes('day') ? 'Fast' : 
+                               lender.fundingSpeed.includes('Fast') ? 'Fast' : 'Varies'}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">N/A</span>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </div>
       </section>
