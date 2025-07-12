@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
 
 interface QuizData {
   loanAmount: number[];
@@ -120,8 +121,25 @@ const Quiz = () => {
     };
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep === totalSteps) {
+      // Save quiz response to database
+      try {
+        const score = calculateScore();
+        await supabase.from('quiz_responses').insert({
+          loan_amount: quizData.loanAmount[0],
+          use_of_funds: quizData.useOfFunds,
+          time_in_business: quizData.timeInBusiness,
+          monthly_revenue: quizData.monthlyRevenue[0],
+          credit_score: quizData.creditScore,
+          name: quizData.name,
+          email: quizData.email,
+          phone: quizData.phone,
+          score: score
+        });
+      } catch (error) {
+        console.error('Error saving quiz response:', error);
+      }
       setShowResults(true);
     } else {
       setCurrentStep(currentStep + 1);

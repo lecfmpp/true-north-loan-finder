@@ -1,0 +1,367 @@
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { 
+  CheckCircle, 
+  TrendingUp, 
+  Building, 
+  Users,
+  Clock,
+  Shield,
+  DollarSign,
+  FileText,
+  Calculator,
+  Target
+} from "lucide-react";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+
+const SmallBusinessLoans = () => {
+  const benefits = [
+    {
+      icon: <TrendingUp className="h-6 w-6 text-secondary" />,
+      title: "Flexible Use of Funds",
+      description: "Use for any business purpose - growth, inventory, working capital, or expansion"
+    },
+    {
+      icon: <Shield className="h-6 w-6 text-secondary" />,
+      title: "Competitive Rates",
+      description: "Access to competitive interest rates from multiple Canadian lenders"
+    },
+    {
+      icon: <Clock className="h-6 w-6 text-secondary" />,
+      title: "Fast Approval",
+      description: "Get approved quickly with our streamlined application process"
+    },
+    {
+      icon: <Building className="h-6 w-6 text-secondary" />,
+      title: "Build Business Credit",
+      description: "Establish and improve your business credit history with timely payments"
+    }
+  ];
+
+  const useCases = [
+    {
+      icon: <Target className="h-8 w-8 text-primary" />,
+      title: "Business Expansion",
+      description: "Open new locations, hire staff, or expand your market reach",
+      examples: ["New store locations", "Hiring employees", "Market expansion", "Franchise opportunities"]
+    },
+    {
+      icon: <Building className="h-8 w-8 text-primary" />,
+      title: "Working Capital",
+      description: "Cover day-to-day operations and manage cash flow",
+      examples: ["Payroll expenses", "Rent and utilities", "Seasonal fluctuations", "Inventory purchases"]
+    },
+    {
+      icon: <TrendingUp className="h-8 w-8 text-primary" />,
+      title: "Growth Investments",
+      description: "Invest in technology, marketing, and business improvements",
+      examples: ["Technology upgrades", "Marketing campaigns", "Training programs", "Process improvements"]
+    },
+    {
+      icon: <Calculator className="h-8 w-8 text-primary" />,
+      title: "Debt Consolidation",
+      description: "Simplify your finances by consolidating existing debts",
+      examples: ["Multiple credit cards", "Various business loans", "Vendor payments", "Tax obligations"]
+    }
+  ];
+
+  const requirements = [
+    "Business operating for at least 1 year",
+    "Minimum annual revenue of $100,000",
+    "Personal credit score of 650+",
+    "Clear business plan and purpose for funds",
+    "Strong business cash flow",
+    "Up-to-date financial statements"
+  ];
+
+  const loanTypes = [
+    {
+      title: "Term Loans",
+      description: "Traditional fixed-term loans with regular monthly payments",
+      bestFor: "Equipment purchases, expansion, large one-time expenses",
+      terms: "1-7 years",
+      amounts: "$10K - $800K"
+    },
+    {
+      title: "Lines of Credit",
+      description: "Flexible credit line you can draw from as needed",
+      bestFor: "Working capital, seasonal cash flow, unexpected expenses",
+      terms: "Revolving",
+      amounts: "$10K - $250K"
+    },
+    {
+      title: "SBA-Style Loans",
+      description: "Government-backed loans with favorable terms",
+      bestFor: "Real estate, long-term investments, major expansion",
+      terms: "5-25 years",
+      amounts: "$50K - $5M"
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      
+      {/* Hero Section */}
+      <section className="py-20 lg:py-32 bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm font-medium">
+              🍁 Small Business Loans for Canadian Entrepreneurs
+            </Badge>
+            
+            <h1 className="text-4xl lg:text-6xl font-bold font-sans text-primary mb-6 leading-tight">
+              Fuel Your Business Growth with 
+              <span className="text-secondary"> Flexible Financing</span>
+            </h1>
+            
+            <p className="text-xl lg:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto font-serif">
+              Get $10K to $800K for expansion, working capital, equipment, or any business need. Connect with Canada's top small business lenders.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+              <Button asChild variant="cta" size="xl" className="text-lg px-8">
+                <Link to="/quiz">Check My Loan Options</Link>
+              </Button>
+              <Button asChild variant="outline" size="xl" className="text-lg px-8">
+                <Link to="/how-it-works">How It Works</Link>
+              </Button>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+              <div>
+                <div className="text-2xl font-bold text-primary">$10K - $800K</div>
+                <div className="text-sm text-muted-foreground">Loan Amount</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-primary">1-7 Years</div>
+                <div className="text-sm text-muted-foreground">Terms Available</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-primary">24-48 Hours</div>
+                <div className="text-sm text-muted-foreground">Decision Time</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-primary">Prime + 2%</div>
+                <div className="text-sm text-muted-foreground">Starting From</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold font-sans text-primary mb-4">
+              Why Choose Small Business Loans?
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-serif">
+              Small business loans provide the flexibility and capital you need to grow
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+            {benefits.map((benefit, index) => (
+              <Card key={index} className="text-center border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    {benefit.icon}
+                  </div>
+                  <h3 className="text-lg font-semibold font-sans text-primary mb-3">
+                    {benefit.title}
+                  </h3>
+                  <p className="text-muted-foreground font-serif text-sm">
+                    {benefit.description}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Loan Types Section */}
+      <section className="py-20 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold font-sans text-primary mb-4">
+              Types of Small Business Loans
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-serif">
+              Choose the right type of financing for your specific business needs
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
+            {loanTypes.map((type, index) => (
+              <Card key={index} className="border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300">
+                <CardHeader>
+                  <CardTitle className="text-xl font-semibold font-sans text-primary">
+                    {type.title}
+                  </CardTitle>
+                  <p className="text-muted-foreground font-serif">
+                    {type.description}
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div>
+                    <span className="font-semibold text-primary">Best For: </span>
+                    <span className="text-muted-foreground font-serif">{type.bestFor}</span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-primary">Terms: </span>
+                    <span className="text-muted-foreground font-serif">{type.terms}</span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-primary">Amounts: </span>
+                    <span className="text-muted-foreground font-serif">{type.amounts}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Use Cases Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold font-sans text-primary mb-4">
+              What Can You Use Small Business Loans For?
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-serif">
+              Small business loans offer flexibility for various business needs
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+            {useCases.map((useCase, index) => (
+              <Card key={index} className="border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300">
+                <CardHeader className="text-center">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    {useCase.icon}
+                  </div>
+                  <CardTitle className="text-lg font-semibold font-sans text-primary">
+                    {useCase.title}
+                  </CardTitle>
+                  <p className="text-muted-foreground font-serif text-sm">
+                    {useCase.description}
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {useCase.examples.map((example, idx) => (
+                      <li key={idx} className="flex items-center text-sm text-muted-foreground">
+                        <CheckCircle className="h-3 w-3 text-secondary mr-2 flex-shrink-0" />
+                        {example}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Requirements Section */}
+      <section className="py-20 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl lg:text-4xl font-bold font-sans text-primary mb-4">
+                Qualification Requirements
+              </h2>
+              <p className="text-xl text-muted-foreground font-serif">
+                Most small business loan approvals require the following criteria
+              </p>
+            </div>
+            
+            <div className="grid md:grid-cols-2 gap-8">
+              <Card className="border-0 shadow-[var(--shadow-card)]">
+                <CardHeader>
+                  <CardTitle className="text-xl font-semibold font-sans text-primary flex items-center">
+                    <FileText className="h-5 w-5 mr-2 text-secondary" />
+                    Basic Requirements
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3">
+                    {requirements.map((requirement, index) => (
+                      <li key={index} className="flex items-start">
+                        <CheckCircle className="h-5 w-5 text-secondary mr-3 mt-0.5 flex-shrink-0" />
+                        <span className="text-muted-foreground font-serif">{requirement}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-[var(--shadow-card)]">
+                <CardHeader>
+                  <CardTitle className="text-xl font-semibold font-sans text-primary flex items-center">
+                    <DollarSign className="h-5 w-5 mr-2 text-secondary" />
+                    Typical Terms
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <div className="font-semibold text-primary mb-1">Loan Amount:</div>
+                    <div className="text-muted-foreground font-serif">$10,000 - $800,000</div>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-primary mb-1">Interest Rates:</div>
+                    <div className="text-muted-foreground font-serif">Prime + 2% to 15% (varies by credit)</div>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-primary mb-1">Repayment Terms:</div>
+                    <div className="text-muted-foreground font-serif">12 to 84 months</div>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-primary mb-1">Approval Time:</div>
+                    <div className="text-muted-foreground font-serif">24-48 hours for qualified applicants</div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-gradient-to-r from-primary to-secondary text-primary-foreground">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl lg:text-4xl font-bold font-sans mb-4">
+            Ready to Grow Your Business?
+          </h2>
+          <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto font-serif">
+            Take our quick quiz to see your small business loan options and get matched with the right lenders
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button asChild size="xl" variant="secondary" className="text-lg px-8">
+              <Link to="/quiz">
+                <Users className="h-5 w-5 mr-2" />
+                Check My Loan Options
+              </Link>
+            </Button>
+            <Button asChild size="xl" variant="outline" className="text-lg px-8 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
+              <Link to="/blog">
+                Learn More About Business Loans
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default SmallBusinessLoans;

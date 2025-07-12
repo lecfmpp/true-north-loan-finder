@@ -14,7 +14,126 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      analytics_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          page_path: string | null
+          properties: Json | null
+          referrer: string | null
+          session_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          page_path?: string | null
+          properties?: Json | null
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          page_path?: string | null
+          properties?: Json | null
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      blog_posts: {
+        Row: {
+          author: string
+          content: string
+          created_at: string
+          excerpt: string | null
+          featured_image_url: string | null
+          id: string
+          published: boolean
+          slug: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author?: string
+          content: string
+          created_at?: string
+          excerpt?: string | null
+          featured_image_url?: string | null
+          id?: string
+          published?: boolean
+          slug: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string
+          content?: string
+          created_at?: string
+          excerpt?: string | null
+          featured_image_url?: string | null
+          id?: string
+          published?: boolean
+          slug?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      quiz_responses: {
+        Row: {
+          created_at: string
+          credit_score: string
+          email: string
+          id: string
+          loan_amount: number
+          monthly_revenue: number
+          name: string
+          phone: string
+          score: number
+          time_in_business: string
+          updated_at: string
+          use_of_funds: string
+        }
+        Insert: {
+          created_at?: string
+          credit_score: string
+          email: string
+          id?: string
+          loan_amount: number
+          monthly_revenue: number
+          name: string
+          phone: string
+          score: number
+          time_in_business: string
+          updated_at?: string
+          use_of_funds: string
+        }
+        Update: {
+          created_at?: string
+          credit_score?: string
+          email?: string
+          id?: string
+          loan_amount?: number
+          monthly_revenue?: number
+          name?: string
+          phone?: string
+          score?: number
+          time_in_business?: string
+          updated_at?: string
+          use_of_funds?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
