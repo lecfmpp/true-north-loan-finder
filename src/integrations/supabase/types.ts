@@ -89,8 +89,40 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          role: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          role?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          role?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       quiz_responses: {
         Row: {
+          admin_notes: string | null
+          assigned_to: string | null
           created_at: string
           credit_score: string
           email: string
@@ -100,11 +132,14 @@ export type Database = {
           name: string
           phone: string
           score: number
+          status: string | null
           time_in_business: string
           updated_at: string
           use_of_funds: string
         }
         Insert: {
+          admin_notes?: string | null
+          assigned_to?: string | null
           created_at?: string
           credit_score: string
           email: string
@@ -114,11 +149,14 @@ export type Database = {
           name: string
           phone: string
           score: number
+          status?: string | null
           time_in_business: string
           updated_at?: string
           use_of_funds: string
         }
         Update: {
+          admin_notes?: string | null
+          assigned_to?: string | null
           created_at?: string
           credit_score?: string
           email?: string
@@ -128,11 +166,20 @@ export type Database = {
           name?: string
           phone?: string
           score?: number
+          status?: string | null
           time_in_business?: string
           updated_at?: string
           use_of_funds?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "quiz_responses_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
     }
     Views: {

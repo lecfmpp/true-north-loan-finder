@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, User } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +13,7 @@ import {
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const { user, isAdmin } = useAuth();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -86,11 +88,30 @@ const Header = () => {
             </Link>
           </nav>
 
-          {/* CTA Button */}
-          <div className="hidden md:block">
-            <Button asChild variant="cta" size="lg">
-              <Link to="/quiz">Get My Loan Quote</Link>
-            </Button>
+          {/* Auth & CTA */}
+          <div className="hidden md:flex items-center space-x-4">
+            {user ? (
+              <div className="flex items-center space-x-2">
+                {isAdmin && (
+                  <Button asChild variant="outline" size="sm">
+                    <Link to="/admin">Admin</Link>
+                  </Button>
+                )}
+                <Button variant="ghost" size="sm">
+                  <User className="w-4 h-4 mr-2" />
+                  {user.email}
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Button asChild variant="ghost" size="sm">
+                  <Link to="/auth">Sign In</Link>
+                </Button>
+                <Button asChild variant="cta" size="lg">
+                  <Link to="/quiz">Get My Loan Quote</Link>
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -164,12 +185,34 @@ const Header = () => {
               >
                 About Us
               </Link>
-              <div className="pt-4">
-                <Button asChild variant="cta" size="lg" className="w-full">
-                  <Link to="/quiz" onClick={() => setIsMenuOpen(false)}>
-                    Get My Loan Quote
-                  </Link>
-                </Button>
+              <div className="pt-4 space-y-2">
+                {user ? (
+                  <>
+                    {isAdmin && (
+                      <Button asChild variant="outline" size="lg" className="w-full">
+                        <Link to="/admin" onClick={() => setIsMenuOpen(false)}>
+                          Admin Dashboard
+                        </Link>
+                      </Button>
+                    )}
+                    <div className="text-sm text-muted-foreground text-center">
+                      Signed in as {user.email}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <Button asChild variant="outline" size="lg" className="w-full">
+                      <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
+                        Sign In
+                      </Link>
+                    </Button>
+                    <Button asChild variant="cta" size="lg" className="w-full">
+                      <Link to="/quiz" onClick={() => setIsMenuOpen(false)}>
+                        Get My Loan Quote
+                      </Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </nav>
           </div>
