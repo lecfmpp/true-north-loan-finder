@@ -92,7 +92,7 @@ const Partners = () => {
     {
       id: "2m7-financial",
       name: "2M7 Financial Solutions",
-      logo: "/lovable-uploads/c648a402-4252-4e8a-8ec1-ec98595a2b96.png",
+      logo: "/lovable-uploads/7076f51c-91be-4e0f-9ca9-1d7b58a2102f.png",
       tagline: "Specializes in Merchant Cash Advances for newer businesses with strong revenue",
       description: "An independent direct funder that focuses exclusively on Merchant Cash Advances (MCAs) with very accessible qualification criteria.",
       products: ["Merchant Cash Advances"],
