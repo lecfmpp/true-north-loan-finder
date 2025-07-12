@@ -28,7 +28,7 @@ const HowItWorks = () => {
         "Credit score estimation",
         "Basic contact information"
       ],
-      icon: <CheckCircle className="h-12 w-12 text-secondary" />,
+      icon: <CheckCircle className="h-12 w-12 text-accent" />,
       color: "from-secondary/10 to-secondary/5"
     },
     {
@@ -54,7 +54,7 @@ const HowItWorks = () => {
         "Select preferred lenders",
         "Submit with confidence"
       ],
-      icon: <Users className="h-12 w-12 text-primary" />,
+      icon: <Users className="h-12 w-12 text-accent" />,
       color: "from-primary/10 to-primary/5"
     },
     {
@@ -67,7 +67,7 @@ const HowItWorks = () => {
         "Personalized service",
         "Fast funding decisions"
       ],
-      icon: <Handshake className="h-12 w-12 text-secondary" />,
+      icon: <Handshake className="h-12 w-12 text-accent" />,
       color: "from-secondary/10 to-secondary/5"
     }
   ];
