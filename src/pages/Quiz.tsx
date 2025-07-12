@@ -174,85 +174,122 @@ const Quiz = () => {
             <Card className="border-0 shadow-[var(--shadow-card)]">
               <CardHeader className="text-center bg-gradient-to-r from-primary/5 to-secondary/5 rounded-t-lg">
                 <CardTitle className="text-3xl font-bold font-sans text-primary mb-2">
-                  Your Loan Readiness Results
+                  Okay, good news. Your business profile is exactly what our lending partners look for.
                 </CardTitle>
-                <p className="text-muted-foreground font-serif">
-                  Congratulations! Here's your personalized assessment
+                <p className="text-lg text-muted-foreground font-serif max-w-2xl mx-auto">
+                  Stop guessing. Here's a clear look at the loan you'll likely qualify for, based on the numbers you just gave us.
                 </p>
               </CardHeader>
               
               <CardContent className="p-8 space-y-8">
-                {/* Score Display */}
-                <div className="text-center">
-                  <div className="relative w-32 h-32 mx-auto mb-4">
-                    <div className="w-32 h-32 rounded-full border-8 border-muted flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10">
-                      <div className="text-center">
-                        <div className="text-3xl font-bold text-primary">{score}</div>
-                        <div className="text-sm text-muted-foreground">/ 100</div>
+                {/* Main Results Dashboard */}
+                <div className="bg-gradient-to-br from-secondary/5 to-primary/5 rounded-xl p-8 border border-secondary/20">
+                  <div className="grid md:grid-cols-2 gap-8 items-center">
+                    {/* Hero Number */}
+                    <div className="text-center md:text-left">
+                      <div className="text-5xl md:text-6xl font-bold text-primary mb-2">
+                        ${quizData.loanAmount[0].toLocaleString()}
+                      </div>
+                      <p className="text-lg text-muted-foreground font-medium">
+                        Total eligible funding
+                      </p>
+                      <div className="mt-4">
+                        <div className={`inline-flex items-center px-4 py-2 rounded-full bg-secondary/10 ${scoreInfo.color}`}>
+                          <CheckCircle className="h-5 w-5 mr-2" />
+                          <span className="font-semibold">{scoreInfo.title}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Key Metrics Grid */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-background/60 rounded-lg p-4 text-center">
+                        <div className="text-2xl font-bold text-primary">24-48h</div>
+                        <div className="text-sm text-muted-foreground">Time until it's funded</div>
+                      </div>
+                      <div className="bg-background/60 rounded-lg p-4 text-center">
+                        <div className="text-2xl font-bold text-primary">
+                          {quizData.creditScore === "excellent" ? "8-12%" :
+                           quizData.creditScore === "good" ? "12-18%" :
+                           quizData.creditScore === "fair" ? "18-25%" : "25-35%"}
+                        </div>
+                        <div className="text-sm text-muted-foreground">What you'll pay (est. rate)</div>
+                      </div>
+                      <div className="bg-background/60 rounded-lg p-4 text-center col-span-2">
+                        <div className="text-2xl font-bold text-primary">
+                          ${Math.round((quizData.loanAmount[0] * 0.15) / 12).toLocaleString()}/mo
+                        </div>
+                        <div className="text-sm text-muted-foreground">Your estimated monthly payment</div>
                       </div>
                     </div>
                   </div>
-                  <h3 className={`text-2xl font-bold font-sans mb-2 ${scoreInfo.color}`}>
-                    {scoreInfo.title}
-                  </h3>
-                  <p className="text-muted-foreground font-serif max-w-2xl mx-auto">
-                    {scoreInfo.message}
-                  </p>
                 </div>
 
-                {/* Pre-qualified Lenders */}
+                {/* Lender Introductions */}
                 <div>
-                  <h4 className="text-xl font-semibold font-sans text-primary mb-6 flex items-center">
-                    <CheckCircle className="h-5 w-5 mr-2 text-secondary" />
-                    Your Pre-Qualified Lender Matches
-                  </h4>
+                  <h3 className="text-2xl font-bold font-sans text-primary mb-2 flex items-center">
+                    <Users className="h-6 w-6 mr-3 text-secondary" />
+                    We'll introduce you to these lenders right now.
+                  </h3>
+                  <p className="text-muted-foreground mb-6 font-serif">
+                    Each one has already said yes to businesses like yours. Here's who's waiting to hear from you:
+                  </p>
                   
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <Card className="border border-secondary/20 bg-secondary/5">
+                  <div className="space-y-4">
+                    <Card className="border-l-4 border-l-secondary bg-gradient-to-r from-secondary/5 to-transparent">
                       <CardContent className="p-6">
-                        <div className="flex items-center justify-between mb-3">
-                          <h5 className="font-semibold text-primary">Driven Capital</h5>
-                          <Badge variant="secondary">Fast Approval</Badge>
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <h4 className="font-bold text-primary text-lg">Driven Capital</h4>
+                            <p className="text-secondary font-semibold">Best if you need funding in under 48 hours</p>
+                          </div>
+                          <Badge variant="secondary" className="shrink-0">Fast Track</Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground mb-3">
-                          Digital-first lender perfect for businesses operating over 6 months. Fast online application with same-day decisions.
+                        <p className="text-muted-foreground">
+                          Perfect for businesses operating 6+ months. Digital application, same-day decisions, funds in your account within 2 days.
                         </p>
-                        <div className="flex items-center text-sm text-secondary">
-                          <Star className="h-4 w-4 mr-1" />
-                          <span>4.8/5 Rating</span>
+                        <div className="flex items-center mt-3 text-sm">
+                          <Star className="h-4 w-4 mr-1 text-accent fill-current" />
+                          <span className="text-muted-foreground">4.8/5 rating • 2,400+ funded businesses</span>
                         </div>
                       </CardContent>
                     </Card>
 
-                    <Card className="border border-accent/20 bg-accent/5">
+                    <Card className="border-l-4 border-l-primary bg-gradient-to-r from-primary/5 to-transparent">
                       <CardContent className="p-6">
-                        <div className="flex items-center justify-between mb-3">
-                          <h5 className="font-semibold text-primary">Canadian Business Credit</h5>
-                          <Badge variant="outline">Competitive Rates</Badge>
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <h4 className="font-bold text-primary text-lg">Canadian Business Credit</h4>
+                            <p className="text-secondary font-semibold">Best if you want the lowest possible rate</p>
+                          </div>
+                          <Badge variant="outline" className="shrink-0">Low Rates</Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground mb-3">
-                          Established lender specializing in Canadian SMEs. Offers flexible terms and competitive interest rates.
+                        <p className="text-muted-foreground">
+                          Established lender with 15+ years helping Canadian SMEs. Competitive rates, flexible terms, human underwriters.
                         </p>
-                        <div className="flex items-center text-sm text-secondary">
-                          <Shield className="h-4 w-4 mr-1" />
-                          <span>A+ BBB Rating</span>
+                        <div className="flex items-center mt-3 text-sm">
+                          <Shield className="h-4 w-4 mr-1 text-secondary" />
+                          <span className="text-muted-foreground">A+ BBB Rating • Since 2008</span>
                         </div>
                       </CardContent>
                     </Card>
 
                     {score >= 70 && (
-                      <Card className="border border-primary/20 bg-primary/5">
+                      <Card className="border-l-4 border-l-accent bg-gradient-to-r from-accent/10 to-transparent">
                         <CardContent className="p-6">
-                          <div className="flex items-center justify-between mb-3">
-                            <h5 className="font-semibold text-primary">Prime Business Funding</h5>
-                            <Badge>Premium Partner</Badge>
+                          <div className="flex items-start justify-between mb-3">
+                            <div>
+                              <h4 className="font-bold text-primary text-lg">Prime Business Funding</h4>
+                              <p className="text-secondary font-semibold">Best if you qualify for premium terms</p>
+                            </div>
+                            <Badge className="shrink-0 bg-accent text-accent-foreground">Exclusive</Badge>
                           </div>
-                          <p className="text-sm text-muted-foreground mb-3">
-                            Exclusive lender for high-quality borrowers. Offers the lowest rates and largest loan amounts.
+                          <p className="text-muted-foreground">
+                            Only for businesses with strong profiles. Lowest rates, highest amounts, longest terms available.
                           </p>
-                          <div className="flex items-center text-sm text-secondary">
-                            <TrendingUp className="h-4 w-4 mr-1" />
-                            <span>Up to $800K</span>
+                          <div className="flex items-center mt-3 text-sm">
+                            <TrendingUp className="h-4 w-4 mr-1 text-accent" />
+                            <span className="text-muted-foreground">Up to $800K • Premium partnership</span>
                           </div>
                         </CardContent>
                       </Card>
@@ -260,21 +297,31 @@ const Quiz = () => {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4 pt-6">
-                  <Button variant="cta" size="lg" className="flex-1">
-                    <Users className="h-5 w-5 mr-2" />
-                    Submit My Details & Connect With Lenders
-                  </Button>
-                  <Button variant="outline" size="lg" className="flex-1">
-                    <Clock className="h-5 w-5 mr-2" />
-                    Get a Quick Response
-                  </Button>
+                {/* Clear Action Section */}
+                <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-xl p-8 text-center border border-primary/20">
+                  <h3 className="text-2xl font-bold text-primary mb-4">
+                    Ready to move forward?
+                  </h3>
+                  <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+                    These lenders are expecting to hear from you. One click sends your details to all of them at once.
+                  </p>
+                  
+                  <div className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto">
+                    <Button size="lg" className="flex-1 bg-secondary hover:bg-secondary/90 text-lg py-6">
+                      Okay, send my details to these lenders
+                    </Button>
+                  </div>
+                  
+                  <div className="mt-6">
+                    <button className="text-primary hover:text-primary/80 underline text-sm font-medium">
+                      Have a question before you move forward? Chat with us.
+                    </button>
+                  </div>
                 </div>
 
-                <div className="text-center text-sm text-muted-foreground">
+                <div className="text-center text-sm text-muted-foreground border-t pt-6">
                   <p>
-                    By clicking "Submit My Details", you agree to be contacted by matched lenders.
+                    By clicking "Send my details", you're asking us to share your information with the lenders above.
                     <br />
                     <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link> | 
                     <Link to="/terms" className="text-primary hover:underline ml-1">Terms of Service</Link>
