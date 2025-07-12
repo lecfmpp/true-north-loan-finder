@@ -12,8 +12,15 @@ import {
   DollarSign,
   FileText,
   Calculator,
-  Building
+  Building,
+  HelpCircle
 } from "lucide-react";
+import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger 
+} from "@/components/ui/accordion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -98,6 +105,25 @@ const MerchantCashAdvance = () => {
       type: "Seasonal Businesses",
       description: "Businesses with fluctuating revenue that need flexible repayment",
       examples: ["Tourism", "Holiday retail", "Event planning", "Landscaping"]
+    }
+  ];
+
+  const faqData = [
+    {
+      question: "What is a Merchant Cash Advance (MCA)?",
+      answer: "An MCA is not a loan, but rather the sale of a portion of your future sales at a discount. A funder gives you a lump sum of cash upfront. In return, you agree to pay back that amount by remitting a small, fixed percentage of your daily credit and debit card sales until the advance is settled."
+    },
+    {
+      question: "How is an MCA different from a loan?",
+      answer: "The key difference is in the repayment structure. A loan has fixed monthly payments, regardless of your sales. An MCA's repayment is flexible; you pay back more when your sales are strong and less when they are slow, because the payment is tied to a percentage of your daily revenue."
+    },
+    {
+      question: "Is my business eligible for an MCA?",
+      answer: "MCAs are an excellent fit for businesses with high volumes of card transactions, like retail stores, restaurants, and e-commerce sites. Eligibility is based more on your sales history than your credit score, making it accessible for businesses with less-than-perfect credit."
+    },
+    {
+      question: "How does repayment work?",
+      answer: "A small, agreed-upon percentage (e.g., 10%) is automatically deducted from your daily credit card settlement. This process is automatic, so you never have to worry about missing a payment."
     }
   ];
 
@@ -345,6 +371,53 @@ const MerchantCashAdvance = () => {
                 </p>
               </CardContent>
             </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl lg:text-4xl font-bold font-sans text-primary mb-4">
+                Merchant Cash Advance FAQ
+              </h2>
+              <p className="text-xl text-muted-foreground font-serif">
+                Everything you need to know about merchant cash advances
+              </p>
+            </div>
+            
+            <script type="application/ld+json">
+              {JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                "mainEntity": faqData.map(faq => ({
+                  "@type": "Question",
+                  "name": faq.question,
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": faq.answer
+                  }
+                }))
+              })}
+            </script>
+            
+            <Accordion type="single" collapsible className="w-full">
+              {faqData.map((faq, index) => (
+                <AccordionItem key={index} value={`item-${index}`} className="border-b">
+                  <AccordionTrigger className="text-left hover:no-underline py-6">
+                    <div className="flex items-center">
+                      <HelpCircle className="h-5 w-5 text-secondary mr-3 flex-shrink-0" />
+                      <span className="font-semibold text-primary">{faq.question}</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-6 text-muted-foreground font-serif leading-relaxed">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </div>
         </div>
       </section>

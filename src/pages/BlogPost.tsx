@@ -32,7 +32,7 @@ const BlogPost = () => {
           .from('blog_posts')
           .select('*')
           .eq('slug', slug)
-          .eq('published', true)
+          .eq('status', 'published')
           .single();
 
         if (error) {

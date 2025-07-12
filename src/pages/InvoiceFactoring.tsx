@@ -12,8 +12,15 @@ import {
   Calculator,
   Building,
   Truck,
-  Shield
+  Shield,
+  HelpCircle
 } from "lucide-react";
+import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger 
+} from "@/components/ui/accordion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -119,6 +126,29 @@ const InvoiceFactoring = () => {
       description: "Factor individual invoices as needed without ongoing commitment",
       rate: "2-6%",
       advance: "70-85%"
+    }
+  ];
+
+  const faqData = [
+    {
+      question: "What is invoice factoring?",
+      answer: "Invoice factoring is a financial service where a business sells its outstanding invoices to a third-party company (called a factor) at a discount. The factor provides immediate cash (typically 80-95% of the invoice value) and collects payment directly from your customers when the invoice is due."
+    },
+    {
+      question: "How is factoring different from a loan?",
+      answer: "Factoring is the sale of an asset (your invoices), not borrowing money. This means it doesn't create debt on your balance sheet and doesn't require fixed monthly payments. Approval is based more on your customers' creditworthiness than your own credit score."
+    },
+    {
+      question: "What types of businesses benefit most from invoice factoring?",
+      answer: "B2B businesses with extended payment terms (30-90 days) benefit most, including manufacturers, trucking companies, staffing agencies, and professional service providers. Any business that invoices other businesses and waits for payment can potentially use factoring."
+    },
+    {
+      question: "How quickly can I get my money?",
+      answer: "Once approved, most factors can provide funding within 24 hours of submitting your invoices. The initial setup and approval process typically takes 1-3 business days."
+    },
+    {
+      question: "What happens if my customer doesn't pay?",
+      answer: "This depends on whether you choose recourse or non-recourse factoring. With recourse factoring (lower cost), you're responsible if the customer doesn't pay. With non-recourse factoring (higher cost), the factor assumes the credit risk."
     }
   ];
 
@@ -387,6 +417,53 @@ const InvoiceFactoring = () => {
                 </CardContent>
               </Card>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl lg:text-4xl font-bold font-sans text-primary mb-4">
+                Invoice Factoring FAQ
+              </h2>
+              <p className="text-xl text-muted-foreground font-serif">
+                Common questions about invoice factoring and how it works
+              </p>
+            </div>
+            
+            <script type="application/ld+json">
+              {JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                "mainEntity": faqData.map(faq => ({
+                  "@type": "Question",
+                  "name": faq.question,
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": faq.answer
+                  }
+                }))
+              })}
+            </script>
+            
+            <Accordion type="single" collapsible className="w-full">
+              {faqData.map((faq, index) => (
+                <AccordionItem key={index} value={`item-${index}`} className="border-b">
+                  <AccordionTrigger className="text-left hover:no-underline py-6">
+                    <div className="flex items-center">
+                      <HelpCircle className="h-5 w-5 text-secondary mr-3 flex-shrink-0" />
+                      <span className="font-semibold text-primary">{faq.question}</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-6 text-muted-foreground font-serif leading-relaxed">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </div>
         </div>
       </section>

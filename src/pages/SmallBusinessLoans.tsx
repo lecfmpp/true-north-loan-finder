@@ -12,8 +12,15 @@ import {
   DollarSign,
   FileText,
   Calculator,
-  Target
+  Target,
+  HelpCircle
 } from "lucide-react";
+import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger 
+} from "@/components/ui/accordion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -98,6 +105,29 @@ const SmallBusinessLoans = () => {
       bestFor: "Real estate, long-term investments, major expansion",
       terms: "5-25 years",
       amounts: "$50K - $5M"
+    }
+  ];
+
+  const faqData = [
+    {
+      question: "What is a small business loan?",
+      answer: "A small business loan provides a lump sum of capital that you repay over a set period (the \"term\") with regular, predictable payments. These loans are incredibly versatile and can be used for almost any business purpose, such as expansion, hiring staff, purchasing inventory, or managing day-to-day working capital."
+    },
+    {
+      question: "How do I qualify for a business loan in Canada?",
+      answer: "While requirements vary by lender, alternative lenders often have more flexible criteria than major banks. They typically look for: At least 6 months in business, a steady monthly revenue (e.g., over $10,000/month), and a reasonable personal credit score. Many lenders prioritize your business's recent cash flow over a perfect credit history."
+    },
+    {
+      question: "Can I get a business loan with bad credit?",
+      answer: "Yes. While a high credit score helps, many of our lending partners specialize in providing business loans for bad credit. They place more emphasis on the health and revenue of your business rather than relying solely on your credit score."
+    },
+    {
+      question: "How quickly can I get a small business loan?",
+      answer: "This is a major advantage over traditional banks. The application process is streamlined, and many alternative lenders can approve and deposit funds into your account in as little as 24 to 48 hours."
+    },
+    {
+      question: "What documents do I need to apply?",
+      answer: "Typically, the initial application is simple. To finalize the loan, you may need to provide basic documentation like a few months of business bank statements, a valid photo ID, and proof of business ownership. Our quiz funnel requires no documents to get started."
     }
   ];
 
@@ -330,6 +360,53 @@ const SmallBusinessLoans = () => {
                 </CardContent>
               </Card>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl lg:text-4xl font-bold font-sans text-primary mb-4">
+                Small Business Loans FAQ
+              </h2>
+              <p className="text-xl text-muted-foreground font-serif">
+                Common questions about small business loans and term loans
+              </p>
+            </div>
+            
+            <script type="application/ld+json">
+              {JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                "mainEntity": faqData.map(faq => ({
+                  "@type": "Question",
+                  "name": faq.question,
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": faq.answer
+                  }
+                }))
+              })}
+            </script>
+            
+            <Accordion type="single" collapsible className="w-full">
+              {faqData.map((faq, index) => (
+                <AccordionItem key={index} value={`item-${index}`} className="border-b">
+                  <AccordionTrigger className="text-left hover:no-underline py-6">
+                    <div className="flex items-center">
+                      <HelpCircle className="h-5 w-5 text-secondary mr-3 flex-shrink-0" />
+                      <span className="font-semibold text-primary">{faq.question}</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-6 text-muted-foreground font-serif leading-relaxed">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </div>
         </div>
       </section>

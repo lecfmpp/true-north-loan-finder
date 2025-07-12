@@ -12,8 +12,15 @@ import {
   DollarSign,
   TrendingUp,
   FileText,
-  Users
+  Users,
+  HelpCircle
 } from "lucide-react";
+import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger 
+} from "@/components/ui/accordion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -98,6 +105,29 @@ const EquipmentFinancing = () => {
       step: "5",
       title: "Get Approved & Purchase",
       description: "Once approved, purchase your equipment and start growing your business"
+    }
+  ];
+
+  const faqData = [
+    {
+      question: "What is equipment financing?",
+      answer: "Equipment financing is a type of business loan used specifically to purchase new or used machinery and equipment essential for your operations. The equipment itself typically serves as the collateral for the loan, making it easier to qualify for than some other types of financing."
+    },
+    {
+      question: "What's the difference between an equipment loan and a lease?",
+      answer: "An equipment loan is like a traditional loan where you borrow money to buy the equipment and own it outright once the loan is repaid. An equipment lease is more like a long-term rental; you make regular payments to use the equipment for a set period. At the end of the lease, you may have the option to buy it, return it, or renew the lease."
+    },
+    {
+      question: "What kind of equipment can I finance in Canada?",
+      answer: "You can finance almost any type of business-related equipment. This is especially common in capital-intensive industries and includes: Construction equipment (excavators, bulldozers), Commercial vehicles (transport trucks, delivery vans), Restaurant equipment (ovens, freezers, kitchen appliances), Manufacturing machinery, and IT hardware and office tech."
+    },
+    {
+      question: "How do I qualify for equipment financing in Canada?",
+      answer: "Qualification is often more flexible than for traditional bank loans because the equipment acts as security. Lenders will typically look at your business's time in operation, monthly revenue, and personal credit score. To see exactly what you pre-qualify for, you can take our Loan Readiness Quiz."
+    },
+    {
+      question: "Can I get financing for used equipment?",
+      answer: "Yes, most lenders in our network offer financing for both new and used equipment. Financing used equipment can be a great way to lower your monthly payments and conserve cash flow."
     }
   ];
 
@@ -318,6 +348,53 @@ const EquipmentFinancing = () => {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl lg:text-4xl font-bold font-sans text-primary mb-4">
+                Equipment Financing FAQ
+              </h2>
+              <p className="text-xl text-muted-foreground font-serif">
+                Get answers to the most common questions about equipment financing
+              </p>
+            </div>
+            
+            <script type="application/ld+json">
+              {JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                "mainEntity": faqData.map(faq => ({
+                  "@type": "Question",
+                  "name": faq.question,
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": faq.answer
+                  }
+                }))
+              })}
+            </script>
+            
+            <Accordion type="single" collapsible className="w-full">
+              {faqData.map((faq, index) => (
+                <AccordionItem key={index} value={`item-${index}`} className="border-b">
+                  <AccordionTrigger className="text-left hover:no-underline py-6">
+                    <div className="flex items-center">
+                      <HelpCircle className="h-5 w-5 text-secondary mr-3 flex-shrink-0" />
+                      <span className="font-semibold text-primary">{faq.question}</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-6 text-muted-foreground font-serif leading-relaxed">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </div>
         </div>
       </section>
