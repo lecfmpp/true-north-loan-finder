@@ -360,8 +360,8 @@ const Partners = () => {
 
           {/* Desktop Table for larger screens */}
           <div className="hidden md:block overflow-x-auto">
-            <div className="max-w-5xl mx-auto">
-              <Table className="w-full bg-white rounded-lg shadow-sm border border-muted/20">
+            <div className="max-w-5xl mx-auto border border-muted/40 rounded-lg overflow-hidden shadow-sm">
+              <Table className="w-full bg-white">
                 <TableHeader>
                   <TableRow className="bg-muted/50 border-b border-muted/30">
                     <TableHead className="font-semibold text-muted-foreground w-[140px] py-3 px-3 text-xs uppercase tracking-wide border-r border-muted/20">
