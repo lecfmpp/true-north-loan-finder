@@ -18,30 +18,36 @@ const Header = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <header className="bg-background border-b border-border sticky top-0 z-50 backdrop-blur-sm bg-background/95">
+    <header className="bg-primary border-b border-primary-foreground/20 sticky top-0 z-50 backdrop-blur-sm">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center">
-              <div className="w-3 h-3 bg-accent rounded-full"></div>
-            </div>
-            <span className="font-bold text-xl font-sans text-primary">True North Business Loan</span>
+          <Link to="/" className="flex items-center space-x-3">
+            <img 
+              src="/lovable-uploads/eae8a3b3-6d86-4fe4-9e17-17b808de0d2e.png" 
+              alt="TrueNorth Business Loan" 
+              className="w-8 h-8"
+            />
+            <img 
+              src="/lovable-uploads/bff5faf6-4a2d-4ed9-99f8-405619695ec5.png" 
+              alt="TrueNorth Business Loan" 
+              className="h-8 w-auto"
+            />
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <Link
               to="/how-it-works"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive("/how-it-works") ? "text-primary" : "text-muted-foreground"
+              className={`text-sm font-medium transition-colors hover:text-primary-foreground/80 ${
+                isActive("/how-it-works") ? "text-primary-foreground" : "text-primary-foreground/70"
               }`}
             >
               How It Works
             </Link>
 
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+              <DropdownMenuTrigger className="flex items-center text-sm font-medium text-primary-foreground/70 hover:text-primary-foreground/80 transition-colors">
                 Types of Loans
                 <ChevronDown className="ml-1 h-4 w-4" />
               </DropdownMenuTrigger>
@@ -71,8 +77,8 @@ const Header = () => {
 
             <Link
               to="/blog"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive("/blog") ? "text-primary" : "text-muted-foreground"
+              className={`text-sm font-medium transition-colors hover:text-primary-foreground/80 ${
+                isActive("/blog") ? "text-primary-foreground" : "text-primary-foreground/70"
               }`}
             >
               Blog
@@ -80,8 +86,8 @@ const Header = () => {
 
             <Link
               to="/about"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive("/about") ? "text-primary" : "text-muted-foreground"
+              className={`text-sm font-medium transition-colors hover:text-primary-foreground/80 ${
+                isActive("/about") ? "text-primary-foreground" : "text-primary-foreground/70"
               }`}
             >
               About Us
@@ -120,51 +126,51 @@ const Header = () => {
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? (
-              <X className="h-6 w-6 text-primary" />
+              <X className="h-6 w-6 text-primary-foreground" />
             ) : (
-              <Menu className="h-6 w-6 text-primary" />
+              <Menu className="h-6 w-6 text-primary-foreground" />
             )}
           </button>
         </div>
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden border-t border-border">
+          <div className="md:hidden border-t border-primary-foreground/20 bg-primary">
             <nav className="py-4 space-y-4">
               <Link
                 to="/how-it-works"
-                className="block text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+                className="block text-sm font-medium text-primary-foreground/70 hover:text-primary-foreground transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 How It Works
               </Link>
               <div className="space-y-2">
-                <div className="text-sm font-medium text-muted-foreground">Types of Loans</div>
+                <div className="text-sm font-medium text-primary-foreground/70">Types of Loans</div>
                 <div className="pl-4 space-y-2">
                   <Link
                     to="/equipment-financing"
-                    className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                    className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Equipment Financing
                   </Link>
                   <Link
                     to="/small-business-loans"
-                    className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                    className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Small Business Loans
                   </Link>
                   <Link
                     to="/merchant-cash-advance"
-                    className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                    className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Merchant Cash Advance
                   </Link>
                   <Link
                     to="/invoice-factoring"
-                    className="block text-sm text-muted-foreground hover:text-primary transition-colors"
+                    className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Invoice Factoring
@@ -173,14 +179,14 @@ const Header = () => {
               </div>
               <Link
                 to="/blog"
-                className="block text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+                className="block text-sm font-medium text-primary-foreground/70 hover:text-primary-foreground transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Blog
               </Link>
               <Link
                 to="/about"
-                className="block text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+                className="block text-sm font-medium text-primary-foreground/70 hover:text-primary-foreground transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 About Us
@@ -195,7 +201,7 @@ const Header = () => {
                         </Link>
                       </Button>
                     )}
-                    <div className="text-sm text-muted-foreground text-center">
+                    <div className="text-sm text-primary-foreground/70 text-center">
                       Signed in as {user.email}
                     </div>
                   </>
