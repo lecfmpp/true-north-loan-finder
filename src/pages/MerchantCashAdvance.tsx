@@ -365,7 +365,7 @@ const MerchantCashAdvance = () => {
                 Check My Advance Options
               </Link>
             </Button>
-            <Button asChild size="xl" variant="outline" className="text-lg px-8 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
+            <Button asChild size="xl" variant="outline" className="text-lg px-8 border-primary-foreground text-primary hover:bg-primary-foreground hover:text-primary">
               <Link to="/blog">
                 Learn More About Cash Advances
               </Link>
