@@ -152,41 +152,30 @@ const HowItWorks = () => {
             <div className="relative max-w-7xl mx-auto">
               {/* Desktop Horizontal Layout */}
               <div className="hidden lg:block">
-                <div className="flex items-center justify-between relative">
+                <div className="flex items-start justify-between gap-6 relative">
                   {steps.map((step, index) => (
                     <div key={index} className="flex items-center flex-1">
                       {/* Step Card */}
                       <div className="relative flex-1 max-w-xs">
-                        <Card className="border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 hover:-translate-y-2 h-full">
-                          <div className={`bg-gradient-to-r ${step.color} p-1 rounded-lg`}>
-                            <CardContent className="bg-background p-6 rounded-md h-full">
+                        <Card className="border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 hover:-translate-y-2 h-48">
+                          <div className={`bg-gradient-to-r ${step.color} p-1 rounded-lg h-full`}>
+                            <CardContent className="bg-background p-4 rounded-md h-full flex flex-col items-center justify-center text-center">
                               {/* Large Step Number */}
-                              <div className="w-16 h-16 bg-accent text-accent-foreground rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold shadow-[var(--shadow-button)]">
+                              <div className="w-12 h-12 bg-accent text-accent-foreground rounded-full flex items-center justify-center mb-3 text-xl font-bold shadow-[var(--shadow-button)]">
                                 {step.number}
                               </div>
                               
                               {/* Icon */}
-                              <div className="flex justify-center mb-4">
-                                {step.icon}
+                              <div className="mb-3">
+                                <div className="w-8 h-8 flex items-center justify-center">
+                                  {step.icon}
+                                </div>
                               </div>
                               
-                              {/* Content */}
-                              <h3 className="text-xl font-bold font-sans text-primary mb-3 text-center">
+                              {/* Title Only */}
+                              <h3 className="text-lg font-bold font-sans text-primary leading-tight">
                                 {step.title}
                               </h3>
-                              <p className="text-muted-foreground font-serif text-sm text-center mb-4">
-                                {step.description}
-                              </p>
-                              
-                              {/* Details List */}
-                              <ul className="space-y-1">
-                                {step.details.map((detail, detailIndex) => (
-                                  <li key={detailIndex} className="flex items-center text-xs text-muted-foreground">
-                                    <CheckCircle className="h-3 w-3 text-secondary mr-2 flex-shrink-0" />
-                                    <span>{detail}</span>
-                                  </li>
-                                ))}
-                              </ul>
                             </CardContent>
                           </div>
                         </Card>
@@ -195,7 +184,7 @@ const HowItWorks = () => {
                       {/* Arrow */}
                       {index < steps.length - 1 && (
                         <div className="flex-shrink-0 px-4">
-                          <ArrowRight className="h-8 w-8 text-primary animate-pulse" />
+                          <ArrowRight className="h-6 w-6 text-primary animate-pulse" />
                         </div>
                       )}
                     </div>
