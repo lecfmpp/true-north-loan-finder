@@ -236,60 +236,211 @@ const Quiz = () => {
                   </p>
                   
                   <div className="space-y-4">
+                    {/* IOU Financial */}
                     <Card className="border-l-4 border-l-secondary bg-gradient-to-r from-secondary/5 to-transparent">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-3">
                           <div>
-                            <h4 className="font-bold text-primary text-lg">Driven Capital</h4>
-                            <p className="text-secondary font-semibold">Best if you need funding in under 48 hours</p>
+                            <h4 className="font-bold text-primary text-lg">IOU Financial</h4>
+                            <p className="text-secondary font-semibold">Best for established businesses seeking significant term loans up to $1.5M</p>
                           </div>
-                          <Badge variant="secondary" className="shrink-0">Fast Track</Badge>
+                          <Badge variant="secondary" className="shrink-0">Large Amounts</Badge>
                         </div>
                         <p className="text-muted-foreground">
-                          Perfect for businesses operating 6+ months. Digital application, same-day decisions, funds in your account within 2 days.
+                          Specializes in straightforward term loans for established businesses. Partner-driven model with funding often within 24 hours.
                         </p>
-                        <div className="flex items-center mt-3 text-sm">
-                          <Star className="h-4 w-4 mr-1 text-accent fill-current" />
-                          <span className="text-muted-foreground">4.8/5 rating • 2,400+ funded businesses</span>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-4 text-xs">
+                          <div className="bg-background/60 rounded p-2">
+                            <div className="font-semibold text-primary">$15K - $1.5M</div>
+                            <div className="text-muted-foreground">Funding Range</div>
+                          </div>
+                          <div className="bg-background/60 rounded p-2">
+                            <div className="font-semibold text-primary">6-36 months</div>
+                            <div className="text-muted-foreground">Terms</div>
+                          </div>
+                          <div className="bg-background/60 rounded p-2">
+                            <div className="font-semibold text-primary">24 hours</div>
+                            <div className="text-muted-foreground">Funding Speed</div>
+                          </div>
+                          <div className="bg-background/60 rounded p-2">
+                            <div className="font-semibold text-primary">1+ years</div>
+                            <div className="text-muted-foreground">Min. Time</div>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
 
+                    {/* Driven (formerly Thinking Capital) */}
                     <Card className="border-l-4 border-l-primary bg-gradient-to-r from-primary/5 to-transparent">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-3">
                           <div>
-                            <h4 className="font-bold text-primary text-lg">Canadian Business Credit</h4>
-                            <p className="text-secondary font-semibold">Best if you want the lowest possible rate</p>
+                            <h4 className="font-bold text-primary text-lg">Driven (formerly Thinking Capital)</h4>
+                            <p className="text-secondary font-semibold">Perfect for fast, digital applications and businesses operating for at least 6 months</p>
                           </div>
-                          <Badge variant="outline" className="shrink-0">Low Rates</Badge>
+                          <Badge variant="outline" className="shrink-0">Fast Digital</Badge>
                         </div>
                         <p className="text-muted-foreground">
-                          Established lender with 15+ years helping Canadian SMEs. Competitive rates, flexible terms, human underwriters.
+                          Major Canadian FinTech with entirely digital application process and flexible repayment terms. Quick decisions for qualifying businesses.
                         </p>
-                        <div className="flex items-center mt-3 text-sm">
-                          <Shield className="h-4 w-4 mr-1 text-secondary" />
-                          <span className="text-muted-foreground">A+ BBB Rating • Since 2008</span>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-4 text-xs">
+                          <div className="bg-background/60 rounded p-2">
+                            <div className="font-semibold text-primary">Up to $300K</div>
+                            <div className="text-muted-foreground">Funding Range</div>
+                          </div>
+                          <div className="bg-background/60 rounded p-2">
+                            <div className="font-semibold text-primary">3-24 months</div>
+                            <div className="text-muted-foreground">Terms</div>
+                          </div>
+                          <div className="bg-background/60 rounded p-2">
+                            <div className="font-semibold text-primary">600+ FICO</div>
+                            <div className="text-muted-foreground">Min. Credit</div>
+                          </div>
+                          <div className="bg-background/60 rounded p-2">
+                            <div className="font-semibold text-primary">6+ months</div>
+                            <div className="text-muted-foreground">Min. Time</div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Greenbox Capital */}
+                    <Card className="border-l-4 border-l-accent bg-gradient-to-r from-accent/10 to-transparent">
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <h4 className="font-bold text-primary text-lg">Greenbox Capital</h4>
+                            <p className="text-secondary font-semibold">Excellent option for businesses with lower credit scores but strong monthly sales</p>
+                          </div>
+                          <Badge className="shrink-0 bg-accent text-accent-foreground">Flexible</Badge>
+                        </div>
+                        <p className="text-muted-foreground">
+                          Focuses on business potential over credit scores. Funds high-risk industries within one business day.
+                        </p>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-4 text-xs">
+                          <div className="bg-background/60 rounded p-2">
+                            <div className="font-semibold text-primary">$3K - $500K</div>
+                            <div className="text-muted-foreground">Funding Range</div>
+                          </div>
+                          <div className="bg-background/60 rounded p-2">
+                            <div className="font-semibold text-primary">1 day</div>
+                            <div className="text-muted-foreground">Funding Speed</div>
+                          </div>
+                          <div className="bg-background/60 rounded p-2">
+                            <div className="font-semibold text-primary">5+ months</div>
+                            <div className="text-muted-foreground">Min. Time</div>
+                          </div>
+                          <div className="bg-background/60 rounded p-2">
+                            <div className="font-semibold text-primary">$10K/mo</div>
+                            <div className="text-muted-foreground">Min. Revenue</div>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
 
                     {score >= 70 && (
+                      <>
+                        {/* Merchant Growth */}
+                        <Card className="border-l-4 border-l-secondary bg-gradient-to-r from-secondary/5 to-transparent">
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between mb-3">
+                              <div>
+                                <h4 className="font-bold text-primary text-lg">Merchant Growth</h4>
+                                <p className="text-secondary font-semibold">A great all-around option with specialized financing for E-commerce businesses</p>
+                              </div>
+                              <Badge variant="secondary" className="shrink-0">E-commerce</Badge>
+                            </div>
+                            <p className="text-muted-foreground">
+                              Canadian lender with variety of solutions. Strong for e-commerce with fast, simple application process.
+                            </p>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-4 text-xs">
+                              <div className="bg-background/60 rounded p-2">
+                                <div className="font-semibold text-primary">$5K - $800K</div>
+                                <div className="text-muted-foreground">Funding Range</div>
+                              </div>
+                              <div className="bg-background/60 rounded p-2">
+                                <div className="font-semibold text-primary">6+ months</div>
+                                <div className="text-muted-foreground">Min. Time</div>
+                              </div>
+                              <div className="bg-background/60 rounded p-2">
+                                <div className="font-semibold text-primary">$10K/mo</div>
+                                <div className="text-muted-foreground">Min. Revenue</div>
+                              </div>
+                              <div className="bg-background/60 rounded p-2">
+                                <div className="font-semibold text-primary">LOC + Term</div>
+                                <div className="text-muted-foreground">Products</div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        {/* 2M7 Financial Solutions */}
+                        <Card className="border-l-4 border-l-primary bg-gradient-to-r from-primary/5 to-transparent">
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between mb-3">
+                              <div>
+                                <h4 className="font-bold text-primary text-lg">2M7 Financial Solutions</h4>
+                                <p className="text-secondary font-semibold">Specializes in Merchant Cash Advances for newer businesses with strong revenue</p>
+                              </div>
+                              <Badge variant="outline" className="shrink-0">MCA Specialist</Badge>
+                            </div>
+                            <p className="text-muted-foreground">
+                              Independent direct funder focused exclusively on MCAs. Very accessible qualification criteria for newer businesses.
+                            </p>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-4 text-xs">
+                              <div className="bg-background/60 rounded p-2">
+                                <div className="font-semibold text-primary">$5K - $300K</div>
+                                <div className="text-muted-foreground">Funding Range</div>
+                              </div>
+                              <div className="bg-background/60 rounded p-2">
+                                <div className="font-semibold text-primary">3+ months</div>
+                                <div className="text-muted-foreground">Min. Time</div>
+                              </div>
+                              <div className="bg-background/60 rounded p-2">
+                                <div className="font-semibold text-primary">$15K/mo</div>
+                                <div className="text-muted-foreground">Min. Revenue</div>
+                              </div>
+                              <div className="bg-background/60 rounded p-2">
+                                <div className="font-semibold text-primary">Fast Access</div>
+                                <div className="text-muted-foreground">Funding Speed</div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </>
+                    )}
+
+                    {quizData.useOfFunds === "equipment" && (
+                      /* Northpoint Commercial Finance */
                       <Card className="border-l-4 border-l-accent bg-gradient-to-r from-accent/10 to-transparent">
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-3">
                             <div>
-                              <h4 className="font-bold text-primary text-lg">Prime Business Funding</h4>
-                              <p className="text-secondary font-semibold">Best if you qualify for premium terms</p>
+                              <h4 className="font-bold text-primary text-lg">Northpoint Commercial Finance</h4>
+                              <p className="text-secondary font-semibold">A leading specialist for financing new or used commercial equipment</p>
                             </div>
-                            <Badge className="shrink-0 bg-accent text-accent-foreground">Exclusive</Badge>
+                            <Badge className="shrink-0 bg-accent text-accent-foreground">Equipment</Badge>
                           </div>
                           <p className="text-muted-foreground">
-                            Only for businesses with strong profiles. Lowest rates, highest amounts, longest terms available.
+                            Key player in equipment financing working directly with vendors and brokers. Perfect for capital-intensive industries.
                           </p>
-                          <div className="flex items-center mt-3 text-sm">
-                            <TrendingUp className="h-4 w-4 mr-1 text-accent" />
-                            <span className="text-muted-foreground">Up to $800K • Premium partnership</span>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-4 text-xs">
+                            <div className="bg-background/60 rounded p-2">
+                              <div className="font-semibold text-primary">Equipment Cost</div>
+                              <div className="text-muted-foreground">Funding Range</div>
+                            </div>
+                            <div className="bg-background/60 rounded p-2">
+                              <div className="font-semibold text-primary">Asset Life</div>
+                              <div className="text-muted-foreground">Term Length</div>
+                            </div>
+                            <div className="bg-background/60 rounded p-2">
+                              <div className="font-semibold text-primary">New & Used</div>
+                              <div className="text-muted-foreground">Equipment</div>
+                            </div>
+                            <div className="bg-background/60 rounded p-2">
+                              <div className="font-semibold text-primary">Lease & Finance</div>
+                              <div className="text-muted-foreground">Products</div>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>

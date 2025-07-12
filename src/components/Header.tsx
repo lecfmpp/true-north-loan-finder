@@ -60,6 +60,10 @@ const Header = () => {
               Blog
             </Link>
 
+            <Link to="/partners" className={`text-sm font-medium transition-colors hover:text-primary-foreground/80 ${isActive("/partners") ? "text-primary-foreground" : "text-primary-foreground/70"}`}>
+              Partners
+            </Link>
+
             <Link to="/about" className={`text-sm font-medium transition-colors hover:text-primary-foreground/80 ${isActive("/about") ? "text-primary-foreground" : "text-primary-foreground/70"}`}>
               About Us
             </Link>
@@ -116,6 +120,9 @@ const Header = () => {
               </div>
               <Link to="/blog" className="block text-sm font-medium text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
                 Blog
+              </Link>
+              <Link to="/partners" className="block text-sm font-medium text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
+                Partners
               </Link>
               <Link to="/about" className="block text-sm font-medium text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
                 About Us
