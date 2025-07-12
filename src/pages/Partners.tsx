@@ -166,100 +166,109 @@ const Partners = () => {
             </p>
           </div>
 
-          <div className="grid gap-8 max-w-6xl mx-auto">
-            {lenders.map((lender) => {
-              const IconComponent = lender.icon;
-              return (
-                <Card key={lender.id} className={`border-l-4 ${lender.borderColor} bg-gradient-to-r ${lender.bgGradient} hover:shadow-lg transition-shadow`}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center space-x-4">
-                        {lender.logo ? (
-                          <div className="w-40 h-40 rounded-lg bg-white shadow-sm flex items-center justify-center p-4">
-                            <img 
-                              src={lender.logo} 
-                              alt={`${lender.name} logo`} 
-                              className="max-w-full max-h-full object-contain"
-                            />
-                          </div>
-                        ) : (
-                          <div className="p-3 rounded-full bg-background shadow-sm">
-                            <IconComponent className="h-6 w-6 text-primary" />
-                          </div>
-                        )}
-                        <div>
-                          <CardTitle className="text-xl text-primary">{lender.name}</CardTitle>
-                          <p className="text-secondary font-semibold mt-1">{lender.tagline}</p>
-                        </div>
+          {/* Responsive Grid: 2 columns on desktop, 1 on mobile */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
+            {lenders.map((lender) => (
+              <Card key={lender.id} className="bg-white hover:shadow-xl transition-all duration-300 overflow-hidden border-0 shadow-md">
+                <CardContent className="p-6">
+                  {/* Logo */}
+                  <div className="flex justify-center mb-6">
+                    {lender.logo ? (
+                      <div className="w-32 h-20 flex items-center justify-center">
+                        <img 
+                          src={lender.logo} 
+                          alt={`${lender.name} logo`} 
+                          className="max-w-full max-h-full object-contain"
+                        />
                       </div>
-                      <Badge variant={lender.badgeVariant}>{lender.badge}</Badge>
-                    </div>
-                    <p className="text-muted-foreground leading-relaxed">{lender.description}</p>
-                  </CardHeader>
+                    ) : (
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                        <lender.icon className="h-8 w-8 text-primary" />
+                      </div>
+                    )}
+                  </div>
 
-                  <CardContent className="space-y-6">
-                    {/* Key Details Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="bg-background/60 rounded-lg p-3">
-                        <div className="font-semibold text-primary text-sm">{lender.fundingRange}</div>
-                        <div className="text-muted-foreground text-xs">Funding Range</div>
+                  {/* Lender Name */}
+                  <h3 className="text-xl font-bold text-primary text-center mb-3">
+                    {lender.name}
+                  </h3>
+
+                  {/* "Best For" Tagline */}
+                  <div className="flex justify-center mb-6">
+                    <Badge variant="secondary" className="text-sm font-medium px-4 py-2 bg-secondary text-secondary-foreground">
+                      {lender.badge}
+                    </Badge>
+                  </div>
+
+                  {/* Key Metrics Grid */}
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="flex items-center space-x-2 text-sm">
+                      <DollarSign className="h-4 w-4 text-primary shrink-0" />
+                      <div>
+                        <div className="font-semibold text-primary">{lender.fundingRange}</div>
+                        <div className="text-muted-foreground text-xs">Funding Amount</div>
                       </div>
-                      {lender.termLength && (
-                        <div className="bg-background/60 rounded-lg p-3">
-                          <div className="font-semibold text-primary text-sm">{lender.termLength}</div>
-                          <div className="text-muted-foreground text-xs">Term Length</div>
-                        </div>
-                      )}
-                      {lender.fundingSpeed && (
-                        <div className="bg-background/60 rounded-lg p-3">
-                          <div className="font-semibold text-primary text-sm">{lender.fundingSpeed}</div>
+                    </div>
+                    
+                    {lender.fundingSpeed && (
+                      <div className="flex items-center space-x-2 text-sm">
+                        <Zap className="h-4 w-4 text-primary shrink-0" />
+                        <div>
+                          <div className="font-semibold text-primary">{lender.fundingSpeed}</div>
                           <div className="text-muted-foreground text-xs">Funding Speed</div>
                         </div>
-                      )}
-                      {lender.minTimeInBusiness && (
-                        <div className="bg-background/60 rounded-lg p-3">
-                          <div className="font-semibold text-primary text-sm">{lender.minTimeInBusiness}</div>
+                      </div>
+                    )}
+                    
+                    {lender.minTimeInBusiness && (
+                      <div className="flex items-center space-x-2 text-sm">
+                        <Clock className="h-4 w-4 text-primary shrink-0" />
+                        <div>
+                          <div className="font-semibold text-primary">{lender.minTimeInBusiness}</div>
                           <div className="text-muted-foreground text-xs">Min. Time in Business</div>
                         </div>
-                      )}
-                      {lender.minRevenue && (
-                        <div className="bg-background/60 rounded-lg p-3">
-                          <div className="font-semibold text-primary text-sm">{lender.minRevenue}</div>
+                      </div>
+                    )}
+                    
+                    {lender.minRevenue && (
+                      <div className="flex items-center space-x-2 text-sm">
+                        <DollarSign className="h-4 w-4 text-primary shrink-0" />
+                        <div>
+                          <div className="font-semibold text-primary">{lender.minRevenue}</div>
                           <div className="text-muted-foreground text-xs">Min. Revenue</div>
                         </div>
-                      )}
-                      {lender.minCreditScore && (
-                        <div className="bg-background/60 rounded-lg p-3">
-                          <div className="font-semibold text-primary text-sm">{lender.minCreditScore}</div>
-                          <div className="text-muted-foreground text-xs">Min. Credit Score</div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Products & Services */}
-                    <div>
-                      <h4 className="font-semibold text-primary mb-2">Products & Services:</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {lender.products.map((product, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {product}
-                          </Badge>
-                        ))}
                       </div>
-                    </div>
+                    )}
+                  </div>
 
-                    {/* Ideal Profile */}
-                    <div>
-                      <h4 className="font-semibold text-primary mb-2 flex items-center">
-                        <CheckCircle className="h-4 w-4 mr-2 text-secondary" />
-                        Ideal For:
-                      </h4>
-                      <p className="text-muted-foreground text-sm leading-relaxed">{lender.idealProfile}</p>
+                  {/* Products */}
+                  <div className="mb-6">
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {lender.products.slice(0, 2).map((product, index) => (
+                        <Badge key={index} variant="outline" className="text-xs">
+                          {product}
+                        </Badge>
+                      ))}
+                      {lender.products.length > 2 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{lender.products.length - 2} more
+                        </Badge>
+                      )}
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                  </div>
+
+                  {/* CTA Button */}
+                  <div className="text-center">
+                    <Button asChild className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3">
+                      <Link to="/quiz">
+                        See My Loan Options
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
