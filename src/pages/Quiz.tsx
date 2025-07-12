@@ -293,6 +293,17 @@ const Quiz = () => {
     <div className="min-h-screen bg-background">
       <Header />
       <div className="container mx-auto px-4 py-12">
+        {/* Hero Headline */}
+        <div className="text-center mb-12">
+          <h1 className="text-3xl lg:text-5xl font-bold font-sans text-primary mb-4 leading-tight">
+            Find Out Exactly How Much You Can Borrow 
+            <span className="text-secondary"> & Get It In Your Account Within 48 Hours</span>
+          </h1>
+          <p className="text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto font-serif">
+            No guesswork. No surprises. Just your personalized loan amount, rates, and exact timeline to funding—delivered in the next 60 seconds.
+          </p>
+        </div>
+        
         <div className="max-w-2xl mx-auto">
           {/* Progress Header */}
           <div className="mb-8">
