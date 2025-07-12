@@ -1,0 +1,537 @@
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
+import { 
+  ArrowLeft, 
+  ArrowRight, 
+  CheckCircle, 
+  TrendingUp, 
+  Shield,
+  Building,
+  DollarSign,
+  Clock,
+  Star,
+  Users
+} from "lucide-react";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+
+interface QuizData {
+  loanAmount: number[];
+  useOfFunds: string;
+  timeInBusiness: string;
+  monthlyRevenue: number[];
+  creditScore: string;
+  name: string;
+  email: string;
+  phone: string;
+}
+
+const Quiz = () => {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [quizData, setQuizData] = useState<QuizData>({
+    loanAmount: [50000],
+    useOfFunds: "",
+    timeInBusiness: "",
+    monthlyRevenue: [25000],
+    creditScore: "",
+    name: "",
+    email: "",
+    phone: ""
+  });
+  const [showResults, setShowResults] = useState(false);
+
+  const totalSteps = 6;
+  const progress = (currentStep / totalSteps) * 100;
+
+  const useOfFundsOptions = [
+    { id: "equipment", label: "Equipment & Machinery", icon: "🏗️" },
+    { id: "inventory", label: "Inventory & Stock", icon: "📦" },
+    { id: "expansion", label: "Business Expansion", icon: "📈" },
+    { id: "working-capital", label: "Working Capital", icon: "💰" },
+    { id: "real-estate", label: "Real Estate", icon: "🏢" },
+    { id: "other", label: "Other", icon: "🎯" }
+  ];
+
+  const timeInBusinessOptions = [
+    { id: "startup", label: "Startup (Less than 6 months)" },
+    { id: "6-12", label: "6-12 months" },
+    { id: "1-2", label: "1-2 years" },
+    { id: "2-5", label: "2-5 years" },
+    { id: "5+", label: "5+ years" }
+  ];
+
+  const creditScoreOptions = [
+    { id: "excellent", label: "Excellent (750+)" },
+    { id: "good", label: "Good (700-749)" },
+    { id: "fair", label: "Fair (650-699)" },
+    { id: "poor", label: "Poor (Below 650)" },
+    { id: "unsure", label: "Not Sure" }
+  ];
+
+  const calculateScore = () => {
+    let score = 60; // Base score
+    
+    // Time in business scoring
+    if (quizData.timeInBusiness === "5+") score += 25;
+    else if (quizData.timeInBusiness === "2-5") score += 20;
+    else if (quizData.timeInBusiness === "1-2") score += 10;
+    else if (quizData.timeInBusiness === "6-12") score += 5;
+    
+    // Revenue scoring
+    if (quizData.monthlyRevenue[0] >= 50000) score += 15;
+    else if (quizData.monthlyRevenue[0] >= 25000) score += 10;
+    else if (quizData.monthlyRevenue[0] >= 10000) score += 5;
+    
+    // Credit score scoring
+    if (quizData.creditScore === "excellent") score += 10;
+    else if (quizData.creditScore === "good") score += 5;
+    
+    return Math.min(score, 100);
+  };
+
+  const getScoreMessage = (score: number) => {
+    if (score >= 85) return {
+      title: "Excellent Match!",
+      message: "Your profile is outstanding! You're a prime candidate for multiple financing options with competitive rates.",
+      color: "text-secondary"
+    };
+    if (score >= 70) return {
+      title: "Strong Match!",
+      message: "Your consistent revenue and business history make you an attractive candidate for our top lending partners.",
+      color: "text-secondary"
+    };
+    if (score >= 55) return {
+      title: "Good Match!",
+      message: "You have solid qualifications. Several of our lenders specialize in businesses like yours.",
+      color: "text-accent"
+    };
+    return {
+      title: "Potential Match",
+      message: "While you may face some challenges, we have specialized lenders who work with businesses in your situation.",
+      color: "text-primary"
+    };
+  };
+
+  const handleNext = () => {
+    if (currentStep === totalSteps) {
+      setShowResults(true);
+    } else {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handleBack = () => {
+    setCurrentStep(currentStep - 1);
+  };
+
+  const isStepValid = () => {
+    switch (currentStep) {
+      case 1: return quizData.loanAmount[0] > 0;
+      case 2: return quizData.useOfFunds !== "";
+      case 3: return quizData.timeInBusiness !== "";
+      case 4: return quizData.monthlyRevenue[0] > 0;
+      case 5: return quizData.creditScore !== "";
+      case 6: return quizData.name && quizData.email && quizData.phone;
+      default: return true;
+    }
+  };
+
+  if (showResults) {
+    const score = calculateScore();
+    const scoreInfo = getScoreMessage(score);
+    
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-12">
+          <div className="max-w-4xl mx-auto">
+            <Card className="border-0 shadow-[var(--shadow-card)]">
+              <CardHeader className="text-center bg-gradient-to-r from-primary/5 to-secondary/5 rounded-t-lg">
+                <CardTitle className="text-3xl font-bold font-sans text-primary mb-2">
+                  Your Loan Readiness Results
+                </CardTitle>
+                <p className="text-muted-foreground font-serif">
+                  Congratulations! Here's your personalized assessment
+                </p>
+              </CardHeader>
+              
+              <CardContent className="p-8 space-y-8">
+                {/* Score Display */}
+                <div className="text-center">
+                  <div className="relative w-32 h-32 mx-auto mb-4">
+                    <div className="w-32 h-32 rounded-full border-8 border-muted flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10">
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-primary">{score}</div>
+                        <div className="text-sm text-muted-foreground">/ 100</div>
+                      </div>
+                    </div>
+                  </div>
+                  <h3 className={`text-2xl font-bold font-sans mb-2 ${scoreInfo.color}`}>
+                    {scoreInfo.title}
+                  </h3>
+                  <p className="text-muted-foreground font-serif max-w-2xl mx-auto">
+                    {scoreInfo.message}
+                  </p>
+                </div>
+
+                {/* Pre-qualified Lenders */}
+                <div>
+                  <h4 className="text-xl font-semibold font-sans text-primary mb-6 flex items-center">
+                    <CheckCircle className="h-5 w-5 mr-2 text-secondary" />
+                    Your Pre-Qualified Lender Matches
+                  </h4>
+                  
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <Card className="border border-secondary/20 bg-secondary/5">
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between mb-3">
+                          <h5 className="font-semibold text-primary">Driven Capital</h5>
+                          <Badge variant="secondary">Fast Approval</Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Digital-first lender perfect for businesses operating over 6 months. Fast online application with same-day decisions.
+                        </p>
+                        <div className="flex items-center text-sm text-secondary">
+                          <Star className="h-4 w-4 mr-1" />
+                          <span>4.8/5 Rating</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border border-accent/20 bg-accent/5">
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between mb-3">
+                          <h5 className="font-semibold text-primary">Canadian Business Credit</h5>
+                          <Badge variant="outline">Competitive Rates</Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Established lender specializing in Canadian SMEs. Offers flexible terms and competitive interest rates.
+                        </p>
+                        <div className="flex items-center text-sm text-secondary">
+                          <Shield className="h-4 w-4 mr-1" />
+                          <span>A+ BBB Rating</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {score >= 70 && (
+                      <Card className="border border-primary/20 bg-primary/5">
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between mb-3">
+                            <h5 className="font-semibold text-primary">Prime Business Funding</h5>
+                            <Badge>Premium Partner</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            Exclusive lender for high-quality borrowers. Offers the lowest rates and largest loan amounts.
+                          </p>
+                          <div className="flex items-center text-sm text-secondary">
+                            <TrendingUp className="h-4 w-4 mr-1" />
+                            <span>Up to $800K</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-4 pt-6">
+                  <Button variant="cta" size="lg" className="flex-1">
+                    <Users className="h-5 w-5 mr-2" />
+                    Submit My Details & Connect With Lenders
+                  </Button>
+                  <Button variant="outline" size="lg" className="flex-1">
+                    <Clock className="h-5 w-5 mr-2" />
+                    Get a Quick Response
+                  </Button>
+                </div>
+
+                <div className="text-center text-sm text-muted-foreground">
+                  <p>
+                    By clicking "Submit My Details", you agree to be contacted by matched lenders.
+                    <br />
+                    <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link> | 
+                    <Link to="/terms" className="text-primary hover:underline ml-1">Terms of Service</Link>
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-2xl mx-auto">
+          {/* Progress Header */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-2xl font-bold font-sans text-primary">
+                Loan Readiness Quiz
+              </h1>
+              <span className="text-sm text-muted-foreground">
+                Step {currentStep} of {totalSteps}
+              </span>
+            </div>
+            <Progress value={progress} className="mb-2" />
+            <p className="text-sm text-muted-foreground text-center">
+              Takes about 60 seconds to complete
+            </p>
+          </div>
+
+          <Card className="border-0 shadow-[var(--shadow-card)]">
+            <CardContent className="p-8">
+              {/* Step 1: Loan Amount */}
+              {currentStep === 1 && (
+                <div className="space-y-6">
+                  <div className="text-center">
+                    <DollarSign className="h-12 w-12 text-secondary mx-auto mb-4" />
+                    <h2 className="text-xl font-semibold font-sans text-primary mb-2">
+                      How much funding are you looking for?
+                    </h2>
+                    <p className="text-muted-foreground font-serif">
+                      Select the amount that best fits your business needs
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <Slider
+                      value={quizData.loanAmount}
+                      onValueChange={(value) => setQuizData({...quizData, loanAmount: value})}
+                      max={800000}
+                      min={5000}
+                      step={5000}
+                      className="w-full"
+                    />
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-primary">
+                        ${quizData.loanAmount[0].toLocaleString()}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Range: $5,000 - $800,000
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 2: Use of Funds */}
+              {currentStep === 2 && (
+                <div className="space-y-6">
+                  <div className="text-center">
+                    <Building className="h-12 w-12 text-secondary mx-auto mb-4" />
+                    <h2 className="text-xl font-semibold font-sans text-primary mb-2">
+                      What's the primary purpose of the funds?
+                    </h2>
+                    <p className="text-muted-foreground font-serif">
+                      This helps us match you with the right type of lenders
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    {useOfFundsOptions.map((option) => (
+                      <Card
+                        key={option.id}
+                        className={`cursor-pointer transition-all ${
+                          quizData.useOfFunds === option.id
+                            ? "border-secondary bg-secondary/10"
+                            : "border-border hover:border-secondary/50"
+                        }`}
+                        onClick={() => setQuizData({...quizData, useOfFunds: option.id})}
+                      >
+                        <CardContent className="p-4 text-center">
+                          <div className="text-2xl mb-2">{option.icon}</div>
+                          <div className="text-sm font-medium">{option.label}</div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Time in Business */}
+              {currentStep === 3 && (
+                <div className="space-y-6">
+                  <div className="text-center">
+                    <Clock className="h-12 w-12 text-secondary mx-auto mb-4" />
+                    <h2 className="text-xl font-semibold font-sans text-primary mb-2">
+                      How long has your business been operating?
+                    </h2>
+                    <p className="text-muted-foreground font-serif">
+                      Time in business is a key factor for loan qualification
+                    </p>
+                  </div>
+                  
+                  <RadioGroup
+                    value={quizData.timeInBusiness}
+                    onValueChange={(value) => setQuizData({...quizData, timeInBusiness: value})}
+                    className="space-y-3"
+                  >
+                    {timeInBusinessOptions.map((option) => (
+                      <div key={option.id} className="flex items-center space-x-2">
+                        <RadioGroupItem value={option.id} id={option.id} />
+                        <Label htmlFor={option.id} className="flex-1 cursor-pointer">
+                          {option.label}
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                </div>
+              )}
+
+              {/* Step 4: Monthly Revenue */}
+              {currentStep === 4 && (
+                <div className="space-y-6">
+                  <div className="text-center">
+                    <TrendingUp className="h-12 w-12 text-secondary mx-auto mb-4" />
+                    <h2 className="text-xl font-semibold font-sans text-primary mb-2">
+                      What is your average monthly revenue?
+                    </h2>
+                    <p className="text-muted-foreground font-serif">
+                      This helps determine your loan capacity and terms
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <Slider
+                      value={quizData.monthlyRevenue}
+                      onValueChange={(value) => setQuizData({...quizData, monthlyRevenue: value})}
+                      max={200000}
+                      min={1000}
+                      step={1000}
+                      className="w-full"
+                    />
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-primary">
+                        ${quizData.monthlyRevenue[0].toLocaleString()}/month
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Range: $1,000 - $200,000+ per month
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 5: Credit Score */}
+              {currentStep === 5 && (
+                <div className="space-y-6">
+                  <div className="text-center">
+                    <Star className="h-12 w-12 text-secondary mx-auto mb-4" />
+                    <h2 className="text-xl font-semibold font-sans text-primary mb-2">
+                      What's your estimated personal credit score?
+                    </h2>
+                    <p className="text-muted-foreground font-serif">
+                      Don't worry - we work with businesses across all credit ranges
+                    </p>
+                  </div>
+                  
+                  <RadioGroup
+                    value={quizData.creditScore}
+                    onValueChange={(value) => setQuizData({...quizData, creditScore: value})}
+                    className="space-y-3"
+                  >
+                    {creditScoreOptions.map((option) => (
+                      <div key={option.id} className="flex items-center space-x-2">
+                        <RadioGroupItem value={option.id} id={option.id} />
+                        <Label htmlFor={option.id} className="flex-1 cursor-pointer">
+                          {option.label}
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                </div>
+              )}
+
+              {/* Step 6: Contact Information */}
+              {currentStep === 6 && (
+                <div className="space-y-6">
+                  <div className="text-center">
+                    <CheckCircle className="h-12 w-12 text-secondary mx-auto mb-4" />
+                    <h2 className="text-xl font-semibold font-sans text-primary mb-2">
+                      Your results are ready!
+                    </h2>
+                    <p className="text-muted-foreground font-serif">
+                      Where should we send your Loan Readiness Score?
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="name">Full Name</Label>
+                      <Input
+                        id="name"
+                        value={quizData.name}
+                        onChange={(e) => setQuizData({...quizData, name: e.target.value})}
+                        placeholder="Enter your full name"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="email">Email Address</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={quizData.email}
+                        onChange={(e) => setQuizData({...quizData, email: e.target.value})}
+                        placeholder="Enter your email address"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="phone">Phone Number</Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        value={quizData.phone}
+                        onChange={(e) => setQuizData({...quizData, phone: e.target.value})}
+                        placeholder="Enter your phone number"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Navigation */}
+              <div className="flex justify-between mt-8 pt-6 border-t">
+                <Button
+                  variant="outline"
+                  onClick={handleBack}
+                  disabled={currentStep === 1}
+                  className="flex items-center"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back
+                </Button>
+                
+                <Button
+                  variant={currentStep === totalSteps ? "cta" : "default"}
+                  onClick={handleNext}
+                  disabled={!isStepValid()}
+                  className="flex items-center"
+                >
+                  {currentStep === totalSteps ? "See My Results" : "Next"}
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+      <Footer />
+    </div>
+  );
+};
+
+export default Quiz;

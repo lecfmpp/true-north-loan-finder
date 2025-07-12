@@ -8,33 +8,49 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* True North Brand Colors */
+    --background: 210 20% 98%;
+    --foreground: 210 11% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 210 11% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 210 11% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Northern Blue - Primary Brand Color */
+    --primary: 210 22% 22%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 210 22% 35%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Forest Green - Secondary Brand Color */
+    --secondary: 145 63% 42%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-light: 145 50% 55%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Compass Gold - Accent Color */
+    --accent: 35 84% 62%;
+    --accent-foreground: 210 22% 22%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 20% 95%;
+    --muted-foreground: 210 6% 46%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 210 20% 90%;
+    --input: 210 20% 90%;
+    --ring: 210 22% 22%;
+
+    /* Brand Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(210 22% 22%), hsl(145 63% 42%));
+    --gradient-hero: linear-gradient(135deg, hsl(210 22% 22%) 0%, hsl(210 22% 30%) 50%, hsl(145 63% 42%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(210 20% 98%) 100%);
+
+    /* Shadows */
+    --shadow-primary: 0 10px 30px -10px hsl(210 22% 22% / 0.3);
+    --shadow-card: 0 4px 20px -4px hsl(210 22% 22% / 0.1);
+    --shadow-button: 0 4px 15px -3px hsl(35 84% 62% / 0.4);
 
     --radius: 0.5rem;
 
