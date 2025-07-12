@@ -12,7 +12,7 @@ const Partners = () => {
     {
       id: "iou-financial",
       name: "IOU Financial",
-      logo: null, // No logo provided
+      logo: "/lovable-uploads/4daec7dc-f9e2-47a6-bb40-c02284d1869c.png",
       tagline: "Best for established businesses seeking significant term loans up to $1.5M",
       description: "A prominent online lender specializing in straightforward term loans for established small to medium-sized businesses, with a business model that is almost entirely partner-driven.",
       products: ["Business Loans"],
@@ -32,7 +32,7 @@ const Partners = () => {
     {
       id: "driven",
       name: "Driven (formerly Thinking Capital)",
-      logo: null, // No logo provided
+      logo: "/lovable-uploads/4619ca1e-cb30-44d9-a5b7-108a170d0e29.png",
       tagline: "Perfect for fast, digital applications and businesses operating for at least 6 months",
       description: "A major Canadian FinTech lender known for its fast, entirely digital application process and flexible repayment terms.",
       products: ["Small Business Loan", "Driven Express Funding"],
@@ -175,7 +175,7 @@ const Partners = () => {
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-4">
                         {lender.logo ? (
-                          <div className="w-16 h-16 rounded-lg bg-white shadow-sm flex items-center justify-center p-2">
+                          <div className="w-28 h-28 rounded-lg bg-white shadow-sm flex items-center justify-center p-3">
                             <img 
                               src={lender.logo} 
                               alt={`${lender.name} logo`} 
@@ -297,11 +297,11 @@ const Partners = () => {
                           <img 
                             src={lender.logo} 
                             alt={`${lender.name} logo`} 
-                            className="w-8 h-8 object-contain"
+                            className="w-14 h-14 object-contain"
                           />
                         ) : (
-                          <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center">
-                            <lender.icon className="h-4 w-4 text-primary" />
+                          <div className="w-14 h-14 rounded bg-primary/10 flex items-center justify-center">
+                            <lender.icon className="h-6 w-6 text-primary" />
                           </div>
                         )}
                         <span className="text-sm font-medium">{lender.name}</span>
