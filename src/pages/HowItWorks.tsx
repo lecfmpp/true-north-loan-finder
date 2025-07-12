@@ -149,51 +149,107 @@ const HowItWorks = () => {
               </p>
             </div>
 
-            <div className="space-y-12">
-              {steps.map((step, index) => (
-                <div key={index} className="relative">
-                  {/* Connector Line */}
-                  {index < steps.length - 1 && (
-                    <div className="hidden lg:block absolute left-1/2 top-32 w-0.5 h-20 bg-border transform -translate-x-0.5"></div>
-                  )}
-                  
-                  <Card className={`border-0 shadow-[var(--shadow-card)] overflow-hidden ${index % 2 === 0 ? 'lg:mr-12' : 'lg:ml-12'}`}>
-                    <div className={`bg-gradient-to-r ${step.color} p-1`}>
-                      <CardContent className="bg-background p-8">
-                        <div className={`flex flex-col lg:flex-row items-center gap-8 ${index % 2 === 1 ? 'lg:flex-row-reverse' : ''}`}>
-                          {/* Icon and Number */}
-                          <div className="flex-shrink-0 text-center">
-                            <div className="relative mb-4">
-                              {step.icon}
-                              <div className="absolute -top-2 -right-2 w-8 h-8 bg-accent text-accent-foreground rounded-full flex items-center justify-center text-sm font-bold">
+            <div className="relative max-w-7xl mx-auto">
+              {/* Desktop Horizontal Layout */}
+              <div className="hidden lg:block">
+                <div className="flex items-center justify-between relative">
+                  {steps.map((step, index) => (
+                    <div key={index} className="flex items-center flex-1">
+                      {/* Step Card */}
+                      <div className="relative flex-1 max-w-xs">
+                        <Card className="border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 hover:-translate-y-2 h-full">
+                          <div className={`bg-gradient-to-r ${step.color} p-1 rounded-lg`}>
+                            <CardContent className="bg-background p-6 rounded-md h-full">
+                              {/* Large Step Number */}
+                              <div className="w-16 h-16 bg-accent text-accent-foreground rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold shadow-[var(--shadow-button)]">
                                 {step.number}
                               </div>
+                              
+                              {/* Icon */}
+                              <div className="flex justify-center mb-4">
+                                {step.icon}
+                              </div>
+                              
+                              {/* Content */}
+                              <h3 className="text-xl font-bold font-sans text-primary mb-3 text-center">
+                                {step.title}
+                              </h3>
+                              <p className="text-muted-foreground font-serif text-sm text-center mb-4">
+                                {step.description}
+                              </p>
+                              
+                              {/* Details List */}
+                              <ul className="space-y-1">
+                                {step.details.map((detail, detailIndex) => (
+                                  <li key={detailIndex} className="flex items-center text-xs text-muted-foreground">
+                                    <CheckCircle className="h-3 w-3 text-secondary mr-2 flex-shrink-0" />
+                                    <span>{detail}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </CardContent>
+                          </div>
+                        </Card>
+                      </div>
+                      
+                      {/* Arrow */}
+                      {index < steps.length - 1 && (
+                        <div className="flex-shrink-0 px-4">
+                          <ArrowRight className="h-8 w-8 text-primary animate-pulse" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Mobile/Tablet Vertical Layout */}
+              <div className="lg:hidden space-y-8">
+                {steps.map((step, index) => (
+                  <div key={index} className="relative">
+                    {/* Connector Line for mobile */}
+                    {index < steps.length - 1 && (
+                      <div className="absolute left-1/2 -bottom-4 w-0.5 h-8 bg-border transform -translate-x-0.5 z-10"></div>
+                    )}
+                    
+                    <Card className="border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300">
+                      <div className={`bg-gradient-to-r ${step.color} p-1 rounded-lg`}>
+                        <CardContent className="bg-background p-6 rounded-md">
+                          <div className="flex items-start gap-6">
+                            {/* Step Number and Icon */}
+                            <div className="flex-shrink-0 text-center">
+                              <div className="w-12 h-12 bg-accent text-accent-foreground rounded-full flex items-center justify-center mb-3 text-xl font-bold shadow-[var(--shadow-button)]">
+                                {step.number}
+                              </div>
+                              <div className="flex justify-center">
+                                {step.icon}
+                              </div>
+                            </div>
+                            
+                            {/* Content */}
+                            <div className="flex-1">
+                              <h3 className="text-xl font-bold font-sans text-primary mb-3">
+                                {step.title}
+                              </h3>
+                              <p className="text-muted-foreground mb-4 font-serif">
+                                {step.description}
+                              </p>
+                              <ul className="space-y-2">
+                                {step.details.map((detail, detailIndex) => (
+                                  <li key={detailIndex} className="flex items-center text-sm text-muted-foreground">
+                                    <CheckCircle className="h-4 w-4 text-secondary mr-2 flex-shrink-0" />
+                                    <span>{detail}</span>
+                                  </li>
+                                ))}
+                              </ul>
                             </div>
                           </div>
-                          
-                          {/* Content */}
-                          <div className={`flex-1 ${index % 2 === 1 ? 'lg:text-right' : ''}`}>
-                            <h3 className="text-2xl font-bold font-sans text-primary mb-4">
-                              {step.title}
-                            </h3>
-                            <p className="text-muted-foreground mb-6 font-serif text-lg">
-                              {step.description}
-                            </p>
-                            <ul className={`space-y-2 ${index % 2 === 1 ? 'lg:text-right' : ''}`}>
-                              {step.details.map((detail, detailIndex) => (
-                                <li key={detailIndex} className={`flex items-center text-sm text-muted-foreground ${index % 2 === 1 ? 'lg:justify-end' : ''}`}>
-                                  <CheckCircle className={`h-4 w-4 text-secondary mr-2 ${index % 2 === 1 ? 'lg:order-2 lg:ml-2 lg:mr-0' : ''}`} />
-                                  <span>{detail}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </div>
-                  </Card>
-                </div>
-              ))}
+                        </CardContent>
+                      </div>
+                    </Card>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
