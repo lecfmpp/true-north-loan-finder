@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowRight, Clock, DollarSign, Users, CheckCircle, Zap, Shield } from "lucide-react";
+import { ArrowRight, Clock, DollarSign, Users, CheckCircle, Zap, Shield, Calendar, BarChart3, TrendingUp, Award, Timer } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -167,14 +167,14 @@ const Partners = () => {
           </div>
 
           {/* Responsive Grid: 2 columns on desktop, 1 on mobile */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
             {lenders.map((lender) => (
-              <Card key={lender.id} className="bg-white hover:shadow-xl transition-all duration-300 overflow-hidden border-0 shadow-md">
-                <CardContent className="p-6">
-                  {/* Logo */}
-                  <div className="flex justify-center mb-6">
+              <Card key={lender.id} className="bg-white hover:shadow-xl transition-all duration-300 overflow-hidden border border-muted/20 shadow-md h-full">
+                <CardContent className="p-6 flex flex-col h-full">
+                  {/* Logo & Header Section */}
+                  <div className="text-center mb-6">
                     {lender.logo ? (
-                      <div className="w-32 h-20 flex items-center justify-center">
+                      <div className="w-40 h-24 mx-auto mb-4 flex items-center justify-center bg-gray-50 rounded-lg p-2">
                         <img 
                           src={lender.logo} 
                           alt={`${lender.name} logo`} 
@@ -182,85 +182,117 @@ const Partners = () => {
                         />
                       </div>
                     ) : (
-                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
                         <lender.icon className="h-8 w-8 text-primary" />
                       </div>
                     )}
-                  </div>
+                    
+                    {/* Lender Name */}
+                    <h3 className="text-xl font-bold text-primary mb-3">
+                      {lender.name}
+                    </h3>
 
-                  {/* Lender Name */}
-                  <h3 className="text-xl font-bold text-primary text-center mb-3">
-                    {lender.name}
-                  </h3>
-
-                  {/* "Best For" Tagline */}
-                  <div className="flex justify-center mb-6">
-                    <Badge variant="secondary" className="text-sm font-medium px-4 py-2 bg-secondary text-secondary-foreground">
+                    {/* "Best For" Badge */}
+                    <Badge variant="secondary" className="text-sm font-semibold px-4 py-2 bg-secondary text-secondary-foreground">
+                      <Award className="w-3 h-3 mr-1" />
                       {lender.badge}
                     </Badge>
                   </div>
 
-                  {/* Key Metrics Grid */}
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="flex items-center space-x-2 text-sm">
-                      <DollarSign className="h-4 w-4 text-primary shrink-0" />
-                      <div>
-                        <div className="font-semibold text-primary">{lender.fundingRange}</div>
-                        <div className="text-muted-foreground text-xs">Funding Amount</div>
+                  {/* Key Metrics - Most Important Info */}
+                  <div className="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-lg p-4 mb-6">
+                    <div className="grid grid-cols-1 gap-3">
+                      {/* Funding Amount - Most Important */}
+                      <div className="flex items-center justify-between bg-white/80 rounded-md p-3">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                            <DollarSign className="h-4 w-4 text-primary" />
+                          </div>
+                          <div>
+                            <div className="text-xs text-muted-foreground font-medium">FUNDING AMOUNT</div>
+                            <div className="font-bold text-primary text-sm">{lender.fundingRange}</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Secondary Metrics Row */}
+                      <div className="grid grid-cols-2 gap-3">
+                        {lender.fundingSpeed && (
+                          <div className="flex items-center space-x-2 bg-white/80 rounded-md p-2">
+                            <div className="w-6 h-6 bg-accent/10 rounded-full flex items-center justify-center">
+                              <Timer className="h-3 w-3 text-accent" />
+                            </div>
+                            <div>
+                              <div className="text-xs text-muted-foreground">SPEED</div>
+                              <div className="font-semibold text-xs text-primary">{lender.fundingSpeed.replace(/[()]/g, '').split(' ').slice(0, 2).join(' ')}</div>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {lender.minTimeInBusiness && (
+                          <div className="flex items-center space-x-2 bg-white/80 rounded-md p-2">
+                            <div className="w-6 h-6 bg-secondary/10 rounded-full flex items-center justify-center">
+                              <Calendar className="h-3 w-3 text-secondary" />
+                            </div>
+                            <div>
+                              <div className="text-xs text-muted-foreground">MIN. TIME</div>
+                              <div className="font-semibold text-xs text-primary">{lender.minTimeInBusiness}</div>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {lender.minRevenue && (
+                          <div className="flex items-center space-x-2 bg-white/80 rounded-md p-2">
+                            <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center">
+                              <BarChart3 className="h-3 w-3 text-primary" />
+                            </div>
+                            <div>
+                              <div className="text-xs text-muted-foreground">MIN. REVENUE</div>
+                              <div className="font-semibold text-xs text-primary">{lender.minRevenue}</div>
+                            </div>
+                          </div>
+                        )}
+
+                        {lender.minCreditScore && (
+                          <div className="flex items-center space-x-2 bg-white/80 rounded-md p-2">
+                            <div className="w-6 h-6 bg-accent/10 rounded-full flex items-center justify-center">
+                              <TrendingUp className="h-3 w-3 text-accent" />
+                            </div>
+                            <div>
+                              <div className="text-xs text-muted-foreground">CREDIT</div>
+                              <div className="font-semibold text-xs text-primary">{lender.minCreditScore}</div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
-                    
-                    {lender.fundingSpeed && (
-                      <div className="flex items-center space-x-2 text-sm">
-                        <Zap className="h-4 w-4 text-primary shrink-0" />
-                        <div>
-                          <div className="font-semibold text-primary">{lender.fundingSpeed}</div>
-                          <div className="text-muted-foreground text-xs">Funding Speed</div>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {lender.minTimeInBusiness && (
-                      <div className="flex items-center space-x-2 text-sm">
-                        <Clock className="h-4 w-4 text-primary shrink-0" />
-                        <div>
-                          <div className="font-semibold text-primary">{lender.minTimeInBusiness}</div>
-                          <div className="text-muted-foreground text-xs">Min. Time in Business</div>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {lender.minRevenue && (
-                      <div className="flex items-center space-x-2 text-sm">
-                        <DollarSign className="h-4 w-4 text-primary shrink-0" />
-                        <div>
-                          <div className="font-semibold text-primary">{lender.minRevenue}</div>
-                          <div className="text-muted-foreground text-xs">Min. Revenue</div>
-                        </div>
-                      </div>
-                    )}
                   </div>
 
-                  {/* Products */}
+                  {/* Products Section */}
                   <div className="mb-6">
-                    <div className="flex flex-wrap gap-2 justify-center">
+                    <div className="flex items-center mb-2">
+                      <CheckCircle className="h-4 w-4 text-secondary mr-2" />
+                      <span className="text-sm font-semibold text-primary">PRODUCTS OFFERED</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
                       {lender.products.slice(0, 2).map((product, index) => (
-                        <Badge key={index} variant="outline" className="text-xs">
+                        <Badge key={index} variant="outline" className="text-xs border-primary/20">
                           {product}
                         </Badge>
                       ))}
                       {lender.products.length > 2 && (
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-xs border-primary/20">
                           +{lender.products.length - 2} more
                         </Badge>
                       )}
                     </div>
                   </div>
 
-                  {/* CTA Button */}
-                  <div className="text-center">
-                    <Button asChild className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3">
+                  {/* CTA Button - Pushed to bottom */}
+                  <div className="mt-auto">
+                    <Button asChild className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-bold py-3 text-sm">
                       <Link to="/quiz">
+                        <TrendingUp className="w-4 h-4 mr-2" />
                         See My Loan Options
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
