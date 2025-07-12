@@ -71,7 +71,7 @@ const Header = () => {
                 {isAdmin && <Button asChild variant="outline" size="sm">
                     <Link to="/admin">Admin</Link>
                   </Button>}
-                <Button variant="ghost" size="sm">
+                <Button variant="yellow" size="sm">
                   <User className="w-4 h-4 mr-2" />
                   {user.email}
                 </Button>
