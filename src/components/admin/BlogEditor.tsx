@@ -10,8 +10,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Save, Eye, Upload, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import '../../styles/quill-custom.css';
 import ImageUpload from './ImageUpload';
-import SEOFields from './SEOFields';
+import SEOAnalyzer from './SEOAnalyzer';
 
 interface BlogPost {
   id?: string;
@@ -158,89 +161,137 @@ const BlogEditor = ({ post, onSave, onCancel }: BlogEditorProps) => {
     }
   };
 
+  // ReactQuill modules and formats
+  const quillModules = {
+    toolbar: [
+      [{ 'header': [2, 3, false] }],
+      ['bold', 'italic', 'underline'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      ['link', 'image'],
+      ['clean']
+    ],
+  };
+
+  const quillFormats = [
+    'header', 'bold', 'italic', 'underline', 
+    'list', 'bullet', 'link', 'image'
+  ];
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={onCancel}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-          <div>
-            <h2 className="text-2xl font-bold text-primary">
-              {post?.id ? 'Edit Post' : 'New Post'}
-            </h2>
-            <p className="text-muted-foreground">
-              {post?.id ? 'Update existing blog post' : 'Create a new blog post'}
-            </p>
+    <div className="flex gap-6 min-h-screen">
+      {/* Main Content Area */}
+      <div className="flex-1 space-y-6">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <Button variant="outline" onClick={onCancel}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+            <div>
+              <h2 className="text-2xl font-bold text-primary">
+                {post?.id ? 'Edit Post' : 'New Post'}
+              </h2>
+              <p className="text-muted-foreground">
+                {post?.id ? 'Update existing blog post' : 'Create a new blog post with perfect SEO'}
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => handleSave('draft')}
+              disabled={saving}
+            >
+              <Save className="w-4 h-4 mr-2" />
+              Save Draft
+            </Button>
+            <Button 
+              onClick={() => handleSave('published')}
+              disabled={saving}
+            >
+              <Eye className="w-4 h-4 mr-2" />
+              Publish
+            </Button>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => handleSave('draft')}
-            disabled={saving}
-          >
-            <Save className="w-4 h-4 mr-2" />
-            Save Draft
-          </Button>
-          <Button 
-            onClick={() => handleSave('published')}
-            disabled={saving}
-          >
-            <Eye className="w-4 h-4 mr-2" />
-            Publish
-          </Button>
-        </div>
-      </div>
 
-      <Tabs defaultValue="content" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="content">Content</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
-          <TabsTrigger value="seo">SEO</TabsTrigger>
-        </TabsList>
+        {/* Post Title - Becomes H1 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              Post Title 
+              <Badge variant="outline" className="text-xs">
+                This becomes your H1 tag
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="title">Title (H1 Tag)</Label>
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) => handleTitleChange(e.target.value)}
+                placeholder="Enter your main blog post title"
+                className="text-lg font-semibold"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                This will be the single H1 tag on your page - the most important SEO element
+              </p>
+            </div>
 
-        <TabsContent value="content" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => handleTitleChange(e.target.value)}
-                  placeholder="Enter post title"
-                />
-              </div>
+            <div>
+              <Label htmlFor="slug">URL Slug</Label>
+              <Input
+                id="slug"
+                value={formData.slug}
+                onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
+                placeholder="post-url-slug"
+              />
+            </div>
 
-              <div>
-                <Label htmlFor="slug">Slug</Label>
-                <Input
-                  id="slug"
-                  value={formData.slug}
-                  onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
-                  placeholder="post-url-slug"
-                />
-              </div>
+            <div>
+              <Label htmlFor="excerpt">Excerpt</Label>
+              <Textarea
+                id="excerpt"
+                value={formData.excerpt}
+                onChange={(e) => setFormData(prev => ({ ...prev, excerpt: e.target.value }))}
+                placeholder="Brief description that appears in search results"
+                rows={3}
+              />
+            </div>
+          </CardContent>
+        </Card>
 
-              <div>
-                <Label htmlFor="excerpt">Excerpt</Label>
-                <Textarea
-                  id="excerpt"
-                  value={formData.excerpt}
-                  onChange={(e) => setFormData(prev => ({ ...prev, excerpt: e.target.value }))}
-                  placeholder="Brief description of the post"
-                  rows={3}
-                />
-              </div>
-            </CardContent>
-          </Card>
+        {/* Main Content Editor */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Main Content</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Use H2 for main sections, H3 for sub-sections. Structure your content for both readers and search engines.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="min-h-[500px]">
+              <ReactQuill
+                theme="snow"
+                value={formData.content}
+                onChange={handleContentChange}
+                modules={quillModules}
+                formats={quillFormats}
+                placeholder="Write your blog post content here. Use the heading tools to create H2 and H3 sections..."
+                style={{ height: '400px' }}
+              />
+            </div>
+            <div className="flex justify-between text-sm text-muted-foreground mt-12 pt-4 border-t">
+              <p>Estimated reading time: {formData.reading_time} minute{formData.reading_time !== 1 ? 's' : ''}</p>
+            </div>
+          </CardContent>
+        </Card>
 
+        {/* Settings and Image */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
               <CardTitle>Featured Image</CardTitle>
@@ -253,27 +304,6 @@ const BlogEditor = ({ post, onSave, onCancel }: BlogEditorProps) => {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Content</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                ref={contentRef}
-                value={formData.content}
-                onChange={(e) => handleContentChange(e.target.value)}
-                placeholder="Write your blog post content here..."
-                rows={20}
-                className="min-h-[500px] font-mono"
-              />
-              <p className="text-sm text-muted-foreground mt-2">
-                Estimated reading time: {formData.reading_time} minute{formData.reading_time !== 1 ? 's' : ''}
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="settings" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Post Settings</CardTitle>
@@ -334,15 +364,18 @@ const BlogEditor = ({ post, onSave, onCancel }: BlogEditorProps) => {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        </div>
+      </div>
 
-        <TabsContent value="seo">
-          <SEOFields
+      {/* SEO Sidebar */}
+      <div className="w-80 shrink-0">
+        <div className="sticky top-6">
+          <SEOAnalyzer
             formData={formData}
             setFormData={setFormData}
           />
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
     </div>
   );
 };
