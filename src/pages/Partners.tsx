@@ -175,7 +175,7 @@ const Partners = () => {
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-4">
                         {lender.logo ? (
-                          <div className="w-28 h-28 rounded-lg bg-white shadow-sm flex items-center justify-center p-3">
+                          <div className="w-40 h-40 rounded-lg bg-white shadow-sm flex items-center justify-center p-4">
                             <img 
                               src={lender.logo} 
                               alt={`${lender.name} logo`} 
@@ -297,10 +297,10 @@ const Partners = () => {
                           <img 
                             src={lender.logo} 
                             alt={`${lender.name} logo`} 
-                            className="w-14 h-14 object-contain"
+                            className="w-20 h-20 object-contain"
                           />
                         ) : (
-                          <div className="w-14 h-14 rounded bg-primary/10 flex items-center justify-center">
+                          <div className="w-20 h-20 rounded bg-primary/10 flex items-center justify-center">
                             <lender.icon className="h-6 w-6 text-primary" />
                           </div>
                         )}
