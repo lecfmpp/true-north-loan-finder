@@ -24,15 +24,11 @@ const Header = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
             <img 
-              src="/lovable-uploads/eae8a3b3-6d86-4fe4-9e17-17b808de0d2e.png" 
+              src="/lovable-uploads/327718f8-3972-44ab-9e0a-0ab928587c31.png" 
               alt="TrueNorth Business Loan" 
               className="w-8 h-8"
             />
-            <img 
-              src="/lovable-uploads/bff5faf6-4a2d-4ed9-99f8-405619695ec5.png" 
-              alt="TrueNorth Business Loan" 
-              className="h-8 w-auto"
-            />
+            <span className="font-bold text-xl font-sans text-primary-foreground">True North Business Loan</span>
           </Link>
 
           {/* Desktop Navigation */}
