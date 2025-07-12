@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowRight, Clock, DollarSign, Users, CheckCircle, Zap, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
@@ -11,6 +12,7 @@ const Partners = () => {
     {
       id: "iou-financial",
       name: "IOU Financial",
+      logo: null, // No logo provided
       tagline: "Best for established businesses seeking significant term loans up to $1.5M",
       description: "A prominent online lender specializing in straightforward term loans for established small to medium-sized businesses, with a business model that is almost entirely partner-driven.",
       products: ["Business Loans"],
@@ -30,6 +32,7 @@ const Partners = () => {
     {
       id: "driven",
       name: "Driven (formerly Thinking Capital)",
+      logo: null, // No logo provided
       tagline: "Perfect for fast, digital applications and businesses operating for at least 6 months",
       description: "A major Canadian FinTech lender known for its fast, entirely digital application process and flexible repayment terms.",
       products: ["Small Business Loan", "Driven Express Funding"],
@@ -49,6 +52,7 @@ const Partners = () => {
     {
       id: "greenbox-capital",
       name: "Greenbox Capital",
+      logo: "/lovable-uploads/1369dfac-857f-43a9-8c07-79fde96a5512.png",
       tagline: "Excellent option for businesses with lower credit scores but strong monthly sales",
       description: "A flexible alternative lender that focuses on a business's overall potential, not just credit scores. They are known for funding businesses in high-risk industries and can provide capital within one business day.",
       products: ["Merchant Cash Advances", "Invoice Factoring", "Collateral Loans"],
@@ -68,6 +72,7 @@ const Partners = () => {
     {
       id: "merchant-growth",
       name: "Merchant Growth",
+      logo: "/lovable-uploads/77b173e0-4da2-4b65-a106-fddb77e38ed9.png",
       tagline: "A great all-around option with specialized financing for E-commerce businesses",
       description: "A Canadian lender providing a variety of financing solutions, including specialized e-commerce financing, with an emphasis on a fast and simple application process.",
       products: ["Term Financing", "Line of Credit", "E-commerce Financing"],
@@ -87,6 +92,7 @@ const Partners = () => {
     {
       id: "2m7-financial",
       name: "2M7 Financial Solutions",
+      logo: "/lovable-uploads/c648a402-4252-4e8a-8ec1-ec98595a2b96.png",
       tagline: "Specializes in Merchant Cash Advances for newer businesses with strong revenue",
       description: "An independent direct funder that focuses exclusively on Merchant Cash Advances (MCAs) with very accessible qualification criteria.",
       products: ["Merchant Cash Advances"],
@@ -106,6 +112,7 @@ const Partners = () => {
     {
       id: "northpoint-commercial",
       name: "Northpoint Commercial Finance",
+      logo: "/lovable-uploads/2fda5b2f-b4ca-46ae-b567-6bfdeeaf3c3e.png",
       tagline: "A leading specialist for financing new or used commercial equipment",
       description: "A key player in the equipment financing vertical, working directly with equipment vendors and brokers to finance the acquisition of physical assets.",
       products: ["Equipment Leasing & Financing"],
@@ -166,10 +173,20 @@ const Partners = () => {
                 <Card key={lender.id} className={`border-l-4 ${lender.borderColor} bg-gradient-to-r ${lender.bgGradient} hover:shadow-lg transition-shadow`}>
                   <CardHeader>
                     <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="p-3 rounded-full bg-background shadow-sm">
-                          <IconComponent className="h-6 w-6 text-primary" />
-                        </div>
+                      <div className="flex items-center space-x-4">
+                        {lender.logo ? (
+                          <div className="w-16 h-16 rounded-lg bg-white shadow-sm flex items-center justify-center p-2">
+                            <img 
+                              src={lender.logo} 
+                              alt={`${lender.name} logo`} 
+                              className="max-w-full max-h-full object-contain"
+                            />
+                          </div>
+                        ) : (
+                          <div className="p-3 rounded-full bg-background shadow-sm">
+                            <IconComponent className="h-6 w-6 text-primary" />
+                          </div>
+                        )}
                         <div>
                           <CardTitle className="text-xl text-primary">{lender.name}</CardTitle>
                           <p className="text-secondary font-semibold mt-1">{lender.tagline}</p>
@@ -243,6 +260,79 @@ const Partners = () => {
                 </Card>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* Comparison Table */}
+      <section className="py-16 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold font-sans text-primary mb-4">
+              Quick Comparison Guide
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Compare our lending partners at a glance to find the best fit for your business needs.
+            </p>
+          </div>
+
+          <div className="overflow-x-auto">
+            <Table className="w-full bg-background rounded-lg shadow-sm">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[200px] font-semibold">Lender</TableHead>
+                  <TableHead className="font-semibold">Products</TableHead>
+                  <TableHead className="font-semibold">Funding Range</TableHead>
+                  <TableHead className="font-semibold">Min. Time in Business</TableHead>
+                  <TableHead className="font-semibold">Min. Revenue</TableHead>
+                  <TableHead className="font-semibold">Best For</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {lenders.map((lender) => (
+                  <TableRow key={lender.id} className="hover:bg-muted/20">
+                    <TableCell className="font-medium">
+                      <div className="flex items-center space-x-3">
+                        {lender.logo ? (
+                          <img 
+                            src={lender.logo} 
+                            alt={`${lender.name} logo`} 
+                            className="w-8 h-8 object-contain"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center">
+                            <lender.icon className="h-4 w-4 text-primary" />
+                          </div>
+                        )}
+                        <span className="text-sm font-medium">{lender.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {lender.products.slice(0, 2).map((product, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {product}
+                          </Badge>
+                        ))}
+                        {lender.products.length > 2 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{lender.products.length - 2} more
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm">{lender.fundingRange}</TableCell>
+                    <TableCell className="text-sm">{lender.minTimeInBusiness || "N/A"}</TableCell>
+                    <TableCell className="text-sm">{lender.minRevenue || "N/A"}</TableCell>
+                    <TableCell className="text-sm max-w-[200px]">
+                      <div className="truncate" title={lender.idealProfile}>
+                        {lender.idealProfile}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         </div>
       </section>
