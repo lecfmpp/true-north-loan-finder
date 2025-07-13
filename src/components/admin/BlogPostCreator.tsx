@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -80,6 +81,7 @@ interface BlogPostCreatorProps {
 const BlogPostCreator = ({ onBlogCreated }: BlogPostCreatorProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [seedKeyword, setSeedKeyword] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState('United States');
   const [keywords, setKeywords] = useState<KeywordOpportunity[]>([]);
   const [selectedKeyword, setSelectedKeyword] = useState<string>('');
   const [competitors, setCompetitors] = useState<CompetitorResult[]>([]);
@@ -90,6 +92,30 @@ const BlogPostCreator = ({ onBlogCreated }: BlogPostCreatorProps) => {
   const [savedBriefs, setSavedBriefs] = useState<SavedBrief[]>([]);
   const [showSavedBriefs, setShowSavedBriefs] = useState(false);
   const { toast } = useToast();
+
+  // Available countries for DataForSEO API
+  const countries = [
+    'United States',
+    'United Kingdom', 
+    'Canada',
+    'Australia',
+    'Germany',
+    'France',
+    'Spain',
+    'Italy',
+    'Netherlands',
+    'Sweden',
+    'Norway',
+    'Denmark',
+    'Brazil',
+    'Mexico',
+    'India',
+    'Japan',
+    'South Korea',
+    'Singapore',
+    'United Arab Emirates',
+    'South Africa'
+  ];
 
   const steps = [
     { id: 1, title: "Topic Discovery", icon: Lightbulb, description: "Find keyword opportunities" },
@@ -133,7 +159,7 @@ const BlogPostCreator = ({ onBlogCreated }: BlogPostCreatorProps) => {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('dataforseo-search', {
-        body: { query: seedKeyword, type: 'keyword_discovery' }
+        body: { query: seedKeyword, type: 'keyword_discovery', country: selectedCountry }
       });
 
       if (error) throw error;
@@ -162,7 +188,7 @@ const BlogPostCreator = ({ onBlogCreated }: BlogPostCreatorProps) => {
     
     try {
       const { data, error } = await supabase.functions.invoke('dataforseo-search', {
-        body: { query: keyword, type: 'serp_analysis' }
+        body: { query: keyword, type: 'serp_analysis', country: selectedCountry }
       });
 
       if (error) throw error;
@@ -549,6 +575,21 @@ const BlogPostCreator = ({ onBlogCreated }: BlogPostCreatorProps) => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Target Country</label>
+              <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a country" />
+                </SelectTrigger>
+                <SelectContent className="bg-background border shadow-lg z-50">
+                  {countries.map((country) => (
+                    <SelectItem key={country} value={country}>
+                      {country}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div>
               <label className="text-sm font-medium mb-2 block">Seed Keyword</label>
               <div className="flex gap-2">

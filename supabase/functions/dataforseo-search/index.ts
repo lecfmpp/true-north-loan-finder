@@ -27,7 +27,7 @@ serve(async (req) => {
   }
 
   try {
-    const { query, type } = await req.json();
+    const { query, type, country = 'United States' } = await req.json();
     const dataforSeoAuth = Deno.env.get('Authorization');
 
     if (!dataforSeoAuth) {
@@ -40,7 +40,7 @@ serve(async (req) => {
 
     if (type === 'keyword_discovery') {
       // Step 1: Topic Opportunity Discovery
-      const keywords = await discoverKeywords(query, dataforSeoAuth);
+      const keywords = await discoverKeywords(query, dataforSeoAuth, country);
       
       return new Response(
         JSON.stringify({ keywords }),
@@ -48,7 +48,7 @@ serve(async (req) => {
       );
     } else if (type === 'serp_analysis') {
       // Step 2: SERP Analysis
-      const competitors = await analyzeSERP(query, dataforSeoAuth);
+      const competitors = await analyzeSERP(query, dataforSeoAuth, country);
       
       return new Response(
         JSON.stringify({ competitors }),
@@ -70,7 +70,7 @@ serve(async (req) => {
   }
 });
 
-async function discoverKeywords(seedKeyword: string, authorization: string): Promise<KeywordOpportunity[]> {
+async function discoverKeywords(seedKeyword: string, authorization: string, country: string): Promise<KeywordOpportunity[]> {
   console.log('Discovering keywords for:', seedKeyword);
   
   try {
@@ -103,7 +103,7 @@ async function discoverKeywords(seedKeyword: string, authorization: string): Pro
         'Content-Type': 'application/json',
       },
       body: JSON.stringify([{
-        location_name: "United States",
+        location_name: country,
         language_name: "English",
         keywords: keywordVariations
       }]),
@@ -179,7 +179,7 @@ async function discoverKeywords(seedKeyword: string, authorization: string): Pro
   }
 }
 
-async function analyzeSERP(keyword: string, authorization: string): Promise<CompetitorResult[]> {
+async function analyzeSERP(keyword: string, authorization: string, country: string): Promise<CompetitorResult[]> {
   console.log('Analyzing SERP for:', keyword);
   
   try {
@@ -193,7 +193,7 @@ async function analyzeSERP(keyword: string, authorization: string): Promise<Comp
         'Content-Type': 'application/json',
       },
       body: JSON.stringify([{
-        location_name: "United States",
+        location_name: country,
         language_name: "English",
         keyword: keyword,
         depth: 10
