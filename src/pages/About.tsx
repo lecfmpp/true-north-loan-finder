@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import businessOwnerImage from "@/assets/business-owner-hero.jpg";
 
 const About = () => {
   const values = [
@@ -254,12 +255,12 @@ const About = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="bg-gradient-to-br from-primary/10 to-secondary/10 p-8 lg:p-12 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="text-6xl mb-4">🍁</div>
-                      <div className="text-2xl font-bold text-primary mb-2">Kitchener, ON</div>
-                      <div className="text-muted-foreground">Canada's Innovation Hub</div>
-                    </div>
+                  <div className="p-0 flex items-center justify-center">
+                    <img 
+                      src={businessOwnerImage} 
+                      alt="Canadian business owner" 
+                      className="w-full h-full object-cover rounded-lg"
+                    />
                   </div>
                 </div>
               </CardContent>
