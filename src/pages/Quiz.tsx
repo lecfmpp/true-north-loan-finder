@@ -529,24 +529,24 @@ const Quiz = () => {
       <Header />
       
       {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+      <section className="py-8 md:py-12 lg:py-16 bg-gradient-to-br from-primary/5 via-background to-secondary/5">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl lg:text-5xl font-bold font-sans text-primary mb-6">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold font-sans text-primary mb-4 md:mb-6">
               Find Out Exactly How Much You Can Borrow 
               <span className="text-secondary"> & Get It In Your Account Within 48 Hours</span>
-            </h1>
-            <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto font-serif">
+            </h2>
+            <p className="text-base md:text-lg text-muted-foreground mb-6 md:mb-8 max-w-2xl mx-auto font-serif">
               No guesswork. No surprises. Just your personalized loan amount, rates, and exact timeline to funding—delivered in the next 60 seconds.
             </p>
           </div>
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-4 md:py-6">
         <div className="max-w-2xl mx-auto">
           {/* Progress Header */}
-          <div className="mb-8">
+          <div className="mb-4 md:mb-6">
             <div className="flex items-center justify-between mb-4">
               <h1 className="text-2xl font-bold font-sans text-primary">
                 Business Loan Estimator
