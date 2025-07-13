@@ -547,7 +547,7 @@ const Quiz = () => {
         <div className="max-w-2xl mx-auto">
           {/* Progress Header */}
           <div className="mb-4 md:mb-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="hidden md:flex items-center justify-between mb-4">
               <h1 className="text-2xl font-bold font-sans text-primary">
                 Business Loan Estimator
               </h1>
@@ -556,7 +556,7 @@ const Quiz = () => {
               </span>
             </div>
             <Progress value={progress} className="mb-2" />
-            <p className="text-sm text-muted-foreground text-center">
+            <p className="hidden md:block text-sm text-muted-foreground text-center">
               Takes about 60 seconds to complete
             </p>
           </div>
