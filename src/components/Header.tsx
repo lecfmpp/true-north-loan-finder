@@ -84,7 +84,7 @@ const Header = () => {
                   <Link to="/auth">Sign In</Link>
                 </Button>
                 <Button asChild variant="cta" size="lg">
-                  <Link to="/quiz">Get My Loan Estimate</Link>
+                  <Link to="/loan-estimator">Get My Loan Estimate</Link>
                 </Button>
               </div>}
           </div>
@@ -144,7 +144,7 @@ const Header = () => {
                       </Link>
                     </Button>
                     <Button asChild variant="cta" size="lg" className="w-full">
-                      <Link to="/quiz" onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/loan-estimator" onClick={() => setIsMenuOpen(false)}>
                         Get My Loan Quote
                       </Link>
                     </Button>

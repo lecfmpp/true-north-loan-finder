@@ -130,7 +130,7 @@ const HowItWorks = () => {
               Here's exactly how our transparent process works.
             </p>
             <Button asChild variant="cta" size="lg">
-              <Link to="/quiz">Start Your Application</Link>
+              <Link to="/loan-estimator">Start Your Application</Link>
             </Button>
           </div>
         </div>
@@ -317,7 +317,7 @@ const HowItWorks = () => {
             Use our Business Loan Estimator and discover your funding options today
           </p>
           <Button asChild size="xl" variant="secondary" className="text-lg px-8">
-            <Link to="/quiz">
+            <Link to="/loan-estimator">
               Start Your Application
               <ArrowRight className="h-5 w-5 ml-2" />
             </Link>

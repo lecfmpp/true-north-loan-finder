@@ -126,7 +126,7 @@ const About = () => {
                   with lenders who want to help them succeed.
                 </p>
                 <Button asChild variant="cta" size="lg">
-                  <Link to="/quiz">Use the Loan Estimator</Link>
+                  <Link to="/loan-estimator">Use the Loan Estimator</Link>
                 </Button>
               </div>
               <div className="relative">
@@ -313,7 +313,7 @@ const About = () => {
             Start your journey to better business financing today
           </p>
           <Button asChild size="xl" variant="secondary" className="text-lg px-8">
-            <Link to="/quiz">Get Started Now</Link>
+            <Link to="/loan-estimator">Get Started Now</Link>
           </Button>
         </div>
       </section>

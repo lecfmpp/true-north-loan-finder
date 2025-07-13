@@ -105,7 +105,7 @@ const Home = () => {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Button asChild variant="cta" size="xl" className="text-lg px-8">
-                <Link to="/quiz">Get My Loan Estimate</Link>
+                <Link to="/loan-estimator">Get My Loan Estimate</Link>
               </Button>
               <Button asChild variant="outline" size="xl" className="text-lg px-8">
                 <Link to="/how-it-works">How It Works</Link>
@@ -200,7 +200,7 @@ const Home = () => {
           
           <div className="text-center mt-12">
             <Button asChild variant="cta" size="lg">
-              <Link to="/quiz">Use the Loan Estimator</Link>
+              <Link to="/loan-estimator">Use the Loan Estimator</Link>
             </Button>
           </div>
         </div>
@@ -256,7 +256,7 @@ const Home = () => {
             Join thousands of Canadian businesses who've found their ideal funding through our platform
           </p>
           <Button asChild size="xl" variant="secondary" className="text-lg px-8">
-            <Link to="/quiz">Get My Loan Estimate</Link>
+            <Link to="/loan-estimator">Get My Loan Estimate</Link>
           </Button>
         </div>
       </section>

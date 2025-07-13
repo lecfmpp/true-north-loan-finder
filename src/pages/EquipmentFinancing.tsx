@@ -154,7 +154,7 @@ const EquipmentFinancing = () => {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Button asChild variant="cta" size="xl" className="text-lg px-8">
-                <Link to="/quiz">Get My Equipment Loan Estimate</Link>
+                <Link to="/loan-estimator">Get My Equipment Loan Estimate</Link>
               </Button>
               <Button asChild variant="outline" size="xl" className="text-lg px-8">
                 <Link to="/how-it-works">How It Works</Link>
@@ -410,7 +410,7 @@ const EquipmentFinancing = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="xl" variant="secondary" className="text-lg px-8">
-              <Link to="/quiz">
+              <Link to="/loan-estimator">
                 <Users className="h-5 w-5 mr-2" />
                 Check My Equipment Loan Options
               </Link>

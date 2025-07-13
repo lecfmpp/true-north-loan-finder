@@ -146,7 +146,7 @@ const Partners = () => {
             We've carefully vetted each lender to ensure they offer competitive rates, transparent terms, and excellent service to Canadian businesses.
           </p>
           <Button asChild size="lg" variant="cta">
-            <Link to="/quiz">
+            <Link to="/loan-estimator">
               Find Your Perfect Match
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
@@ -286,7 +286,7 @@ const Partners = () => {
                   {/* CTA Button - Pushed to bottom */}
                   <div className="mt-auto">
                     <Button asChild className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-bold py-3 text-sm">
-                      <Link to="/quiz">
+                      <Link to="/loan-estimator">
                         <TrendingUp className="w-4 h-4 mr-2" />
                         See My Loan Options
                         <ArrowRight className="ml-2 h-4 w-4" />
@@ -452,7 +452,7 @@ const Partners = () => {
             Use our Business Loan Estimator to get matched with lenders who are actively seeking businesses like yours.
           </p>
           <Button asChild size="lg" variant="secondary" className="shadow-lg">
-            <Link to="/quiz">
+            <Link to="/loan-estimator">
               Use the Business Loan Estimator
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>

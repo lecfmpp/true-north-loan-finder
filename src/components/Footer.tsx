@@ -30,7 +30,7 @@ const Footer = () => {
               <Link to="/how-it-works" className="block text-primary-foreground/80 hover:text-primary-foreground text-sm transition-colors">
                 How It Works
               </Link>
-              <Link to="/quiz" className="block text-primary-foreground/80 hover:text-primary-foreground text-sm transition-colors">
+              <Link to="/loan-estimator" className="block text-primary-foreground/80 hover:text-primary-foreground text-sm transition-colors">
                 Loan Estimator
               </Link>
               <Link to="/about" className="block text-primary-foreground/80 hover:text-primary-foreground text-sm transition-colors">

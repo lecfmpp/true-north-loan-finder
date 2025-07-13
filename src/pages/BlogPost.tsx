@@ -187,7 +187,7 @@ const BlogPost = () => {
                 Use our Business Loan Estimator to see what financing options are available for your business.
               </p>
               <Button asChild variant="cta" size="lg">
-                <Link to="/quiz">Get My Loan Estimate</Link>
+                <Link to="/loan-estimator">Get My Loan Estimate</Link>
               </Button>
             </div>
           </div>
