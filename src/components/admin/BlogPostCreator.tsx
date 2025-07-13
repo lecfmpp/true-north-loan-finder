@@ -73,7 +73,11 @@ interface BlogPostData {
   tags: string[];
 }
 
-const BlogPostCreator = () => {
+interface BlogPostCreatorProps {
+  onBlogCreated?: () => void;
+}
+
+const BlogPostCreator = ({ onBlogCreated }: BlogPostCreatorProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [seedKeyword, setSeedKeyword] = useState('');
   const [keywords, setKeywords] = useState<KeywordOpportunity[]>([]);
@@ -360,7 +364,7 @@ const BlogPostCreator = () => {
     setLoading(true);
     
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('blog_posts')
         .insert({
           title: blogPost.title,
@@ -371,17 +375,31 @@ const BlogPostCreator = () => {
           tags: blogPost.tags,
           slug: blogPost.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
           status: 'draft'
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: "Blog post saved as draft successfully"
+        title: "Success", 
+        description: "Blog post saved as draft in Blog Management tab for review"
       });
 
       // Reset the workflow
       resetWorkflow();
+      
+      // Show success message with option to go to blog management
+      setTimeout(() => {
+        toast({
+          title: "✅ Blog Post Ready for Review",
+          description: "Your AI-generated blog post is now available in the Blog Management tab as a draft. Switch to the Blog Management tab to review and publish it."
+        });
+        
+        // Trigger callback to potentially switch tabs
+        onBlogCreated?.();
+      }, 1000);
+      
     } catch (error) {
       toast({
         title: "Error",

@@ -38,6 +38,7 @@ const Admin = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [activeTab, setActiveTab] = useState('leads');
   const { user, isAdmin, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -190,7 +191,7 @@ const Admin = () => {
           </Button>
         </div>
 
-        <Tabs defaultValue="leads" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="leads" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
@@ -355,7 +356,7 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="blog-creator">
-            <BlogPostCreator />
+            <BlogPostCreator onBlogCreated={() => setActiveTab('blog')} />
           </TabsContent>
 
           <TabsContent value="blog">

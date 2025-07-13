@@ -42,6 +42,46 @@ const BlogManagement = () => {
 
   useEffect(() => {
     fetchPosts();
+    
+    // Set up real-time subscription for new blog posts
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'blog_posts'
+        },
+        (payload) => {
+          console.log('New blog post added:', payload.new);
+          setPosts(current => [payload.new as BlogPost, ...current]);
+          toast({
+            title: "New Blog Post Added",
+            description: "A new AI-generated blog post is ready for review"
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'blog_posts'
+        },
+        (payload) => {
+          setPosts(current => 
+            current.map(post => 
+              post.id === payload.new.id ? payload.new as BlogPost : post
+            )
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {
