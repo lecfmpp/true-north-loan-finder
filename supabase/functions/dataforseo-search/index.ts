@@ -28,22 +28,19 @@ serve(async (req) => {
 
   try {
     const { query, type } = await req.json();
-    const dataforSeoLogin = Deno.env.get('DATAFORSEO_LOGIN');
-    const dataforSeoPassword = Deno.env.get('DATAFORSEO_PASSWORD');
+    const dataforSeoAuth = Deno.env.get('DATAFORSEO_AUTHORIZATION');
 
-    if (!dataforSeoLogin || !dataforSeoPassword) {
-      console.error('Missing DataForSEO API credentials');
+    if (!dataforSeoAuth) {
+      console.error('Missing DataForSEO Authorization credentials');
       return new Response(
-        JSON.stringify({ error: 'DataForSEO API credentials not configured' }),
+        JSON.stringify({ error: 'DataForSEO Authorization credentials not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const credentials = btoa(`${dataforSeoLogin}:${dataforSeoPassword}`);
-
     if (type === 'keyword_discovery') {
       // Step 1: Topic Opportunity Discovery
-      const keywords = await discoverKeywords(query, credentials);
+      const keywords = await discoverKeywords(query, dataforSeoAuth);
       
       return new Response(
         JSON.stringify({ keywords }),
@@ -51,7 +48,7 @@ serve(async (req) => {
       );
     } else if (type === 'serp_analysis') {
       // Step 2: SERP Analysis
-      const competitors = await analyzeSERP(query, credentials);
+      const competitors = await analyzeSERP(query, dataforSeoAuth);
       
       return new Response(
         JSON.stringify({ competitors }),
@@ -73,7 +70,7 @@ serve(async (req) => {
   }
 });
 
-async function discoverKeywords(seedKeyword: string, credentials: string): Promise<KeywordOpportunity[]> {
+async function discoverKeywords(seedKeyword: string, authorization: string): Promise<KeywordOpportunity[]> {
   console.log('Discovering keywords for:', seedKeyword);
   
   try {
@@ -102,7 +99,7 @@ async function discoverKeywords(seedKeyword: string, credentials: string): Promi
     const response = await fetch(relatedKeywordsUrl, {
       method: 'POST',
       headers: {
-        'Authorization': `Basic ${credentials}`,
+        'Authorization': `Basic ${authorization}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify([{
@@ -182,7 +179,7 @@ async function discoverKeywords(seedKeyword: string, credentials: string): Promi
   }
 }
 
-async function analyzeSERP(keyword: string, credentials: string): Promise<CompetitorResult[]> {
+async function analyzeSERP(keyword: string, authorization: string): Promise<CompetitorResult[]> {
   console.log('Analyzing SERP for:', keyword);
   
   try {
@@ -192,7 +189,7 @@ async function analyzeSERP(keyword: string, credentials: string): Promise<Compet
     const response = await fetch(serpUrl, {
       method: 'POST',
       headers: {
-        'Authorization': `Basic ${credentials}`,
+        'Authorization': `Basic ${authorization}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify([{
