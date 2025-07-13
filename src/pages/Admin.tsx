@@ -11,9 +11,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { Download, Search, Filter, LogOut, Users, FileText } from 'lucide-react';
+import { Download, Search, Filter, LogOut, Users, FileText, PenTool } from 'lucide-react';
 import Header from '@/components/Header';
 import BlogManagement from '@/components/admin/BlogManagement';
+import BlogPostCreator from '@/components/admin/BlogPostCreator';
 
 interface QuizResponse {
   id: string;
@@ -190,10 +191,14 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="leads" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="leads" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               Leads Management
+            </TabsTrigger>
+            <TabsTrigger value="blog-creator" className="flex items-center gap-2">
+              <PenTool className="w-4 h-4" />
+              Blog Post Creator
             </TabsTrigger>
             <TabsTrigger value="blog" className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
@@ -347,6 +352,10 @@ const Admin = () => {
                 No leads found matching your criteria.
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="blog-creator">
+            <BlogPostCreator />
           </TabsContent>
 
           <TabsContent value="blog">
