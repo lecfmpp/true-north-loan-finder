@@ -28,7 +28,10 @@ serve(async (req) => {
 
   try {
     const { query, type, country = 'United States' } = await req.json();
+    console.log('Request received:', { query, type, country });
+    
     const dataforSeoAuth = Deno.env.get('Authorization');
+    console.log('DataForSEO Auth available:', !!dataforSeoAuth);
 
     if (!dataforSeoAuth) {
       console.error('Missing DataForSEO Authorization credentials');
@@ -110,11 +113,14 @@ async function discoverKeywords(seedKeyword: string, authorization: string, coun
     });
 
     if (!response.ok) {
-      throw new Error(`DataForSEO API error: ${response.status}`);
+      console.error('DataForSEO API Error:', response.status, response.statusText);
+      const errorText = await response.text();
+      console.error('Error details:', errorText);
+      throw new Error(`DataForSEO API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
-    console.log('DataForSEO Keywords response:', data);
+    console.log('DataForSEO Keywords response received:', JSON.stringify(data, null, 2));
 
     const keywords: KeywordOpportunity[] = [];
 
@@ -151,6 +157,7 @@ async function discoverKeywords(seedKeyword: string, authorization: string, coun
 
     // If no results from API, provide some basic variations
     if (keywords.length === 0) {
+      console.log('No keywords from DataForSEO API, using fallback data');
       const fallbackKeywords = [
         { keyword: seedKeyword, intent: 'informational', competition: 'medium' as const },
         { keyword: `${seedKeyword} guide`, intent: 'informational', competition: 'low' as const },
@@ -168,6 +175,7 @@ async function discoverKeywords(seedKeyword: string, authorization: string, coun
 
   } catch (error) {
     console.error('Error discovering keywords:', error);
+    console.error('Full error details:', error.message, error.stack);
     // Return fallback keywords
     return [
       { keyword: seedKeyword, intent: 'informational', competition: 'medium' },
