@@ -132,7 +132,7 @@ const BlogPostCreator = ({ onBlogCreated }: BlogPostCreatorProps) => {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('google-search', {
+      const { data, error } = await supabase.functions.invoke('dataforseo-search', {
         body: { query: seedKeyword, type: 'keyword_discovery' }
       });
 
@@ -161,7 +161,7 @@ const BlogPostCreator = ({ onBlogCreated }: BlogPostCreatorProps) => {
     setLoading(true);
     
     try {
-      const { data, error } = await supabase.functions.invoke('google-search', {
+      const { data, error } = await supabase.functions.invoke('dataforseo-search', {
         body: { query: keyword, type: 'serp_analysis' }
       });
 

@@ -59,7 +59,7 @@ enable_phone_change_confirmations = true
 enabled = true
 port = 54330
 
-[functions.google-search]
+[functions.dataforseo-search]
 verify_jwt = true
 
 [functions.generate-content-brief]
