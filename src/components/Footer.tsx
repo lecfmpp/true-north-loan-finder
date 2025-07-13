@@ -8,12 +8,13 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-accent to-secondary rounded-full flex items-center justify-center">
-                <div className="w-3 h-3 bg-primary rounded-full"></div>
-              </div>
-              <span className="font-bold text-lg font-sans">True North Business Loan</span>
-            </div>
+            <Link to="/" className="flex items-center space-x-2">
+              <img 
+                alt="TrueNorth Business Loan" 
+                src="/lovable-uploads/327718f8-3972-44ab-9e0a-0ab928587c31.png" 
+                className="h-12 object-contain" 
+              />
+            </Link>
             <p className="text-primary-foreground/80 text-sm">
               Empowering Canadian small businesses with simple, transparent access to financing.
             </p>
