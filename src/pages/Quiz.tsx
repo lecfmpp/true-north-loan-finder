@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -18,11 +17,21 @@ import {
   DollarSign,
   Clock,
   Star,
-  Users
+  Users,
+  Check,
+  Truck,
+  Package,
+  Factory,
+  ShoppingCart,
+  Home,
+  Target,
+  Calendar,
+  CreditCard
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 
 interface QuizData {
   loanAmount: number[];
@@ -53,28 +62,28 @@ const Quiz = () => {
   const progress = (currentStep / totalSteps) * 100;
 
   const useOfFundsOptions = [
-    { id: "equipment", label: "Equipment & Machinery", icon: "🏗️" },
-    { id: "inventory", label: "Inventory & Stock", icon: "📦" },
-    { id: "expansion", label: "Business Expansion", icon: "📈" },
-    { id: "working-capital", label: "Working Capital", icon: "💰" },
-    { id: "real-estate", label: "Real Estate", icon: "🏢" },
-    { id: "other", label: "Other", icon: "🎯" }
+    { id: "equipment", label: "Equipment & Machinery", icon: Truck },
+    { id: "inventory", label: "Inventory & Stock", icon: Package },
+    { id: "expansion", label: "Business Expansion", icon: TrendingUp },
+    { id: "working-capital", label: "Working Capital", icon: DollarSign },
+    { id: "real-estate", label: "Real Estate", icon: Home },
+    { id: "other", label: "Other", icon: Target }
   ];
 
   const timeInBusinessOptions = [
-    { id: "startup", label: "Startup (Less than 6 months)" },
-    { id: "6-12", label: "6-12 months" },
-    { id: "1-2", label: "1-2 years" },
-    { id: "2-5", label: "2-5 years" },
-    { id: "5+", label: "5+ years" }
+    { id: "startup", label: "Startup", description: "Less than 6 months", icon: Building },
+    { id: "6-12", label: "6-12 months", description: "New business", icon: Calendar },
+    { id: "1-2", label: "1-2 years", description: "Growing business", icon: TrendingUp },
+    { id: "2-5", label: "2-5 years", description: "Established business", icon: Building },
+    { id: "5+", label: "5+ years", description: "Mature business", icon: Shield }
   ];
 
   const creditScoreOptions = [
-    { id: "excellent", label: "Excellent (750+)" },
-    { id: "good", label: "Good (700-749)" },
-    { id: "fair", label: "Fair (650-699)" },
-    { id: "poor", label: "Poor (Below 650)" },
-    { id: "unsure", label: "Not Sure" }
+    { id: "excellent", label: "Excellent", description: "750+", icon: Star },
+    { id: "good", label: "Good", description: "700-749", icon: CheckCircle },
+    { id: "fair", label: "Fair", description: "650-699", icon: Clock },
+    { id: "poor", label: "Poor", description: "Below 650", icon: CreditCard },
+    { id: "unsure", label: "Not Sure", description: "I'll check later", icon: Target }
   ];
 
   const calculateScore = () => {
@@ -296,26 +305,44 @@ const Quiz = () => {
     return lendersWithRatings;
   };
 
+  const handleOptionSelect = async (field: string, value: string) => {
+    const newQuizData = { ...quizData, [field]: value };
+    setQuizData(newQuizData);
+    
+    // Auto-advance to next step with a slight delay for visual feedback
+    setTimeout(() => {
+      if (currentStep === totalSteps) {
+        // Save quiz response to database
+        saveQuizResponse(newQuizData);
+      } else {
+        setCurrentStep(currentStep + 1);
+      }
+    }, 600);
+  };
+
+  const saveQuizResponse = async (data: QuizData) => {
+    try {
+      const score = calculateScore();
+      await supabase.from('quiz_responses').insert({
+        loan_amount: data.loanAmount[0],
+        use_of_funds: data.useOfFunds,
+        time_in_business: data.timeInBusiness,
+        monthly_revenue: data.monthlyRevenue[0],
+        credit_score: data.creditScore,
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        score: score
+      });
+    } catch (error) {
+      console.error('Error saving quiz response:', error);
+    }
+    setShowResults(true);
+  };
+
   const handleNext = async () => {
     if (currentStep === totalSteps) {
-      // Save quiz response to database
-      try {
-        const score = calculateScore();
-        await supabase.from('quiz_responses').insert({
-          loan_amount: quizData.loanAmount[0],
-          use_of_funds: quizData.useOfFunds,
-          time_in_business: quizData.timeInBusiness,
-          monthly_revenue: quizData.monthlyRevenue[0],
-          credit_score: quizData.creditScore,
-          name: quizData.name,
-          email: quizData.email,
-          phone: quizData.phone,
-          score: score
-        });
-      } catch (error) {
-        console.error('Error saving quiz response:', error);
-      }
-      setShowResults(true);
+      await saveQuizResponse(quizData);
     } else {
       setCurrentStep(currentStep + 1);
     }
@@ -538,18 +565,18 @@ const Quiz = () => {
             <CardContent className="p-8">
               {/* Step 1: Loan Amount */}
               {currentStep === 1 && (
-                <div className="space-y-6">
+                <div className="space-y-8 animate-fade-in">
                   <div className="text-center">
                     <DollarSign className="h-12 w-12 text-secondary mx-auto mb-4" />
-                    <h2 className="text-xl font-semibold font-sans text-primary mb-2">
+                    <h2 className="text-3xl font-bold font-sans text-primary mb-3">
                       How much funding are you looking for?
                     </h2>
-                    <p className="text-muted-foreground font-serif">
+                    <p className="text-lg text-muted-foreground font-serif">
                       Select the amount that best fits your business needs
                     </p>
                   </div>
                   
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     <Slider
                       value={quizData.loanAmount}
                       onValueChange={(value) => setQuizData({...quizData, loanAmount: value})}
@@ -559,10 +586,10 @@ const Quiz = () => {
                       className="w-full"
                     />
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-primary">
+                      <div className="text-4xl font-bold text-primary mb-2">
                         ${quizData.loanAmount[0].toLocaleString()}
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-lg text-muted-foreground">
                         Range: $5,000 - $800,000
                       </div>
                     </div>
@@ -572,82 +599,111 @@ const Quiz = () => {
 
               {/* Step 2: Use of Funds */}
               {currentStep === 2 && (
-                <div className="space-y-6">
+                <div className="space-y-8 animate-fade-in">
                   <div className="text-center">
                     <Building className="h-12 w-12 text-secondary mx-auto mb-4" />
-                    <h2 className="text-xl font-semibold font-sans text-primary mb-2">
+                    <h2 className="text-3xl font-bold font-sans text-primary mb-3">
                       What's the primary purpose of the funds?
                     </h2>
-                    <p className="text-muted-foreground font-serif">
+                    <p className="text-lg text-muted-foreground font-serif">
                       This helps us match you with the right type of lenders
                     </p>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
-                    {useOfFundsOptions.map((option) => (
-                      <Card
-                        key={option.id}
-                        className={`cursor-pointer transition-all ${
-                          quizData.useOfFunds === option.id
-                            ? "border-secondary bg-secondary/10"
-                            : "border-border hover:border-secondary/50"
-                        }`}
-                        onClick={() => setQuizData({...quizData, useOfFunds: option.id})}
-                      >
-                        <CardContent className="p-4 text-center">
-                          <div className="text-2xl mb-2">{option.icon}</div>
-                          <div className="text-sm font-medium">{option.label}</div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {useOfFundsOptions.map((option) => {
+                      const IconComponent = option.icon;
+                      const isSelected = quizData.useOfFunds === option.id;
+                      
+                      return (
+                        <Card
+                          key={option.id}
+                          className={cn(
+                            "cursor-pointer transition-all duration-300 group hover:shadow-lg border-2",
+                            isSelected 
+                              ? "border-secondary bg-secondary/10 shadow-md" 
+                              : "border-border hover:border-secondary/50 hover:bg-secondary/5"
+                          )}
+                          onClick={() => handleOptionSelect('useOfFunds', option.id)}
+                        >
+                          <CardContent className="p-6 text-center relative">
+                            {isSelected && (
+                              <div className="absolute top-4 right-4">
+                                <Check className="h-6 w-6 text-secondary animate-scale-in" />
+                              </div>
+                            )}
+                            <IconComponent className="h-12 w-12 text-secondary mx-auto mb-4 group-hover:scale-110 transition-transform" />
+                            <h3 className="text-lg font-semibold text-primary mb-1">{option.label}</h3>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
                   </div>
                 </div>
               )}
 
               {/* Step 3: Time in Business */}
               {currentStep === 3 && (
-                <div className="space-y-6">
+                <div className="space-y-8 animate-fade-in">
                   <div className="text-center">
                     <Clock className="h-12 w-12 text-secondary mx-auto mb-4" />
-                    <h2 className="text-xl font-semibold font-sans text-primary mb-2">
+                    <h2 className="text-3xl font-bold font-sans text-primary mb-3">
                       How long has your business been operating?
                     </h2>
-                    <p className="text-muted-foreground font-serif">
+                    <p className="text-lg text-muted-foreground font-serif">
                       Time in business is a key factor for loan qualification
                     </p>
                   </div>
                   
-                  <RadioGroup
-                    value={quizData.timeInBusiness}
-                    onValueChange={(value) => setQuizData({...quizData, timeInBusiness: value})}
-                    className="space-y-3"
-                  >
-                    {timeInBusinessOptions.map((option) => (
-                      <div key={option.id} className="flex items-center space-x-2">
-                        <RadioGroupItem value={option.id} id={option.id} />
-                        <Label htmlFor={option.id} className="flex-1 cursor-pointer">
-                          {option.label}
-                        </Label>
-                      </div>
-                    ))}
-                  </RadioGroup>
+                  <div className="space-y-3">
+                    {timeInBusinessOptions.map((option) => {
+                      const IconComponent = option.icon;
+                      const isSelected = quizData.timeInBusiness === option.id;
+                      
+                      return (
+                        <Card
+                          key={option.id}
+                          className={cn(
+                            "cursor-pointer transition-all duration-300 group hover:shadow-lg border-2",
+                            isSelected 
+                              ? "border-secondary bg-secondary/10 shadow-md" 
+                              : "border-border hover:border-secondary/50 hover:bg-secondary/5"
+                          )}
+                          onClick={() => handleOptionSelect('timeInBusiness', option.id)}
+                        >
+                          <CardContent className="p-6 flex items-center gap-4 relative">
+                            {isSelected && (
+                              <div className="absolute top-4 right-4">
+                                <Check className="h-6 w-6 text-secondary animate-scale-in" />
+                              </div>
+                            )}
+                            <IconComponent className="h-8 w-8 text-secondary group-hover:scale-110 transition-transform" />
+                            <div className="flex-1">
+                              <h3 className="text-lg font-semibold text-primary">{option.label}</h3>
+                              <p className="text-sm text-muted-foreground">{option.description}</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
               {/* Step 4: Monthly Revenue */}
               {currentStep === 4 && (
-                <div className="space-y-6">
+                <div className="space-y-8 animate-fade-in">
                   <div className="text-center">
                     <TrendingUp className="h-12 w-12 text-secondary mx-auto mb-4" />
-                    <h2 className="text-xl font-semibold font-sans text-primary mb-2">
+                    <h2 className="text-3xl font-bold font-sans text-primary mb-3">
                       What is your average monthly revenue?
                     </h2>
-                    <p className="text-muted-foreground font-serif">
+                    <p className="text-lg text-muted-foreground font-serif">
                       This helps determine your loan capacity and terms
                     </p>
                   </div>
                   
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     <Slider
                       value={quizData.monthlyRevenue}
                       onValueChange={(value) => setQuizData({...quizData, monthlyRevenue: value})}
@@ -657,10 +713,10 @@ const Quiz = () => {
                       className="w-full"
                     />
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-primary">
+                      <div className="text-4xl font-bold text-primary mb-2">
                         ${quizData.monthlyRevenue[0].toLocaleString()}/month
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-lg text-muted-foreground">
                         Range: $1,000 - $200,000+ per month
                       </div>
                     </div>
@@ -670,103 +726,140 @@ const Quiz = () => {
 
               {/* Step 5: Credit Score */}
               {currentStep === 5 && (
-                <div className="space-y-6">
+                <div className="space-y-8 animate-fade-in">
                   <div className="text-center">
                     <Star className="h-12 w-12 text-secondary mx-auto mb-4" />
-                    <h2 className="text-xl font-semibold font-sans text-primary mb-2">
+                    <h2 className="text-3xl font-bold font-sans text-primary mb-3">
                       What's your estimated personal credit score?
                     </h2>
-                    <p className="text-muted-foreground font-serif">
+                    <p className="text-lg text-muted-foreground font-serif">
                       Don't worry - we work with businesses across all credit ranges
                     </p>
                   </div>
                   
-                  <RadioGroup
-                    value={quizData.creditScore}
-                    onValueChange={(value) => setQuizData({...quizData, creditScore: value})}
-                    className="space-y-3"
-                  >
-                    {creditScoreOptions.map((option) => (
-                      <div key={option.id} className="flex items-center space-x-2">
-                        <RadioGroupItem value={option.id} id={option.id} />
-                        <Label htmlFor={option.id} className="flex-1 cursor-pointer">
-                          {option.label}
-                        </Label>
-                      </div>
-                    ))}
-                  </RadioGroup>
+                  <div className="space-y-3">
+                    {creditScoreOptions.map((option) => {
+                      const IconComponent = option.icon;
+                      const isSelected = quizData.creditScore === option.id;
+                      
+                      return (
+                        <Card
+                          key={option.id}
+                          className={cn(
+                            "cursor-pointer transition-all duration-300 group hover:shadow-lg border-2",
+                            isSelected 
+                              ? "border-secondary bg-secondary/10 shadow-md" 
+                              : "border-border hover:border-secondary/50 hover:bg-secondary/5"
+                          )}
+                          onClick={() => handleOptionSelect('creditScore', option.id)}
+                        >
+                          <CardContent className="p-6 flex items-center gap-4 relative">
+                            {isSelected && (
+                              <div className="absolute top-4 right-4">
+                                <Check className="h-6 w-6 text-secondary animate-scale-in" />
+                              </div>
+                            )}
+                            <IconComponent className="h-8 w-8 text-secondary group-hover:scale-110 transition-transform" />
+                            <div className="flex-1">
+                              <h3 className="text-lg font-semibold text-primary">{option.label}</h3>
+                              <p className="text-sm text-muted-foreground">{option.description}</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
               {/* Step 6: Contact Information */}
               {currentStep === 6 && (
-                <div className="space-y-6">
+                <div className="space-y-8 animate-fade-in">
                   <div className="text-center">
                     <CheckCircle className="h-12 w-12 text-secondary mx-auto mb-4" />
-                    <h2 className="text-xl font-semibold font-sans text-primary mb-2">
+                    <h2 className="text-3xl font-bold font-sans text-primary mb-3">
                       Your results are ready!
                     </h2>
-                    <p className="text-muted-foreground font-serif">
+                    <p className="text-lg text-muted-foreground font-serif">
                       Where should we send your Business Loan Estimate?
                     </p>
                   </div>
                   
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     <div>
-                      <Label htmlFor="name">Full Name</Label>
+                      <Label htmlFor="name" className="text-lg font-medium">Full Name</Label>
                       <Input
                         id="name"
                         value={quizData.name}
                         onChange={(e) => setQuizData({...quizData, name: e.target.value})}
                         placeholder="Enter your full name"
+                        className="mt-2 text-lg py-3"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="email">Email Address</Label>
+                      <Label htmlFor="email" className="text-lg font-medium">Email Address</Label>
                       <Input
                         id="email"
                         type="email"
                         value={quizData.email}
                         onChange={(e) => setQuizData({...quizData, email: e.target.value})}
                         placeholder="Enter your email address"
+                        className="mt-2 text-lg py-3"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="phone">Phone Number</Label>
+                      <Label htmlFor="phone" className="text-lg font-medium">Phone Number</Label>
                       <Input
                         id="phone"
                         type="tel"
                         value={quizData.phone}
                         onChange={(e) => setQuizData({...quizData, phone: e.target.value})}
                         placeholder="Enter your phone number"
+                        className="mt-2 text-lg py-3"
                       />
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Navigation */}
-              <div className="flex justify-between mt-8 pt-6 border-t">
-                <Button
-                  variant="outline"
-                  onClick={handleBack}
-                  disabled={currentStep === 1}
-                  className="flex items-center"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back
-                </Button>
-                
-                <Button
-                  variant={currentStep === totalSteps ? "cta" : "default"}
-                  onClick={handleNext}
-                  disabled={!isStepValid()}
-                  className="flex items-center"
-                >
-                  {currentStep === totalSteps ? "See My Results" : "Next"}
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              </div>
+              {/* Navigation - Show Next button only for steps 1, 4, and 6 */}
+              {(currentStep === 1 || currentStep === 4 || currentStep === 6) && (
+                <div className="flex justify-between mt-8 pt-6 border-t">
+                  <Button
+                    variant="outline"
+                    onClick={handleBack}
+                    disabled={currentStep === 1}
+                    className="flex items-center"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back
+                  </Button>
+                  
+                  <Button
+                    variant={currentStep === totalSteps ? "cta" : "default"}
+                    onClick={handleNext}
+                    disabled={!isStepValid()}
+                    className="flex items-center text-lg px-8 py-3"
+                  >
+                    {currentStep === totalSteps ? "See My Results" : "Next"}
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </div>
+              )}
+
+              {/* Back button only for auto-advancing steps */}
+              {(currentStep === 2 || currentStep === 3 || currentStep === 5) && (
+                <div className="flex justify-start mt-8 pt-6 border-t">
+                  <Button
+                    variant="outline"
+                    onClick={handleBack}
+                    className="flex items-center"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
