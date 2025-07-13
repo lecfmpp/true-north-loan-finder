@@ -174,7 +174,7 @@ const Partners = () => {
                   {/* Logo & Header Section */}
                   <div className="text-center mb-6">
                     {lender.logo ? (
-                      <div className="w-40 h-24 mx-auto mb-4 flex items-center justify-center bg-gray-50 rounded-lg p-2">
+                      <div className="w-40 h-24 mx-auto mb-4 flex items-center justify-center rounded-lg p-2">
                         <img 
                           src={lender.logo} 
                           alt={`${lender.name} logo`} 
@@ -217,53 +217,41 @@ const Partners = () => {
 
                       {/* Secondary Metrics Row */}
                       <div className="grid grid-cols-2 gap-3">
-                        {lender.fundingSpeed && (
-                          <div className="flex items-center space-x-2 bg-white/80 rounded-md p-2">
-                            <div className="w-6 h-6 bg-accent/10 rounded-full flex items-center justify-center">
-                              <Timer className="h-3 w-3 text-accent" />
-                            </div>
-                            <div>
-                              <div className="text-xs text-muted-foreground">SPEED</div>
-                              <div className="font-semibold text-xs text-primary">{lender.fundingSpeed.replace(/[()]/g, '').split(' ').slice(0, 2).join(' ')}</div>
+                        <div className="flex items-center space-x-2 bg-white/80 rounded-md p-2">
+                          <div className="w-6 h-6 bg-accent/10 rounded-full flex items-center justify-center">
+                            <Timer className="h-3 w-3 text-accent" />
+                          </div>
+                          <div>
+                            <div className="text-xs text-muted-foreground">SPEED</div>
+                            <div className="font-semibold text-xs text-primary">
+                              {lender.fundingSpeed ? 
+                                (lender.fundingSpeed.includes('24') ? 'Same Day' : 
+                                 lender.fundingSpeed.includes('day') ? 'Fast' : 
+                                 lender.fundingSpeed.includes('Fast') ? 'Fast' : 'Standard') 
+                                : 'Varies*'}
                             </div>
                           </div>
-                        )}
+                        </div>
                         
-                        {lender.minTimeInBusiness && (
-                          <div className="flex items-center space-x-2 bg-white/80 rounded-md p-2">
-                            <div className="w-6 h-6 bg-secondary/10 rounded-full flex items-center justify-center">
-                              <Calendar className="h-3 w-3 text-secondary" />
-                            </div>
-                            <div>
-                              <div className="text-xs text-muted-foreground">MIN. TIME</div>
-                              <div className="font-semibold text-xs text-primary">{lender.minTimeInBusiness}</div>
-                            </div>
+                        <div className="flex items-center space-x-2 bg-white/80 rounded-md p-2">
+                          <div className="w-6 h-6 bg-secondary/10 rounded-full flex items-center justify-center">
+                            <Calendar className="h-3 w-3 text-secondary" />
                           </div>
-                        )}
+                          <div>
+                            <div className="text-xs text-muted-foreground">MIN. TIME</div>
+                            <div className="font-semibold text-xs text-primary">{lender.minTimeInBusiness || "Varies*"}</div>
+                          </div>
+                        </div>
                         
-                        {lender.minRevenue && (
-                          <div className="flex items-center space-x-2 bg-white/80 rounded-md p-2">
-                            <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center">
-                              <BarChart3 className="h-3 w-3 text-primary" />
-                            </div>
-                            <div>
-                              <div className="text-xs text-muted-foreground">MIN. REVENUE</div>
-                              <div className="font-semibold text-xs text-primary">{lender.minRevenue}</div>
-                            </div>
+                        <div className="flex items-center space-x-2 bg-white/80 rounded-md p-2 col-span-2">
+                          <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center">
+                            <BarChart3 className="h-3 w-3 text-primary" />
                           </div>
-                        )}
-
-                        {lender.minCreditScore && (
-                          <div className="flex items-center space-x-2 bg-white/80 rounded-md p-2">
-                            <div className="w-6 h-6 bg-accent/10 rounded-full flex items-center justify-center">
-                              <TrendingUp className="h-3 w-3 text-accent" />
-                            </div>
-                            <div>
-                              <div className="text-xs text-muted-foreground">CREDIT</div>
-                              <div className="font-semibold text-xs text-primary">{lender.minCreditScore}</div>
-                            </div>
+                          <div>
+                            <div className="text-xs text-muted-foreground">MIN. REVENUE</div>
+                            <div className="font-semibold text-xs text-primary">{lender.minRevenue || "Varies*"}</div>
                           </div>
-                        )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -286,6 +274,13 @@ const Partners = () => {
                         </Badge>
                       )}
                     </div>
+                  </div>
+
+                  {/* Disclaimer */}
+                  <div className="mb-4 p-3 bg-muted/20 rounded-md">
+                    <p className="text-xs text-muted-foreground italic">
+                      * Terms and requirements may vary based on individual business circumstances and lender criteria.
+                    </p>
                   </div>
 
                   {/* CTA Button - Pushed to bottom */}
@@ -346,11 +341,11 @@ const Partners = () => {
                     </div>
                     <div>
                       <span className="text-muted-foreground">Min. Time:</span>
-                      <div className="font-medium">{lender.minTimeInBusiness || "N/A"}</div>
+                      <div className="font-medium">{lender.minTimeInBusiness || "Varies*"}</div>
                     </div>
                     <div className="col-span-2">
                       <span className="text-muted-foreground">Min. Revenue:</span>
-                      <div className="font-medium">{lender.minRevenue || "N/A"}</div>
+                      <div className="font-medium">{lender.minRevenue || "Varies*"}</div>
                     </div>
                   </div>
                 </CardContent>
@@ -361,25 +356,25 @@ const Partners = () => {
           {/* Desktop Table for larger screens */}
           <div className="hidden md:block overflow-x-auto">
             <div className="max-w-5xl mx-auto border border-muted/40 rounded-lg overflow-hidden shadow-sm">
-              <Table className="w-full bg-white">
+              <Table className="w-full">
                 <TableHeader>
-                  <TableRow className="bg-muted/50 border-b border-muted/30">
-                    <TableHead className="font-semibold text-muted-foreground w-[140px] py-3 px-3 text-xs uppercase tracking-wide border-r border-muted/20">
+                  <TableRow className="bg-primary border-b border-primary/20">
+                    <TableHead className="font-semibold text-primary-foreground w-[140px] py-3 px-3 text-xs uppercase tracking-wide border-r border-primary-foreground/20">
                       Lender
                     </TableHead>
-                    <TableHead className="font-semibold text-muted-foreground w-[120px] py-3 px-3 text-xs uppercase tracking-wide border-r border-muted/20">
+                    <TableHead className="font-semibold text-primary-foreground w-[120px] py-3 px-3 text-xs uppercase tracking-wide border-r border-primary-foreground/20">
                       Best For
                     </TableHead>
-                    <TableHead className="font-semibold text-muted-foreground w-[130px] py-3 px-3 text-xs uppercase tracking-wide border-r border-muted/20">
+                    <TableHead className="font-semibold text-primary-foreground w-[130px] py-3 px-3 text-xs uppercase tracking-wide border-r border-primary-foreground/20">
                       Funding Range
                     </TableHead>
-                    <TableHead className="font-semibold text-muted-foreground w-[100px] py-3 px-3 text-xs uppercase tracking-wide border-r border-muted/20">
+                    <TableHead className="font-semibold text-primary-foreground w-[100px] py-3 px-3 text-xs uppercase tracking-wide border-r border-primary-foreground/20">
                       Min. Time
                     </TableHead>
-                    <TableHead className="font-semibold text-muted-foreground w-[110px] py-3 px-3 text-xs uppercase tracking-wide border-r border-muted/20">
+                    <TableHead className="font-semibold text-primary-foreground w-[110px] py-3 px-3 text-xs uppercase tracking-wide border-r border-primary-foreground/20">
                       Min. Revenue
                     </TableHead>
-                    <TableHead className="font-semibold text-muted-foreground w-[80px] py-3 px-3 text-xs uppercase tracking-wide">
+                    <TableHead className="font-semibold text-primary-foreground w-[80px] py-3 px-3 text-xs uppercase tracking-wide">
                       Speed
                     </TableHead>
                   </TableRow>
@@ -388,11 +383,11 @@ const Partners = () => {
                   {lenders.map((lender, index) => (
                     <TableRow 
                       key={lender.id} 
-                      className={`hover:bg-muted/20 border-b border-muted/10 ${
-                        index % 2 === 0 ? 'bg-white' : 'bg-muted/5'
+                      className={`hover:bg-primary/5 border-b border-primary/10 ${
+                        index % 2 === 0 ? 'bg-primary/20' : 'bg-primary/10'
                       }`}
                     >
-                      <TableCell className="py-3 px-3 border-r border-muted/10">
+                      <TableCell className="py-3 px-3 border-r border-primary/10">
                         <div className="flex items-center space-x-2">
                           {lender.logo ? (
                             <img 
@@ -401,44 +396,47 @@ const Partners = () => {
                               className="w-10 h-6 object-contain shrink-0"
                             />
                           ) : (
-                            <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center shrink-0">
-                              <lender.icon className="h-3 w-3 text-primary" />
+                            <div className="w-6 h-6 rounded bg-primary-foreground/10 flex items-center justify-center shrink-0">
+                              <lender.icon className="h-3 w-3 text-primary-foreground" />
                             </div>
                           )}
-                          <span className="text-xs font-medium text-primary truncate">{lender.name}</span>
+                          <span className="text-xs font-medium text-primary-foreground truncate">{lender.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="py-3 px-3 border-r border-muted/10">
-                        <Badge variant="outline" className="text-xs whitespace-nowrap">
+                      <TableCell className="py-3 px-3 border-r border-primary/10">
+                        <Badge variant="secondary" className="text-xs whitespace-nowrap bg-primary-foreground/10 text-primary-foreground border-primary-foreground/20">
                           {lender.badge}
                         </Badge>
                       </TableCell>
-                      <TableCell className="py-3 px-3 text-xs font-medium border-r border-muted/10">
+                      <TableCell className="py-3 px-3 text-xs font-medium text-primary-foreground border-r border-primary/10">
                         <div className="whitespace-nowrap">{lender.fundingRange}</div>
                       </TableCell>
-                      <TableCell className="py-3 px-3 text-xs border-r border-muted/10">
-                        <div className="whitespace-nowrap">{lender.minTimeInBusiness || "N/A"}</div>
+                      <TableCell className="py-3 px-3 text-xs text-primary-foreground border-r border-primary/10">
+                        <div className="whitespace-nowrap">{lender.minTimeInBusiness || "Varies*"}</div>
                       </TableCell>
-                      <TableCell className="py-3 px-3 text-xs border-r border-muted/10">
-                        <div className="whitespace-nowrap">{lender.minRevenue || "N/A"}</div>
+                      <TableCell className="py-3 px-3 text-xs text-primary-foreground border-r border-primary/10">
+                        <div className="whitespace-nowrap">{lender.minRevenue || "Varies*"}</div>
                       </TableCell>
                       <TableCell className="py-3 px-3 text-xs">
                         <div className="whitespace-nowrap">
-                          {lender.fundingSpeed ? (
-                            <span className="text-accent font-medium">
-                              {lender.fundingSpeed.includes('24') ? '24hrs' : 
+                          <span className="text-secondary font-medium bg-secondary/10 px-2 py-1 rounded">
+                            {lender.fundingSpeed ? 
+                              (lender.fundingSpeed.includes('24') ? 'Same Day' : 
                                lender.fundingSpeed.includes('day') ? 'Fast' : 
-                               lender.fundingSpeed.includes('Fast') ? 'Fast' : 'Varies'}
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground">N/A</span>
-                          )}
+                               lender.fundingSpeed.includes('Fast') ? 'Fast' : 'Standard') 
+                              : 'Varies*'}
+                          </span>
                         </div>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+            </div>
+            <div className="max-w-5xl mx-auto mt-4">
+              <p className="text-xs text-muted-foreground italic text-center">
+                * Terms and requirements may vary based on individual business circumstances and lender criteria.
+              </p>
             </div>
           </div>
         </div>
