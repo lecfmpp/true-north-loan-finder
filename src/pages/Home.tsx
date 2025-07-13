@@ -2,136 +2,101 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  CheckCircle, 
-  Shield, 
-  Clock, 
-  Users, 
-  TrendingUp, 
-  CreditCard,
-  Star,
-  Quote
-} from "lucide-react";
+import { CheckCircle, Shield, Clock, Users, TrendingUp, CreditCard, Star, Quote } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-
-
 const Home = () => {
-  const trustIndicators = [
-    { icon: "🍁", text: "Proudly Canadian" },
-    { icon: "🔒", text: "Secure Application" },
-    { icon: "⚡", text: "Fast Funding" }
-  ];
-
-  const steps = [
-    {
-      number: "1",
-      title: "Use the Estimator",
-      description: "Answer simple questions about your business in 60 seconds",
-      icon: <CheckCircle className="h-8 w-8 text-secondary" />
-    },
-    {
-      number: "2", 
-      title: "See Your Score & Matches",
-      description: "Get your instant Loan Readiness Score and pre-qualified lender matches",
-      icon: <TrendingUp className="h-8 w-8 text-secondary" />
-    },
-    {
-      number: "3",
-      title: "Connect with Lenders", 
-      description: "Choose which lenders to connect with and receive competitive offers",
-      icon: <Users className="h-8 w-8 text-secondary" />
-    }
-  ];
-
-  const loanCategories = [
-    {
-      title: "Equipment Financing",
-      description: "Finance vehicles, machinery, and equipment with competitive rates",
-      amount: "$5K - $500K",
-      icon: <CreditCard className="h-6 w-6 text-secondary" />,
-      link: "/equipment-financing"
-    },
-    {
-      title: "Small Business Loans",
-      description: "Flexible term loans for growth, inventory, and working capital",
-      amount: "$10K - $800K", 
-      icon: <TrendingUp className="h-6 w-6 text-secondary" />,
-      link: "/small-business-loans"
-    }
-  ];
-
-  const testimonials = [
-    {
-      name: "Sarah Chen",
-      business: "Chen's Bakery, Toronto",
-      quote: "The Business Loan Estimator was so simple, and I had three lender matches within minutes. We got our equipment loan approved in just 5 days!",
-      rating: 5
-    },
-    {
-      name: "Mike Thompson", 
-      business: "Thompson Construction, Calgary",
-      quote: "True North connected us with the perfect lender for our truck financing. The whole process was transparent and professional.",
-      rating: 5
-    },
-    {
-      name: "Lisa Rodriguez",
-      business: "Digital Solutions Inc, Vancouver", 
-      quote: "As a tech startup, finding the right financing was crucial. The Business Loan Estimator matched us with lenders who understood our business model.",
-      rating: 5
-    }
-  ];
-
-  return (
-    <div className="min-h-screen bg-background">
+  const trustIndicators = [{
+    icon: "🍁",
+    text: "Proudly Canadian"
+  }, {
+    icon: "🔒",
+    text: "Secure Application"
+  }, {
+    icon: "⚡",
+    text: "Fast Funding"
+  }];
+  const steps = [{
+    number: "1",
+    title: "Take the Quiz",
+    description: "Answer simple questions about your business in 60 seconds",
+    icon: <CheckCircle className="h-8 w-8 text-secondary" />
+  }, {
+    number: "2",
+    title: "See Your Score & Matches",
+    description: "Get your instant Loan Readiness Score and pre-qualified lender matches",
+    icon: <TrendingUp className="h-8 w-8 text-secondary" />
+  }, {
+    number: "3",
+    title: "Connect with Lenders",
+    description: "Choose which lenders to connect with and receive competitive offers",
+    icon: <Users className="h-8 w-8 text-secondary" />
+  }];
+  const loanCategories = [{
+    title: "Equipment Financing",
+    description: "Finance vehicles, machinery, and equipment with competitive rates",
+    amount: "$5K - $500K",
+    icon: <CreditCard className="h-6 w-6 text-secondary" />,
+    link: "/equipment-financing"
+  }, {
+    title: "Small Business Loans",
+    description: "Flexible term loans for growth, inventory, and working capital",
+    amount: "$10K - $800K",
+    icon: <TrendingUp className="h-6 w-6 text-secondary" />,
+    link: "/small-business-loans"
+  }];
+  const testimonials = [{
+    name: "Sarah Chen",
+    business: "Chen's Bakery, Toronto",
+    quote: "The quiz was so simple, and I had three lender matches within minutes. We got our equipment loan approved in just 5 days!",
+    rating: 5
+  }, {
+    name: "Mike Thompson",
+    business: "Thompson Construction, Calgary",
+    quote: "True North connected us with the perfect lender for our truck financing. The whole process was transparent and professional.",
+    rating: 5
+  }, {
+    name: "Lisa Rodriguez",
+    business: "Digital Solutions Inc, Vancouver",
+    quote: "As a tech startup, finding the right financing was crucial. The quiz matched us with lenders who understood our business model.",
+    rating: 5
+  }];
+  return <div className="min-h-screen bg-background">
       <Header />
       
       {/* Hero Section */}
       <section className="relative py-20 lg:py-32 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5"></div>
-        <div className="container mx-auto px-4 relative">
-          <div className="grid lg:grid-cols-5 gap-12 items-center max-w-7xl mx-auto">
-            {/* Left Column - Text Content (60% width) */}
-            <div className="lg:col-span-3 text-left lg:pl-8 lg:pr-12">
-              <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm font-medium">
-                🍁 Canada's Trusted Business Loan Marketplace
-              </Badge>
-              
-              <h1 className="text-4xl lg:text-6xl font-bold font-sans text-primary mb-6 leading-tight">
-                Find the Right Business Loan to Grow Your
-                <span className="text-secondary"> Canadian Business</span>
-              </h1>
-              
-              <p className="text-xl lg:text-2xl text-muted-foreground mb-8 font-serif">
-                Use our Business Loan Estimator to see what you could qualify for in under 2 minutes.
-              </p>
-              
-              <div className="mb-12">
-                <Button asChild variant="cta" size="xl" className="text-lg px-8 bg-accent hover:bg-accent/90 text-accent-foreground">
-                  <Link to="/loan-estimator">Get My Loan Estimate</Link>
-                </Button>
-              </div>
-              
-              {/* Trust Bar */}
-              <div className="flex flex-wrap gap-8 text-sm text-muted-foreground">
-                {trustIndicators.map((item, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <span className="text-lg">{item.icon}</span>
-                    <span className="font-medium">{item.text}</span>
-                  </div>
-                ))}
-              </div>
+        <div className="container mx-auto relative px-[11px] py-0 my-0">
+          <div className="max-w-4xl mx-auto text-center">
+            <Badge variant="secondary" className="mb-6 text-sm font-medium py-0 px-[20px]">
+              🍁 Canada's Trusted Business Loan Marketplace
+            </Badge>
+            
+            <h1 className="text-4xl lg:text-6xl font-bold font-sans text-primary mb-6 leading-tight">
+              Find the Right Business Loan for Your 
+              <span className="text-secondary"> Canadian Small Business</span>
+            </h1>
+            
+            <p className="text-xl lg:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto font-serif">
+              Take our 60-second quiz to see your loan options from Canada's top lenders. Get $5K to $800K.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+              <Button asChild variant="cta" size="xl" className="text-lg px-8">
+                <Link to="/quiz">Check My Loan Options</Link>
+              </Button>
+              <Button asChild variant="outline" size="xl" className="text-lg px-8">
+                <Link to="/how-it-works">How It Works</Link>
+              </Button>
             </div>
             
-            {/* Right Column - Image (40% width) */}
-            <div className="lg:col-span-2">
-              <div className="relative">
-                <img 
-                  src="/lovable-uploads/e80bb666-2b36-4875-bd9f-78f3e944d749.png" 
-                  alt="Canadian business owner working on laptop" 
-                  className="w-full h-auto rounded-2xl shadow-[var(--shadow-card)] object-cover"
-                />
-              </div>
+            {/* Trust Bar */}
+            <div className="flex flex-wrap justify-center gap-8 text-sm text-muted-foreground">
+              {trustIndicators.map((item, index) => <div key={index} className="flex items-center gap-2">
+                  <span className="text-lg">{item.icon}</span>
+                  <span className="font-medium">{item.text}</span>
+                </div>)}
             </div>
           </div>
         </div>
@@ -150,8 +115,7 @@ const Home = () => {
           </div>
           
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {steps.map((step, index) => (
-              <Card key={index} className="text-center border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+            {steps.map((step, index) => <Card key={index} className="text-center border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                 <CardContent className="p-8">
                   <div className="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-6">
                     {step.icon}
@@ -166,8 +130,7 @@ const Home = () => {
                     {step.description}
                   </p>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -185,8 +148,7 @@ const Home = () => {
           </div>
           
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {loanCategories.map((category, index) => (
-              <Card key={index} className="group border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+            {loanCategories.map((category, index) => <Card key={index} className="group border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                 <CardContent className="p-8">
                   <div className="flex items-start justify-between mb-4">
                     <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center">
@@ -206,13 +168,12 @@ const Home = () => {
                     <Link to={category.link}>Learn More</Link>
                   </Button>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
           
           <div className="text-center mt-12">
             <Button asChild variant="cta" size="lg">
-              <Link to="/loan-estimator">Use the Loan Estimator</Link>
+              <Link to="/quiz">Start Your Application Now</Link>
             </Button>
           </div>
         </div>
@@ -231,13 +192,10 @@ const Home = () => {
           </div>
           
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300">
+            {testimonials.map((testimonial, index) => <Card key={index} className="border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300">
                 <CardContent className="p-8">
                   <div className="flex mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 fill-accent text-accent" />
-                    ))}
+                    {[...Array(testimonial.rating)].map((_, i) => <Star key={i} className="h-5 w-5 fill-accent text-accent" />)}
                   </div>
                   <Quote className="h-8 w-8 text-accent mb-4" />
                   <p className="text-muted-foreground mb-6 font-serif italic">
@@ -252,8 +210,7 @@ const Home = () => {
                     </div>
                   </div>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -268,14 +225,12 @@ const Home = () => {
             Join thousands of Canadian businesses who've found their ideal funding through our platform
           </p>
           <Button asChild size="xl" variant="secondary" className="text-lg px-8">
-            <Link to="/loan-estimator">Get My Loan Estimate</Link>
+            <Link to="/quiz">Take the 60-Second Quiz</Link>
           </Button>
         </div>
       </section>
 
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default Home;
