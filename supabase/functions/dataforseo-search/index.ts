@@ -28,7 +28,7 @@ serve(async (req) => {
 
   try {
     const { query, type } = await req.json();
-    const dataforSeoAuth = Deno.env.get('DATAFORSEO_AUTHORIZATION');
+    const dataforSeoAuth = Deno.env.get('Authorization');
 
     if (!dataforSeoAuth) {
       console.error('Missing DataForSEO Authorization credentials');
