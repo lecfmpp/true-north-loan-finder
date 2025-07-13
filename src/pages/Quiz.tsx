@@ -602,7 +602,7 @@ const Quiz = () => {
                 <div className="space-y-8 animate-fade-in">
                   <div className="text-center">
                     <Building className="h-12 w-12 text-secondary mx-auto mb-4" />
-                    <h2 className="text-3xl font-bold font-sans text-primary mb-3">
+                    <h2 className="text-xl md:text-3xl font-bold font-sans text-primary mb-3">
                       What's the primary purpose of the funds?
                     </h2>
                     <p className="text-lg text-muted-foreground font-serif">
