@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import canadianBusinessOwner from "@/assets/canadian-business-owner-hero.jpg";
+
 
 const Home = () => {
   const trustIndicators = [
@@ -92,7 +92,7 @@ const Home = () => {
         <div className="container mx-auto px-4 relative">
           <div className="grid lg:grid-cols-5 gap-12 items-center max-w-7xl mx-auto">
             {/* Left Column - Text Content (60% width) */}
-            <div className="lg:col-span-3 text-left">
+            <div className="lg:col-span-3 text-left lg:pl-8 lg:pr-12">
               <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm font-medium">
                 🍁 Canada's Trusted Business Loan Marketplace
               </Badge>
@@ -127,8 +127,8 @@ const Home = () => {
             <div className="lg:col-span-2">
               <div className="relative">
                 <img 
-                  src={canadianBusinessOwner} 
-                  alt="Canadian business owner in modern office" 
+                  src="/lovable-uploads/e80bb666-2b36-4875-bd9f-78f3e944d749.png" 
+                  alt="Canadian business owner working on laptop" 
                   className="w-full h-auto rounded-2xl shadow-[var(--shadow-card)] object-cover"
                 />
               </div>
