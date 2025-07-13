@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import canadianBusinessOwner from "@/assets/canadian-business-owner-hero.jpg";
 
 const Home = () => {
   const trustIndicators = [
@@ -89,37 +90,48 @@ const Home = () => {
       <section className="relative py-20 lg:py-32 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5"></div>
         <div className="container mx-auto px-4 relative">
-          <div className="max-w-4xl mx-auto text-center">
-            <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm font-medium">
-              🍁 Canada's Trusted Business Loan Marketplace
-            </Badge>
-            
-            <h1 className="text-4xl lg:text-6xl font-bold font-sans text-primary mb-6 leading-tight">
-              Find the Right Business Loan for Your 
-              <span className="text-secondary"> Canadian Small Business</span>
-            </h1>
-            
-            <p className="text-xl lg:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto font-serif">
-              Use our Business Loan Estimator to see what you could qualify for in under 2 minutes. Get $5K to $800K.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Button asChild variant="cta" size="xl" className="text-lg px-8">
-                <Link to="/loan-estimator">Get My Loan Estimate</Link>
-              </Button>
-              <Button asChild variant="outline" size="xl" className="text-lg px-8">
-                <Link to="/how-it-works">How It Works</Link>
-              </Button>
+          <div className="grid lg:grid-cols-5 gap-12 items-center max-w-7xl mx-auto">
+            {/* Left Column - Text Content (60% width) */}
+            <div className="lg:col-span-3 text-left">
+              <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm font-medium">
+                🍁 Canada's Trusted Business Loan Marketplace
+              </Badge>
+              
+              <h1 className="text-4xl lg:text-6xl font-bold font-sans text-primary mb-6 leading-tight">
+                Find the Right Business Loan to Grow Your
+                <span className="text-secondary"> Canadian Business</span>
+              </h1>
+              
+              <p className="text-xl lg:text-2xl text-muted-foreground mb-8 font-serif">
+                Use our Business Loan Estimator to see what you could qualify for in under 2 minutes.
+              </p>
+              
+              <div className="mb-12">
+                <Button asChild variant="cta" size="xl" className="text-lg px-8 bg-accent hover:bg-accent/90 text-accent-foreground">
+                  <Link to="/loan-estimator">Get My Loan Estimate</Link>
+                </Button>
+              </div>
+              
+              {/* Trust Bar */}
+              <div className="flex flex-wrap gap-8 text-sm text-muted-foreground">
+                {trustIndicators.map((item, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <span className="text-lg">{item.icon}</span>
+                    <span className="font-medium">{item.text}</span>
+                  </div>
+                ))}
+              </div>
             </div>
             
-            {/* Trust Bar */}
-            <div className="flex flex-wrap justify-center gap-8 text-sm text-muted-foreground">
-              {trustIndicators.map((item, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <span className="text-lg">{item.icon}</span>
-                  <span className="font-medium">{item.text}</span>
-                </div>
-              ))}
+            {/* Right Column - Image (40% width) */}
+            <div className="lg:col-span-2">
+              <div className="relative">
+                <img 
+                  src={canadianBusinessOwner} 
+                  alt="Canadian business owner in modern office" 
+                  className="w-full h-auto rounded-2xl shadow-[var(--shadow-card)] object-cover"
+                />
+              </div>
             </div>
           </div>
         </div>
