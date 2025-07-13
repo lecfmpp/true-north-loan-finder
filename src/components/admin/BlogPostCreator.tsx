@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,8 +18,27 @@ import {
   BarChart3,
   Target,
   PenTool,
-  Upload
+  Upload,
+  Save,
+  RotateCcw,
+  FolderOpen,
+  Trash2
 } from 'lucide-react';
+
+interface SavedBrief {
+  id: string;
+  keyword: string;
+  target_audience: string;
+  user_intent: string;
+  suggested_h1: string;
+  h2_headings: string[];
+  key_angles: string[];
+  content_gaps: string[];
+  word_count: number;
+  competitors: any; // JSON type from database
+  status: string;
+  created_at: string;
+}
 
 interface KeywordOpportunity {
   keyword: string;
@@ -64,6 +83,8 @@ const BlogPostCreator = () => {
   const [blogPost, setBlogPost] = useState<BlogPostData | null>(null);
   const [loading, setLoading] = useState(false);
   const [briefApproved, setBriefApproved] = useState(false);
+  const [savedBriefs, setSavedBriefs] = useState<SavedBrief[]>([]);
+  const [showSavedBriefs, setShowSavedBriefs] = useState(false);
   const { toast } = useToast();
 
   const steps = [
@@ -74,6 +95,25 @@ const BlogPostCreator = () => {
     { id: 5, title: "Generate Post", icon: PenTool, description: "Write full article" },
     { id: 6, title: "Publish", icon: Upload, description: "Final review & publish" }
   ];
+
+  // Load saved briefs on component mount
+  useEffect(() => {
+    loadSavedBriefs();
+  }, []);
+
+  const loadSavedBriefs = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('content_briefs')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setSavedBriefs(data || []);
+    } catch (error) {
+      console.error('Error loading saved briefs:', error);
+    }
+  };
 
   // Step 1: Topic Opportunity Discovery
   const discoverKeywords = async () => {
@@ -180,6 +220,109 @@ const BlogPostCreator = () => {
     });
   };
 
+  // Save content brief
+  const saveBrief = async () => {
+    if (!contentBrief) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('content_briefs')
+        .insert({
+          keyword: contentBrief.keyword,
+          target_audience: contentBrief.targetAudience,
+          user_intent: contentBrief.userIntent,
+          suggested_h1: contentBrief.suggestedH1,
+          h2_headings: contentBrief.h2Headings,
+          key_angles: contentBrief.keyAngles,
+          content_gaps: contentBrief.contentGaps,
+          word_count: contentBrief.wordCount,
+          competitors: JSON.stringify(competitors),
+          status: 'saved'
+        });
+
+      if (error) throw error;
+
+      await loadSavedBriefs();
+      toast({
+        title: "Success",
+        description: "Content brief saved successfully"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save content brief",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load saved brief
+  const loadBrief = (brief: SavedBrief) => {
+    setContentBrief({
+      keyword: brief.keyword,
+      targetAudience: brief.target_audience,
+      userIntent: brief.user_intent,
+      suggestedH1: brief.suggested_h1,
+      h2Headings: brief.h2_headings,
+      keyAngles: brief.key_angles,
+      contentGaps: brief.content_gaps,
+      wordCount: brief.word_count
+    });
+    setSelectedKeyword(brief.keyword);
+    setCompetitors(brief.competitors ? JSON.parse(brief.competitors) : []);
+    setCurrentStep(4);
+    setBriefApproved(false);
+    setShowSavedBriefs(false);
+    toast({
+      title: "Brief Loaded",
+      description: `Loaded brief for "${brief.keyword}"`
+    });
+  };
+
+  // Delete saved brief
+  const deleteBrief = async (briefId: string) => {
+    try {
+      const { error } = await supabase
+        .from('content_briefs')
+        .delete()
+        .eq('id', briefId);
+
+      if (error) throw error;
+
+      await loadSavedBriefs();
+      toast({
+        title: "Success",
+        description: "Content brief deleted successfully"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete content brief",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Reset workflow
+  const resetWorkflow = () => {
+    setCurrentStep(1);
+    setSeedKeyword('');
+    setKeywords([]);
+    setSelectedKeyword('');
+    setCompetitors([]);
+    setContentBrief(null);
+    setBlogPost(null);
+    setBriefApproved(false);
+    setShowSavedBriefs(false);
+    toast({
+      title: "Workflow Reset",
+      description: "You can now start a new blog post creation workflow"
+    });
+  };
+
   // Step 5: Generate Full Blog Post
   const generateBlogPost = async () => {
     if (!contentBrief) return;
@@ -238,14 +381,7 @@ const BlogPostCreator = () => {
       });
 
       // Reset the workflow
-      setCurrentStep(1);
-      setSeedKeyword('');
-      setKeywords([]);
-      setSelectedKeyword('');
-      setCompetitors([]);
-      setContentBrief(null);
-      setBlogPost(null);
-      setBriefApproved(false);
+      resetWorkflow();
     } catch (error) {
       toast({
         title: "Error",
@@ -265,13 +401,33 @@ const BlogPostCreator = () => {
 
   return (
     <div className="space-y-6">
-      {/* Progress Steps */}
+      {/* Header with Reset and Saved Briefs */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <PenTool className="w-5 h-5" />
-            AI Blog Post Creator
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <PenTool className="w-5 h-5" />
+              <CardTitle>AI Blog Post Creator</CardTitle>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setShowSavedBriefs(!showSavedBriefs)}
+              >
+                <FolderOpen className="w-4 h-4 mr-2" />
+                Saved Briefs ({savedBriefs.length})
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={resetWorkflow}
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Reset
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-4">
@@ -303,6 +459,65 @@ const BlogPostCreator = () => {
               );
             })}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Saved Briefs Panel */}
+      {showSavedBriefs && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FolderOpen className="w-5 h-5" />
+              Saved Content Briefs
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {savedBriefs.length === 0 ? (
+              <p className="text-muted-foreground text-center py-4">
+                No saved briefs yet. Complete a content brief and save it for later use.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {savedBriefs.map((brief) => (
+                  <div key={brief.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex-1">
+                      <div className="font-medium">{brief.keyword}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {brief.suggested_h1}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Created: {new Date(brief.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" onClick={() => loadBrief(brief)}>
+                        Load Brief
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => deleteBrief(brief.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Progress Steps */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Workflow Progress</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground text-sm">
+            Follow the steps above to create your AI-powered blog post.
+          </p>
         </CardContent>
       </Card>
 
@@ -461,6 +676,10 @@ const BlogPostCreator = () => {
                 <Button onClick={approveBrief} disabled={loading}>
                   <CheckCircle className="w-4 h-4 mr-2" />
                   Approve Brief
+                </Button>
+                <Button onClick={saveBrief} disabled={loading} variant="outline">
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Brief
                 </Button>
                 <Button variant="outline" onClick={() => setCurrentStep(2)}>
                   Back to Keywords

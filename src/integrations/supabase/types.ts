@@ -115,6 +115,57 @@ export type Database = {
           },
         ]
       }
+      content_briefs: {
+        Row: {
+          competitors: Json | null
+          content_gaps: string[]
+          created_at: string
+          created_by: string | null
+          h2_headings: string[]
+          id: string
+          key_angles: string[]
+          keyword: string
+          status: string
+          suggested_h1: string
+          target_audience: string
+          updated_at: string
+          user_intent: string
+          word_count: number
+        }
+        Insert: {
+          competitors?: Json | null
+          content_gaps: string[]
+          created_at?: string
+          created_by?: string | null
+          h2_headings: string[]
+          id?: string
+          key_angles: string[]
+          keyword: string
+          status?: string
+          suggested_h1: string
+          target_audience: string
+          updated_at?: string
+          user_intent: string
+          word_count: number
+        }
+        Update: {
+          competitors?: Json | null
+          content_gaps?: string[]
+          created_at?: string
+          created_by?: string | null
+          h2_headings?: string[]
+          id?: string
+          key_angles?: string[]
+          keyword?: string
+          status?: string
+          suggested_h1?: string
+          target_audience?: string
+          updated_at?: string
+          user_intent?: string
+          word_count?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
