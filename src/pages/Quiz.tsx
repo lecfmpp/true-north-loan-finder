@@ -537,7 +537,7 @@ const Quiz = () => {
               <span className="text-secondary"> & Get It In Your Account Within 48 Hours</span>
             </h2>
             <p className="text-base md:text-lg text-muted-foreground mb-6 md:mb-8 max-w-2xl mx-auto font-serif">
-              No guesswork. No surprises. Just your personalized loan amount, rates, and exact timeline to funding—delivered in the next 60 seconds.
+              No guesswork. No surprises. Just the best options.
             </p>
           </div>
         </div>
