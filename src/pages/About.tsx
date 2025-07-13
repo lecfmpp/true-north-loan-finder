@@ -126,7 +126,7 @@ const About = () => {
                   with lenders who want to help them succeed.
                 </p>
                 <Button asChild variant="cta" size="lg">
-                  <Link to="/quiz">Experience the Difference</Link>
+                  <Link to="/quiz">Use the Loan Estimator</Link>
                 </Button>
               </div>
               <div className="relative">

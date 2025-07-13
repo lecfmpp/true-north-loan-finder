@@ -123,7 +123,7 @@ const EquipmentFinancing = () => {
     },
     {
       question: "How do I qualify for equipment financing in Canada?",
-      answer: "Qualification is often more flexible than for traditional bank loans because the equipment acts as security. Lenders will typically look at your business's time in operation, monthly revenue, and personal credit score. To see exactly what you pre-qualify for, you can take our Loan Readiness Quiz."
+      answer: "Qualification is often more flexible than for traditional bank loans because the equipment acts as security. Lenders will typically look at your business's time in operation, monthly revenue, and personal credit score. To see exactly what you pre-qualify for, you can use our Business Loan Estimator."
     },
     {
       question: "Can I get financing for used equipment?",
@@ -154,7 +154,7 @@ const EquipmentFinancing = () => {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Button asChild variant="cta" size="xl" className="text-lg px-8">
-                <Link to="/quiz">Check My Equipment Loan Options</Link>
+                <Link to="/quiz">Get My Equipment Loan Estimate</Link>
               </Button>
               <Button asChild variant="outline" size="xl" className="text-lg px-8">
                 <Link to="/how-it-works">How It Works</Link>
@@ -406,7 +406,7 @@ const EquipmentFinancing = () => {
             Ready to Finance Your Equipment?
           </h2>
           <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto font-serif">
-            Take our quick quiz to see your equipment financing options and get matched with the right lenders
+            Use our Business Loan Estimator to see your equipment financing options and get matched with the right lenders
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="xl" variant="secondary" className="text-lg px-8">

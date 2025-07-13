@@ -31,7 +31,7 @@ const Footer = () => {
                 How It Works
               </Link>
               <Link to="/quiz" className="block text-primary-foreground/80 hover:text-primary-foreground text-sm transition-colors">
-                Loan Quiz
+                Loan Estimator
               </Link>
               <Link to="/about" className="block text-primary-foreground/80 hover:text-primary-foreground text-sm transition-colors">
                 About Us

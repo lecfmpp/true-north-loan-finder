@@ -84,7 +84,7 @@ const Header = () => {
                   <Link to="/auth">Sign In</Link>
                 </Button>
                 <Button asChild variant="cta" size="lg">
-                  <Link to="/quiz">Get My Loan Quote</Link>
+                  <Link to="/quiz">Get My Loan Estimate</Link>
                 </Button>
               </div>}
           </div>

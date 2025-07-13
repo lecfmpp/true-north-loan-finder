@@ -20,8 +20,8 @@ const HowItWorks = () => {
   const steps = [
     {
       number: "1",
-      title: "Take the 60-Second Quiz",
-      description: "Answer simple questions about your business, funding needs, and financial situation. Our smart quiz adapts to your responses for maximum accuracy.",
+      title: "Use the Business Loan Estimator",
+      description: "Answer straightforward questions about your business, funding needs, and financial situation so we can calculate your funding potential.",
       details: [
         "Loan amount and purpose",
         "Time in business and revenue",
@@ -97,12 +97,12 @@ const HowItWorks = () => {
 
   const faqs = [
     {
-      question: "Is the quiz really free?",
+      question: "Is the Business Loan Estimator really free?",
       answer: "Yes, completely free. There are no hidden fees or costs to use our matching service."
     },
     {
       question: "Will this affect my credit score?",
-      answer: "No, our quiz and matching process uses a soft credit inquiry that doesn't impact your credit score."
+      answer: "No, our Business Loan Estimator and matching process uses a soft credit inquiry that doesn't impact your credit score."
     },
     {
       question: "How accurate is the Loan Readiness Score?",
@@ -314,7 +314,7 @@ const HowItWorks = () => {
             Ready to Get Started?
           </h2>
           <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto font-serif">
-            Take our 60-second quiz and discover your funding options today
+            Use our Business Loan Estimator and discover your funding options today
           </p>
           <Button asChild size="xl" variant="secondary" className="text-lg px-8">
             <Link to="/quiz">

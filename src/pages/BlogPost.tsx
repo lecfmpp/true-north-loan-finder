@@ -184,10 +184,10 @@ const BlogPost = () => {
                 Ready to Get Started?
               </h3>
               <p className="text-muted-foreground font-serif mb-6">
-                Take our quick quiz to see what financing options are available for your business.
+                Use our Business Loan Estimator to see what financing options are available for your business.
               </p>
               <Button asChild variant="cta" size="lg">
-                <Link to="/quiz">Take the 60-Second Quiz</Link>
+                <Link to="/quiz">Get My Loan Estimate</Link>
               </Button>
             </div>
           </div>

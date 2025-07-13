@@ -517,7 +517,7 @@ const Quiz = () => {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <h1 className="text-2xl font-bold font-sans text-primary">
-                Loan Readiness Quiz
+                Business Loan Estimator
               </h1>
               <span className="text-sm text-muted-foreground">
                 Step {currentStep} of {totalSteps}
@@ -702,7 +702,7 @@ const Quiz = () => {
                       Your results are ready!
                     </h2>
                     <p className="text-muted-foreground font-serif">
-                      Where should we send your Loan Readiness Score?
+                      Where should we send your Business Loan Estimate?
                     </p>
                   </div>
                   

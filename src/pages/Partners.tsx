@@ -451,11 +451,11 @@ const Partners = () => {
             Ready to Connect with the Right Lender?
           </h2>
           <p className="text-lg text-primary-foreground/90 max-w-2xl mx-auto mb-8">
-            Take our 60-second quiz to get matched with lenders who are actively seeking businesses like yours.
+            Use our Business Loan Estimator to get matched with lenders who are actively seeking businesses like yours.
           </p>
           <Button asChild size="lg" variant="secondary" className="shadow-lg">
             <Link to="/quiz">
-              Start Your Loan Readiness Quiz
+              Use the Business Loan Estimator
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>

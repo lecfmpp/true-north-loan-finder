@@ -25,7 +25,7 @@ const Home = () => {
   const steps = [
     {
       number: "1",
-      title: "Take the Quiz",
+      title: "Use the Estimator",
       description: "Answer simple questions about your business in 60 seconds",
       icon: <CheckCircle className="h-8 w-8 text-secondary" />
     },
@@ -64,7 +64,7 @@ const Home = () => {
     {
       name: "Sarah Chen",
       business: "Chen's Bakery, Toronto",
-      quote: "The quiz was so simple, and I had three lender matches within minutes. We got our equipment loan approved in just 5 days!",
+      quote: "The Business Loan Estimator was so simple, and I had three lender matches within minutes. We got our equipment loan approved in just 5 days!",
       rating: 5
     },
     {
@@ -76,7 +76,7 @@ const Home = () => {
     {
       name: "Lisa Rodriguez",
       business: "Digital Solutions Inc, Vancouver", 
-      quote: "As a tech startup, finding the right financing was crucial. The quiz matched us with lenders who understood our business model.",
+      quote: "As a tech startup, finding the right financing was crucial. The Business Loan Estimator matched us with lenders who understood our business model.",
       rating: 5
     }
   ];
@@ -100,12 +100,12 @@ const Home = () => {
             </h1>
             
             <p className="text-xl lg:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto font-serif">
-              Take our 60-second quiz to see your loan options from Canada's top lenders. Get $5K to $800K.
+              Use our Business Loan Estimator to see what you could qualify for in under 2 minutes. Get $5K to $800K.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Button asChild variant="cta" size="xl" className="text-lg px-8">
-                <Link to="/quiz">Check My Loan Options</Link>
+                <Link to="/quiz">Get My Loan Estimate</Link>
               </Button>
               <Button asChild variant="outline" size="xl" className="text-lg px-8">
                 <Link to="/how-it-works">How It Works</Link>
@@ -200,7 +200,7 @@ const Home = () => {
           
           <div className="text-center mt-12">
             <Button asChild variant="cta" size="lg">
-              <Link to="/quiz">Start Your Application Now</Link>
+              <Link to="/quiz">Use the Loan Estimator</Link>
             </Button>
           </div>
         </div>
@@ -256,7 +256,7 @@ const Home = () => {
             Join thousands of Canadian businesses who've found their ideal funding through our platform
           </p>
           <Button asChild size="xl" variant="secondary" className="text-lg px-8">
-            <Link to="/quiz">Take the 60-Second Quiz</Link>
+            <Link to="/quiz">Get My Loan Estimate</Link>
           </Button>
         </div>
       </section>
