@@ -14,6 +14,7 @@ import {
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import businessOwnerImage from "@/assets/business-owner-hero.jpg";
+import manufacturingOwnerImage from "@/assets/manufacturing-owner.jpg";
 
 const About = () => {
   const values = [
@@ -131,18 +132,11 @@ const About = () => {
                 </Button>
               </div>
               <div className="relative">
-                <Card className="border-0 shadow-[var(--shadow-card)] transform rotate-3 hover:rotate-0 transition-transform duration-300">
-                  <CardContent className="p-8 bg-gradient-to-br from-secondary/10 to-accent/10">
-                    <div className="flex items-center mb-4">
-                      <Target className="h-8 w-8 text-secondary mr-3" />
-                      <h3 className="text-xl font-semibold font-sans text-primary">Our Vision</h3>
-                    </div>
-                    <p className="text-muted-foreground font-serif">
-                      To become Canada's most trusted business financing platform, where every 
-                      small business owner can easily find and secure the funding they need to grow.
-                    </p>
-                  </CardContent>
-                </Card>
+                <img 
+                  src={manufacturingOwnerImage} 
+                  alt="Happy manufacturing business owner" 
+                  className="w-full h-96 object-cover rounded-lg shadow-[var(--shadow-card)]"
+                />
               </div>
             </div>
           </div>
