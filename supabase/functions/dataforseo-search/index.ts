@@ -32,6 +32,7 @@ serve(async (req) => {
     
     const dataforSeoAuth = Deno.env.get('Authorization');
     console.log('DataForSEO Auth available:', !!dataforSeoAuth);
+    console.log('DataForSEO Auth format check (first 20 chars):', dataforSeoAuth?.substring(0, 20));
 
     if (!dataforSeoAuth) {
       console.error('Missing DataForSEO Authorization credentials');
@@ -79,6 +80,7 @@ async function discoverKeywords(seedKeyword: string, authorization: string, coun
   try {
     // First, get related keywords from DataForSEO Keywords Data API
     const relatedKeywordsUrl = 'https://api.dataforseo.com/v3/keywords_data/google/search_volume/live';
+    console.log('Making DataForSEO API call to:', relatedKeywordsUrl);
     
     // Generate keyword variations for the request
     const keywordVariations = [
@@ -99,17 +101,21 @@ async function discoverKeywords(seedKeyword: string, authorization: string, coun
       `${seedKeyword} implementation`
     ];
 
+    const requestBody = [{
+      location_name: country,
+      language_name: "English",
+      keywords: keywordVariations
+    }];
+    
+    console.log('Request body:', JSON.stringify(requestBody, null, 2));
+    
     const response = await fetch(relatedKeywordsUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Basic ${authorization}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify([{
-        location_name: country,
-        language_name: "English",
-        keywords: keywordVariations
-      }]),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
