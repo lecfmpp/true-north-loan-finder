@@ -46,6 +46,7 @@ const Admin = () => {
   const [leads, setLeads] = useState<QuizResponse[]>([]);
   const [filteredLeads, setFilteredLeads] = useState<QuizResponse[]>([]);
   const [approvedPartners, setApprovedPartners] = useState<Array<{id: string, name: string, email: string}>>([]);
+  const [applicationsCount, setApplicationsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -84,6 +85,7 @@ const Admin = () => {
   useEffect(() => {
     if (user && isAdmin) {
       fetchLeads();
+      fetchApplicationsCount();
       if (isSuperAdmin) {
         fetchApprovedPartners();
       }
@@ -147,6 +149,19 @@ const Admin = () => {
       setEmailEnrollments(enrollmentMap);
     } catch (error) {
       console.error('Error fetching email enrollments:', error);
+    }
+  };
+
+  const fetchApplicationsCount = async () => {
+    try {
+      const { count, error } = await supabase
+        .from('lender_broker_applications')
+        .select('*', { count: 'exact', head: true });
+
+      if (error) throw error;
+      setApplicationsCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching applications count:', error);
     }
   };
 
@@ -448,6 +463,9 @@ const Admin = () => {
             <TabsTrigger value="leads" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               Leads
+              <div className="flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-blue-900 bg-green-500 rounded">
+                {leads.length}
+              </div>
             </TabsTrigger>
             <TabsTrigger value="available-times" className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
@@ -456,6 +474,9 @@ const Admin = () => {
             <TabsTrigger value="applications" className="flex items-center gap-2">
               <UserCheck className="w-4 h-4" />
               Applications
+              <div className="flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-blue-900 bg-green-500 rounded">
+                {applicationsCount}
+              </div>
             </TabsTrigger>
             {isSuperAdmin && (
               <>
