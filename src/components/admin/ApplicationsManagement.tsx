@@ -309,73 +309,86 @@ export const ApplicationsManagement = () => {
                 )}
               </div>
 
-              {/* Business Preferences */}
-              <div className="space-y-4">
-                <h4 className="font-medium text-lg">Business Preferences</h4>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
-                  <div>
-                    <div className="font-medium text-sm mb-2">Business Types</div>
-                    <p className="text-sm text-muted-foreground">{application.business_types?.join(", ") || 'Not specified'}</p>
-                  </div>
-                  
-                  <div>
-                    <div className="font-medium text-sm mb-2">Preferred Industries</div>
-                    <p className="text-sm text-muted-foreground">{application.preferred_industries?.join(", ") || 'Not specified'}</p>
-                  </div>
-                  
-                  <div>
-                    <div className="font-medium text-sm mb-2">Monthly Revenue Range</div>
-                    <p className="text-sm text-muted-foreground">
-                      {application.min_monthly_revenue || 'Not specified'} - {application.max_monthly_revenue || 'Not specified'}
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <div className="font-medium text-sm mb-2">Min Time in Business</div>
-                    <p className="text-sm text-muted-foreground">{application.min_time_in_business || 'Not specified'}</p>
-                  </div>
-                  
-                  <div>
-                    <div className="font-medium text-sm mb-2">Min Credit Score</div>
-                    <p className="text-sm text-muted-foreground">{application.min_credit_score || 'Not specified'}</p>
-                  </div>
-                  
-                  <div>
-                    <div className="font-medium text-sm mb-2">Loan Amount Range</div>
-                    <p className="text-sm text-muted-foreground">
-                      {application.min_loan_amount || 'Not specified'} - {application.max_loan_amount || 'Not specified'}
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <div className="font-medium text-sm mb-2">Funding Purposes</div>
-                    <p className="text-sm text-muted-foreground">{application.funding_purposes?.join(", ") || 'Not specified'}</p>
-                  </div>
-                  
-                  <div>
-                    <div className="font-medium text-sm mb-2">Geographic Areas</div>
-                    <p className="text-sm text-muted-foreground">{application.geographic_areas?.join(", ") || 'Not specified'}</p>
-                  </div>
-                </div>
-              </div>
+              {/* Accordion for Business Details */}
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="business-details" className="border-none">
+                  <AccordionTrigger className="flex items-center gap-2 hover:no-underline pb-2">
+                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                      <ChevronDown className="h-4 w-4 text-blue-900 transition-transform duration-200" />
+                    </div>
+                    <span className="text-sm font-medium">View Business Details</span>
+                  </AccordionTrigger>
+                  <AccordionContent className="space-y-4 pt-4">
+                    {/* Business Preferences */}
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-lg">Business Preferences</h4>
+                      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
+                        <div>
+                          <div className="font-medium text-sm mb-2">Business Types</div>
+                          <p className="text-sm text-muted-foreground">{application.business_types?.join(", ") || 'Not specified'}</p>
+                        </div>
+                        
+                        <div>
+                          <div className="font-medium text-sm mb-2">Preferred Industries</div>
+                          <p className="text-sm text-muted-foreground">{application.preferred_industries?.join(", ") || 'Not specified'}</p>
+                        </div>
+                        
+                        <div>
+                          <div className="font-medium text-sm mb-2">Monthly Revenue Range</div>
+                          <p className="text-sm text-muted-foreground">
+                            {application.min_monthly_revenue || 'Not specified'} - {application.max_monthly_revenue || 'Not specified'}
+                          </p>
+                        </div>
+                        
+                        <div>
+                          <div className="font-medium text-sm mb-2">Min Time in Business</div>
+                          <p className="text-sm text-muted-foreground">{application.min_time_in_business || 'Not specified'}</p>
+                        </div>
+                        
+                        <div>
+                          <div className="font-medium text-sm mb-2">Min Credit Score</div>
+                          <p className="text-sm text-muted-foreground">{application.min_credit_score || 'Not specified'}</p>
+                        </div>
+                        
+                        <div>
+                          <div className="font-medium text-sm mb-2">Loan Amount Range</div>
+                          <p className="text-sm text-muted-foreground">
+                            {application.min_loan_amount || 'Not specified'} - {application.max_loan_amount || 'Not specified'}
+                          </p>
+                        </div>
+                        
+                        <div>
+                          <div className="font-medium text-sm mb-2">Funding Purposes</div>
+                          <p className="text-sm text-muted-foreground">{application.funding_purposes?.join(", ") || 'Not specified'}</p>
+                        </div>
+                        
+                        <div>
+                          <div className="font-medium text-sm mb-2">Geographic Areas</div>
+                          <p className="text-sm text-muted-foreground">{application.geographic_areas?.join(", ") || 'Not specified'}</p>
+                        </div>
+                      </div>
+                    </div>
 
-              {application.business_description && (
-                <div>
-                  <h4 className="font-medium mb-2">Business Description</h4>
-                  <p className="text-sm text-muted-foreground bg-muted p-3 rounded">
-                    {application.business_description}
-                  </p>
-                </div>
-              )}
+                    {application.business_description && (
+                      <div>
+                        <h4 className="font-medium mb-2">Business Description</h4>
+                        <p className="text-sm text-muted-foreground bg-muted p-3 rounded">
+                          {application.business_description}
+                        </p>
+                      </div>
+                    )}
 
-              {application.additional_requirements && (
-                <div>
-                  <h4 className="font-medium mb-2">Special Requirements</h4>
-                  <p className="text-sm text-muted-foreground bg-muted p-3 rounded">
-                    {application.additional_requirements}
-                  </p>
-                </div>
-              )}
+                    {application.additional_requirements && (
+                      <div>
+                        <h4 className="font-medium mb-2">Special Requirements</h4>
+                        <p className="text-sm text-muted-foreground bg-muted p-3 rounded">
+                          {application.additional_requirements}
+                        </p>
+                      </div>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
 
               {application.rejection_reason && (
                 <div>
