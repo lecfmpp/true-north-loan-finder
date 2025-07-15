@@ -220,9 +220,9 @@ export function ChatWidget() {
 
       {/* Chat Window */}
       {isOpen && (
-        <Card className="w-80 h-96 shadow-xl animate-scale-in">
+        <Card className="w-80 h-[500px] shadow-xl animate-scale-in flex flex-col">
           <CardHeader 
-            className="flex flex-row items-center justify-between p-4 text-white rounded-t-lg"
+            className="flex flex-row items-center justify-between p-4 text-white rounded-t-lg flex-shrink-0"
             style={{ backgroundColor: config.primary_color }}
           >
             <div className="flex items-center gap-3">
@@ -247,7 +247,7 @@ export function ChatWidget() {
             </Button>
           </CardHeader>
 
-          <CardContent className="flex flex-col h-full p-0">
+          <CardContent className="flex flex-col flex-1 p-0 min-h-0">
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {messages.map((message) => (
