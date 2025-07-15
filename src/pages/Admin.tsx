@@ -11,10 +11,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { Download, Search, Filter, LogOut, Users, FileText, PenTool } from 'lucide-react';
+import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail } from 'lucide-react';
 import Header from '@/components/Header';
 import BlogManagement from '@/components/admin/BlogManagement';
 import BlogPostCreator from '@/components/admin/BlogPostCreator';
+import EmailSequenceManagement from '@/components/admin/EmailSequenceManagement';
 
 interface QuizResponse {
   id: string;
@@ -192,10 +193,14 @@ const Admin = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="leads" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               Leads Management
+            </TabsTrigger>
+            <TabsTrigger value="email-sequence" className="flex items-center gap-2">
+              <Mail className="w-4 h-4" />
+              Email Sequence
             </TabsTrigger>
             <TabsTrigger value="blog-creator" className="flex items-center gap-2">
               <PenTool className="w-4 h-4" />
@@ -353,6 +358,10 @@ const Admin = () => {
                 No leads found matching your criteria.
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="email-sequence">
+            <EmailSequenceManagement />
           </TabsContent>
 
           <TabsContent value="blog-creator">

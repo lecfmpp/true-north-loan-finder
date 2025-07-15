@@ -425,6 +425,27 @@ const Quiz = () => {
 
       // Submit to external tracking system
       await EXTERNAL_TRACKER.submitLead(data);
+
+      // Start follow-up email sequence (15-minute delay)
+      setTimeout(async () => {
+        try {
+          const response = await supabase.functions.invoke('send-email-sequence', {
+            body: {
+              type: 'follow_up',
+              userEmail: data.email,
+              userName: data.name.split(' ')[0] // Use first name
+            }
+          });
+          
+          if (response.error) {
+            console.error('Error starting email sequence:', response.error);
+          } else {
+            console.log('Follow-up email sequence started successfully');
+          }
+        } catch (error) {
+          console.error('Error starting email sequence:', error);
+        }
+      }, 15 * 60 * 1000); // 15 minutes delay
       
     } catch (error) {
       console.error('Error saving quiz response:', error);
