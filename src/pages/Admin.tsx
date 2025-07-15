@@ -280,8 +280,9 @@ const Admin = () => {
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: `Lead sent to ${recipient.name} successfully!`
+        title: "🎉 Awesome!",
+        description: `🚀 Lead sent to ${recipient.name} successfully! 🎊`,
+        variant: "success" as any
       });
     } catch (error: any) {
       console.error('Error sending lead email:', error);

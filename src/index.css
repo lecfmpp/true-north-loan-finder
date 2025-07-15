@@ -44,6 +44,11 @@ All colors MUST be HSL.
     --status-inactive: 35 84% 62%; /* Compass Gold for disabled/paused */
     --status-inactive-foreground: 210 22% 22%;
 
+    /* Success Toast Colors */
+    --success-bg: 145 45% 85%; /* Light green background */
+    --success-border: 145 63% 42%; /* Dark green outline */
+    --success-text: 210 40% 25%; /* Dark blue text */
+
     --border: 210 20% 90%;
     --input: 210 20% 90%;
     --ring: 210 22% 22%;
@@ -107,6 +112,11 @@ All colors MUST be HSL.
     --status-active-foreground: 0 0% 100%;
     --status-inactive: 35 84% 62%; /* Compass Gold for disabled/paused */
     --status-inactive-foreground: 222.2 47.4% 11.2%;
+
+    /* Success Toast Colors - Dark Mode */
+    --success-bg: 145 30% 25%; /* Dark green background for dark mode */
+    --success-border: 145 63% 42%; /* Dark green outline */
+    --success-text: 210 40% 80%; /* Light blue text for dark mode */
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
