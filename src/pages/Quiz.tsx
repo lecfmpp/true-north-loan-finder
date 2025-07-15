@@ -200,76 +200,92 @@ const Quiz = () => {
     };
   };
 
-  const calculateLenderRating = (lender: any) => {
-    let rating = 0;
+  const calculateLenderMatch = (lender: any) => {
     const loanAmount = quizData.loanAmount[0];
     const monthlyRevenue = quizData.monthlyRevenue[0];
     const timeInBusiness = quizData.timeInBusiness;
     const creditScore = quizData.creditScore;
 
-    // Base compatibility score
-    let compatibility = 0;
+    // Base compatibility score out of 10
+    let matchScore = 0;
 
     switch (lender.name) {
       case "IOU Financial":
         // Prefers established businesses, larger amounts
-        if (timeInBusiness === "5+" || timeInBusiness === "2-5") compatibility += 2;
-        if (loanAmount >= 50000) compatibility += 2;
-        if (monthlyRevenue >= 25000) compatibility += 1;
+        if (timeInBusiness === "5+" || timeInBusiness === "2-5") matchScore += 3;
+        if (loanAmount >= 50000) matchScore += 3;
+        if (monthlyRevenue >= 25000) matchScore += 2;
+        if (creditScore === "excellent" || creditScore === "good") matchScore += 2;
         break;
       
       case "Driven (formerly Thinking Capital)":
         // Good for quick digital applications, moderate amounts
-        if (creditScore === "excellent" || creditScore === "good") compatibility += 2;
-        if (loanAmount <= 300000) compatibility += 1;
-        if (timeInBusiness !== "0-6") compatibility += 2;
+        if (creditScore === "excellent" || creditScore === "good") matchScore += 4;
+        if (loanAmount <= 300000) matchScore += 2;
+        if (timeInBusiness !== "0-6") matchScore += 3;
+        if (monthlyRevenue >= 15000) matchScore += 1;
         break;
       
       case "Greenbox Capital":
         // Flexible with credit, focuses on revenue
-        if (monthlyRevenue >= 10000) compatibility += 2;
-        if (creditScore === "fair" || creditScore === "poor") compatibility += 1;
-        if (loanAmount <= 500000) compatibility += 1;
-        if (timeInBusiness !== "0-6") compatibility += 1;
+        if (monthlyRevenue >= 10000) matchScore += 4;
+        if (creditScore === "fair" || creditScore === "poor") matchScore += 2;
+        if (loanAmount <= 500000) matchScore += 2;
+        if (timeInBusiness !== "0-6") matchScore += 2;
         break;
       
       case "Merchant Growth":
         // Good all-around option
-        compatibility += 1;
-        if (monthlyRevenue >= 15000) compatibility += 1;
-        if (creditScore === "excellent" || creditScore === "good") compatibility += 1;
+        matchScore += 2; // Base score for being versatile
+        if (monthlyRevenue >= 15000) matchScore += 3;
+        if (creditScore === "excellent" || creditScore === "good") matchScore += 2;
+        if (loanAmount <= 2000000) matchScore += 2;
+        if (timeInBusiness !== "0-6") matchScore += 1;
         break;
       
       case "2M7":
-        // Alternative option
-        if (creditScore === "fair" || creditScore === "poor") compatibility += 1;
-        if (loanAmount <= 250000) compatibility += 1;
+        // Alternative option for declined businesses
+        if (creditScore === "fair" || creditScore === "poor") matchScore += 3;
+        if (loanAmount <= 250000) matchScore += 3;
+        if (monthlyRevenue >= 5000) matchScore += 2;
+        if (timeInBusiness !== "0-6") matchScore += 2;
         break;
       
       case "NorthPoint Funding":
         // MCA specialist
-        if (monthlyRevenue >= 20000) compatibility += 2;
-        if (loanAmount <= 100000) compatibility += 1;
+        if (monthlyRevenue >= 20000) matchScore += 4;
+        if (loanAmount <= 100000) matchScore += 3;
+        if (creditScore === "fair" || creditScore === "good") matchScore += 2;
+        if (timeInBusiness !== "0-6") matchScore += 1;
         break;
     }
 
-    // Convert compatibility to 1-5 star rating
-    rating = Math.min(Math.max(Math.ceil((compatibility / 5) * 5), 1), 5);
+    // Convert to percentage (max 10 points = 100%)
+    const percentage = Math.min(Math.max((matchScore / 10) * 100, 15), 98); // Min 15%, Max 98%
     
-    return rating;
+    return Math.round(percentage);
   };
 
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`h-4 w-4 ${
-          i < rating
-            ? "fill-yellow-400 text-yellow-400"
-            : "text-muted-foreground/30"
-        }`}
-      />
-    ));
+  const renderMatchScore = (percentage: number, lenderName: string) => {
+    const getMatchLevel = (score: number) => {
+      if (score >= 85) return { label: "Excellent Match", color: "text-green-600", bgColor: "bg-green-100" };
+      if (score >= 70) return { label: "Great Match", color: "text-blue-600", bgColor: "bg-blue-100" };
+      if (score >= 55) return { label: "Good Match", color: "text-yellow-600", bgColor: "bg-yellow-100" };
+      return { label: "Fair Match", color: "text-gray-600", bgColor: "bg-gray-100" };
+    };
+
+    const matchLevel = getMatchLevel(percentage);
+
+    return (
+      <div className="flex items-center gap-2">
+        <div className={`px-3 py-1 rounded-full text-xs font-medium ${matchLevel.bgColor} ${matchLevel.color}`}>
+          {percentage}% Match
+        </div>
+        <span className="text-xs text-muted-foreground">
+          {matchLevel.label}
+        </span>
+      </div>
+    );
   };
 
   const getLenderData = () => {
@@ -366,13 +382,13 @@ const Quiz = () => {
       }
     ];
 
-    // Calculate ratings and sort by rating
-    const lendersWithRatings = lenders.map(lender => ({
+    // Calculate match percentages and sort by match score
+    const lendersWithMatches = lenders.map(lender => ({
       ...lender,
-      rating: calculateLenderRating(lender)
-    })).sort((a, b) => b.rating - a.rating);
+      matchPercentage: calculateLenderMatch(lender)
+    })).sort((a, b) => b.matchPercentage - a.matchPercentage);
 
-    return lendersWithRatings;
+    return lendersWithMatches;
   };
 
   const handleOptionSelect = async (field: string, value: string) => {
@@ -527,10 +543,7 @@ const Quiz = () => {
                               <div className="flex items-center gap-3 mb-2">
                                 <h4 className="font-bold text-primary text-lg">{lender.name}</h4>
                                 <div className="flex items-center gap-1">
-                                  {renderStars(lender.rating)}
-                                  <span className="text-sm text-muted-foreground ml-1">
-                                    ({lender.rating}/5)
-                                  </span>
+                                  {renderMatchScore(lender.matchPercentage, lender.name)}
                                 </div>
                                 {index === 0 && (
                                   <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-300">
