@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/use-auth';
 import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -136,6 +137,7 @@ const Auth = () => {
           </Tabs>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

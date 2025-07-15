@@ -11,15 +11,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, MessageCircle } from 'lucide-react';
+import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, MessageCircle, CheckSquare, Square } from 'lucide-react';
 import Header from '@/components/Header';
 import BlogManagement from '@/components/admin/BlogManagement';
 import BlogPostCreator from '@/components/admin/BlogPostCreator';
 import EmailSequenceManagement from '@/components/admin/EmailSequenceManagement';
 import AvailableTimesManagement from '@/components/admin/AvailableTimesManagement';
 import { ChatWidgetManagement } from '@/components/admin/ChatWidgetManagement';
+import Footer from '@/components/Footer';
 
 interface QuizResponse {
   id: string;
@@ -47,6 +49,7 @@ const Admin = () => {
   const [activeTab, setActiveTab] = useState('leads');
   const [expandedLeads, setExpandedLeads] = useState<{ [key: string]: boolean }>({});
   const [emailEnrollments, setEmailEnrollments] = useState<{ [key: string]: { [key: string]: boolean } }>({});
+  const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
   const { user, isAdmin, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -216,7 +219,7 @@ const Admin = () => {
         variant: "destructive"
       });
     }
-  };
+   };
 
   const filterLeads = () => {
     let filtered = leads;
@@ -234,6 +237,57 @@ const Admin = () => {
     }
 
     setFilteredLeads(filtered);
+    
+    // Clear selected leads that are no longer in filtered results
+    setSelectedLeads(prev => prev.filter(id => filtered.some(lead => lead.id === id)));
+  };
+
+  const toggleSelectLead = (leadId: string) => {
+    setSelectedLeads(prev => 
+      prev.includes(leadId) 
+        ? prev.filter(id => id !== leadId)
+        : [...prev, leadId]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedLeads.length === filteredLeads.length) {
+      setSelectedLeads([]);
+    } else {
+      setSelectedLeads(filteredLeads.map(lead => lead.id));
+    }
+  };
+
+  const exportSelectedToCSV = () => {
+    const leadsToExport = selectedLeads.length > 0 
+      ? leads.filter(lead => selectedLeads.includes(lead.id))
+      : filteredLeads;
+
+    const headers = ['Name', 'Email', 'Phone', 'Monthly Revenue', 'Loan Amount', 'Credit Score', 'Time in Business', 'Use of Funds', 'Score', 'Status', 'Created At'];
+    const csvContent = [
+      headers.join(','),
+      ...leadsToExport.map(lead => [
+        lead.name,
+        lead.email,
+        lead.phone,
+        lead.monthly_revenue,
+        lead.loan_amount,
+        lead.credit_score,
+        lead.time_in_business,
+        lead.use_of_funds,
+        lead.score,
+        lead.status,
+        format(new Date(lead.created_at), 'yyyy-MM-dd HH:mm:ss')
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `leads-${selectedLeads.length > 0 ? 'selected' : 'filtered'}-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   const updateLeadStatus = async (leadId: string, newStatus: string) => {
@@ -427,10 +481,18 @@ const Admin = () => {
                       <SelectItem value="closed">Closed</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button onClick={exportToCSV} variant="outline">
-                    <Download className="w-4 h-4 mr-2" />
-                    Export CSV
-                  </Button>
+                  <div className="flex gap-2">
+                    {selectedLeads.length > 0 && (
+                      <Button onClick={exportSelectedToCSV} className="bg-green-600 hover:bg-green-700 text-white">
+                        <Download className="w-4 h-4 mr-2" />
+                        Export Selected ({selectedLeads.length})
+                      </Button>
+                    )}
+                    <Button onClick={exportSelectedToCSV} variant="outline">
+                      <Download className="w-4 h-4 mr-2" />
+                      Export All
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -442,6 +504,13 @@ const Admin = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="w-12">
+                          <Checkbox
+                            checked={selectedLeads.length === filteredLeads.length && filteredLeads.length > 0}
+                            onCheckedChange={toggleSelectAll}
+                            aria-label="Select all leads"
+                          />
+                        </TableHead>
                         <TableHead>Name</TableHead>
                         <TableHead>Contact</TableHead>
                         <TableHead>Loan Details</TableHead>
@@ -456,6 +525,13 @@ const Admin = () => {
                     <TableBody>
                       {filteredLeads.map((lead) => (
                         <TableRow key={lead.id}>
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedLeads.includes(lead.id)}
+                              onCheckedChange={() => toggleSelectLead(lead.id)}
+                              aria-label={`Select ${lead.name}`}
+                            />
+                          </TableCell>
                           <TableCell className="font-medium">{lead.name}</TableCell>
                           <TableCell>
                             <div className="text-sm">
@@ -544,10 +620,10 @@ const Admin = () => {
                           </TableCell>
                           <TableCell>
                             <Button
-                              variant="outline"
                               size="sm"
                               onClick={() => handleCallNow(lead.phone)}
                               disabled={!lead.phone}
+                              className="bg-green-600 hover:bg-green-700 text-white"
                             >
                               <Phone className="w-4 h-4 mr-2" />
                               Call Now
@@ -614,6 +690,7 @@ const Admin = () => {
           </TabsContent>
         </Tabs>
       </div>
+      <Footer />
     </div>
   );
 };
