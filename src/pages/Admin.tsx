@@ -14,7 +14,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, MessageCircle, CheckSquare, Square, UserCheck, Megaphone, Send, Diamond, DollarSign } from 'lucide-react';
+import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, MessageCircle, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign } from 'lucide-react';
 import Header from '@/components/Header';
 import BlogManagement from '@/components/admin/BlogManagement';
 import BlogPostCreator from '@/components/admin/BlogPostCreator';
@@ -773,7 +773,7 @@ const Admin = () => {
                               <div className="flex items-center gap-1">
                                 {lead.status === 'new' && <Clock className="h-3 w-3" />}
                                 {lead.status === 'contacted' && <Phone className="h-3 w-3" />}
-                                {lead.status === 'qualified' && <Diamond className="h-3 w-3" />}
+                                {lead.status === 'qualified' && <Check className="h-3 w-3" />}
                                 {lead.status === 'closed' && <DollarSign className="h-3 w-3" />}
                                 {lead.status.toUpperCase()}
                               </div>
