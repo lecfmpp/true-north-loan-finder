@@ -311,7 +311,7 @@ const Results = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-4 max-w-2xl mx-auto">
                     <Button 
                       size="lg" 
                       onClick={handleBookCall}
