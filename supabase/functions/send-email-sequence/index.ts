@@ -151,7 +151,7 @@ async function sendEmail(
     const content = replaceVariables(template.email_content, userName, variables);
 
     const emailResponse = await resend.emails.send({
-      from: "True North Business Loan <noreply@truenorthbusinessloan.com>",
+      from: "True North Business Loan <noreply@email.truenorthbusinessloan.ca>",
       to: [userEmail],
       subject: subject,
       html: content.replace(/\n/g, '<br>')

@@ -135,7 +135,7 @@ const TermsOfService = () => {
                 </p>
                 <div className="mt-4 p-4 bg-muted/30 rounded-lg">
                   <p className="text-muted-foreground">
-                    <strong>Email:</strong> legal@truenorthbusinessloan.ca<br />
+                    <strong>Email:</strong> legal@email.truenorthbusinessloan.ca<br />
                     <strong>Phone:</strong> 1-800-TRUE-NORTH<br />
                     <strong>Address:</strong> Kitchener, Ontario, Canada
                   </p>

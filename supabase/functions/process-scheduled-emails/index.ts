@@ -56,7 +56,7 @@ const handler = async (req: Request): Promise<Response> => {
         const content = replaceVariables(template.email_content, enrollment.user_name, variables);
 
         const emailResponse = await resend.emails.send({
-          from: "True North Business Loan <noreply@truenorthbusinessloan.com>",
+          from: "True North Business Loan <noreply@email.truenorthbusinessloan.ca>",
           to: [emailSend.recipient_email],
           subject: subject,
           html: content.replace(/\n/g, '<br>')

@@ -162,7 +162,7 @@ const Results = () => {
 
   const handleChatWithUs = () => {
     // You can implement chat functionality here
-    window.open('mailto:support@truenorthbusinessloan.com', '_blank');
+    window.open('mailto:support@email.truenorthbusinessloan.ca', '_blank');
   };
 
   if (bookingConfirmed && bookingDetails) {
