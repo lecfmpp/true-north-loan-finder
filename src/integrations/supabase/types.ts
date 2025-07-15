@@ -571,6 +571,66 @@ export type Database = {
           },
         ]
       }
+      lender_broker_applications: {
+        Row: {
+          admin_notes: string | null
+          applicant_email: string
+          applicant_name: string
+          applicant_phone: string | null
+          application_type: string
+          business_description: string | null
+          company_name: string
+          company_website: string | null
+          created_at: string
+          id: string
+          license_number: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          years_of_experience: number | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          applicant_email: string
+          applicant_name: string
+          applicant_phone?: string | null
+          application_type: string
+          business_description?: string | null
+          company_name: string
+          company_website?: string | null
+          created_at?: string
+          id?: string
+          license_number?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          years_of_experience?: number | null
+        }
+        Update: {
+          admin_notes?: string | null
+          applicant_email?: string
+          applicant_name?: string
+          applicant_phone?: string | null
+          application_type?: string
+          business_description?: string | null
+          company_name?: string
+          company_website?: string | null
+          created_at?: string
+          id?: string
+          license_number?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          years_of_experience?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

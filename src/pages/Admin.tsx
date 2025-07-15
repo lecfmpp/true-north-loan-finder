@@ -14,13 +14,14 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, MessageCircle, CheckSquare, Square } from 'lucide-react';
+import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, MessageCircle, CheckSquare, Square, UserCheck } from 'lucide-react';
 import Header from '@/components/Header';
 import BlogManagement from '@/components/admin/BlogManagement';
 import BlogPostCreator from '@/components/admin/BlogPostCreator';
 import EmailSequenceManagement from '@/components/admin/EmailSequenceManagement';
 import AvailableTimesManagement from '@/components/admin/AvailableTimesManagement';
 import { ChatWidgetManagement } from '@/components/admin/ChatWidgetManagement';
+import { ApplicationsManagement } from '@/components/admin/ApplicationsManagement';
 import Footer from '@/components/Footer';
 
 interface QuizResponse {
@@ -385,7 +386,7 @@ const Admin = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className={`grid w-full ${isSuperAdmin ? 'grid-cols-5' : 'grid-cols-2'}`}>
+          <TabsList className={`grid w-full ${isSuperAdmin ? 'grid-cols-6' : 'grid-cols-3'}`}>
             <TabsTrigger value="leads" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               Leads
@@ -393,6 +394,10 @@ const Admin = () => {
             <TabsTrigger value="available-times" className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
               Available Times
+            </TabsTrigger>
+            <TabsTrigger value="applications" className="flex items-center gap-2">
+              <UserCheck className="w-4 h-4" />
+              Applications
             </TabsTrigger>
             {isSuperAdmin && (
               <>
@@ -670,6 +675,10 @@ const Admin = () => {
 
           <TabsContent value="available-times">
             <AvailableTimesManagement />
+          </TabsContent>
+
+          <TabsContent value="applications">
+            <ApplicationsManagement />
           </TabsContent>
 
           <TabsContent value="email-sequence">
