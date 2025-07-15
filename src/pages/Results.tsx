@@ -19,6 +19,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BookingCalendar from "@/components/BookingCalendar";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Results = () => {
   const [searchParams] = useSearchParams();
@@ -29,6 +30,7 @@ const Results = () => {
   const [bookingDetails, setBookingDetails] = useState<any>(null);
   const [quizData, setQuizData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   // Get quiz data from URL params or fetch from database
   const loanAmount = parseInt(searchParams.get('amount') || '50000');
@@ -131,6 +133,24 @@ const Results = () => {
   ];
 
   const handleBookCall = () => {
+    // Debug logging to check if data is available
+    console.log('Book call clicked with data:', {
+      finalName,
+      finalEmail,
+      finalPhone,
+      quizResponseId
+    });
+    
+    if (!finalName || !finalEmail) {
+      toast({
+        title: "Missing Information",
+        description: "Please complete the loan estimator first to book a call.",
+        variant: "destructive",
+      });
+      navigate('/loan-estimator');
+      return;
+    }
+    
     setShowBooking(true);
   };
 

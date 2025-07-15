@@ -200,6 +200,31 @@ const Admin = () => {
     }
   };
 
+  // Set up real-time subscription for approved partners
+  useEffect(() => {
+    if (isSuperAdmin) {
+      const channel = supabase
+        .channel('approved-partners-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'lender_broker_applications',
+            filter: 'status=eq.approved'
+          },
+          () => {
+            fetchApprovedPartners();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [isSuperAdmin]);
+
   const sendLeadEmail = async (leadId: string, recipientId: string) => {
     const recipient = approvedPartners.find(p => p.id === recipientId);
     if (!recipient) return;
