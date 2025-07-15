@@ -53,6 +53,8 @@ const Admin = () => {
     PRE_CALL: 'a4eb9d81-6602-4e99-959d-1a1b8e5592a5'
   };
 
+  console.log('EMAIL_SEQUENCES:', EMAIL_SEQUENCES);
+
   useEffect(() => {
     if (!authLoading && (!user || !isAdmin)) {
       navigate('/auth');
@@ -154,6 +156,9 @@ const Admin = () => {
   };
 
   const toggleEmailSequence = async (leadEmail: string, leadName: string, sequenceId: string, isEnabled: boolean) => {
+    console.log('Toggle called:', { leadEmail, leadName, sequenceId, isEnabled });
+    console.log('Current emailEnrollments state:', emailEnrollments);
+    
     try {
       if (isEnabled) {
         // Enroll in sequence
@@ -179,13 +184,18 @@ const Admin = () => {
       }
 
       // Update local state
-      setEmailEnrollments(prev => ({
-        ...prev,
+      const newState = {
+        ...emailEnrollments,
         [leadEmail]: {
-          ...prev[leadEmail],
+          ...emailEnrollments[leadEmail],
           [sequenceId]: isEnabled
         }
-      }));
+      };
+      
+      console.log('New state about to be set:', newState);
+      console.log('Updating only lead:', leadEmail, 'for sequence:', sequenceId, 'to:', isEnabled);
+      
+      setEmailEnrollments(newState);
 
       const sequenceName = sequenceId === EMAIL_SEQUENCES.FOLLOW_UP ? 'Follow-up' : 'Pre-Call';
       
@@ -194,6 +204,7 @@ const Admin = () => {
         description: `${sequenceName} sequence ${isEnabled ? 'enabled' : 'disabled'} for ${leadName}`
       });
     } catch (error) {
+      console.error('Error in toggleEmailSequence:', error);
       toast({
         title: "Error",
         description: "Failed to update email sequence",
@@ -464,7 +475,11 @@ const Admin = () => {
                               <div className="flex items-center gap-2">
                                 <Switch
                                   key={`${lead.id}-follow-up`}
-                                  checked={emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.FOLLOW_UP] || false}
+                                  checked={(() => {
+                                    const isChecked = emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.FOLLOW_UP] || false;
+                                    console.log(`Switch render for ${lead.email} (${lead.name}) - Follow-up: ${isChecked}`);
+                                    return isChecked;
+                                  })()}
                                   onCheckedChange={(checked) => 
                                     toggleEmailSequence(lead.email, lead.name, EMAIL_SEQUENCES.FOLLOW_UP, checked)
                                   }
@@ -474,7 +489,11 @@ const Admin = () => {
                               <div className="flex items-center gap-2">
                                 <Switch
                                   key={`${lead.id}-pre-call`}
-                                  checked={emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.PRE_CALL] || false}
+                                  checked={(() => {
+                                    const isChecked = emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.PRE_CALL] || false;
+                                    console.log(`Switch render for ${lead.email} (${lead.name}) - Pre-Call: ${isChecked}`);
+                                    return isChecked;
+                                  })()}
                                   onCheckedChange={(checked) => 
                                     toggleEmailSequence(lead.email, lead.name, EMAIL_SEQUENCES.PRE_CALL, checked)
                                   }
