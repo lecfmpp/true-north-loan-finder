@@ -37,6 +37,9 @@ interface ChatQA {
 
 export function ChatWidgetManagement() {
   const [config, setConfig] = useState<ChatConfig | null>(null);
+  const [localConfig, setLocalConfig] = useState<ChatConfig | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [qaList, setQaList] = useState<ChatQA[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingQA, setEditingQA] = useState<ChatQA | null>(null);
@@ -48,6 +51,13 @@ export function ChatWidgetManagement() {
     fetchConfig();
     fetchQA();
   }, []);
+
+  useEffect(() => {
+    if (config) {
+      setLocalConfig(config);
+      setHasUnsavedChanges(false);
+    }
+  }, [config]);
 
   const fetchConfig = async () => {
     try {
@@ -92,31 +102,54 @@ export function ChatWidgetManagement() {
     }
   };
 
-  const updateConfig = async (updates: Partial<ChatConfig>) => {
-    if (!config) return;
+  const updateLocalConfig = (updates: Partial<ChatConfig>) => {
+    if (!localConfig) return;
+    
+    setLocalConfig({ ...localConfig, ...updates });
+    setHasUnsavedChanges(true);
+  };
 
+  const saveConfiguration = async () => {
+    if (!localConfig || !config) return;
+
+    setIsSaving(true);
     try {
       const { error } = await supabase
         .from('chat_widget_config')
-        .update(updates)
+        .update(localConfig)
         .eq('id', config.id);
 
       if (error) {
         toast({
           title: "Error",
-          description: "Failed to update configuration",
+          description: "Failed to save configuration",
           variant: "destructive",
         });
         return;
       }
 
-      setConfig({ ...config, ...updates });
+      setConfig(localConfig);
+      setHasUnsavedChanges(false);
       toast({
         title: "Success",
-        description: "Configuration updated successfully",
+        description: "Configuration saved successfully",
       });
     } catch (error) {
-      console.error('Error updating config:', error);
+      console.error('Error saving config:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save configuration",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const resetConfiguration = () => {
+    if (config) {
+      setLocalConfig(config);
+      setHasUnsavedChanges(false);
     }
   };
 
@@ -253,12 +286,12 @@ export function ChatWidgetManagement() {
           <CardContent className="space-y-6">
             <div className="flex items-center space-x-2">
               <Switch
-                checked={config.is_enabled}
-                onCheckedChange={(checked) => updateConfig({ is_enabled: checked })}
+                checked={localConfig?.is_enabled || false}
+                onCheckedChange={(checked) => updateLocalConfig({ is_enabled: checked })}
               />
               <Label>Enable Chat Widget</Label>
-              <Badge variant={config.is_enabled ? "default" : "secondary"}>
-                {config.is_enabled ? "Enabled" : "Disabled"}
+              <Badge variant={localConfig?.is_enabled ? "default" : "secondary"}>
+                {localConfig?.is_enabled ? "Enabled" : "Disabled"}
               </Badge>
             </div>
 
@@ -267,8 +300,8 @@ export function ChatWidgetManagement() {
                 <Label htmlFor="supportName">Support Person Name</Label>
                 <Input
                   id="supportName"
-                  value={config.support_person_name}
-                  onChange={(e) => updateConfig({ support_person_name: e.target.value })}
+                  value={localConfig?.support_person_name || ''}
+                  onChange={(e) => updateLocalConfig({ support_person_name: e.target.value })}
                   placeholder="Support Agent"
                 />
               </div>
@@ -276,8 +309,8 @@ export function ChatWidgetManagement() {
               <div className="space-y-2">
                 <Label>Support Person Avatar</Label>
                 <ImageUpload
-                  currentImageUrl={config.support_person_avatar_url || ''}
-                  onImageUploaded={(url) => updateConfig({ support_person_avatar_url: url })}
+                  currentImageUrl={localConfig?.support_person_avatar_url || ''}
+                  onImageUploaded={(url) => updateLocalConfig({ support_person_avatar_url: url })}
                 />
               </div>
             </div>
@@ -286,8 +319,8 @@ export function ChatWidgetManagement() {
               <div className="space-y-2">
                 <Label htmlFor="position">Widget Position</Label>
                 <Select 
-                  value={config.widget_position} 
-                  onValueChange={(value) => updateConfig({ widget_position: value })}
+                  value={localConfig?.widget_position || 'bottom-right'} 
+                  onValueChange={(value) => updateLocalConfig({ widget_position: value })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -306,13 +339,13 @@ export function ChatWidgetManagement() {
                 <div className="flex gap-2">
                   <Input
                     id="primaryColor"
-                    value={config.primary_color}
-                    onChange={(e) => updateConfig({ primary_color: e.target.value })}
+                    value={localConfig?.primary_color || '#0066cc'}
+                    onChange={(e) => updateLocalConfig({ primary_color: e.target.value })}
                     placeholder="#0066cc"
                   />
                   <div 
                     className="w-10 h-10 rounded border"
-                    style={{ backgroundColor: config.primary_color }}
+                    style={{ backgroundColor: localConfig?.primary_color || '#0066cc' }}
                   />
                 </div>
               </div>
@@ -322,11 +355,37 @@ export function ChatWidgetManagement() {
               <Label htmlFor="aiInstructions">AI Instructions</Label>
               <Textarea
                 id="aiInstructions"
-                value={config.ai_instructions}
-                onChange={(e) => updateConfig({ ai_instructions: e.target.value })}
+                value={localConfig?.ai_instructions || ''}
+                onChange={(e) => updateLocalConfig({ ai_instructions: e.target.value })}
                 placeholder="Instructions for how the AI should respond to users..."
                 rows={4}
               />
+            </div>
+
+            {/* Save Section */}
+            <div className="border-t pt-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {hasUnsavedChanges && (
+                    <Badge variant="secondary">Unsaved Changes</Badge>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={resetConfiguration}
+                    disabled={!hasUnsavedChanges || isSaving}
+                  >
+                    Reset
+                  </Button>
+                  <Button
+                    onClick={saveConfiguration}
+                    disabled={!hasUnsavedChanges || isSaving}
+                  >
+                    {isSaving ? 'Saving...' : 'Save Configuration'}
+                  </Button>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
