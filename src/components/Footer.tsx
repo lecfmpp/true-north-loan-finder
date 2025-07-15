@@ -1,19 +1,13 @@
 import { Link } from "react-router-dom";
 import { MapPin, Phone, Mail } from "lucide-react";
-
 const Footer = () => {
-  return (
-    <footer className="bg-primary text-primary-foreground">
+  return <footer className="bg-primary text-primary-foreground">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center space-x-2">
-              <img 
-                alt="TrueNorth Business Loan" 
-                src="/lovable-uploads/327718f8-3972-44ab-9e0a-0ab928587c31.png" 
-                className="h-12 object-contain" 
-              />
+              <img alt="TrueNorth Business Loan" src="/lovable-uploads/327718f8-3972-44ab-9e0a-0ab928587c31.png" className="h-12 object-contain" />
             </Link>
             <p className="text-primary-foreground/80 text-sm">
               Empowering Canadian small businesses with simple, transparent access to financing.
@@ -73,10 +67,7 @@ const Footer = () => {
                   <div className="text-primary-foreground/80">Canada</div>
                 </div>
               </div>
-              <div className="flex items-center space-x-2 text-sm">
-                <Phone className="h-4 w-4 text-accent" />
-                <span>1-800-TRUE-NORTH</span>
-              </div>
+              
               <div className="flex items-center space-x-2 text-sm">
                 <Mail className="h-4 w-4 text-accent" />
                 <span>info@truenorthbusinessloan.ca</span>
@@ -101,8 +92,6 @@ const Footer = () => {
           </div>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 };
-
 export default Footer;
