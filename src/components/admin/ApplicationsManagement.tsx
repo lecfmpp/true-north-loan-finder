@@ -254,37 +254,9 @@ export const ApplicationsManagement = () => {
                     <Building className="w-4 h-4 text-muted-foreground" />
                     <span className="font-medium">{application.company_name}</span>
                   </div>
-                  
-                  {application.company_website && (
-                    <div className="flex items-center gap-2">
-                      <Globe className="w-4 h-4 text-muted-foreground" />
-                      <a 
-                        href={application.company_website} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        {application.company_website}
-                      </a>
-                    </div>
-                  )}
                 </div>
 
                 <div className="space-y-3">
-                  {application.license_number && (
-                    <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-muted-foreground" />
-                      <span>License: {application.license_number}</span>
-                    </div>
-                  )}
-                  
-                  {application.years_of_experience && (
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-muted-foreground" />
-                      <span>{application.years_of_experience} years experience</span>
-                    </div>
-                  )}
-                  
                   <div className="text-sm text-muted-foreground">
                     Applied: {new Date(application.created_at).toLocaleDateString()}
                   </div>
@@ -295,6 +267,46 @@ export const ApplicationsManagement = () => {
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* Company Information */}
+              <div className="grid md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
+                {application.license_number && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <FileText className="w-4 h-4 text-muted-foreground" />
+                      <span className="font-medium text-sm">License</span>
+                    </div>
+                    <p className="text-sm">{application.license_number}</p>
+                  </div>
+                )}
+                
+                {application.years_of_experience && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Calendar className="w-4 h-4 text-muted-foreground" />
+                      <span className="font-medium text-sm">Experience</span>
+                    </div>
+                    <p className="text-sm">{application.years_of_experience} years</p>
+                  </div>
+                )}
+                
+                {application.company_website && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Globe className="w-4 h-4 text-muted-foreground" />
+                      <span className="font-medium text-sm">Website</span>
+                    </div>
+                    <a 
+                      href={application.company_website} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline text-sm break-all"
+                    >
+                      {application.company_website}
+                    </a>
+                  </div>
+                )}
               </div>
 
               {application.business_description && (
