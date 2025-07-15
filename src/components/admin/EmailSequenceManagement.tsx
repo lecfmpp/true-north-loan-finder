@@ -35,6 +35,7 @@ interface SequenceMetrics {
   emails_sent: number;
   open_rate: number;
   click_rate: number;
+  enrolled_leads: number;
 }
 
 const EmailSequenceManagement = () => {
@@ -116,14 +117,22 @@ const EmailSequenceManagement = () => {
           .select('*')
           .in('template_id', groupedTemplates[sequence.id]?.map(t => t.id) || []);
 
+        // Get enrolled leads count for this sequence
+        const { data: enrollmentsData } = await supabase
+          .from('email_enrollments')
+          .select('id')
+          .eq('sequence_id', sequence.id);
+
         const totalSent = sendsData?.length || 0;
         const opened = sendsData?.filter(s => s.opened_at).length || 0;
         const clicked = sendsData?.filter(s => s.clicked_at).length || 0;
+        const enrolledCount = enrollmentsData?.length || 0;
 
         metricsData[sequence.id] = {
           emails_sent: totalSent,
           open_rate: totalSent > 0 ? (opened / totalSent) * 100 : 0,
           click_rate: totalSent > 0 ? (clicked / totalSent) * 100 : 0,
+          enrolled_leads: enrolledCount,
         };
       }
       setMetrics(metricsData);
@@ -353,7 +362,7 @@ const EmailSequenceManagement = () => {
 
   const renderSequenceSection = (sequence: EmailSequence) => {
     const sequenceTemplates = templates[sequence.id] || [];
-    const sequenceMetrics = metrics[sequence.id] || { emails_sent: 0, open_rate: 0, click_rate: 0 };
+    const sequenceMetrics = metrics[sequence.id] || { emails_sent: 0, open_rate: 0, click_rate: 0, enrolled_leads: 0 };
 
     return (
       <Card key={sequence.id} className="mb-8">
@@ -376,7 +385,7 @@ const EmailSequenceManagement = () => {
         </CardHeader>
         <CardContent>
           {/* Metrics Display */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div className="flex items-center space-x-2 p-4 bg-muted rounded-lg">
               <Mail className="h-5 w-5 text-blue-500" />
               <div>
@@ -396,6 +405,13 @@ const EmailSequenceManagement = () => {
               <div>
                 <p className="text-sm font-medium">Average CTR</p>
                 <p className="text-2xl font-bold">{sequenceMetrics.click_rate.toFixed(1)}%</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2 p-4 bg-muted rounded-lg">
+              <Users className="h-5 w-5 text-orange-500" />
+              <div>
+                <p className="text-sm font-medium">Enrolled Leads</p>
+                <p className="text-2xl font-bold">{sequenceMetrics.enrolled_leads}</p>
               </div>
             </div>
           </div>

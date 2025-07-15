@@ -74,6 +74,44 @@ const Results = () => {
     }
   }, [loading, quizResponseId, navigate]);
 
+  // Auto-enroll in follow-up email sequence when quiz is completed
+  useEffect(() => {
+    const enrollInEmailSequence = async () => {
+      if (quizResponseId && (quizData || name)) {
+        const userData = {
+          name: quizData?.name || name,
+          email: quizData?.email || email,
+          phone: quizData?.phone || phone,
+          score: quizData?.score || score,
+          loan_amount: quizData?.loan_amount || loanAmount,
+          monthly_revenue: quizData?.monthly_revenue || 0,
+          credit_score: quizData?.credit_score || '',
+          time_in_business: quizData?.time_in_business || '',
+          use_of_funds: quizData?.use_of_funds || ''
+        };
+
+        try {
+          await supabase.functions.invoke('auto-enroll-lead', {
+            body: {
+              email: userData.email,
+              name: userData.name,
+              sequenceType: 'follow_up',
+              userData
+            }
+          });
+          console.log('Successfully enrolled in follow-up email sequence');
+        } catch (error) {
+          console.error('Error enrolling in email sequence:', error);
+        }
+      }
+    };
+
+    // Only enroll if we have the necessary data and haven't enrolled yet
+    if (!loading && (quizData || (name && email))) {
+      enrollInEmailSequence();
+    }
+  }, [loading, quizData, quizResponseId, name, email, phone, score, loanAmount]);
+
   const calculateLoanTerms = () => {
     const workingScore = quizData?.score || score;
     const workingAmount = quizData?.loan_amount || loanAmount;
