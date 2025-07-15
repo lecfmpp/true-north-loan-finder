@@ -19,8 +19,6 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BookingCalendar from "@/components/BookingCalendar";
 import { supabase } from "@/integrations/supabase/client";
-import merchantGrowthLogo from "@/assets/merchant-growth-logo.png";
-import greenboxCapitalLogo from "@/assets/greenbox-capital-logo.png";
 
 const Results = () => {
   const [searchParams] = useSearchParams();
@@ -119,14 +117,14 @@ const Results = () => {
     {
       id: 2,
       name: "Merchant Growth",
-      logo: merchantGrowthLogo,
+      logo: "/lovable-uploads/77b173e0-4da2-4b65-a106-fddb77e38ed9.png",
       matchRating: "4/5", 
       tagline: "Ideal for businesses with consistent monthly revenue streams."
     },
     {
       id: 3,
       name: "Greenbox Capital",
-      logo: greenboxCapitalLogo,
+      logo: "/lovable-uploads/a8c1dec2-0163-4581-90be-23899e6d3220.png",
       matchRating: "4/5",
       tagline: "Perfect for established businesses seeking flexible terms."
     }
