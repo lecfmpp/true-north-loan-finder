@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Plus, Edit, Trash2, Copy, Check, Code, MessageCircle, Settings, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import ImageUpload from '@/components/admin/ImageUpload';
 
 interface ChatConfig {
   id: string;
@@ -273,12 +274,10 @@ export function ChatWidgetManagement() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="supportAvatar">Support Person Avatar URL</Label>
-                <Input
-                  id="supportAvatar"
-                  value={config.support_person_avatar_url || ''}
-                  onChange={(e) => updateConfig({ support_person_avatar_url: e.target.value })}
-                  placeholder="https://example.com/avatar.jpg"
+                <Label>Support Person Avatar</Label>
+                <ImageUpload
+                  currentImageUrl={config.support_person_avatar_url || ''}
+                  onImageUploaded={(url) => updateConfig({ support_person_avatar_url: url })}
                 />
               </div>
             </div>
