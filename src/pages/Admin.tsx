@@ -56,6 +56,7 @@ const Admin = () => {
   const [emailEnrollments, setEmailEnrollments] = useState<{ [key: string]: { [key: string]: boolean } }>({});
   const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
   const [sendingEmails, setSendingEmails] = useState<{ [key: string]: boolean }>({});
+  const [selectedRecipients, setSelectedRecipients] = useState<{ [key: string]: string }>({});
   const { user, isAdmin, isSuperAdmin, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -811,53 +812,71 @@ const Admin = () => {
                           </TableCell>
                           {isSuperAdmin && approvedPartners.length > 0 && (
                             <TableCell>
-                              <Select
-                                disabled={sendingEmails[lead.id]}
-                                onValueChange={(value) => sendLeadEmail(lead.id, value)}
-                              >
-                                <SelectTrigger className="w-48">
-                                  <SelectValue placeholder={sendingEmails[lead.id] ? "Sending..." : "Select recipient"} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {approvedPartners.map((partner) => (
-                                    <SelectItem key={partner.id} value={partner.id}>
-                                      <div className="flex items-center gap-2">
-                                        <Send className="w-4 h-4" />
-                                        {partner.name}
-                                      </div>
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                              <div className="flex items-center gap-2">
+                                <Select
+                                  disabled={sendingEmails[lead.id]}
+                                  value={selectedRecipients[lead.id] || ""}
+                                  onValueChange={(value) => setSelectedRecipients(prev => ({ ...prev, [lead.id]: value }))}
+                                >
+                                  <SelectTrigger className="w-48">
+                                    <SelectValue placeholder={sendingEmails[lead.id] ? "Sending..." : "Select recipient"} />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {approvedPartners.map((partner) => (
+                                      <SelectItem key={partner.id} value={partner.id}>
+                                        <div className="flex items-center gap-2">
+                                          <Send className="w-4 h-4" />
+                                          {partner.name}
+                                        </div>
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                {selectedRecipients[lead.id] && (
+                                  <Button
+                                    size="sm"
+                                    onClick={() => {
+                                      sendLeadEmail(lead.id, selectedRecipients[lead.id]);
+                                      // Clear selection after sending
+                                      setSelectedRecipients(prev => ({ ...prev, [lead.id]: "" }));
+                                    }}
+                                    disabled={sendingEmails[lead.id]}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                                  >
+                                    <Send className="w-4 h-4 mr-2" />
+                                    Send Lead
+                                  </Button>
+                                )}
+                              </div>
                             </TableCell>
                           )}
                           <TableCell>
-                             <div className="flex items-center gap-2">
-                               <Select
-                                 value={lead.status}
-                                 onValueChange={(value) => updateLeadStatus(lead.id, value)}
-                               >
-                                 <SelectTrigger className="w-32">
-                                   <SelectValue />
-                                 </SelectTrigger>
-                                 <SelectContent>
-                                   <SelectItem value="new">New</SelectItem>
-                                   <SelectItem value="contacted">Contacted</SelectItem>
-                                   <SelectItem value="qualified">Qualified</SelectItem>
-                                   <SelectItem value="closed">Closed</SelectItem>
-                                 </SelectContent>
-                               </Select>
-                               {isSuperAdmin && (
-                                 <Button
-                                   variant="destructive"
-                                   size="sm"
-                                   onClick={() => deleteLead(lead.id)}
-                                 >
-                                   <Trash2 className="w-4 h-4" />
-                                 </Button>
-                               )}
-                             </div>
-                           </TableCell>
+                            <div className="flex items-center gap-2">
+                              <Select
+                                value={lead.status}
+                                onValueChange={(value) => updateLeadStatus(lead.id, value)}
+                              >
+                                <SelectTrigger className="w-32">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="new">New</SelectItem>
+                                  <SelectItem value="contacted">Contacted</SelectItem>
+                                  <SelectItem value="qualified">Qualified</SelectItem>
+                                  <SelectItem value="closed">Closed</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              {isSuperAdmin && (
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => deleteLead(lead.id)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
