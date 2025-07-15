@@ -804,6 +804,39 @@ export type Database = {
         }
         Relationships: []
       }
+      social_proof_widget_config: {
+        Row: {
+          created_at: string
+          id: string
+          initial_delay_seconds: number
+          interval_seconds: number
+          is_enabled: boolean
+          max_notifications_per_session: number
+          notification_duration_seconds: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          initial_delay_seconds?: number
+          interval_seconds?: number
+          is_enabled?: boolean
+          max_notifications_per_session?: number
+          notification_duration_seconds?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          initial_delay_seconds?: number
+          interval_seconds?: number
+          is_enabled?: boolean
+          max_notifications_per_session?: number
+          notification_duration_seconds?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
