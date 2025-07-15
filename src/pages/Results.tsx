@@ -190,6 +190,8 @@ const Results = () => {
     }
     
     setShowBooking(true);
+    // Scroll to top when showing booking calendar
+    window.scrollTo(0, 0);
   };
 
   const handleBookingConfirmed = (bookingData: any) => {
@@ -388,10 +390,12 @@ const Results = () => {
                     <Button 
                       variant="link" 
                       onClick={handleChatWithUs}
-                      className="text-blue-600 hover:text-blue-800"
+                      className="text-blue-600 hover:text-blue-800 text-center leading-relaxed px-2"
                     >
-                      <MessageCircle className="w-4 h-4 mr-2" />
-                      Have a question before booking? Chat with us now.
+                      <MessageCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+                      <span className="break-words">
+                        Have a question before booking? Chat with us now.
+                      </span>
                     </Button>
                   </div>
                 </CardContent>
