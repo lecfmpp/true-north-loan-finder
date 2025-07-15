@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Edit, Eye, Mail, TrendingUp, Users, MousePointer } from "lucide-react";
+import { Edit, Eye, Mail, TrendingUp, Users, MousePointer, Trash2, Plus, Variable } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -45,12 +45,34 @@ const EmailSequenceManagement = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [createSequenceId, setCreateSequenceId] = useState('');
   const [editFormData, setEditFormData] = useState({
     purpose: '',
     subject_line: '',
     email_content: '',
     delay_hours: 0
   });
+  const [createFormData, setCreateFormData] = useState({
+    purpose: '',
+    subject_line: '',
+    email_content: '',
+    delay_hours: 0,
+    email_order: 1
+  });
+
+  // Email variables for insertion
+  const emailVariables = [
+    { name: '{{name}}', description: 'User name' },
+    { name: '{{email}}', description: 'User email' },
+    { name: '{{phone}}', description: 'User phone' },
+    { name: '{{score}}', description: 'Quiz score' },
+    { name: '{{loan_amount}}', description: 'Loan amount' },
+    { name: '{{monthly_revenue}}', description: 'Monthly revenue' },
+    { name: '{{credit_score}}', description: 'Credit score' },
+    { name: '{{time_in_business}}', description: 'Time in business' },
+    { name: '{{use_of_funds}}', description: 'Use of funds' },
+  ];
   const { toast } = useToast();
 
   useEffect(() => {
@@ -237,6 +259,98 @@ const EmailSequenceManagement = () => {
     }
   };
 
+  const handleDeleteTemplate = async (templateId: string) => {
+    if (!confirm('Are you sure you want to delete this email template? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('email_templates')
+        .delete()
+        .eq('id', templateId);
+
+      if (error) throw error;
+
+      // Update local state
+      setTemplates(prev => {
+        const updated = { ...prev };
+        Object.keys(updated).forEach(sequenceId => {
+          updated[sequenceId] = updated[sequenceId].filter(template => template.id !== templateId);
+        });
+        return updated;
+      });
+
+      toast({
+        title: "Success",
+        description: "Email template deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error deleting template:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete email template",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCreateEmail = async () => {
+    try {
+      const { error } = await supabase
+        .from('email_templates')
+        .insert({
+          sequence_id: createSequenceId,
+          purpose: createFormData.purpose,
+          subject_line: createFormData.subject_line,
+          email_content: createFormData.email_content,
+          delay_hours: createFormData.delay_hours,
+          email_order: createFormData.email_order,
+          is_active: true
+        });
+
+      if (error) throw error;
+
+      // Refresh data
+      await fetchData();
+
+      setIsCreateModalOpen(false);
+      setCreateFormData({
+        purpose: '',
+        subject_line: '',
+        email_content: '',
+        delay_hours: 0,
+        email_order: 1
+      });
+
+      toast({
+        title: "Success",
+        description: "Email template created successfully",
+      });
+    } catch (error) {
+      console.error('Error creating template:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create email template",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const insertVariable = (variable: string, isEdit: boolean = false) => {
+    if (isEdit) {
+      setEditFormData(prev => ({
+        ...prev,
+        email_content: prev.email_content + ' ' + variable
+      }));
+    } else {
+      setCreateFormData(prev => ({
+        ...prev,
+        email_content: prev.email_content + ' ' + variable
+      }));
+    }
+  };
+
   const renderSequenceSection = (sequence: EmailSequence) => {
     const sequenceTemplates = templates[sequence.id] || [];
     const sequenceMetrics = metrics[sequence.id] || { emails_sent: 0, open_rate: 0, click_rate: 0 };
@@ -286,11 +400,29 @@ const EmailSequenceManagement = () => {
             </div>
           </div>
 
+          {/* Create Email Button */}
+          <div className="mb-4">
+            <Button 
+              onClick={() => {
+                setCreateSequenceId(sequence.id);
+                setCreateFormData(prev => ({
+                  ...prev,
+                  email_order: (templates[sequence.id]?.length || 0) + 1
+                }));
+                setIsCreateModalOpen(true);
+              }}
+              className="mb-4"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Email Template
+            </Button>
+          </div>
+
           {/* Email Templates Table */}
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-16">#</TableHead>
+                <TableHead className="w-16">Order #</TableHead>
                 <TableHead>Email Purpose</TableHead>
                 <TableHead>Subject Line</TableHead>
                 <TableHead>Delay (hrs)</TableHead>
@@ -332,6 +464,14 @@ const EmailSequenceManagement = () => {
                       >
                         <Edit className="h-4 w-4 mr-1" />
                         Edit
+                      </Button>
+                      <Button 
+                        variant="destructive" 
+                        size="sm"
+                        onClick={() => handleDeleteTemplate(template.id)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Delete
                       </Button>
                     </div>
                   </TableCell>
@@ -440,6 +580,23 @@ const EmailSequenceManagement = () => {
             </div>
             <div>
               <Label htmlFor="content">Email Content</Label>
+              <div className="mb-2">
+                <Label className="text-sm font-medium">Insert Variables:</Label>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {emailVariables.map((variable) => (
+                    <Button
+                      key={variable.name}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => insertVariable(variable.name, true)}
+                      title={variable.description}
+                    >
+                      <Variable className="h-3 w-3 mr-1" />
+                      {variable.name}
+                    </Button>
+                  ))}
+                </div>
+              </div>
               <Textarea
                 id="content"
                 value={editFormData.email_content}
@@ -454,6 +611,93 @@ const EmailSequenceManagement = () => {
               </Button>
               <Button onClick={handleSaveEdit}>
                 Save Changes
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Email Modal */}
+      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create New Email Template</DialogTitle>
+            <DialogDescription>
+              Add a new email template to the sequence
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="create-purpose">Purpose</Label>
+              <Input
+                id="create-purpose"
+                value={createFormData.purpose}
+                onChange={(e) => setCreateFormData(prev => ({ ...prev, purpose: e.target.value }))}
+                placeholder="Email purpose"
+              />
+            </div>
+            <div>
+              <Label htmlFor="create-subject">Subject Line</Label>
+              <Input
+                id="create-subject"
+                value={createFormData.subject_line}
+                onChange={(e) => setCreateFormData(prev => ({ ...prev, subject_line: e.target.value }))}
+                placeholder="Email subject line"
+              />
+            </div>
+            <div>
+              <Label htmlFor="create-order">Email Order</Label>
+              <Input
+                id="create-order"
+                type="number"
+                value={createFormData.email_order}
+                onChange={(e) => setCreateFormData(prev => ({ ...prev, email_order: parseInt(e.target.value) || 1 }))}
+                placeholder="Email order"
+              />
+            </div>
+            <div>
+              <Label htmlFor="create-delay">Delay Hours</Label>
+              <Input
+                id="create-delay"
+                type="number"
+                value={createFormData.delay_hours}
+                onChange={(e) => setCreateFormData(prev => ({ ...prev, delay_hours: parseInt(e.target.value) || 0 }))}
+                placeholder="Delay in hours"
+              />
+            </div>
+            <div>
+              <Label htmlFor="create-content">Email Content</Label>
+              <div className="mb-2">
+                <Label className="text-sm font-medium">Insert Variables:</Label>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {emailVariables.map((variable) => (
+                    <Button
+                      key={variable.name}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => insertVariable(variable.name, false)}
+                      title={variable.description}
+                    >
+                      <Variable className="h-3 w-3 mr-1" />
+                      {variable.name}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              <Textarea
+                id="create-content"
+                value={createFormData.email_content}
+                onChange={(e) => setCreateFormData(prev => ({ ...prev, email_content: e.target.value }))}
+                placeholder="Email content (HTML supported)"
+                rows={10}
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleCreateEmail}>
+                Create Email
               </Button>
             </div>
           </div>
