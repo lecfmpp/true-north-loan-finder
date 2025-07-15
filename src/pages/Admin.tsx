@@ -13,12 +13,13 @@ import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight } from 'lucide-react';
+import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, MessageCircle } from 'lucide-react';
 import Header from '@/components/Header';
 import BlogManagement from '@/components/admin/BlogManagement';
 import BlogPostCreator from '@/components/admin/BlogPostCreator';
 import EmailSequenceManagement from '@/components/admin/EmailSequenceManagement';
 import AvailableTimesManagement from '@/components/admin/AvailableTimesManagement';
+import { ChatWidgetManagement } from '@/components/admin/ChatWidgetManagement';
 
 interface QuizResponse {
   id: string;
@@ -330,7 +331,7 @@ const Admin = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="leads" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               Leads
@@ -342,6 +343,10 @@ const Admin = () => {
             <TabsTrigger value="email-sequence" className="flex items-center gap-2">
               <Mail className="w-4 h-4" />
               Email Sequence
+            </TabsTrigger>
+            <TabsTrigger value="chat-widget" className="flex items-center gap-2">
+              <MessageCircle className="w-4 h-4" />
+              Chat Widget
             </TabsTrigger>
             {/* Blog Creator tab hidden but code preserved */}
             {false && (
@@ -594,6 +599,10 @@ const Admin = () => {
 
           <TabsContent value="email-sequence">
             <EmailSequenceManagement />
+          </TabsContent>
+
+          <TabsContent value="chat-widget">
+            <ChatWidgetManagement />
           </TabsContent>
 
           <TabsContent value="blog-creator">

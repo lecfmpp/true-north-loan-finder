@@ -219,6 +219,78 @@ export type Database = {
           },
         ]
       }
+      chat_widget_config: {
+        Row: {
+          ai_instructions: string
+          created_at: string
+          id: string
+          is_enabled: boolean
+          primary_color: string
+          support_person_avatar_url: string | null
+          support_person_name: string
+          updated_at: string
+          widget_position: string
+        }
+        Insert: {
+          ai_instructions?: string
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          primary_color?: string
+          support_person_avatar_url?: string | null
+          support_person_name?: string
+          updated_at?: string
+          widget_position?: string
+        }
+        Update: {
+          ai_instructions?: string
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          primary_color?: string
+          support_person_avatar_url?: string | null
+          support_person_name?: string
+          updated_at?: string
+          widget_position?: string
+        }
+        Relationships: []
+      }
+      chat_widget_qa: {
+        Row: {
+          answer: string
+          created_at: string
+          fallback_action: string
+          id: string
+          is_active: boolean
+          order_index: number
+          question: string
+          related_links: Json | null
+          updated_at: string
+        }
+        Insert: {
+          answer: string
+          created_at?: string
+          fallback_action?: string
+          id?: string
+          is_active?: boolean
+          order_index?: number
+          question: string
+          related_links?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          answer?: string
+          created_at?: string
+          fallback_action?: string
+          id?: string
+          is_active?: boolean
+          order_index?: number
+          question?: string
+          related_links?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       content_briefs: {
         Row: {
           competitors: Json | null
