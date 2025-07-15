@@ -267,18 +267,7 @@ const Results = () => {
                   {topLenders.map((lender) => (
                     <Card key={lender.id} className="text-center bg-slate-800 border-slate-700 text-white animate-fade-in">
                       <CardContent className="p-6 space-y-4">
-                        <div className="h-16 flex items-center justify-center">
-                          <img 
-                            src={lender.logo} 
-                            alt={`${lender.name} logo`}
-                            className={`object-contain filter brightness-0 invert ${
-                              lender.name === "Driven Capital" 
-                                ? "max-h-16 max-w-full" // 30% larger than max-h-12
-                                : "max-h-12 max-w-full"
-                            }`}
-                          />
-                        </div>
-                        <h3 className="font-bold text-lg text-white">{lender.name}</h3>
+                        <h3 className="font-bold text-2xl text-white">{lender.name}</h3>
                         <Badge className="bg-green-100 text-green-800">
                           Top Match ({lender.matchRating})
                         </Badge>
