@@ -31,13 +31,14 @@ const handler = async (req: Request): Promise<Response> => {
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Application Received - True North Funding</title>
+        <title>Application Received - True North Business Loan</title>
         <style>
             body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 0; background-color: #f4f4f4; }
             .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
             .header { background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; padding: 40px 30px; text-align: center; }
             .header h1 { margin: 0; font-size: 32px; font-weight: 600; }
             .header p { margin: 15px 0 0 0; font-size: 18px; opacity: 0.9; }
+            .header-logo { height: 60px; margin-bottom: 20px; }
             .content { padding: 40px 30px; }
             .success-badge { background: #E6FFFA; border: 2px solid #10B981; border-radius: 50px; padding: 20px; margin: 30px 0; text-align: center; }
             .success-badge h2 { color: #10B981; margin: 0; font-size: 24px; }
@@ -53,7 +54,7 @@ const handler = async (req: Request): Promise<Response> => {
             .contact-info { background: #FFFBEB; border: 1px solid #FCD34D; padding: 20px; border-radius: 8px; margin: 25px 0; text-align: center; }
             .contact-info h3 { color: #92400E; margin: 0 0 10px 0; }
             .footer { background: #F8F9FA; padding: 30px; text-align: center; color: #666; }
-            .logo { color: #10B981; font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+            .footer-logo { height: 40px; margin-bottom: 10px; }
             @media (max-width: 600px) {
                 .container { margin: 10px; }
                 .header, .content { padding: 25px 20px; }
@@ -65,7 +66,7 @@ const handler = async (req: Request): Promise<Response> => {
     <body>
         <div class="container">
             <div class="header">
-                <div class="logo">⭐ True North Funding</div>
+                <img src="https://truenorthbusinessloan.ca/lovable-uploads/327718f8-3972-44ab-9e0a-0ab928587c31.png" alt="True North Business Loan" class="header-logo">
                 <h1>Application Received!</h1>
                 <p>Thank you for your interest in becoming a partner</p>
             </div>
@@ -77,7 +78,7 @@ const handler = async (req: Request): Promise<Response> => {
 
                 <p>Dear <strong>${applicantName}</strong>,</p>
                 
-                <p>Thank you for submitting your ${applicationType.toLowerCase()} application to True North Funding. We're excited about the potential of partnering with <strong>${companyName}</strong> to help Canadian businesses access the funding they need to grow and thrive.</p>
+                <p>Thank you for submitting your ${applicationType.toLowerCase()} application to True North Business Loan. We're excited about the potential of partnering with <strong>${companyName}</strong> to help Canadian businesses access the funding they need to grow and thrive.</p>
 
                 <div class="application-details">
                     <h3 style="margin: 0 0 15px 0; color: #334155;">📋 Application Summary</h3>
@@ -123,8 +124,7 @@ const handler = async (req: Request): Promise<Response> => {
                 <div class="contact-info">
                     <h3>💬 Questions or Need Assistance?</h3>
                     <p>Our partnership team is here to help! Feel free to reach out if you have any questions about your application or our partnership program.</p>
-                    <p><strong>Email:</strong> partnerships@truenorthfunding.ca<br>
-                    <strong>Phone:</strong> 1-800-TRUE-NORTH</p>
+                    <p><strong>Email:</strong> info@truenorthbusinessloan.ca</p>
                 </div>
 
                 <p style="margin-top: 30px; padding: 20px; background: #F0FDF4; border-radius: 8px; border-left: 4px solid #10B981;">
@@ -138,10 +138,10 @@ const handler = async (req: Request): Promise<Response> => {
             </div>
 
             <div class="footer">
-                <div class="logo">True North Funding</div>
+                <img src="https://truenorthbusinessloan.ca/lovable-uploads/327718f8-3972-44ab-9e0a-0ab928587c31.png" alt="True North Business Loan" class="footer-logo">
                 <p>Connecting Canadian businesses with the right financial solutions.</p>
                 <p style="font-size: 12px; margin-top: 20px;">
-                    If you have any questions, please don't hesitate to contact us at partnerships@truenorthfunding.ca
+                    If you have any questions, please don't hesitate to contact us at info@truenorthbusinessloan.ca
                 </p>
             </div>
         </div>
@@ -151,9 +151,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send the confirmation email
     const emailResponse = await resend.emails.send({
-      from: "True North Funding <partnerships@email.truenorthbusinessloan.ca>",
+      from: "True North Business Loan <info@email.truenorthbusinessloan.ca>",
       to: [applicantEmail],
-      subject: `✅ ${applicationType} Application Received - True North Funding`,
+      subject: `✅ ${applicationType} Application Received - True North Business Loan`,
       html: emailHtml,
     });
 
