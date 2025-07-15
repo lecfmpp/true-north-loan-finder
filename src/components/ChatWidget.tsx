@@ -117,12 +117,31 @@ export function ChatWidget() {
 
   const generateAIResponse = async (userInput: string, context: string) => {
     try {
-      // This would typically call an AI service
-      // For now, we'll return a fallback response
-      return `I understand you're asking about "${userInput}". Let me help you with that. Based on our services, you might be interested in our business financing solutions. Would you like me to connect you with a specialist?`;
+      console.log('Calling AI chat function with:', userInput);
+      
+      const { data, error } = await supabase.functions.invoke('chat-with-ai', {
+        body: {
+          message: userInput,
+          chatHistory: messages.slice(-5), // Send last 5 messages for context
+        },
+      });
+
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
+
+      console.log('AI response:', data);
+      return {
+        text: data.response || "I'm sorry, I'm having trouble processing your request right now. Please contact our support team for assistance.",
+        links: data.links || []
+      };
     } catch (error) {
       console.error('Error generating AI response:', error);
-      return "I'm sorry, I'm having trouble processing your request right now. Please try again or contact our support team directly.";
+      return {
+        text: "I'm sorry, I'm having trouble right now. Please contact our support team for assistance.",
+        links: [{ title: "Contact Us", url: "/contact" }]
+      };
     }
   };
 
@@ -159,14 +178,15 @@ export function ChatWidget() {
         setIsLoading(false);
       }, 1000);
     } else {
-      // Use AI or fallback response
+      // Use AI response
       try {
         const aiResponse = await generateAIResponse(userInput, config?.ai_instructions || '');
         const botMessage: Message = {
           id: (Date.now() + 1).toString(),
           type: 'bot',
-          content: aiResponse,
-          timestamp: new Date()
+          content: aiResponse.text,
+          timestamp: new Date(),
+          links: aiResponse.links
         };
         
         setTimeout(() => {
