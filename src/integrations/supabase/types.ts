@@ -430,14 +430,17 @@ export type Database = {
       }
       email_sends: {
         Row: {
+          click_count: number
           clicked_at: string | null
           created_at: string
           delivered_at: string | null
           enrollment_id: string
           error_message: string | null
           id: string
+          open_count: number
           opened_at: string | null
           recipient_email: string
+          replied: boolean
           resend_email_id: string | null
           sent_at: string
           status: string
@@ -446,14 +449,17 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          click_count?: number
           clicked_at?: string | null
           created_at?: string
           delivered_at?: string | null
           enrollment_id: string
           error_message?: string | null
           id?: string
+          open_count?: number
           opened_at?: string | null
           recipient_email: string
+          replied?: boolean
           resend_email_id?: string | null
           sent_at?: string
           status?: string
@@ -462,14 +468,17 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          click_count?: number
           clicked_at?: string | null
           created_at?: string
           delivered_at?: string | null
           enrollment_id?: string
           error_message?: string | null
           id?: string
+          open_count?: number
           opened_at?: string | null
           recipient_email?: string
+          replied?: boolean
           resend_email_id?: string | null
           sent_at?: string
           status?: string
