@@ -271,7 +271,11 @@ const Results = () => {
                           <img 
                             src={lender.logo} 
                             alt={`${lender.name} logo`}
-                            className="max-h-12 max-w-full object-contain filter brightness-0 invert"
+                            className={`object-contain filter brightness-0 invert ${
+                              lender.name === "Driven Capital" 
+                                ? "max-h-16 max-w-full" // 30% larger than max-h-12
+                                : "max-h-12 max-w-full"
+                            }`}
                           />
                         </div>
                         <h3 className="font-bold text-lg text-white">{lender.name}</h3>
