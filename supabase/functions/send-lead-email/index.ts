@@ -133,7 +133,7 @@ const handler = async (req: Request): Promise<Response> => {
                 </div>
 
                 <div class="lead-card">
-                    <h2 style="margin: 0 0 15px 0; color: #333;">👨 Lead Information</h2>
+                    <h2 style="margin: 0 0 15px 0; color: #333;">Lead Information</h2>
                     <h3 style="margin: 0; color: #667eea; font-size: 24px;">${lead.name}</h3>
                     <p style="margin: 5px 0 0 0; color: #666; font-size: 16px;">${lead.email}</p>
                 </div>
