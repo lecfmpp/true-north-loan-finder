@@ -249,38 +249,41 @@ export function ChatWidget() {
 
           <CardContent className="flex flex-col h-full p-0">
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {messages.map((message) => (
                 <div
                   key={message.id}
                   className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div className="flex items-start gap-2 max-w-[80%]">
+                  <div className="flex items-start gap-3 max-w-[80%]">
                     {message.type === 'bot' && (
-                      <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
-                        <Bot size={12} className="text-slate-600" />
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+                        <Bot size={14} className="text-white" />
                       </div>
                     )}
                     
                     <div
-                      className={`p-3 rounded-lg ${
+                      className={`px-4 py-3 rounded-2xl shadow-sm ${
                         message.type === 'user'
-                          ? 'text-white rounded-br-none'
-                          : 'bg-slate-100 text-slate-800 rounded-bl-none'
+                          ? 'bg-gradient-to-br from-green-500 to-green-600 text-white rounded-br-md'
+                          : 'bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800 border border-gray-200 rounded-bl-md'
                       }`}
-                      style={message.type === 'user' ? { backgroundColor: config.primary_color } : {}}
                     >
-                      <p className="text-sm">{message.content}</p>
+                      <p className="text-sm leading-relaxed">{message.content}</p>
                       
                       {message.links && message.links.length > 0 && (
-                        <div className="mt-2 space-y-1">
+                        <div className="mt-3 space-y-2">
                           {message.links.map((link, index) => (
                             <a
                               key={index}
                               href={link.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="block text-xs text-blue-600 hover:underline"
+                              className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition-colors ${
+                                message.type === 'user' 
+                                  ? 'bg-white/20 text-white hover:bg-white/30' 
+                                  : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                              }`}
                             >
                               🔗 {link.title}
                             </a>
@@ -290,8 +293,8 @@ export function ChatWidget() {
                     </div>
 
                     {message.type === 'user' && (
-                      <div className="w-6 h-6 rounded-full bg-slate-300 flex items-center justify-center flex-shrink-0">
-                        <User size={12} className="text-slate-600" />
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center flex-shrink-0 shadow-sm">
+                        <User size={14} className="text-white" />
                       </div>
                     )}
                   </div>
@@ -300,15 +303,15 @@ export function ChatWidget() {
               
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center">
-                      <Bot size={12} className="text-slate-600" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-sm">
+                      <Bot size={14} className="text-white" />
                     </div>
-                    <div className="bg-slate-100 p-3 rounded-lg rounded-bl-none">
+                    <div className="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 px-4 py-3 rounded-2xl rounded-bl-md shadow-sm">
                       <div className="flex space-x-1">
-                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                        <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                        <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                        <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                       </div>
                     </div>
                   </div>
