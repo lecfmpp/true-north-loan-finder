@@ -102,7 +102,7 @@ const Admin = () => {
 
       if (error) throw error;
 
-      // Create enrollment map: { email: { sequenceId: boolean } }
+      // Initialize enrollment map for all leads first
       const enrollmentMap: { [key: string]: { [key: string]: boolean } } = {};
       
       leadsData.forEach(lead => {
@@ -112,6 +112,7 @@ const Admin = () => {
         };
       });
 
+      // Then update with actual enrollments
       enrollments?.forEach(enrollment => {
         if (enrollmentMap[enrollment.user_email]) {
           enrollmentMap[enrollment.user_email][enrollment.sequence_id] = true;
@@ -462,6 +463,7 @@ const Admin = () => {
                             <div className="space-y-2">
                               <div className="flex items-center gap-2">
                                 <Switch
+                                  key={`${lead.id}-follow-up`}
                                   checked={emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.FOLLOW_UP] || false}
                                   onCheckedChange={(checked) => 
                                     toggleEmailSequence(lead.email, lead.name, EMAIL_SEQUENCES.FOLLOW_UP, checked)
@@ -471,6 +473,7 @@ const Admin = () => {
                               </div>
                               <div className="flex items-center gap-2">
                                 <Switch
+                                  key={`${lead.id}-pre-call`}
                                   checked={emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.PRE_CALL] || false}
                                   onCheckedChange={(checked) => 
                                     toggleEmailSequence(lead.email, lead.name, EMAIL_SEQUENCES.PRE_CALL, checked)
