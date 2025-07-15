@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,6 +57,76 @@ const Quiz = () => {
     phone: ""
   });
   const [showResults, setShowResults] = useState(false);
+
+  // External tracking system integration
+  const EXTERNAL_TRACKER = {
+    wizardId: 'e3f3c9bd-38c2-488c-9c3c-4740420f140d',
+    apiBase: 'https://yzasxwyibutfqdweaxxo.supabase.co',
+    
+    async trackVisitor() {
+      let sessionId = localStorage.getItem('visitor_session_id');
+      if (!sessionId) {
+        sessionId = 'vs_' + Math.random().toString(36).substr(2, 9) + Date.now();
+        localStorage.setItem('visitor_session_id', sessionId);
+      }
+
+      try {
+        await fetch(`${this.apiBase}/functions/v1/track-visitor`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            wizard_id: this.wizardId,
+            visitor_session_id: sessionId,
+            source_url: window.location.href,
+            user_agent: navigator.userAgent
+          })
+        });
+        console.log('Visitor tracked successfully');
+      } catch (error) {
+        console.error('Failed to track visitor:', error);
+      }
+    },
+
+    async submitLead(formData: QuizData) {
+      const sessionId = localStorage.getItem('visitor_session_id');
+      
+      try {
+        const response = await fetch(`${this.apiBase}/functions/v1/submit-lead`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            wizard_id: this.wizardId,
+            email: formData.email,
+            visitor_session_id: sessionId,
+            lead_data: {
+              name: formData.name,
+              phone: formData.phone,
+              loan_amount: formData.loanAmount[0],
+              use_of_funds: formData.useOfFunds,
+              time_in_business: formData.timeInBusiness,
+              monthly_revenue: formData.monthlyRevenue[0],
+              credit_score: formData.creditScore,
+              quiz_score: calculateScore(),
+              source: 'business_loan_quiz',
+              submitted_at: new Date().toISOString()
+            }
+          })
+        });
+
+        const result = await response.json();
+        console.log('Lead submitted to external tracker:', result);
+        return result;
+      } catch (error) {
+        console.error('Failed to submit lead to external tracker:', error);
+        return { success: false, error: 'Network error' };
+      }
+    }
+  };
+
+  // Track visitor when component mounts
+  useEffect(() => {
+    EXTERNAL_TRACKER.trackVisitor();
+  }, []);
 
   const totalSteps = 6;
   const progress = (currentStep / totalSteps) * 100;
@@ -323,6 +393,8 @@ const Quiz = () => {
   const saveQuizResponse = async (data: QuizData) => {
     try {
       const score = calculateScore();
+      
+      // Save to local Supabase database
       await supabase.from('quiz_responses').insert({
         loan_amount: data.loanAmount[0],
         use_of_funds: data.useOfFunds,
@@ -334,6 +406,10 @@ const Quiz = () => {
         phone: data.phone,
         score: score
       });
+
+      // Submit to external tracking system
+      await EXTERNAL_TRACKER.submitLead(data);
+      
     } catch (error) {
       console.error('Error saving quiz response:', error);
     }
