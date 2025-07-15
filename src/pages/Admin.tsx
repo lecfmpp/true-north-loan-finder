@@ -14,7 +14,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, MessageCircle, CheckSquare, Square, UserCheck } from 'lucide-react';
+import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, MessageCircle, CheckSquare, Square, UserCheck, Megaphone } from 'lucide-react';
 import Header from '@/components/Header';
 import BlogManagement from '@/components/admin/BlogManagement';
 import BlogPostCreator from '@/components/admin/BlogPostCreator';
@@ -22,6 +22,7 @@ import EmailSequenceManagement from '@/components/admin/EmailSequenceManagement'
 import AvailableTimesManagement from '@/components/admin/AvailableTimesManagement';
 import { ChatWidgetManagement } from '@/components/admin/ChatWidgetManagement';
 import { ApplicationsManagement } from '@/components/admin/ApplicationsManagement';
+import SocialProofManagement from '@/components/admin/SocialProofManagement';
 import Footer from '@/components/Footer';
 
 interface QuizResponse {
@@ -386,7 +387,7 @@ const Admin = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className={`grid w-full ${isSuperAdmin ? 'grid-cols-6' : 'grid-cols-3'}`}>
+          <TabsList className={`grid w-full ${isSuperAdmin ? 'grid-cols-7' : 'grid-cols-3'}`}>
             <TabsTrigger value="leads" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               Leads
@@ -412,6 +413,10 @@ const Admin = () => {
                 <TabsTrigger value="blog" className="flex items-center gap-2">
                   <FileText className="w-4 h-4" />
                   Blog Management
+                </TabsTrigger>
+                <TabsTrigger value="social-proof" className="flex items-center gap-2">
+                  <Megaphone className="w-4 h-4" />
+                  Social Proof
                 </TabsTrigger>
               </>
             )}
@@ -695,6 +700,10 @@ const Admin = () => {
 
           <TabsContent value="blog">
             <BlogManagement />
+          </TabsContent>
+
+          <TabsContent value="social-proof">
+            <SocialProofManagement />
           </TabsContent>
         </Tabs>
       </div>

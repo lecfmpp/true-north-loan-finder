@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route } from "react-router-dom";
 import { ChatWidget } from "@/components/ChatWidget";
+import SocialProofWidget from "@/components/SocialProofWidget";
 import { AuthProvider } from "@/hooks/use-auth";
 import Home from "./pages/Home";
 import Quiz from "./pages/Quiz";
@@ -39,6 +40,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <ChatWidget />
+        <SocialProofWidget />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/loan-estimator" element={<Quiz />} />

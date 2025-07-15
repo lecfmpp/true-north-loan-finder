@@ -759,6 +759,51 @@ export type Database = {
           },
         ]
       }
+      social_proof_notifications: {
+        Row: {
+          amount_funded: number
+          background_color: string
+          client_company: string
+          client_name: string
+          created_at: string
+          display_order: number
+          emoji: string
+          id: string
+          is_active: boolean
+          lender: string
+          profile_picture_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_funded: number
+          background_color?: string
+          client_company: string
+          client_name: string
+          created_at?: string
+          display_order?: number
+          emoji?: string
+          id?: string
+          is_active?: boolean
+          lender: string
+          profile_picture_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_funded?: number
+          background_color?: string
+          client_company?: string
+          client_name?: string
+          created_at?: string
+          display_order?: number
+          emoji?: string
+          id?: string
+          is_active?: boolean
+          lender?: string
+          profile_picture_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
