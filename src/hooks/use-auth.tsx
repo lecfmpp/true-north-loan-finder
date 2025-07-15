@@ -24,55 +24,72 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Skip during SSR
-    if (typeof window === 'undefined') {
-      setLoading(false);
-      return;
-    }
+    let subscription: any;
 
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+    const initializeAuth = async () => {
+      // Skip during SSR
+      if (typeof window === 'undefined') {
+        setLoading(false);
+        return;
+      }
+
+      // Set up auth state listener
+      const { data } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          setSession(session);
+          setUser(session?.user ?? null);
+          
+          if (session?.user) {
+            // Fetch user profile
+            try {
+              const { data: profileData } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('user_id', session.user.id)
+                .maybeSingle();
+              setProfile(profileData);
+            } catch (error) {
+              console.error('Error fetching profile:', error);
+              setProfile(null);
+            }
+          } else {
+            setProfile(null);
+          }
+          
+          setLoading(false);
+        }
+      );
+
+      subscription = data.subscription;
+
+      // Check for existing session
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch user profile
-          setTimeout(async () => {
-            const { data: profileData } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('user_id', session.user.id)
-              .single();
-            setProfile(profileData);
-          }, 0);
-        } else {
-          setProfile(null);
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+          setProfile(profileData);
         }
-        
+        setLoading(false);
+      } catch (error) {
+        console.error('Error getting session:', error);
         setLoading(false);
       }
-    );
+    };
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .single()
-          .then(({ data: profileData }) => {
-            setProfile(profileData);
-          });
+    initializeAuth();
+
+    return () => {
+      if (subscription) {
+        subscription.unsubscribe();
       }
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, displayName?: string) => {
