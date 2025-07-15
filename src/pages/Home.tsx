@@ -10,7 +10,8 @@ import {
   TrendingUp, 
   CreditCard,
   Star,
-  Quote
+  Quote,
+  Phone
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -39,8 +40,14 @@ const Home = () => {
     },
     {
       number: "3",
-      title: "Connect with Lenders", 
-      description: "Choose which lenders to connect with and receive competitive offers",
+      title: "15-Min Pre-Offer Call", 
+      description: "Quick call to match you with the perfect offer and speed up the process by 80%",
+      icon: <Phone className="h-8 w-8 text-secondary" />
+    },
+    {
+      number: "4",
+      title: "Get Your Offers", 
+      description: "Receive competitive offers from matched lenders within 24-48 hours",
       icon: <Users className="h-8 w-8 text-secondary" />
     }
   ];
@@ -190,11 +197,11 @@ const Home = () => {
               How It Works
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-serif">
-              Get matched with the right lenders in three simple steps
+              Get matched with the right lenders in four simple steps
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto">
             {steps.map((step, index) => (
               <Card key={index} className="text-center border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                 <CardContent className="p-8">
