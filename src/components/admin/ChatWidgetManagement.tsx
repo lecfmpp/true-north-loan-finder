@@ -290,7 +290,7 @@ export function ChatWidgetManagement() {
                 onCheckedChange={(checked) => updateLocalConfig({ is_enabled: checked })}
               />
               <Label>Enable Chat Widget</Label>
-              <Badge variant={localConfig?.is_enabled ? "default" : "secondary"}>
+              <Badge variant={localConfig?.is_enabled ? "status-active" : "status-inactive"}>
                 {localConfig?.is_enabled ? "Enabled" : "Disabled"}
               </Badge>
             </div>
@@ -442,7 +442,7 @@ export function ChatWidgetManagement() {
                       <Badge variant="secondary">{qa.fallback_action}</Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={qa.is_active ? "default" : "secondary"}>
+                      <Badge variant={qa.is_active ? "status-active" : "status-inactive"}>
                         {qa.is_active ? "Active" : "Inactive"}
                       </Badge>
                     </TableCell>
