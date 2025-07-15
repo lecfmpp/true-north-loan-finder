@@ -8,13 +8,25 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, MessageCircle, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign } from 'lucide-react';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarProvider,
+  SidebarTrigger,
+  useSidebar,
+} from '@/components/ui/sidebar';
 import Header from '@/components/Header';
 import BlogManagement from '@/components/admin/BlogManagement';
 import BlogPostCreator from '@/components/admin/BlogPostCreator';
@@ -534,67 +546,54 @@ const Admin = () => {
     return null;
   }
 
-  return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="container mx-auto px-4 py-12">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-primary">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Manage leads and content</p>
-          </div>
-          <Button onClick={signOut} variant="outline">
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </Button>
-        </div>
+  const menuItems = [
+    {
+      title: "Leads",
+      value: "leads",
+      icon: Users,
+      count: leads.length
+    },
+    {
+      title: "Bookings",
+      value: "available-times",
+      icon: Clock,
+      count: bookingsCount
+    },
+    {
+      title: "Applications",
+      value: "applications",
+      icon: UserCheck,
+      count: applicationsCount
+    },
+    ...(isSuperAdmin ? [
+      {
+        title: "Email Sequence",
+        value: "email-sequence",
+        icon: Mail
+      },
+      {
+        title: "Chat Widget",
+        value: "chat-widget",
+        icon: MessageCircle
+      },
+      {
+        title: "Blog Management",
+        value: "blog",
+        icon: FileText
+      },
+      {
+        title: "Social Proof",
+        value: "social-proof",
+        icon: Megaphone
+      }
+    ] : [])
+  ];
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className={`grid w-full ${isSuperAdmin ? 'grid-cols-7' : 'grid-cols-3'}`}>
-            <TabsTrigger value="leads" className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              Leads
-              <div className="flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-blue-900 bg-green-500 rounded">
-                {leads.length}
-              </div>
-            </TabsTrigger>
-            <TabsTrigger value="available-times" className="flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              Bookings
-              <div className="flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-blue-900 bg-green-500 rounded">
-                {bookingsCount}
-              </div>
-            </TabsTrigger>
-            <TabsTrigger value="applications" className="flex items-center gap-2">
-              <UserCheck className="w-4 h-4" />
-              Applications
-              <div className="flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-blue-900 bg-green-500 rounded">
-                {applicationsCount}
-              </div>
-            </TabsTrigger>
-            {isSuperAdmin && (
-              <>
-                <TabsTrigger value="email-sequence" className="flex items-center gap-2">
-                  <Mail className="w-4 h-4" />
-                  Email Sequence
-                </TabsTrigger>
-                <TabsTrigger value="chat-widget" className="flex items-center gap-2">
-                  <MessageCircle className="w-4 h-4" />
-                  Chat Widget
-                </TabsTrigger>
-                <TabsTrigger value="blog" className="flex items-center gap-2">
-                  <FileText className="w-4 h-4" />
-                  Blog Management
-                </TabsTrigger>
-                <TabsTrigger value="social-proof" className="flex items-center gap-2">
-                  <Megaphone className="w-4 h-4" />
-                  Social Proof
-                </TabsTrigger>
-              </>
-            )}
-          </TabsList>
-
-          <TabsContent value="leads" className="space-y-6">
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'leads':
+        return (
+          <div className="space-y-6">
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <Card>
@@ -897,39 +896,88 @@ const Admin = () => {
                 No leads found matching your criteria.
               </div>
             )}
-          </TabsContent>
+          </div>
+        );
+      case 'available-times':
+        return <AvailableTimesManagement />;
+      case 'applications':
+        return <ApplicationsManagement />;
+      case 'email-sequence':
+        return <EmailSequenceManagement />;
+      case 'chat-widget':
+        return <ChatWidgetManagement />;
+      case 'blog-creator':
+        return <BlogPostCreator onBlogCreated={() => setActiveTab('blog')} />;
+      case 'blog':
+        return <BlogManagement />;
+      case 'social-proof':
+        return <SocialProofManagement />;
+      default:
+        return <div>Select a menu item</div>;
+    }
+  };
 
-          <TabsContent value="available-times">
-            <AvailableTimesManagement />
-          </TabsContent>
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen bg-background w-full">
+        <Header />
+        
+        {/* Header with sidebar trigger and sign out */}
+        <div className="border-b h-16 flex items-center px-4">
+          <SidebarTrigger className="mr-4" />
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold text-primary">Admin Dashboard</h1>
+          </div>
+          <Button onClick={signOut} variant="outline">
+            <LogOut className="w-4 h-4 mr-2" />
+            Sign Out
+          </Button>
+        </div>
 
-          <TabsContent value="applications">
-            <ApplicationsManagement />
-          </TabsContent>
+        <div className="flex w-full">
+          <Sidebar collapsible="icon" className="border-r">
+            <SidebarContent>
+              <SidebarGroup>
+                <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {menuItems.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = activeTab === item.value;
+                      
+                      return (
+                        <SidebarMenuItem key={item.value}>
+                          <SidebarMenuButton
+                            asChild
+                            isActive={isActive}
+                            onClick={() => setActiveTab(item.value)}
+                          >
+                            <button className="flex items-center gap-2 w-full">
+                              <Icon className="h-4 w-4" />
+                              <span>{item.title}</span>
+                              {item.count !== undefined && (
+                                <div className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-blue-900 bg-green-500 rounded">
+                                  {item.count}
+                                </div>
+                              )}
+                            </button>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      );
+                    })}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            </SidebarContent>
+          </Sidebar>
 
-          <TabsContent value="email-sequence">
-            <EmailSequenceManagement />
-          </TabsContent>
-
-          <TabsContent value="chat-widget">
-            <ChatWidgetManagement />
-          </TabsContent>
-
-          <TabsContent value="blog-creator">
-            <BlogPostCreator onBlogCreated={() => setActiveTab('blog')} />
-          </TabsContent>
-
-          <TabsContent value="blog">
-            <BlogManagement />
-          </TabsContent>
-
-          <TabsContent value="social-proof">
-            <SocialProofManagement />
-          </TabsContent>
-        </Tabs>
+          <main className="flex-1 p-6">
+            {renderContent()}
+          </main>
+        </div>
+        <Footer />
       </div>
-      <Footer />
-    </div>
+    </SidebarProvider>
   );
 };
 
