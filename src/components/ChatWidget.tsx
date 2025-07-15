@@ -42,6 +42,10 @@ export function ChatWidget() {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inactivityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Configuration for auto-reset (5 minutes of inactivity)
+  const INACTIVITY_TIMEOUT = 5 * 60 * 1000; // 5 minutes in milliseconds
 
   useEffect(() => {
     fetchConfig();
@@ -106,6 +110,54 @@ export function ChatWidget() {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  const resetConversation = () => {
+    if (config) {
+      setMessages([{
+        id: '1',
+        type: 'bot',
+        content: `Hi! I'm ${config.support_person_name}. How can I help you today?`,
+        timestamp: new Date()
+      }]);
+      setInputValue('');
+      setIsLoading(false);
+      console.log('Conversation reset due to inactivity');
+    }
+  };
+
+  const resetInactivityTimer = () => {
+    // Clear existing timeout
+    if (inactivityTimeoutRef.current) {
+      clearTimeout(inactivityTimeoutRef.current);
+    }
+    
+    // Set new timeout only if chat is open and has more than just welcome message
+    if (isOpen && messages.length > 1) {
+      inactivityTimeoutRef.current = setTimeout(() => {
+        resetConversation();
+      }, INACTIVITY_TIMEOUT);
+    }
+  };
+
+  // Reset timer when messages change (new activity)
+  useEffect(() => {
+    resetInactivityTimer();
+    
+    // Cleanup timeout on unmount
+    return () => {
+      if (inactivityTimeoutRef.current) {
+        clearTimeout(inactivityTimeoutRef.current);
+      }
+    };
+  }, [messages, isOpen]);
+
+  // Clear timer when chat is closed
+  useEffect(() => {
+    if (!isOpen && inactivityTimeoutRef.current) {
+      clearTimeout(inactivityTimeoutRef.current);
+      inactivityTimeoutRef.current = null;
+    }
+  }, [isOpen]);
 
   const findMatchingQA = (userInput: string): ChatQA | null => {
     const input = userInput.toLowerCase();
