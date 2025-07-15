@@ -233,6 +233,19 @@ const BlogPost = () => {
               <div dangerouslySetInnerHTML={{ __html: post.content }} />
             </div>
 
+            {/* CTA Section */}
+            <div className="mt-16 p-8 bg-gradient-to-br from-primary/5 to-secondary/5 rounded-lg text-center">
+              <h3 className="text-2xl font-bold font-sans text-primary mb-4">
+                Ready to Get Started?
+              </h3>
+              <p className="text-muted-foreground font-serif mb-6">
+                Use our Business Loan Estimator to see what financing options are available for your business.
+              </p>
+              <Button asChild variant="cta" size="lg">
+                <Link to="/loan-estimator">Get My Loan Estimate</Link>
+              </Button>
+            </div>
+
           </div>
         </div>
       </article>
