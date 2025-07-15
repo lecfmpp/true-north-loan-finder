@@ -263,40 +263,6 @@ const About = () => {
         </div>
       </section>
 
-      {/* Team Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl lg:text-4xl font-bold font-sans text-primary mb-4">
-                Meet Our Team
-              </h2>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-serif">
-                The people behind True North Business Loan
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              {team.map((member, index) => (
-                <Card key={index} className="text-center border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                  <CardContent className="p-8">
-                    <div className="text-6xl mb-4">{member.image}</div>
-                    <h3 className="text-xl font-semibold font-sans text-primary mb-2">
-                      {member.name}
-                    </h3>
-                    <div className="text-secondary font-medium mb-4">
-                      {member.role}
-                    </div>
-                    <p className="text-muted-foreground font-serif text-sm">
-                      {member.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-r from-primary to-secondary text-primary-foreground">
