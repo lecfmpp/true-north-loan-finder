@@ -47,6 +47,53 @@ export type Database = {
         }
         Relationships: []
       }
+      available_time_slots: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          current_bookings: number
+          date: string
+          duration_minutes: number
+          id: string
+          is_available: boolean
+          max_bookings: number
+          time: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          current_bookings?: number
+          date: string
+          duration_minutes?: number
+          id?: string
+          is_available?: boolean
+          max_bookings?: number
+          time: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          current_bookings?: number
+          date?: string
+          duration_minutes?: number
+          id?: string
+          is_available?: boolean
+          max_bookings?: number
+          time?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "available_time_slots_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       blog_posts: {
         Row: {
           author: string
@@ -112,6 +159,63 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      call_bookings: {
+        Row: {
+          booking_status: string
+          created_at: string
+          id: string
+          meeting_link: string | null
+          notes: string | null
+          quiz_response_id: string | null
+          time_slot_id: string
+          updated_at: string
+          user_email: string
+          user_name: string
+          user_phone: string | null
+        }
+        Insert: {
+          booking_status?: string
+          created_at?: string
+          id?: string
+          meeting_link?: string | null
+          notes?: string | null
+          quiz_response_id?: string | null
+          time_slot_id: string
+          updated_at?: string
+          user_email: string
+          user_name: string
+          user_phone?: string | null
+        }
+        Update: {
+          booking_status?: string
+          created_at?: string
+          id?: string
+          meeting_link?: string | null
+          notes?: string | null
+          quiz_response_id?: string | null
+          time_slot_id?: string
+          updated_at?: string
+          user_email?: string
+          user_name?: string
+          user_phone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_bookings_quiz_response_id_fkey"
+            columns: ["quiz_response_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_responses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "call_bookings_time_slot_id_fkey"
+            columns: ["time_slot_id"]
+            isOneToOne: false
+            referencedRelation: "available_time_slots"
+            referencedColumns: ["id"]
           },
         ]
       }

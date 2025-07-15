@@ -411,7 +411,7 @@ const Quiz = () => {
       const score = calculateScore();
       
       // Save to local Supabase database
-      await supabase.from('quiz_responses').insert({
+      const { data: savedResponse, error } = await supabase.from('quiz_responses').insert({
         loan_amount: data.loanAmount[0],
         use_of_funds: data.useOfFunds,
         time_in_business: data.timeInBusiness,
@@ -421,7 +421,9 @@ const Quiz = () => {
         email: data.email,
         phone: data.phone,
         score: score
-      });
+      }).select().single();
+
+      if (error) throw error;
 
       // Submit to external tracking system
       await EXTERNAL_TRACKER.submitLead(data);
@@ -446,11 +448,23 @@ const Quiz = () => {
           console.error('Error starting email sequence:', error);
         }
       }, 15 * 60 * 1000); // 15 minutes delay
+
+      // Redirect to results page with data
+      const resultsUrl = new URLSearchParams({
+        amount: data.loanAmount[0].toString(),
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        score: score.toString(),
+        responseId: savedResponse.id
+      });
+      
+      window.location.href = `/results?${resultsUrl.toString()}`;
       
     } catch (error) {
       console.error('Error saving quiz response:', error);
+      setShowResults(true); // Fallback to showing results inline if redirect fails
     }
-    setShowResults(true);
   };
 
   const handleNext = async () => {

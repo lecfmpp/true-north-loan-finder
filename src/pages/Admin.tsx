@@ -11,11 +11,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail } from 'lucide-react';
+import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock } from 'lucide-react';
 import Header from '@/components/Header';
 import BlogManagement from '@/components/admin/BlogManagement';
 import BlogPostCreator from '@/components/admin/BlogPostCreator';
 import EmailSequenceManagement from '@/components/admin/EmailSequenceManagement';
+import AvailableTimesManagement from '@/components/admin/AvailableTimesManagement';
 
 interface QuizResponse {
   id: string;
@@ -193,10 +194,14 @@ const Admin = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="leads" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
-              Leads Management
+              Leads
+            </TabsTrigger>
+            <TabsTrigger value="available-times" className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              Available Times
             </TabsTrigger>
             <TabsTrigger value="email-sequence" className="flex items-center gap-2">
               <Mail className="w-4 h-4" />
@@ -204,7 +209,7 @@ const Admin = () => {
             </TabsTrigger>
             <TabsTrigger value="blog-creator" className="flex items-center gap-2">
               <PenTool className="w-4 h-4" />
-              Blog Post Creator
+              Blog Creator
             </TabsTrigger>
             <TabsTrigger value="blog" className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
@@ -358,6 +363,10 @@ const Admin = () => {
                 No leads found matching your criteria.
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="available-times">
+            <AvailableTimesManagement />
           </TabsContent>
 
           <TabsContent value="email-sequence">

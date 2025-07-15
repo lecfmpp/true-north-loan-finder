@@ -19,6 +19,7 @@ import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import Results from "./pages/Results";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -39,6 +40,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/loan-estimator" element={<Quiz />} />
+            <Route path="/results" element={<Results />} />
             <Route path="/how-it-works" element={<HowItWorks />} />
             <Route path="/about" element={<About />} />
             <Route path="/partners" element={<Partners />} />
