@@ -771,6 +771,8 @@ const Admin = () => {
                           <TableCell>
                             <Badge className={getStatusColor(lead.status)}>
                               <div className="flex items-center gap-1">
+                                {lead.status === 'new' && <Clock className="h-3 w-3" />}
+                                {lead.status === 'contacted' && <Phone className="h-3 w-3" />}
                                 {lead.status === 'qualified' && <Diamond className="h-3 w-3" />}
                                 {lead.status === 'closed' && <DollarSign className="h-3 w-3" />}
                                 {lead.status.toUpperCase()}
