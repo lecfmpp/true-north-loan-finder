@@ -51,9 +51,9 @@ const Auth = () => {
             <TabsContent value="signin">
               <Card>
                 <CardHeader>
-                  <CardTitle>Sign In</CardTitle>
+                  <CardTitle>Broker & Lender Portal</CardTitle>
                   <CardDescription>
-                    Enter your credentials to access your account
+                    This portal is exclusively for licensed brokers and lenders. Sign in to access qualified business owners looking for funding opportunities.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -89,9 +89,9 @@ const Auth = () => {
             <TabsContent value="signup">
               <Card>
                 <CardHeader>
-                  <CardTitle>Sign Up</CardTitle>
+                  <CardTitle>Apply for Broker Access</CardTitle>
                   <CardDescription>
-                    Create a new account to get started
+                    Register as a licensed broker or lender. Account approval required - we'll contact you to verify your credentials and provide access to our network of qualified business owners seeking funding.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -128,8 +128,13 @@ const Auth = () => {
                       />
                     </div>
                     <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? 'Creating Account...' : 'Sign Up'}
+                      {isLoading ? 'Submitting Application...' : 'Apply for Access'}
                     </Button>
+                    <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-sm text-blue-800">
+                        <strong>Note:</strong> After submitting your application, our team will review your credentials and contact you within 24-48 hours to complete your profile setup and provide access to our network of qualified business loan opportunities.
+                      </p>
+                    </div>
                   </form>
                 </CardContent>
               </Card>

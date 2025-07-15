@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ChevronDown, User } from "lucide-react";
+import { Menu, X, ChevronDown, User, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 const Header = () => {
@@ -9,7 +9,8 @@ const Header = () => {
   const location = useLocation();
   const {
     user,
-    isAdmin
+    isAdmin,
+    signOut
   } = useAuth();
   const isActive = (path: string) => location.pathname === path;
   return <header className="bg-primary border-b border-primary-foreground/20 sticky top-0 z-50 backdrop-blur-sm">
@@ -79,9 +80,17 @@ const Header = () => {
                   <User className="w-4 h-4 mr-2" />
                   {user.email}
                 </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={signOut}
+                  className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10"
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
               </div> : <div className="flex items-center space-x-2">
                 <Button asChild variant="ghost" size="sm">
-                  <Link to="/auth">Sign In</Link>
+                  <Link to="/auth">Login</Link>
                 </Button>
                 <Button asChild variant="cta" size="lg">
                   <Link to="/loan-estimator">Get My Loan Estimate</Link>
@@ -137,10 +146,22 @@ const Header = () => {
                     <div className="text-sm text-primary-foreground/70 text-center">
                       Signed in as {user.email}
                     </div>
+                    <Button 
+                      variant="ghost" 
+                      size="lg" 
+                      className="w-full text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10"
+                      onClick={() => {
+                        signOut();
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </Button>
                   </> : <>
                     <Button asChild variant="outline" size="lg" className="w-full">
                       <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
-                        Sign In
+                        Login
                       </Link>
                     </Button>
                     <Button asChild variant="cta" size="lg" className="w-full">
