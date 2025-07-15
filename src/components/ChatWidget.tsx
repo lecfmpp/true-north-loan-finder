@@ -209,13 +209,21 @@ export function ChatWidget() {
     <div className={`fixed ${positionClasses[config.widget_position as keyof typeof positionClasses]} z-50`}>
       {/* Chat Bubble */}
       {!isOpen && (
-        <Button
+        <div 
           onClick={() => setIsOpen(true)}
-          className="w-14 h-14 rounded-full shadow-lg animate-pulse"
-          style={{ backgroundColor: config.primary_color }}
+          className="bg-green-600 hover:bg-green-700 rounded-2xl shadow-lg cursor-pointer transition-all duration-200 hover:scale-105 flex items-center gap-3 p-3 max-w-xs"
         >
-          <MessageCircle size={24} className="text-white" />
-        </Button>
+          <Avatar className="w-12 h-12 flex-shrink-0">
+            <AvatarImage src={config.support_person_avatar_url || ''} />
+            <AvatarFallback className="bg-white text-green-600 font-semibold">
+              {config.support_person_name.charAt(0)}
+            </AvatarFallback>
+          </Avatar>
+          <div className="text-white">
+            <p className="text-sm font-medium">I can help you here</p>
+            <p className="text-xs opacity-90">{config.support_person_name}</p>
+          </div>
+        </div>
       )}
 
       {/* Chat Window */}
