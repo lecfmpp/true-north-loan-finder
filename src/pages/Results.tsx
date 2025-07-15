@@ -124,7 +124,7 @@ const Results = () => {
     {
       id: 3,
       name: "Greenbox Capital",
-      logo: "/lovable-uploads/4daec7dc-f9e2-47a6-bb40-c02284d1869c.png",
+      logo: "/lovable-uploads/7076f51c-91be-4e0f-9ca9-1d7b58a2102f.png",
       matchRating: "4/5",
       tagline: "Perfect for established businesses seeking flexible terms."
     }
