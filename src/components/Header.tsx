@@ -89,7 +89,7 @@ const Header = () => {
                   <LogOut className="w-4 h-4" />
                 </Button>
               </div> : <div className="flex items-center space-x-2">
-                <Button asChild variant="ghost" size="sm">
+                <Button asChild variant="outline" size="lg" className="bg-white text-primary border-white hover:bg-white/90 hover:text-primary">
                   <Link to="/auth">Login</Link>
                 </Button>
                 <Button asChild variant="cta" size="lg">
