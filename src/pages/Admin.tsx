@@ -194,7 +194,7 @@ const Admin = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="leads" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               Leads
@@ -207,10 +207,13 @@ const Admin = () => {
               <Mail className="w-4 h-4" />
               Email Sequence
             </TabsTrigger>
-            <TabsTrigger value="blog-creator" className="flex items-center gap-2">
-              <PenTool className="w-4 h-4" />
-              Blog Creator
-            </TabsTrigger>
+            {/* Blog Creator tab hidden but code preserved */}
+            {false && (
+              <TabsTrigger value="blog-creator" className="flex items-center gap-2">
+                <PenTool className="w-4 h-4" />
+                Blog Creator
+              </TabsTrigger>
+            )}
             <TabsTrigger value="blog" className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
               Blog Management
