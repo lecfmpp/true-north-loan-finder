@@ -281,7 +281,7 @@ const Admin = () => {
 
       toast({
         title: "🎉 Awesome!",
-        description: `🚀 Lead sent to ${recipient.name} successfully! 🎊`,
+        description: `Lead sent to ${recipient.name} successfully!`,
         variant: "success" as any
       });
     } catch (error: any) {

@@ -107,7 +107,7 @@ const handler = async (req: Request): Promise<Response> => {
             .highlight { background: #e8f5e8; border-color: #4caf50; }
             .highlight .info-value { color: #2e7d32; font-weight: 600; }
             .cta-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; margin: 25px 0; border-radius: 10px; text-align: center; }
-            .cta-button { display: inline-block; background: white; color: #667eea; padding: 12px 30px; border-radius: 25px; text-decoration: none; font-weight: 600; margin: 10px; transition: transform 0.2s; }
+            .cta-button { display: inline-block; background: #4caf50; color: #1a237e; padding: 12px 30px; border-radius: 25px; text-decoration: none; font-weight: 600; margin: 10px; transition: transform 0.2s; }
             .cta-button:hover { transform: translateY(-2px); }
             .urgency { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin: 20px 0; }
             .urgency strong { color: #856404; }
@@ -133,7 +133,7 @@ const handler = async (req: Request): Promise<Response> => {
                 </div>
 
                 <div class="lead-card">
-                    <h2 style="margin: 0 0 15px 0; color: #333;">👨‍💼 Lead Information</h2>
+                    <h2 style="margin: 0 0 15px 0; color: #333;">👨 Lead Information</h2>
                     <h3 style="margin: 0; color: #667eea; font-size: 24px;">${lead.name}</h3>
                     <p style="margin: 5px 0 0 0; color: #666; font-size: 16px;">${lead.email}</p>
                 </div>
@@ -175,8 +175,7 @@ const handler = async (req: Request): Promise<Response> => {
                 <div class="cta-section">
                     <h2 style="margin: 0 0 15px 0;">📞 Ready to Close This Deal?</h2>
                     <p style="margin: 0 0 20px 0; opacity: 0.9;">This lead is qualified and ready to move forward. Call them ASAP to secure this opportunity!</p>
-                    <a href="tel:${lead.phone}" class="cta-button">📱 Call ${lead.name} Now</a>
-                    <a href="mailto:${lead.email}" class="cta-button">✉️ Send Email</a>
+                    <a href="tel:${lead.phone}" class="cta-button">📱 Call Now</a>
                 </div>
 
                 <div style="background: #f8f9ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -203,7 +202,7 @@ const handler = async (req: Request): Promise<Response> => {
 
             <div class="footer">
                 <p>This lead was sent to you because you're an approved partner in our network.</p>
-                <p><strong>True North Funding</strong> - Connecting Canadian businesses with the right lenders.</p>
+                <p><strong>True North Business Loan</strong> - Connecting Canadian businesses with the right lenders.</p>
             </div>
         </div>
     </body>
