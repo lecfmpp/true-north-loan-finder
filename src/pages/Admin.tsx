@@ -14,7 +14,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, MessageCircle, CheckSquare, Square, UserCheck, Megaphone } from 'lucide-react';
+import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, MessageCircle, CheckSquare, Square, UserCheck, Megaphone, Send } from 'lucide-react';
 import Header from '@/components/Header';
 import BlogManagement from '@/components/admin/BlogManagement';
 import BlogPostCreator from '@/components/admin/BlogPostCreator';
@@ -45,6 +45,7 @@ interface QuizResponse {
 const Admin = () => {
   const [leads, setLeads] = useState<QuizResponse[]>([]);
   const [filteredLeads, setFilteredLeads] = useState<QuizResponse[]>([]);
+  const [approvedPartners, setApprovedPartners] = useState<Array<{id: string, name: string, email: string}>>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -52,6 +53,7 @@ const Admin = () => {
   const [expandedLeads, setExpandedLeads] = useState<{ [key: string]: boolean }>({});
   const [emailEnrollments, setEmailEnrollments] = useState<{ [key: string]: { [key: string]: boolean } }>({});
   const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
+  const [sendingEmails, setSendingEmails] = useState<{ [key: string]: boolean }>({});
   const { user, isAdmin, isSuperAdmin, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -82,8 +84,11 @@ const Admin = () => {
   useEffect(() => {
     if (user && isAdmin) {
       fetchLeads();
+      if (isSuperAdmin) {
+        fetchApprovedPartners();
+      }
     }
-  }, [user, isAdmin]);
+  }, [user, isAdmin, isSuperAdmin]);
 
   useEffect(() => {
     filterLeads();
@@ -142,6 +147,58 @@ const Admin = () => {
       setEmailEnrollments(enrollmentMap);
     } catch (error) {
       console.error('Error fetching email enrollments:', error);
+    }
+  };
+
+  const fetchApprovedPartners = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('lender_broker_applications')
+        .select('id, applicant_name, applicant_email')
+        .eq('status', 'approved');
+
+      if (error) throw error;
+      
+      setApprovedPartners(data.map(partner => ({
+        id: partner.id,
+        name: partner.applicant_name,
+        email: partner.applicant_email
+      })));
+    } catch (error) {
+      console.error('Error fetching approved partners:', error);
+    }
+  };
+
+  const sendLeadEmail = async (leadId: string, recipientId: string) => {
+    const recipient = approvedPartners.find(p => p.id === recipientId);
+    if (!recipient) return;
+
+    setSendingEmails(prev => ({ ...prev, [leadId]: true }));
+
+    try {
+      const { data, error } = await supabase.functions.invoke('send-lead-email', {
+        body: {
+          leadId,
+          recipientEmail: recipient.email,
+          recipientName: recipient.name
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Lead sent to ${recipient.name} successfully!`
+      });
+    } catch (error) {
+      console.error('Error sending lead email:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send lead email",
+        variant: "destructive"
+      });
+    } finally {
+      setSendingEmails(prev => ({ ...prev, [leadId]: false }));
     }
   };
 
@@ -526,6 +583,9 @@ const Admin = () => {
                         <TableHead>Created</TableHead>
                         <TableHead>Email Sequences</TableHead>
                         <TableHead>Call Now</TableHead>
+                        {isSuperAdmin && approvedPartners.length > 0 && (
+                          <TableHead>Send Lead To</TableHead>
+                        )}
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -636,7 +696,29 @@ const Admin = () => {
                               Call Now
                             </Button>
                           </TableCell>
-                           <TableCell>
+                          {isSuperAdmin && approvedPartners.length > 0 && (
+                            <TableCell>
+                              <Select
+                                disabled={sendingEmails[lead.id]}
+                                onValueChange={(value) => sendLeadEmail(lead.id, value)}
+                              >
+                                <SelectTrigger className="w-48">
+                                  <SelectValue placeholder={sendingEmails[lead.id] ? "Sending..." : "Select recipient"} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {approvedPartners.map((partner) => (
+                                    <SelectItem key={partner.id} value={partner.id}>
+                                      <div className="flex items-center gap-2">
+                                        <Send className="w-4 h-4" />
+                                        {partner.name}
+                                      </div>
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                          )}
+                          <TableCell>
                              <div className="flex items-center gap-2">
                                <Select
                                  value={lead.status}
