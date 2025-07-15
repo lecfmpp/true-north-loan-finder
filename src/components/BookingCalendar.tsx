@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, Calendar as CalendarIcon, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { format, isSameDay, isAfter, startOfDay } from "date-fns";
+import { format, isSameDay, isAfter, startOfDay, addDays, isBefore } from "date-fns";
 import { cn } from "@/lib/utils";
 
 interface TimeSlot {
@@ -158,7 +158,9 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({ onBookingConfirmed, u
   };
 
   const isDateAvailable = (date: Date) => {
-    return isAfter(date, startOfDay(new Date()));
+    const today = startOfDay(new Date());
+    const maxDate = addDays(today, 4); // Only show next 4 days
+    return isAfter(date, today) && isBefore(date, maxDate);
   };
 
   return (
