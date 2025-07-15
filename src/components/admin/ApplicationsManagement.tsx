@@ -116,11 +116,11 @@ export const ApplicationsManagement = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
-        return <Badge variant="secondary">Pending</Badge>;
+        return <Badge variant="secondary" className="bg-orange-500 text-white">Pending</Badge>;
       case "approved":
-        return <Badge variant="default" className="bg-green-500">Approved</Badge>;
+        return <Badge variant="secondary" className="bg-green-500 text-white">Approved</Badge>;
       case "rejected":
-        return <Badge variant="destructive">Rejected</Badge>;
+        return <Badge variant="secondary" className="bg-red-500 text-white">Rejected</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
