@@ -4,6 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Edit, Eye, Mail, TrendingUp, Users, MousePointer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -38,6 +42,15 @@ const EmailSequenceManagement = () => {
   const [templates, setTemplates] = useState<{ [key: string]: EmailTemplate[] }>({});
   const [metrics, setMetrics] = useState<{ [key: string]: SequenceMetrics }>({});
   const [loading, setLoading] = useState(true);
+  const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    purpose: '',
+    subject_line: '',
+    email_content: '',
+    delay_hours: 0
+  });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -164,6 +177,66 @@ const EmailSequenceManagement = () => {
     }
   };
 
+  const handleViewEmail = (template: EmailTemplate) => {
+    setSelectedTemplate(template);
+    setIsViewModalOpen(true);
+  };
+
+  const handleEditEmail = (template: EmailTemplate) => {
+    setSelectedTemplate(template);
+    setEditFormData({
+      purpose: template.purpose,
+      subject_line: template.subject_line,
+      email_content: template.email_content,
+      delay_hours: template.delay_hours
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedTemplate) return;
+
+    try {
+      const { error } = await supabase
+        .from('email_templates')
+        .update({
+          purpose: editFormData.purpose,
+          subject_line: editFormData.subject_line,
+          email_content: editFormData.email_content,
+          delay_hours: editFormData.delay_hours
+        })
+        .eq('id', selectedTemplate.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setTemplates(prev => {
+        const updated = { ...prev };
+        Object.keys(updated).forEach(sequenceId => {
+          updated[sequenceId] = updated[sequenceId].map(template =>
+            template.id === selectedTemplate.id 
+              ? { ...template, ...editFormData }
+              : template
+          );
+        });
+        return updated;
+      });
+
+      setIsEditModalOpen(false);
+      toast({
+        title: "Success",
+        description: "Email template updated successfully",
+      });
+    } catch (error) {
+      console.error('Error updating template:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update email template",
+        variant: "destructive",
+      });
+    }
+  };
+
   const renderSequenceSection = (sequence: EmailSequence) => {
     const sequenceTemplates = templates[sequence.id] || [];
     const sequenceMetrics = metrics[sequence.id] || { emails_sent: 0, open_rate: 0, click_rate: 0 };
@@ -217,8 +290,10 @@ const EmailSequenceManagement = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-16">#</TableHead>
                 <TableHead>Email Purpose</TableHead>
                 <TableHead>Subject Line</TableHead>
+                <TableHead>Delay (hrs)</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -226,8 +301,14 @@ const EmailSequenceManagement = () => {
             <TableBody>
               {sequenceTemplates.map((template) => (
                 <TableRow key={template.id}>
+                  <TableCell>
+                    <Badge variant="outline" className="font-mono">
+                      {template.email_order}
+                    </Badge>
+                  </TableCell>
                   <TableCell className="font-medium">{template.purpose}</TableCell>
                   <TableCell className="max-w-md truncate">{template.subject_line}</TableCell>
+                  <TableCell>{template.delay_hours}</TableCell>
                   <TableCell>
                     <Switch
                       checked={template.is_active}
@@ -236,11 +317,19 @@ const EmailSequenceManagement = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleViewEmail(template)}
+                      >
                         <Eye className="h-4 w-4 mr-1" />
                         View
                       </Button>
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleEditEmail(template)}
+                      >
                         <Edit className="h-4 w-4 mr-1" />
                         Edit
                       </Button>
@@ -278,6 +367,98 @@ const EmailSequenceManagement = () => {
       </div>
 
       {sequences.map(sequence => renderSequenceSection(sequence))}
+
+      {/* View Email Modal */}
+      <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Email Template - {selectedTemplate?.purpose}</DialogTitle>
+            <DialogDescription>
+              Email #{selectedTemplate?.email_order} - Subject: {selectedTemplate?.subject_line}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm font-medium">Purpose</Label>
+              <p className="text-sm text-muted-foreground mt-1">{selectedTemplate?.purpose}</p>
+            </div>
+            <div>
+              <Label className="text-sm font-medium">Subject Line</Label>
+              <p className="text-sm text-muted-foreground mt-1">{selectedTemplate?.subject_line}</p>
+            </div>
+            <div>
+              <Label className="text-sm font-medium">Delay Hours</Label>
+              <p className="text-sm text-muted-foreground mt-1">{selectedTemplate?.delay_hours} hours</p>
+            </div>
+            <div>
+              <Label className="text-sm font-medium">Email Content</Label>
+              <div className="mt-2 p-4 border rounded-md bg-muted/50">
+                <div dangerouslySetInnerHTML={{ __html: selectedTemplate?.email_content || '' }} />
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Email Modal */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Email Template</DialogTitle>
+            <DialogDescription>
+              Update the email template content and settings
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="purpose">Purpose</Label>
+              <Input
+                id="purpose"
+                value={editFormData.purpose}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, purpose: e.target.value }))}
+                placeholder="Email purpose"
+              />
+            </div>
+            <div>
+              <Label htmlFor="subject">Subject Line</Label>
+              <Input
+                id="subject"
+                value={editFormData.subject_line}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, subject_line: e.target.value }))}
+                placeholder="Email subject line"
+              />
+            </div>
+            <div>
+              <Label htmlFor="delay">Delay Hours</Label>
+              <Input
+                id="delay"
+                type="number"
+                value={editFormData.delay_hours}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, delay_hours: parseInt(e.target.value) || 0 }))}
+                placeholder="Delay in hours"
+              />
+            </div>
+            <div>
+              <Label htmlFor="content">Email Content</Label>
+              <Textarea
+                id="content"
+                value={editFormData.email_content}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, email_content: e.target.value }))}
+                placeholder="Email content (HTML supported)"
+                rows={10}
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveEdit}>
+                Save Changes
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
