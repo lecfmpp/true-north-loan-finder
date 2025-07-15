@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, Mail, Phone, MessageSquare } from 'lucide-react';
+import { User, Mail, Phone, MessageSquare, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -68,21 +68,32 @@ export function ChatContactForm({ onSubmit, onCancel }: ContactFormProps) {
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg flex items-center gap-2">
-          <MessageSquare size={20} />
-          Contact Information
-        </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Please provide your details and we'll have a specialist contact you soon.
+    <div className="w-full max-h-96 overflow-y-auto">
+      <div className="p-3 border-b">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <MessageSquare size={18} />
+            <h3 className="font-semibold text-sm">Contact Information</h3>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onCancel}
+            disabled={isSubmitting}
+            className="h-8 w-8 p-0"
+          >
+            <X size={16} />
+          </Button>
+        </div>
+        <p className="text-xs text-muted-foreground mt-1">
+          We'll have a specialist contact you soon.
         </p>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="contact-name" className="flex items-center gap-2">
-              <User size={16} />
+      </div>
+      <div className="p-3">
+        <form onSubmit={handleSubmit} className="space-y-2">
+          <div className="space-y-1">
+            <Label htmlFor="contact-name" className="flex items-center gap-1 text-xs">
+              <User size={12} />
               Name *
             </Label>
             <Input
@@ -92,12 +103,13 @@ export function ChatContactForm({ onSubmit, onCancel }: ContactFormProps) {
               placeholder="Your full name"
               required
               disabled={isSubmitting}
+              className="h-8 text-sm"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="contact-email" className="flex items-center gap-2">
-              <Mail size={16} />
+          <div className="space-y-1">
+            <Label htmlFor="contact-email" className="flex items-center gap-1 text-xs">
+              <Mail size={12} />
               Email *
             </Label>
             <Input
@@ -108,12 +120,13 @@ export function ChatContactForm({ onSubmit, onCancel }: ContactFormProps) {
               placeholder="your.email@example.com"
               required
               disabled={isSubmitting}
+              className="h-8 text-sm"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="contact-phone" className="flex items-center gap-2">
-              <Phone size={16} />
+          <div className="space-y-1">
+            <Label htmlFor="contact-phone" className="flex items-center gap-1 text-xs">
+              <Phone size={12} />
               Phone (Optional)
             </Label>
             <Input
@@ -123,11 +136,12 @@ export function ChatContactForm({ onSubmit, onCancel }: ContactFormProps) {
               onChange={(e) => setPhone(e.target.value)}
               placeholder="(555) 123-4567"
               disabled={isSubmitting}
+              className="h-8 text-sm"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="contact-message">
+          <div className="space-y-1">
+            <Label htmlFor="contact-message" className="text-xs">
               Brief description of your financing needs
             </Label>
             <Textarea
@@ -135,8 +149,9 @@ export function ChatContactForm({ onSubmit, onCancel }: ContactFormProps) {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Tell us about your business and financing requirements..."
-              rows={3}
+              rows={2}
               disabled={isSubmitting}
+              className="text-sm resize-none"
             />
           </div>
 
@@ -158,7 +173,7 @@ export function ChatContactForm({ onSubmit, onCancel }: ContactFormProps) {
             </Button>
           </div>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
