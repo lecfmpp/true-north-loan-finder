@@ -600,7 +600,7 @@ const Quiz = () => {
                   <div className="mb-4">
                     <Button 
                       size="lg" 
-                      className="bg-yellow-500 hover:bg-yellow-600 text-white text-xl py-6 px-12 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all"
+                      className="bg-yellow-500 hover:bg-yellow-600 text-white md:text-xl text-lg md:py-6 py-4 md:px-12 px-8 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all w-full md:w-auto"
                     >
                       Book My 15-Min Pre-Offer Call
                     </Button>
