@@ -573,17 +573,28 @@ export type Database = {
       }
       lender_broker_applications: {
         Row: {
+          additional_requirements: string | null
           admin_notes: string | null
           applicant_email: string
           applicant_name: string
           applicant_phone: string | null
           application_type: string
           business_description: string | null
+          business_types: string[] | null
           company_name: string
           company_website: string | null
           created_at: string
+          funding_purposes: string[] | null
+          geographic_areas: string[] | null
           id: string
           license_number: string | null
+          max_loan_amount: string | null
+          max_monthly_revenue: string | null
+          min_credit_score: string | null
+          min_loan_amount: string | null
+          min_monthly_revenue: string | null
+          min_time_in_business: string | null
+          preferred_industries: string[] | null
           rejection_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
@@ -592,17 +603,28 @@ export type Database = {
           years_of_experience: number | null
         }
         Insert: {
+          additional_requirements?: string | null
           admin_notes?: string | null
           applicant_email: string
           applicant_name: string
           applicant_phone?: string | null
           application_type: string
           business_description?: string | null
+          business_types?: string[] | null
           company_name: string
           company_website?: string | null
           created_at?: string
+          funding_purposes?: string[] | null
+          geographic_areas?: string[] | null
           id?: string
           license_number?: string | null
+          max_loan_amount?: string | null
+          max_monthly_revenue?: string | null
+          min_credit_score?: string | null
+          min_loan_amount?: string | null
+          min_monthly_revenue?: string | null
+          min_time_in_business?: string | null
+          preferred_industries?: string[] | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -611,17 +633,28 @@ export type Database = {
           years_of_experience?: number | null
         }
         Update: {
+          additional_requirements?: string | null
           admin_notes?: string | null
           applicant_email?: string
           applicant_name?: string
           applicant_phone?: string | null
           application_type?: string
           business_description?: string | null
+          business_types?: string[] | null
           company_name?: string
           company_website?: string | null
           created_at?: string
+          funding_purposes?: string[] | null
+          geographic_areas?: string[] | null
           id?: string
           license_number?: string | null
+          max_loan_amount?: string | null
+          max_monthly_revenue?: string | null
+          min_credit_score?: string | null
+          min_loan_amount?: string | null
+          min_monthly_revenue?: string | null
+          min_time_in_business?: string | null
+          preferred_industries?: string[] | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
