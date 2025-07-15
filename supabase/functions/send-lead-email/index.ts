@@ -29,6 +29,27 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // First, verify the recipient is an approved lender/broker
+    const { data: recipient, error: recipientError } = await supabase
+      .from('lender_broker_applications')
+      .select('id, applicant_name, applicant_email, status')
+      .eq('applicant_email', recipientEmail)
+      .eq('status', 'approved')
+      .single();
+
+    if (recipientError || !recipient) {
+      console.error('Recipient is not an approved partner:', recipientError);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Recipient is not an approved partner',
+          details: 'Only approved lenders and brokers can receive lead communications'
+        }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`Email recipient verified as approved partner: ${recipient.applicant_name}`);
+
     // Fetch lead information
     const { data: lead, error: leadError } = await supabase
       .from('quiz_responses')
@@ -189,9 +210,9 @@ const handler = async (req: Request): Promise<Response> => {
     </html>
     `;
 
-    // Send the email
+    // Send the email (using verified domain)
     const emailResponse = await resend.emails.send({
-      from: "True North Funding <leads@truenorthfunding.ca>",
+      from: "True North Business Loan <leads@email.truenorthbusinessloan.ca>",
       to: [recipientEmail],
       subject: `🚀 New Qualified Lead: ${lead.name} - ${formatAmount(lead.loan_amount)} Funding Request`,
       html: emailHtml,

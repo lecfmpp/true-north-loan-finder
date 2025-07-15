@@ -227,7 +227,43 @@ const Admin = () => {
 
   const sendLeadEmail = async (leadId: string, recipientId: string) => {
     const recipient = approvedPartners.find(p => p.id === recipientId);
-    if (!recipient) return;
+    if (!recipient) {
+      toast({
+        title: "Error",
+        description: "Selected recipient is not available. Please refresh and try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Double-check recipient is still approved before sending
+    try {
+      const { data: verifiedRecipient, error } = await supabase
+        .from('lender_broker_applications')
+        .select('status')
+        .eq('id', recipientId)
+        .eq('status', 'approved')
+        .single();
+
+      if (error || !verifiedRecipient) {
+        toast({
+          title: "Error",
+          description: "Recipient is no longer approved to receive leads.",
+          variant: "destructive"
+        });
+        // Refresh the approved partners list
+        fetchApprovedPartners();
+        return;
+      }
+    } catch (error) {
+      console.error('Error verifying recipient approval status:', error);
+      toast({
+        title: "Error",
+        description: "Unable to verify recipient status. Please try again.",
+        variant: "destructive"
+      });
+      return;
+    }
 
     setSendingEmails(prev => ({ ...prev, [leadId]: true }));
 
@@ -246,13 +282,25 @@ const Admin = () => {
         title: "Success",
         description: `Lead sent to ${recipient.name} successfully!`
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending lead email:', error);
-      toast({
-        title: "Error",
-        description: "Failed to send lead email",
-        variant: "destructive"
-      });
+      
+      // Handle specific error cases
+      if (error.message?.includes('not an approved partner')) {
+        toast({
+          title: "Access Denied",
+          description: "Cannot send lead to non-approved partners. The recipient list has been updated.",
+          variant: "destructive"
+        });
+        // Refresh the approved partners list
+        fetchApprovedPartners();
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to send lead email",
+          variant: "destructive"
+        });
+      }
     } finally {
       setSendingEmails(prev => ({ ...prev, [leadId]: false }));
     }
