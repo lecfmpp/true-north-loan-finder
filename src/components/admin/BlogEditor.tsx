@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Save, Eye, Upload, X } from 'lucide-react';
+import { ArrowLeft, Save, Eye, Upload, X, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import ReactQuill from 'react-quill';
@@ -15,6 +15,7 @@ import 'react-quill/dist/quill.snow.css';
 import '../../styles/quill-custom.css';
 import ImageUpload from './ImageUpload';
 import SEOAnalyzer from './SEOAnalyzer';
+import { blogTemplates, generateTemplateContent, canadianBusinessKeywords, seoOptimizationTips, type BlogTemplate } from './BlogPostTemplate';
 
 interface BlogPost {
   id?: string;
@@ -56,6 +57,8 @@ const BlogEditor = ({ post, onSave, onCancel }: BlogEditorProps) => {
   
   const [saving, setSaving] = useState(false);
   const [tagInput, setTagInput] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState<BlogTemplate | null>(null);
+  const [showTemplateSelector, setShowTemplateSelector] = useState(!post?.id && !formData.content);
   const { toast } = useToast();
   const contentRef = useRef<HTMLTextAreaElement>(null);
 
@@ -177,8 +180,81 @@ const BlogEditor = ({ post, onSave, onCancel }: BlogEditorProps) => {
     'list', 'bullet', 'link', 'image'
   ];
 
+  const handleTemplateSelect = (template: BlogTemplate) => {
+    setSelectedTemplate(template);
+    const content = generateTemplateContent(template, {});
+    setFormData(prev => ({
+      ...prev,
+      content,
+      title: template.structure.find(s => s.type === 'h1')?.placeholder || '',
+      meta_keywords: [...(prev.meta_keywords || []), ...canadianBusinessKeywords.slice(0, 5)]
+    }));
+    setShowTemplateSelector(false);
+  };
+
   return (
     <div className="flex gap-6 min-h-screen">
+      {/* Template Selector Modal */}
+      {showTemplateSelector && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <Card className="w-full max-w-4xl mx-4 max-h-[80vh] overflow-y-auto">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                Choose a Blog Post Template
+              </CardTitle>
+              <p className="text-muted-foreground">
+                Select a template to get started with a proven structure for Canadian business content
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {blogTemplates.map((template) => (
+                  <Card 
+                    key={template.id} 
+                    className="cursor-pointer hover:border-primary transition-colors"
+                    onClick={() => handleTemplateSelect(template)}
+                  >
+                    <CardHeader>
+                      <CardTitle className="text-lg">{template.name}</CardTitle>
+                      <p className="text-sm text-muted-foreground">{template.description}</p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium">Includes:</p>
+                        <ul className="text-xs space-y-1">
+                          {template.structure.slice(0, 4).map((section) => (
+                            <li key={section.id} className="text-muted-foreground">
+                              • {section.label}
+                            </li>
+                          ))}
+                          {template.structure.length > 4 && (
+                            <li className="text-muted-foreground">
+                              • +{template.structure.length - 4} more sections
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              <div className="flex justify-between mt-6">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowTemplateSelector(false)}
+                >
+                  Skip Templates
+                </Button>
+                <div className="text-sm text-muted-foreground">
+                  You can always change the content after selecting a template
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Main Content Area */}
       <div className="flex-1 space-y-6">
         {/* Header */}

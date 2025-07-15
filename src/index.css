@@ -119,3 +119,71 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* Blog content styles */
+.blog-content h1 {
+  @apply text-3xl font-bold mb-6 text-foreground;
+}
+
+.blog-content h2 {
+  @apply text-2xl font-semibold mb-4 mt-8 text-foreground;
+}
+
+.blog-content h3 {
+  @apply text-xl font-medium mb-3 mt-6 text-foreground;
+}
+
+.blog-content p {
+  @apply mb-4 text-muted-foreground leading-relaxed;
+}
+
+.blog-content ul, .blog-content ol {
+  @apply mb-4 ml-6 space-y-2;
+}
+
+.blog-content li {
+  @apply text-muted-foreground;
+}
+
+.blog-content blockquote {
+  @apply border-l-4 border-primary pl-4 italic my-6 text-muted-foreground;
+}
+
+.blog-content code {
+  @apply bg-muted px-2 py-1 rounded text-sm font-mono;
+}
+
+.blog-content pre {
+  @apply bg-muted p-4 rounded-lg overflow-x-auto my-4;
+}
+
+.blog-content a {
+  @apply text-primary hover:underline;
+}
+
+/* Blog CTA button styling */
+.blog-content .cta-button {
+  @apply inline-block bg-primary text-primary-foreground px-6 py-3 text-center no-underline font-semibold rounded-md hover:bg-primary/90 transition-colors;
+}
+
+/* Blog table styling */
+.blog-content table {
+  @apply w-full border-collapse mb-6 bg-card rounded-lg overflow-hidden shadow-sm;
+}
+
+.blog-content th {
+  @apply border border-border p-3 text-left bg-muted font-semibold text-foreground;
+}
+
+.blog-content td {
+  @apply border border-border p-3 text-muted-foreground;
+}
+
+.blog-content table tr:nth-child(even) {
+  @apply bg-muted/30;
+}
+
+/* Mathematical formula styling */
+.blog-content .formula {
+  @apply font-mono bg-muted px-2 py-1 rounded text-sm;
+}

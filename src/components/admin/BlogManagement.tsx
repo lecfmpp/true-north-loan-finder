@@ -216,10 +216,10 @@ const BlogManagement = () => {
           <h2 className="text-2xl font-bold text-primary">Blog Management</h2>
           <p className="text-muted-foreground">Create and manage blog posts</p>
         </div>
-        <Button onClick={() => setShowEditor(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          New Post
-        </Button>
+          <Button onClick={() => setShowEditor(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            New Post
+          </Button>
       </div>
 
       {/* Stats Cards */}
