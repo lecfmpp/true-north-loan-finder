@@ -67,6 +67,37 @@ const formatPhoneNumber = (value: string) => {
   return cleaned;
 };
 
+// Website URL formatting function
+const formatWebsiteUrl = (value: string) => {
+  if (!value.trim()) return '';
+  
+  // Remove spaces and convert to lowercase
+  let url = value.trim().toLowerCase();
+  
+  // If it doesn't start with http:// or https://, add https://
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = 'https://' + url;
+  }
+  
+  // Remove any trailing slashes
+  url = url.replace(/\/+$/, '');
+  
+  return url;
+};
+
+// Website URL validation function
+const isValidWebsiteUrl = (url: string) => {
+  if (!url.trim()) return true; // Optional field
+  
+  try {
+    const validUrl = new URL(formatWebsiteUrl(url));
+    // Check if it's a valid domain pattern
+    return /^https?:\/\/[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(validUrl.href);
+  } catch {
+    return false;
+  }
+};
+
 const Quiz = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [quizData, setQuizData] = useState<QuizData>({
@@ -998,10 +1029,29 @@ const Quiz = () => {
                         id="website"
                         type="url"
                         value={quizData.website}
-                        onChange={(e) => setQuizData({...quizData, website: e.target.value})}
-                        placeholder="https://www.yourbusiness.com"
-                        className="mt-2 text-lg py-3"
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setQuizData({...quizData, website: value});
+                        }}
+                        onBlur={(e) => {
+                          const value = e.target.value.trim();
+                          if (value) {
+                            const formattedUrl = formatWebsiteUrl(value);
+                            setQuizData({...quizData, website: formattedUrl});
+                          }
+                        }}
+                        placeholder="yourbusiness.com"
+                        className={`mt-2 text-lg py-3 ${
+                          quizData.website && !isValidWebsiteUrl(quizData.website) 
+                            ? 'border-red-500 focus:border-red-500' 
+                            : ''
+                        }`}
                       />
+                      {quizData.website && !isValidWebsiteUrl(quizData.website) && (
+                        <p className="text-sm text-red-600 mt-1">
+                          Please enter a valid website URL (e.g., yoursite.com)
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>

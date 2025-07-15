@@ -458,8 +458,13 @@ const Admin = () => {
                               <div className="text-muted-foreground">{lead.phone}</div>
                               {lead.website && (
                                 <div className="text-muted-foreground">
-                                  <a href={lead.website} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                                    {lead.website}
+                                  <a 
+                                    href={lead.website.startsWith('http') ? lead.website : `https://${lead.website}`} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="hover:underline text-primary"
+                                  >
+                                    {lead.website.replace(/^https?:\/\//, '')}
                                   </a>
                                 </div>
                               )}
