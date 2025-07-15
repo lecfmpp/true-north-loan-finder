@@ -205,22 +205,22 @@ const BlogPost = () => {
               ))}
             </div>
 
-            {/* Title */}
-            <h1 className="text-4xl lg:text-5xl font-bold font-sans text-primary mb-6 leading-tight">
-              {post.title}
-            </h1>
-
-            {/* Meta */}
+            {/* Author and Meta Info */}
             <div className="flex items-center justify-between border-b border-border pb-6 mb-8">
               <div className="flex items-center space-x-6 text-muted-foreground">
                 <div className="flex items-center">
                   <User className="h-4 w-4 mr-2" />
-                  <span>{post.author}</span>
+                  <span className="font-medium">{post.author}</span>
                 </div>
                 <div className="flex items-center">
                   <Clock className="h-4 w-4 mr-2" />
                   <span>{formatDate(post.created_at)}</span>
                 </div>
+                {post.reading_time && (
+                  <div className="flex items-center">
+                    <span>{post.reading_time} min read</span>
+                  </div>
+                )}
               </div>
               <Button variant="outline" size="sm">
                 <Share2 className="h-4 w-4 mr-2" />
@@ -228,17 +228,10 @@ const BlogPost = () => {
               </Button>
             </div>
 
-            {/* Content */}
-            <div 
-              className="prose prose-lg max-w-none font-serif text-muted-foreground
-                prose-headings:font-sans prose-headings:text-primary
-                prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl
-                prose-a:text-secondary prose-a:no-underline hover:prose-a:underline
-                prose-strong:text-primary prose-strong:font-semibold
-                prose-ul:list-disc prose-ol:list-decimal
-                prose-li:mb-2 prose-p:mb-6"
-              dangerouslySetInnerHTML={{ __html: post.content.replace(/\n/g, '<br />') }}
-            />
+            {/* Content Container with new blog-content styling */}
+            <div className="blog-content">
+              <div dangerouslySetInnerHTML={{ __html: post.content }} />
+            </div>
 
             {/* CTA Section */}
             <div className="mt-16 p-8 bg-gradient-to-br from-primary/5 to-secondary/5 rounded-lg text-center">
