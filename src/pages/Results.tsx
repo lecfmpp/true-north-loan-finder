@@ -326,10 +326,12 @@ const Results = () => {
                     <Button 
                       size="lg" 
                       onClick={handleBookCall}
-                      className="bg-yellow-500 hover:bg-yellow-600 text-white md:text-xl text-lg md:py-6 py-4 md:px-12 px-8 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all w-full md:w-auto"
+                      className="bg-yellow-500 hover:bg-yellow-600 text-white text-lg md:text-xl py-4 md:py-6 px-6 md:px-12 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all w-full min-h-[60px] md:min-h-[72px] flex items-center justify-center"
                     >
-                      <Calendar className="w-5 h-5 mr-2" />
-                      Book My 15-Min Pre-Offer Call
+                      <Calendar className="w-5 h-5 mr-2 flex-shrink-0" />
+                      <span className="text-center leading-tight">
+                        Book My 15-Min<br className="sm:hidden" /> Pre-Offer Call
+                      </span>
                     </Button>
                     
                     <p className="text-sm text-muted-foreground">
