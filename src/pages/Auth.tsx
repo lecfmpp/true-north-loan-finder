@@ -160,6 +160,22 @@ const Auth = () => {
 
       if (error) throw error;
 
+      // Send confirmation email
+      try {
+        await supabase.functions.invoke('send-application-confirmation', {
+          body: {
+            applicantName: formData.applicantName,
+            applicantEmail: formData.applicantEmail,
+            companyName: formData.companyName,
+            applicationType: formData.applicationType
+          }
+        });
+        console.log('Confirmation email sent successfully');
+      } catch (emailError) {
+        console.error('Error sending confirmation email:', emailError);
+        // Don't fail the application if email fails, just log it
+      }
+
       // Generate random leads count and show success message
       const leadsCount = generateRandomLeadsCount();
       setMatchingLeads(leadsCount);
