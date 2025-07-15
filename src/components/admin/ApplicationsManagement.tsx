@@ -312,9 +312,9 @@ export const ApplicationsManagement = () => {
               {/* Accordion for Business Details */}
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="business-details" className="border-none">
-                  <AccordionTrigger className="flex items-center gap-2 hover:no-underline pb-2">
+                  <AccordionTrigger className="flex items-center gap-2 hover:no-underline pb-2 [&[data-state=open]>.accordion-icon]:rotate-180">
                     <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                      <ChevronDown className="h-4 w-4 text-blue-900 transition-transform duration-200" />
+                      <ChevronDown className="accordion-icon h-4 w-4 text-blue-900 transition-transform duration-200" />
                     </div>
                     <span className="text-sm font-medium">View Business Details</span>
                   </AccordionTrigger>

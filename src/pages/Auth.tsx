@@ -86,10 +86,55 @@ const Auth = () => {
     setIsLoading(false);
   };
 
+  const formatPhoneNumber = (value: string) => {
+    // Remove all non-digits
+    const phoneNumber = value.replace(/\D/g, '');
+    
+    // Format as Canadian phone number: (XXX) XXX-XXXX
+    if (phoneNumber.length >= 10) {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+    } else if (phoneNumber.length >= 6) {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6)}`;
+    } else if (phoneNumber.length >= 3) {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+    } else if (phoneNumber.length > 0) {
+      return `(${phoneNumber}`;
+    }
+    return phoneNumber;
+  };
+
+  const formatWebsite = (value: string) => {
+    if (!value) return '';
+    if (!value.startsWith('http://') && !value.startsWith('https://')) {
+      return 'https://' + value;
+    }
+    return value;
+  };
+
+  const validateLicenseNumber = (value: string) => {
+    // Common broker/lender license formats in Canada/US
+    const patterns = [
+      /^[A-Z]{2}\d{6,8}$/,  // State abbreviation + 6-8 digits
+      /^[A-Z]\d{7,9}$/,     // Single letter + 7-9 digits
+      /^\d{6,10}$/,         // 6-10 digits only
+      /^[A-Z]{2}-\d{4,8}$/, // State-number format
+      /^[A-Z]{3}\d{4,6}$/   // 3 letters + 4-6 digits
+    ];
+    return patterns.some(pattern => pattern.test(value.toUpperCase())) || value.length === 0;
+  };
+
   const handleInputChange = (field: keyof ApplicationFormData, value: any) => {
+    let processedValue = value;
+    
+    if (field === 'applicantPhone') {
+      processedValue = formatPhoneNumber(value);
+    } else if (field === 'companyWebsite') {
+      processedValue = formatWebsite(value);
+    }
+    
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      [field]: processedValue
     }));
   };
 
@@ -341,6 +386,8 @@ const Auth = () => {
                             id="applicant-phone"
                             value={formData.applicantPhone}
                             onChange={(e) => handleInputChange('applicantPhone', e.target.value)}
+                            placeholder="(123) 456-7890"
+                            maxLength={14}
                           />
                         </div>
                         
@@ -375,8 +422,9 @@ const Auth = () => {
                             id="company-website"
                             value={formData.companyWebsite}
                             onChange={(e) => handleInputChange('companyWebsite', e.target.value)}
-                            placeholder="https://yourcompany.com"
+                            placeholder="yourcompany.com"
                           />
+                          <p className="text-xs text-muted-foreground">https:// will be automatically added</p>
                         </div>
                       </div>
 
@@ -386,8 +434,16 @@ const Auth = () => {
                           <Input
                             id="license-number"
                             value={formData.licenseNumber}
-                            onChange={(e) => handleInputChange('licenseNumber', e.target.value)}
+                            onChange={(e) => {
+                              const value = e.target.value.toUpperCase();
+                              if (validateLicenseNumber(value)) {
+                                handleInputChange('licenseNumber', value);
+                              }
+                            }}
+                            placeholder="e.g., CA123456, B1234567, 12345678"
+                            maxLength={12}
                           />
+                          <p className="text-xs text-muted-foreground">Common formats: State+digits (CA123456), Letter+digits (B1234567), or digits only</p>
                         </div>
                         
                         <div className="space-y-2">
