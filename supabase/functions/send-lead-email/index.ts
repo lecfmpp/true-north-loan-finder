@@ -122,7 +122,7 @@ const handler = async (req: Request): Promise<Response> => {
     <body>
         <div class="container">
             <div class="header">
-                <h1>🚀 New Qualified Lead!</h1>
+                <h1>New Qualified Lead!</h1>
                 <p>We found the perfect business looking for funding</p>
             </div>
             
