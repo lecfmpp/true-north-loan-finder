@@ -42,7 +42,30 @@ interface QuizData {
   name: string;
   email: string;
   phone: string;
+  website: string;
 }
+
+// Phone number formatting function
+const formatPhoneNumber = (value: string) => {
+  // Remove all non-digit characters
+  const cleaned = value.replace(/\D/g, '');
+  
+  // Only allow 10 digits (US/Canada format)
+  if (cleaned.length > 10) {
+    return cleaned.slice(0, 10);
+  }
+  
+  // Format as (XXX) XXX-XXXX
+  if (cleaned.length === 10) {
+    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+  } else if (cleaned.length >= 6) {
+    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+  } else if (cleaned.length >= 3) {
+    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
+  }
+  
+  return cleaned;
+};
 
 const Quiz = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -54,7 +77,8 @@ const Quiz = () => {
     creditScore: "",
     name: "",
     email: "",
-    phone: ""
+    phone: "",
+    website: ""
   });
   const [showResults, setShowResults] = useState(false);
 
@@ -420,6 +444,7 @@ const Quiz = () => {
         name: data.name,
         email: data.email,
         phone: data.phone,
+        website: data.website,
         score: score
       }).select().single();
 
@@ -953,13 +978,28 @@ const Quiz = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="phone" className="text-lg font-medium">Phone Number</Label>
+                      <Label htmlFor="phone" className="text-lg font-medium">Phone Number (US/Canada)</Label>
                       <Input
                         id="phone"
                         type="tel"
                         value={quizData.phone}
-                        onChange={(e) => setQuizData({...quizData, phone: e.target.value})}
-                        placeholder="Enter your phone number"
+                        onChange={(e) => {
+                          const formatted = formatPhoneNumber(e.target.value);
+                          setQuizData({...quizData, phone: formatted});
+                        }}
+                        placeholder="(555) 123-4567"
+                        className="mt-2 text-lg py-3"
+                        maxLength={14}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="website" className="text-lg font-medium">Website (Optional)</Label>
+                      <Input
+                        id="website"
+                        type="url"
+                        value={quizData.website}
+                        onChange={(e) => setQuizData({...quizData, website: e.target.value})}
+                        placeholder="https://www.yourbusiness.com"
                         className="mt-2 text-lg py-3"
                       />
                     </div>

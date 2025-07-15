@@ -507,6 +507,7 @@ export type Database = {
           time_in_business: string
           updated_at: string
           use_of_funds: string
+          website: string | null
         }
         Insert: {
           admin_notes?: string | null
@@ -524,6 +525,7 @@ export type Database = {
           time_in_business: string
           updated_at?: string
           use_of_funds: string
+          website?: string | null
         }
         Update: {
           admin_notes?: string | null
@@ -541,6 +543,7 @@ export type Database = {
           time_in_business?: string
           updated_at?: string
           use_of_funds?: string
+          website?: string | null
         }
         Relationships: [
           {

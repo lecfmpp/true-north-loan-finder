@@ -10,9 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2 } from 'lucide-react';
+import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight } from 'lucide-react';
 import Header from '@/components/Header';
 import BlogManagement from '@/components/admin/BlogManagement';
 import BlogPostCreator from '@/components/admin/BlogPostCreator';
@@ -24,6 +25,7 @@ interface QuizResponse {
   name: string;
   email: string;
   phone: string;
+  website: string;
   monthly_revenue: number;
   loan_amount: number;
   credit_score: string;
@@ -42,6 +44,7 @@ const Admin = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('leads');
+  const [expandedLeads, setExpandedLeads] = useState<{ [key: string]: boolean }>({});
   const [emailEnrollments, setEmailEnrollments] = useState<{ [key: string]: { [key: string]: boolean } }>({});
   const { user, isAdmin, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -53,7 +56,16 @@ const Admin = () => {
     PRE_CALL: 'a4eb9d81-6602-4e99-959d-1a1b8e5592a5'
   };
 
-  console.log('EMAIL_SEQUENCES:', EMAIL_SEQUENCES);
+  const toggleExpandedLead = (leadId: string) => {
+    setExpandedLeads(prev => ({
+      ...prev,
+      [leadId]: !prev[leadId]
+    }));
+  };
+
+  const handleCallNow = (phone: string) => {
+    window.open(`tel:${phone}`, '_self');
+  };
 
   useEffect(() => {
     if (!authLoading && (!user || !isAdmin)) {
@@ -156,9 +168,6 @@ const Admin = () => {
   };
 
   const toggleEmailSequence = async (leadEmail: string, leadName: string, sequenceId: string, isEnabled: boolean) => {
-    console.log('Toggle called:', { leadEmail, leadName, sequenceId, isEnabled });
-    console.log('Current emailEnrollments state:', emailEnrollments);
-    
     try {
       if (isEnabled) {
         // Enroll in sequence
@@ -184,18 +193,13 @@ const Admin = () => {
       }
 
       // Update local state
-      const newState = {
-        ...emailEnrollments,
+      setEmailEnrollments(prev => ({
+        ...prev,
         [leadEmail]: {
-          ...emailEnrollments[leadEmail],
+          ...prev[leadEmail],
           [sequenceId]: isEnabled
         }
-      };
-      
-      console.log('New state about to be set:', newState);
-      console.log('Updating only lead:', leadEmail, 'for sequence:', sequenceId, 'to:', isEnabled);
-      
-      setEmailEnrollments(newState);
+      }));
 
       const sequenceName = sequenceId === EMAIL_SEQUENCES.FOLLOW_UP ? 'Follow-up' : 'Pre-Call';
       
@@ -440,6 +444,7 @@ const Admin = () => {
                         <TableHead>Status</TableHead>
                         <TableHead>Created</TableHead>
                         <TableHead>Email Sequences</TableHead>
+                        <TableHead>Call Now</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -451,13 +456,46 @@ const Admin = () => {
                             <div className="text-sm">
                               <div>{lead.email}</div>
                               <div className="text-muted-foreground">{lead.phone}</div>
+                              {lead.website && (
+                                <div className="text-muted-foreground">
+                                  <a href={lead.website} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                                    {lead.website}
+                                  </a>
+                                </div>
+                              )}
                             </div>
                           </TableCell>
                           <TableCell>
-                            <div className="text-sm">
-                              <div>${lead.loan_amount.toLocaleString()} requested</div>
-                              <div className="text-muted-foreground">${lead.monthly_revenue.toLocaleString()}/mo revenue</div>
-                            </div>
+                            <Collapsible>
+                              <CollapsibleTrigger asChild>
+                                <Button variant="ghost" size="sm" className="p-0 h-auto">
+                                  <div className="flex items-center gap-2">
+                                    <div className="text-sm">
+                                      <div>${lead.loan_amount.toLocaleString()} requested</div>
+                                      <div className="text-muted-foreground">${lead.monthly_revenue.toLocaleString()}/mo revenue</div>
+                                    </div>
+                                    {expandedLeads[lead.id] ? (
+                                      <ChevronDown className="h-4 w-4" />
+                                    ) : (
+                                      <ChevronRight className="h-4 w-4" />
+                                    )}
+                                  </div>
+                                </Button>
+                              </CollapsibleTrigger>
+                              <CollapsibleContent className="mt-2 p-3 border rounded-md bg-muted/50">
+                                <div className="space-y-2 text-sm">
+                                  <div>
+                                    <span className="font-medium">Credit Score:</span> {lead.credit_score}
+                                  </div>
+                                  <div>
+                                    <span className="font-medium">Time in Business:</span> {lead.time_in_business}
+                                  </div>
+                                  <div>
+                                    <span className="font-medium">Use of Funds:</span> {lead.use_of_funds}
+                                  </div>
+                                </div>
+                              </CollapsibleContent>
+                            </Collapsible>
                           </TableCell>
                           <TableCell>
                             <Badge variant="outline">{lead.score}/100</Badge>
@@ -475,11 +513,7 @@ const Admin = () => {
                               <div className="flex items-center gap-2">
                                 <Switch
                                   key={`${lead.id}-follow-up`}
-                                  checked={(() => {
-                                    const isChecked = emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.FOLLOW_UP] || false;
-                                    console.log(`Switch render for ${lead.email} (${lead.name}) - Follow-up: ${isChecked}`);
-                                    return isChecked;
-                                  })()}
+                                  checked={emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.FOLLOW_UP] || false}
                                   onCheckedChange={(checked) => 
                                     toggleEmailSequence(lead.email, lead.name, EMAIL_SEQUENCES.FOLLOW_UP, checked)
                                   }
@@ -489,11 +523,7 @@ const Admin = () => {
                               <div className="flex items-center gap-2">
                                 <Switch
                                   key={`${lead.id}-pre-call`}
-                                  checked={(() => {
-                                    const isChecked = emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.PRE_CALL] || false;
-                                    console.log(`Switch render for ${lead.email} (${lead.name}) - Pre-Call: ${isChecked}`);
-                                    return isChecked;
-                                  })()}
+                                  checked={emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.PRE_CALL] || false}
                                   onCheckedChange={(checked) => 
                                     toggleEmailSequence(lead.email, lead.name, EMAIL_SEQUENCES.PRE_CALL, checked)
                                   }
@@ -501,6 +531,17 @@ const Admin = () => {
                                 <span className="text-sm text-muted-foreground">Pre-Call</span>
                               </div>
                             </div>
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleCallNow(lead.phone)}
+                              disabled={!lead.phone}
+                            >
+                              <Phone className="w-4 h-4 mr-2" />
+                              Call Now
+                            </Button>
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
