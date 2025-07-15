@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MessageCircle, X, Send, User, Bot } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { ChatContactForm } from '@/components/ChatContactForm';
 
 interface ChatConfig {
   id: string;
@@ -41,6 +42,7 @@ export function ChatWidget() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showContactForm, setShowContactForm] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inactivityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -401,27 +403,56 @@ export function ChatWidget() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input */}
-            <div className="p-4 border-t">
-              <div className="flex gap-2">
-                <Input
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Type your message..."
-                  className="flex-1"
-                  disabled={isLoading}
+            {/* Contact Form or Input */}
+            {showContactForm ? (
+              <div className="p-4 border-t">
+                <ChatContactForm
+                  onSubmit={() => {
+                    setShowContactForm(false);
+                    // Add success message to chat
+                    const successMessage: Message = {
+                      id: (Date.now() + 1).toString(),
+                      type: 'bot',
+                      content: "Thank you for your contact information! Our team will reach out to you within 24 hours to discuss your financing needs.",
+                      timestamp: new Date()
+                    };
+                    setMessages(prev => [...prev, successMessage]);
+                  }}
+                  onCancel={() => setShowContactForm(false)}
                 />
-                <Button
-                  onClick={handleSendMessage}
-                  disabled={!inputValue.trim() || isLoading}
-                  size="sm"
-                  style={{ backgroundColor: config.primary_color }}
-                >
-                  <Send size={16} className="text-white" />
-                </Button>
               </div>
-            </div>
+            ) : (
+              <div className="p-4 border-t">
+                <div className="flex gap-2">
+                  <Input
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Type your message..."
+                    className="flex-1"
+                    disabled={isLoading}
+                  />
+                  <Button
+                    onClick={handleSendMessage}
+                    disabled={!inputValue.trim() || isLoading}
+                    size="sm"
+                    style={{ backgroundColor: config.primary_color }}
+                  >
+                    <Send size={16} className="text-white" />
+                  </Button>
+                </div>
+                <div className="mt-2">
+                  <Button
+                    onClick={() => setShowContactForm(true)}
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-xs"
+                  >
+                    Request Personal Contact
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
