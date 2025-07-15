@@ -47,6 +47,7 @@ const Admin = () => {
   const [filteredLeads, setFilteredLeads] = useState<QuizResponse[]>([]);
   const [approvedPartners, setApprovedPartners] = useState<Array<{id: string, name: string, email: string}>>([]);
   const [applicationsCount, setApplicationsCount] = useState(0);
+  const [bookingsCount, setBookingsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -86,6 +87,7 @@ const Admin = () => {
     if (user && isAdmin) {
       fetchLeads();
       fetchApplicationsCount();
+      fetchBookingsCount();
       if (isSuperAdmin) {
         fetchApprovedPartners();
       }
@@ -162,6 +164,20 @@ const Admin = () => {
       setApplicationsCount(count || 0);
     } catch (error) {
       console.error('Error fetching applications count:', error);
+    }
+  };
+
+  const fetchBookingsCount = async () => {
+    try {
+      const { count, error } = await supabase
+        .from('call_bookings')
+        .select('*', { count: 'exact', head: true })
+        .neq('booking_status', 'cancelled');
+
+      if (error) throw error;
+      setBookingsCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching bookings count:', error);
     }
   };
 
@@ -469,7 +485,10 @@ const Admin = () => {
             </TabsTrigger>
             <TabsTrigger value="available-times" className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
-              Available Times
+              Bookings
+              <div className="flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-blue-900 bg-green-500 rounded">
+                {bookingsCount}
+              </div>
             </TabsTrigger>
             <TabsTrigger value="applications" className="flex items-center gap-2">
               <UserCheck className="w-4 h-4" />
