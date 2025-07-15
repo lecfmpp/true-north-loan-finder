@@ -13,6 +13,12 @@ import {
   Star,
   ArrowRight
 } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -289,20 +295,18 @@ const HowItWorks = () => {
               </p>
             </div>
 
-            <div className="space-y-6">
+            <Accordion type="single" collapsible className="w-full">
               {faqs.map((faq, index) => (
-                <Card key={index} className="border-0 shadow-[var(--shadow-card)]">
-                  <CardContent className="p-6">
-                    <h3 className="text-lg font-semibold font-sans text-primary mb-3">
-                      {faq.question}
-                    </h3>
-                    <p className="text-muted-foreground font-serif">
-                      {faq.answer}
-                    </p>
-                  </CardContent>
-                </Card>
+                <AccordionItem key={index} value={`item-${index}`}>
+                  <AccordionTrigger className="text-left text-lg font-semibold font-sans text-primary">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground font-serif">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
               ))}
-            </div>
+            </Accordion>
           </div>
         </div>
       </section>
