@@ -117,12 +117,12 @@ const Auth = () => {
   };
 
   const validateLicenseNumber = (value: string) => {
-    // Common broker/lender license formats in Canada/US
+    // Common broker/lender license formats in Canada
     const patterns = [
-      /^[A-Z]{2}\d{6,8}$/,  // State abbreviation + 6-8 digits
+      /^[A-Z]{2}\d{6,8}$/,  // Province abbreviation + 6-8 digits
       /^[A-Z]\d{7,9}$/,     // Single letter + 7-9 digits
       /^\d{6,10}$/,         // 6-10 digits only
-      /^[A-Z]{2}-\d{4,8}$/, // State-number format
+      /^[A-Z]{2}-\d{4,8}$/, // Province-number format
       /^[A-Z]{3}\d{4,6}$/   // 3 letters + 4-6 digits
     ];
     return patterns.some(pattern => pattern.test(value.toUpperCase())) || value.length === 0;
@@ -445,10 +445,10 @@ const Auth = () => {
                                 handleInputChange('licenseNumber', value);
                               }
                             }}
-                            placeholder="e.g., CA123456, B1234567, 12345678"
+                            placeholder="e.g., ON123456, B1234567, 12345678"
                             maxLength={12}
                           />
-                          <p className="text-xs text-muted-foreground">Common formats: State+digits (CA123456), Letter+digits (B1234567), or digits only</p>
+                          <p className="text-xs text-muted-foreground">Common formats: Province+digits (ON123456), Letter+digits (B1234567), or digits only</p>
                         </div>
                         
                         <div className="space-y-2">
@@ -604,21 +604,21 @@ const Auth = () => {
                         </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label>Geographic Areas You Serve</Label>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                          {['Local/Regional', 'State-wide', 'Multi-state', 'National', 'California', 'Texas', 'Florida', 'New York', 'Illinois', 'Other States'].map((area) => (
-                            <div key={area} className="flex items-center space-x-2">
-                              <Checkbox
-                                id={`area-${area}`}
-                                checked={formData.geographicAreas.includes(area)}
-                                onCheckedChange={(checked) => handleCheckboxChange('geographicAreas', area, checked as boolean)}
-                              />
-                              <Label htmlFor={`area-${area}`} className="text-sm">{area}</Label>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                        <div className="space-y-2">
+                         <Label>Geographic Areas You Serve</Label>
+                         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                           {['Local/Regional', 'Province-wide', 'Multi-province', 'National', 'Ontario', 'Quebec', 'British Columbia', 'Alberta', 'Manitoba', 'Other Provinces'].map((area) => (
+                             <div key={area} className="flex items-center space-x-2">
+                               <Checkbox
+                                 id={`area-${area}`}
+                                 checked={formData.geographicAreas.includes(area)}
+                                 onCheckedChange={(checked) => handleCheckboxChange('geographicAreas', area, checked as boolean)}
+                               />
+                               <Label htmlFor={`area-${area}`} className="text-sm">{area}</Label>
+                             </div>
+                           ))}
+                         </div>
+                       </div>
                     </div>
 
                     {/* Additional Information */}
