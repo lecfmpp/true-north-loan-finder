@@ -241,16 +241,16 @@ export const generateTemplateContent = (template: BlogTemplate, values: Record<s
         content += `<p>${value}</p>\n\n`;
         break;
       case 'ul':
-        content += `<ul>\n<li>${value}</li>\n</ul>\n\n`;
+        content += `<p><strong>Key points:</strong></p>\n<ul>\n    <li><strong>Point 1:</strong> ${value}</li>\n    <li><strong>Point 2:</strong> Update this content</li>\n    <li><strong>Point 3:</strong> Add more details</li>\n</ul>\n\n`;
         break;
       case 'table':
-        content += `<table style="width:100%; border-collapse: collapse;">\n  <thead>\n    <tr style="background-color:#f2f2f2;">\n      <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Feature</th>\n      <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Option 1</th>\n      <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Option 2</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td style="border: 1px solid #ddd; padding: 8px;"><strong>Example</strong></td>\n      <td style="border: 1px solid #ddd; padding: 8px;">${value}</td>\n      <td style="border: 1px solid #ddd; padding: 8px;">Update this content</td>\n    </tr>\n  </tbody>\n</table>\n\n`;
+        content += `<table style="width:100%; border-collapse: collapse;">\n  <thead>\n    <tr style="background-color:#f2f2f2;">\n      <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Feature</th>\n      <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Option 1</th>\n      <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Option 2</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td style="border: 1px solid #ddd; padding: 8px;"><strong>Example Feature</strong></td>\n      <td style="border: 1px solid #ddd; padding: 8px;">${value}</td>\n      <td style="border: 1px solid #ddd; padding: 8px;">Update this content with your comparison</td>\n    </tr>\n    <tr>\n      <td style="border: 1px solid #ddd; padding: 8px;"><strong>Another Feature</strong></td>\n      <td style="border: 1px solid #ddd; padding: 8px;">Add your content here</td>\n      <td style="border: 1px solid #ddd; padding: 8px;">Add comparison content here</td>\n    </tr>\n  </tbody>\n</table>\n\n`;
         break;
       case 'cta':
-        content += `<br>\n\n<a href="/quiz" class="cta-button" style="display:inline-block; background-color:#007bff; color:#ffffff; padding:15px 25px; text-align:center; text-decoration:none; font-weight:bold; border-radius:5px;">${value}</a>\n\n`;
+        content += `<p><strong>${value}</strong></p>\n\n<br>\n\n<a href="/quiz" class="cta-button" style="display:inline-block; background-color:#007bff; color:#ffffff; padding:15px 25px; text-align:center; text-decoration:none; font-weight:bold; border-radius:5px;">${value}</a>\n\n`;
         break;
       case 'formula':
-        content += `<p>Formula example: $${value}$</p>\n\n`;
+        content += `<p>Formula example: <span class="formula">${value}</span></p>\n\n`;
         break;
       default:
         content += `<p>${value}</p>\n\n`;
