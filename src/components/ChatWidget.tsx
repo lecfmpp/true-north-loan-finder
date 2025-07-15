@@ -52,6 +52,15 @@ export function ChatWidget() {
   useEffect(() => {
     fetchConfig();
     fetchQA();
+    
+    // Poll for config changes every 10 seconds to detect enable/disable changes
+    const configInterval = setInterval(() => {
+      fetchConfig();
+    }, 10000);
+    
+    return () => {
+      clearInterval(configInterval);
+    };
   }, []);
 
   useEffect(() => {
@@ -63,23 +72,29 @@ export function ChatWidget() {
       const { data, error } = await supabase
         .from('chat_widget_config')
         .select('*')
-        .eq('is_enabled', true)
         .single();
 
-      if (error || !data) {
-        console.log('Chat widget is disabled or not configured');
+      if (error) {
+        console.error('Error fetching config:', error);
         return;
       }
 
-      setConfig(data);
-      
-      // Add welcome message
-      setMessages([{
-        id: '1',
-        type: 'bot',
-        content: `Hi! I'm ${data.support_person_name}. How can I help you today?`,
-        timestamp: new Date()
-      }]);
+      // Only set config if it's enabled
+      if (data && data.is_enabled) {
+        setConfig(data);
+        
+        // Add welcome message
+        setMessages([{
+          id: '1',
+          type: 'bot',
+          content: `Hi! I'm ${data.support_person_name}. How can I help you today?`,
+          timestamp: new Date()
+        }]);
+      } else {
+        // If disabled, clear the config to hide the widget
+        setConfig(null);
+        console.log('Chat widget is disabled');
+      }
     } catch (error) {
       console.error('Error fetching config:', error);
     }
