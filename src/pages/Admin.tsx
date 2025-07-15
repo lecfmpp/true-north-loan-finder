@@ -9,9 +9,10 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock } from 'lucide-react';
+import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2 } from 'lucide-react';
 import Header from '@/components/Header';
 import BlogManagement from '@/components/admin/BlogManagement';
 import BlogPostCreator from '@/components/admin/BlogPostCreator';
@@ -41,9 +42,16 @@ const Admin = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('leads');
+  const [emailEnrollments, setEmailEnrollments] = useState<{ [key: string]: { [key: string]: boolean } }>({});
   const { user, isAdmin, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Email sequence IDs - these should match the actual sequence IDs from your database
+  const EMAIL_SEQUENCES = {
+    FOLLOW_UP: '7473795a-4822-49ef-9f5f-d1b35857277a',
+    PRE_CALL: 'a4eb9d81-6602-4e99-959d-1a1b8e5592a5'
+  };
 
   useEffect(() => {
     if (!authLoading && (!user || !isAdmin)) {
@@ -70,6 +78,9 @@ const Admin = () => {
 
       if (error) throw error;
       setLeads(data || []);
+      
+      // Fetch email enrollments for all leads
+      await fetchEmailEnrollments(data || []);
     } catch (error) {
       toast({
         title: "Error",
@@ -78,6 +89,115 @@ const Admin = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchEmailEnrollments = async (leadsData: QuizResponse[]) => {
+    try {
+      const { data: enrollments, error } = await supabase
+        .from('email_enrollments')
+        .select('user_email, sequence_id, status')
+        .in('user_email', leadsData.map(lead => lead.email))
+        .eq('status', 'active');
+
+      if (error) throw error;
+
+      // Create enrollment map: { email: { sequenceId: boolean } }
+      const enrollmentMap: { [key: string]: { [key: string]: boolean } } = {};
+      
+      leadsData.forEach(lead => {
+        enrollmentMap[lead.email] = {
+          [EMAIL_SEQUENCES.FOLLOW_UP]: false,
+          [EMAIL_SEQUENCES.PRE_CALL]: false
+        };
+      });
+
+      enrollments?.forEach(enrollment => {
+        if (enrollmentMap[enrollment.user_email]) {
+          enrollmentMap[enrollment.user_email][enrollment.sequence_id] = true;
+        }
+      });
+
+      setEmailEnrollments(enrollmentMap);
+    } catch (error) {
+      console.error('Error fetching email enrollments:', error);
+    }
+  };
+
+  const deleteLead = async (leadId: string) => {
+    if (!confirm('Are you sure you want to delete this lead? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('quiz_responses')
+        .delete()
+        .eq('id', leadId);
+
+      if (error) throw error;
+
+      setLeads(leads.filter(lead => lead.id !== leadId));
+      
+      toast({
+        title: "Success",
+        description: "Lead deleted successfully"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete lead",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const toggleEmailSequence = async (leadEmail: string, leadName: string, sequenceId: string, isEnabled: boolean) => {
+    try {
+      if (isEnabled) {
+        // Enroll in sequence
+        const { error } = await supabase
+          .from('email_enrollments')
+          .insert({
+            user_email: leadEmail,
+            user_name: leadName,
+            sequence_id: sequenceId,
+            status: 'active'
+          });
+
+        if (error) throw error;
+      } else {
+        // Unenroll from sequence
+        const { error } = await supabase
+          .from('email_enrollments')
+          .update({ status: 'cancelled' })
+          .eq('user_email', leadEmail)
+          .eq('sequence_id', sequenceId);
+
+        if (error) throw error;
+      }
+
+      // Update local state
+      setEmailEnrollments(prev => ({
+        ...prev,
+        [leadEmail]: {
+          ...prev[leadEmail],
+          [sequenceId]: isEnabled
+        }
+      }));
+
+      const sequenceName = sequenceId === EMAIL_SEQUENCES.FOLLOW_UP ? 'Follow-up' : 'Pre-Call';
+      
+      toast({
+        title: "Success",
+        description: `${sequenceName} sequence ${isEnabled ? 'enabled' : 'disabled'} for ${leadName}`
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update email sequence",
+        variant: "destructive"
+      });
     }
   };
 
@@ -307,6 +427,7 @@ const Admin = () => {
                         <TableHead>Score</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Created</TableHead>
+                        <TableHead>Email Sequences</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -338,20 +459,51 @@ const Admin = () => {
                             {format(new Date(lead.created_at), 'MMM dd, yyyy')}
                           </TableCell>
                           <TableCell>
-                            <Select
-                              value={lead.status}
-                              onValueChange={(value) => updateLeadStatus(lead.id, value)}
-                            >
-                              <SelectTrigger className="w-32">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="new">New</SelectItem>
-                                <SelectItem value="contacted">Contacted</SelectItem>
-                                <SelectItem value="qualified">Qualified</SelectItem>
-                                <SelectItem value="closed">Closed</SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <Switch
+                                  checked={emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.FOLLOW_UP] || false}
+                                  onCheckedChange={(checked) => 
+                                    toggleEmailSequence(lead.email, lead.name, EMAIL_SEQUENCES.FOLLOW_UP, checked)
+                                  }
+                                />
+                                <span className="text-sm text-muted-foreground">Follow-up</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Switch
+                                  checked={emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.PRE_CALL] || false}
+                                  onCheckedChange={(checked) => 
+                                    toggleEmailSequence(lead.email, lead.name, EMAIL_SEQUENCES.PRE_CALL, checked)
+                                  }
+                                />
+                                <span className="text-sm text-muted-foreground">Pre-Call</span>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Select
+                                value={lead.status}
+                                onValueChange={(value) => updateLeadStatus(lead.id, value)}
+                              >
+                                <SelectTrigger className="w-32">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="new">New</SelectItem>
+                                  <SelectItem value="contacted">Contacted</SelectItem>
+                                  <SelectItem value="qualified">Qualified</SelectItem>
+                                  <SelectItem value="closed">Closed</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => deleteLead(lead.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
