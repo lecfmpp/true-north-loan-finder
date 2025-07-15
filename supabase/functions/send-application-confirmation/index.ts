@@ -151,7 +151,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send the confirmation email
     const emailResponse = await resend.emails.send({
-      from: "True North Funding <partnerships@truenorthfunding.ca>",
+      from: "True North Funding <partnerships@email.truenorthbusinessloan.ca>",
       to: [applicantEmail],
       subject: `✅ ${applicationType} Application Received - True North Funding`,
       html: emailHtml,
