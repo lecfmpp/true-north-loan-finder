@@ -309,6 +309,56 @@ export const ApplicationsManagement = () => {
                 )}
               </div>
 
+              {/* Business Preferences */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-lg">Business Preferences</h4>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
+                  <div>
+                    <div className="font-medium text-sm mb-2">Business Types</div>
+                    <p className="text-sm text-muted-foreground">{application.business_types?.join(", ") || 'Not specified'}</p>
+                  </div>
+                  
+                  <div>
+                    <div className="font-medium text-sm mb-2">Preferred Industries</div>
+                    <p className="text-sm text-muted-foreground">{application.preferred_industries?.join(", ") || 'Not specified'}</p>
+                  </div>
+                  
+                  <div>
+                    <div className="font-medium text-sm mb-2">Monthly Revenue Range</div>
+                    <p className="text-sm text-muted-foreground">
+                      {application.min_monthly_revenue || 'Not specified'} - {application.max_monthly_revenue || 'Not specified'}
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <div className="font-medium text-sm mb-2">Min Time in Business</div>
+                    <p className="text-sm text-muted-foreground">{application.min_time_in_business || 'Not specified'}</p>
+                  </div>
+                  
+                  <div>
+                    <div className="font-medium text-sm mb-2">Min Credit Score</div>
+                    <p className="text-sm text-muted-foreground">{application.min_credit_score || 'Not specified'}</p>
+                  </div>
+                  
+                  <div>
+                    <div className="font-medium text-sm mb-2">Loan Amount Range</div>
+                    <p className="text-sm text-muted-foreground">
+                      {application.min_loan_amount || 'Not specified'} - {application.max_loan_amount || 'Not specified'}
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <div className="font-medium text-sm mb-2">Funding Purposes</div>
+                    <p className="text-sm text-muted-foreground">{application.funding_purposes?.join(", ") || 'Not specified'}</p>
+                  </div>
+                  
+                  <div>
+                    <div className="font-medium text-sm mb-2">Geographic Areas</div>
+                    <p className="text-sm text-muted-foreground">{application.geographic_areas?.join(", ") || 'Not specified'}</p>
+                  </div>
+                </div>
+              </div>
+
               {application.business_description && (
                 <div>
                   <h4 className="font-medium mb-2">Business Description</h4>
@@ -318,70 +368,14 @@ export const ApplicationsManagement = () => {
                 </div>
               )}
 
-              {/* Funding Preferences Accordion */}
-              <Accordion type="single" collapsible className="border-t pt-4">
-                <AccordionItem value="funding-preferences" className="border-none">
-                  <AccordionTrigger className="hover:no-underline">
-                    <h4 className="font-medium text-left">Funding Preferences</h4>
-                  </AccordionTrigger>
-                  <AccordionContent className="pt-2">
-                    <div className="grid md:grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="font-medium text-muted-foreground">Business Types:</span>
-                        <p className="mt-1">{application.business_types?.join(", ") || 'Not specified'}</p>
-                      </div>
-                      <div>
-                        <span className="font-medium text-muted-foreground">Preferred Industries:</span>
-                        <p className="mt-1">{application.preferred_industries?.join(", ") || 'Not specified'}</p>
-                      </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-4 text-sm mt-3">
-                      <div>
-                        <span className="font-medium text-muted-foreground">Monthly Revenue Range:</span>
-                        <p className="mt-1">
-                          {application.min_monthly_revenue || 'Not specified'} - {application.max_monthly_revenue || 'Not specified'}
-                        </p>
-                      </div>
-                      <div>
-                        <span className="font-medium text-muted-foreground">Min Time in Business:</span>
-                        <p className="mt-1">{application.min_time_in_business || 'Not specified'}</p>
-                      </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-4 text-sm mt-3">
-                      <div>
-                        <span className="font-medium text-muted-foreground">Min Credit Score:</span>
-                        <p className="mt-1">{application.min_credit_score || 'Not specified'}</p>
-                      </div>
-                      <div>
-                        <span className="font-medium text-muted-foreground">Loan Amount Range:</span>
-                        <p className="mt-1">
-                          {application.min_loan_amount || 'Not specified'} - {application.max_loan_amount || 'Not specified'}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-4 text-sm mt-3">
-                      <div>
-                        <span className="font-medium text-muted-foreground">Funding Purposes:</span>
-                        <p className="mt-1">{application.funding_purposes?.join(", ") || 'Not specified'}</p>
-                      </div>
-                      <div>
-                        <span className="font-medium text-muted-foreground">Geographic Areas:</span>
-                        <p className="mt-1">{application.geographic_areas?.join(", ") || 'Not specified'}</p>
-                      </div>
-                    </div>
-
-                    {application.additional_requirements && (
-                      <div className="mt-3 text-sm">
-                        <span className="font-medium text-muted-foreground">Additional Requirements:</span>
-                        <p className="mt-1 bg-muted p-3 rounded">{application.additional_requirements}</p>
-                      </div>
-                    )}
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
+              {application.additional_requirements && (
+                <div>
+                  <h4 className="font-medium mb-2">Special Requirements</h4>
+                  <p className="text-sm text-muted-foreground bg-muted p-3 rounded">
+                    {application.additional_requirements}
+                  </p>
+                </div>
+              )}
 
               {application.rejection_reason && (
                 <div>
