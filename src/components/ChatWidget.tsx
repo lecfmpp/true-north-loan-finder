@@ -268,7 +268,7 @@ export function ChatWidget() {
     }
   };
 
-  if (!config) {
+  if (!config || !config.is_enabled) {
     return null;
   }
 
