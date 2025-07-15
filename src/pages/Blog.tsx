@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Clock, User, ArrowRight } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
 
 interface BlogPost {
@@ -69,8 +70,50 @@ const Blog = () => {
     );
   }
 
+  // Structured data for blog listing
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    "name": "True North Business Loan Blog",
+    "description": "Expert guidance, tips, and insights to help Canadian businesses secure the right financing for growth and success.",
+    "url": "https://truenorthbusinessloan.ca/blog",
+    "publisher": {
+      "@type": "Organization",
+      "name": "True North Business Loan",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://truenorthbusinessloan.ca/lovable-uploads/eae8a3b3-6d86-4fe4-9e17-17b808de0d2e.png"
+      }
+    },
+    "blogPost": posts.map(post => ({
+      "@type": "BlogPosting",
+      "headline": post.title,
+      "description": post.excerpt,
+      "url": `https://truenorthbusinessloan.ca/blog/${post.slug}`,
+      "datePublished": post.created_at,
+      "author": {
+        "@type": "Organization",
+        "name": post.author
+      }
+    }))
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Business Financing Insights | True North Business Loan Blog"
+        description="Expert guidance, tips, and insights to help Canadian businesses secure the right financing for growth and success. Read our latest articles on business loans, equipment financing, and more."
+        keywords={[
+          "business financing blog",
+          "canadian business loans",
+          "small business financing tips",
+          "equipment financing guide",
+          "business loan advice",
+          "entrepreneurship canada"
+        ]}
+        canonicalUrl="https://truenorthbusinessloan.ca/blog"
+        structuredData={structuredData}
+      />
       <Header />
       
       {/* Hero Section */}
@@ -103,8 +146,9 @@ const Blog = () => {
                       <div className="w-full h-48 bg-muted rounded-lg mb-4 overflow-hidden">
                         <img 
                           src={post.featured_image_url} 
-                          alt={post.title}
+                          alt={`${post.title} - Canadian business financing guide`}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
                         />
                       </div>
                     )}

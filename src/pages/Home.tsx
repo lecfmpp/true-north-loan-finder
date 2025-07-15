@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
 
 
 const Home = () => {
@@ -82,8 +83,51 @@ const Home = () => {
     }
   ];
 
+  // Structured data for homepage
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "True North Business Loan",
+    "url": "https://truenorthbusinessloan.ca",
+    "logo": "https://truenorthbusinessloan.ca/lovable-uploads/eae8a3b3-6d86-4fe4-9e17-17b808de0d2e.png",
+    "description": "Canada's trusted business loan marketplace helping small businesses find the right financing from $5K to $800K.",
+    "address": {
+      "@type": "PostalAddress",
+      "addressCountry": "CA"
+    },
+    "sameAs": [],
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://truenorthbusinessloan.ca/loan-estimator",
+      "query-input": "required name=search_term_string"
+    },
+    "offers": {
+      "@type": "Offer",
+      "description": "Business loans from $5,000 to $800,000 for Canadian small businesses",
+      "priceRange": "$5,000 - $800,000"
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Find the Right Business Loan for Your Canadian Small Business | True North Business Loan"
+        description="Take our 60-second quiz to see your loan options from Canada's top lenders. Get $5K to $800K for your Canadian small business. Equipment financing, working capital, and more."
+        keywords={[
+          "business loans canada",
+          "canadian small business loans",
+          "equipment financing canada",
+          "small business financing",
+          "business loan calculator",
+          "canadian business funding",
+          "commercial loans canada",
+          "business line of credit",
+          "merchant cash advance",
+          "working capital loans"
+        ]}
+        canonicalUrl="https://truenorthbusinessloan.ca"
+        structuredData={structuredData}
+      />
       <Header />
       
       {/* Hero Section */}
@@ -128,8 +172,9 @@ const Home = () => {
               <div className="relative">
                 <img 
                   src="/lovable-uploads/e80bb666-2b36-4875-bd9f-78f3e944d749.png" 
-                  alt="Canadian business owner working on laptop" 
+                  alt="Successful Canadian business owner reviewing loan options on laptop - True North Business Loan helps find the right financing" 
                   className="w-full h-auto rounded-2xl shadow-[var(--shadow-card)] object-cover"
+                  loading="eager"
                 />
               </div>
             </div>

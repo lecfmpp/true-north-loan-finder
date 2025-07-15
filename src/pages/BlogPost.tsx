@@ -5,16 +5,24 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Clock, User, Share2 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
 
 interface BlogPost {
   id: string;
   title: string;
+  slug: string;
   content: string;
+  excerpt?: string;
   author: string;
   tags: string[];
   created_at: string;
+  updated_at: string;
   featured_image_url?: string;
+  meta_title?: string;
+  meta_description?: string;
+  meta_keywords?: string[];
+  reading_time?: number;
 }
 
 const BlogPost = () => {
@@ -108,8 +116,61 @@ const BlogPost = () => {
 
   if (!post) return null;
 
+  // SEO data
+  const currentUrl = `https://truenorthbusinessloan.ca/blog/${post.slug}`;
+  const seoTitle = post.meta_title || `${post.title} | True North Business Loan`;
+  const seoDescription = post.meta_description || post.excerpt || post.title;
+  const seoKeywords = post.meta_keywords || [...post.tags, 'business loans canada', 'small business financing'];
+  
+  // Structured data for article
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": post.title,
+    "description": seoDescription,
+    "image": post.featured_image_url || "https://truenorthbusinessloan.ca/lovable-uploads/e80bb666-2b36-4875-bd9f-78f3e944d749.png",
+    "author": {
+      "@type": "Organization",
+      "name": post.author,
+      "url": "https://truenorthbusinessloan.ca"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "True North Business Loan",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://truenorthbusinessloan.ca/lovable-uploads/eae8a3b3-6d86-4fe4-9e17-17b808de0d2e.png"
+      }
+    },
+    "datePublished": post.created_at,
+    "dateModified": post.updated_at,
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": currentUrl
+    },
+    "keywords": seoKeywords.join(', '),
+    "articleSection": "Business Financing",
+    "wordCount": post.reading_time ? post.reading_time * 200 : undefined
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title={seoTitle}
+        description={seoDescription}
+        keywords={seoKeywords}
+        canonicalUrl={currentUrl}
+        ogType="article"
+        ogImage={post.featured_image_url}
+        article={{
+          author: post.author,
+          publishedTime: post.created_at,
+          modifiedTime: post.updated_at,
+          section: "Business Financing",
+          tags: post.tags
+        }}
+        structuredData={structuredData}
+      />
       <Header />
       
       <article className="py-12">
@@ -128,8 +189,9 @@ const BlogPost = () => {
               <div className="w-full h-64 md:h-96 bg-muted rounded-lg mb-8 overflow-hidden">
                 <img 
                   src={post.featured_image_url} 
-                  alt={post.title}
+                  alt={`Featured image for ${post.title} - Canadian business financing guide`}
                   className="w-full h-full object-cover"
+                  loading="eager"
                 />
               </div>
             )}
