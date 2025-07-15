@@ -731,7 +731,7 @@ const Quiz = () => {
                     </p>
                   </div>
                   
-                  <div className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {timeInBusinessOptions.map((option) => {
                       const IconComponent = option.icon;
                       const isSelected = quizData.timeInBusiness === option.id;
@@ -813,7 +813,7 @@ const Quiz = () => {
                     </p>
                   </div>
                   
-                  <div className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {creditScoreOptions.map((option) => {
                       const IconComponent = option.icon;
                       const isSelected = quizData.creditScore === option.id;
