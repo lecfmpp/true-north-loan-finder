@@ -34,6 +34,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({ onBookingConfirmed, u
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
   const [loading, setLoading] = useState(false);
   const [booking, setBooKing] = useState(false);
+  const [hasAvailableDates, setHasAvailableDates] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -41,6 +42,37 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({ onBookingConfirmed, u
       fetchAvailableSlots(selectedDate);
     }
   }, [selectedDate]);
+
+  useEffect(() => {
+    checkForAvailableDates();
+  }, []);
+
+  const checkForAvailableDates = async () => {
+    try {
+      const today = startOfDay(new Date());
+      const maxDate = addDays(today, 4);
+      
+      // Check for any available slots in the next 4 days
+      const { data, error } = await supabase
+        .from('available_time_slots')
+        .select('*')
+        .gte('date', format(today, 'yyyy-MM-dd'))
+        .lt('date', format(maxDate, 'yyyy-MM-dd'))
+        .eq('is_available', true);
+
+      if (error) throw error;
+      
+      // Filter slots where current_bookings < max_bookings
+      const availableSlots = (data || []).filter(slot => 
+        slot.current_bookings < slot.max_bookings
+      );
+      
+      setHasAvailableDates(availableSlots.length > 0);
+    } catch (error) {
+      console.error('Error checking available dates:', error);
+      setHasAvailableDates(false);
+    }
+  };
 
   const fetchAvailableSlots = async (date: Date) => {
     setLoading(true);
@@ -196,6 +228,26 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({ onBookingConfirmed, u
           />
         </CardContent>
       </Card>
+
+      {!hasAvailableDates && (
+        <Card className="border-orange-200 bg-orange-50">
+          <CardContent className="pt-6">
+            <div className="text-center space-y-3">
+              <div className="text-orange-600 font-medium text-lg">
+                ⚠️ Limited Availability
+              </div>
+              <p className="text-orange-800">
+                Sorry, our team is helping other business owners to grow. We will release new dates soon. 
+                We recommend to book a call in the next available date for you so this process can be fast 
+                and you can get the offers ASAP.
+              </p>
+              <div className="text-sm text-orange-700 font-medium">
+                📈 Book now to secure your spot and get faster funding decisions!
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {selectedDate && (
         <Card>
