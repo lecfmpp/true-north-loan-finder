@@ -577,7 +577,7 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
-          role: string
+          role: Database["public"]["Enums"]["user_role"]
           updated_at: string
           user_id: string
         }
@@ -586,7 +586,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
-          role?: string
+          role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
           user_id: string
         }
@@ -595,7 +595,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
-          role?: string
+          role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
           user_id?: string
         }
@@ -671,10 +671,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_management_access: {
+        Args: { user_id_param: string }
+        Returns: boolean
+      }
+      is_superadmin: {
+        Args: { user_id_param: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      user_role: "superadmin" | "lender" | "broker" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -801,6 +808,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      user_role: ["superadmin", "lender", "broker", "user"],
+    },
   },
 } as const

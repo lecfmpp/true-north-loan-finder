@@ -12,6 +12,8 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
+  isManagementUser: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -158,7 +160,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const isAdmin = profile?.role === 'admin';
+  // Keep backward compatibility with isAdmin (checks for any management role)
+  const isAdmin = profile?.role === 'superadmin' || profile?.role === 'lender' || profile?.role === 'broker';
+  const isSuperAdmin = profile?.role === 'superadmin';
+  const isManagementUser = profile?.role === 'superadmin' || profile?.role === 'lender' || profile?.role === 'broker';
 
   return (
     <AuthContext.Provider value={{
@@ -169,7 +174,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       signUp,
       signIn,
       signOut,
-      isAdmin
+      isAdmin,
+      isSuperAdmin,
+      isManagementUser
     }}>
       {children}
     </AuthContext.Provider>

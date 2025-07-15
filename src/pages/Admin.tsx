@@ -50,7 +50,7 @@ const Admin = () => {
   const [expandedLeads, setExpandedLeads] = useState<{ [key: string]: boolean }>({});
   const [emailEnrollments, setEmailEnrollments] = useState<{ [key: string]: { [key: string]: boolean } }>({});
   const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
-  const { user, isAdmin, signOut, loading: authLoading } = useAuth();
+  const { user, isAdmin, isSuperAdmin, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -385,7 +385,7 @@ const Admin = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className={`grid w-full ${isSuperAdmin ? 'grid-cols-5' : 'grid-cols-2'}`}>
             <TabsTrigger value="leads" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               Leads
@@ -394,25 +394,22 @@ const Admin = () => {
               <Clock className="w-4 h-4" />
               Available Times
             </TabsTrigger>
-            <TabsTrigger value="email-sequence" className="flex items-center gap-2">
-              <Mail className="w-4 h-4" />
-              Email Sequence
-            </TabsTrigger>
-            <TabsTrigger value="chat-widget" className="flex items-center gap-2">
-              <MessageCircle className="w-4 h-4" />
-              Chat Widget
-            </TabsTrigger>
-            {/* Blog Creator tab hidden but code preserved */}
-            {false && (
-              <TabsTrigger value="blog-creator" className="flex items-center gap-2">
-                <PenTool className="w-4 h-4" />
-                Blog Creator
-              </TabsTrigger>
+            {isSuperAdmin && (
+              <>
+                <TabsTrigger value="email-sequence" className="flex items-center gap-2">
+                  <Mail className="w-4 h-4" />
+                  Email Sequence
+                </TabsTrigger>
+                <TabsTrigger value="chat-widget" className="flex items-center gap-2">
+                  <MessageCircle className="w-4 h-4" />
+                  Chat Widget
+                </TabsTrigger>
+                <TabsTrigger value="blog" className="flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  Blog Management
+                </TabsTrigger>
+              </>
             )}
-            <TabsTrigger value="blog" className="flex items-center gap-2">
-              <FileText className="w-4 h-4" />
-              Blog Management
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="leads" className="space-y-6">
@@ -629,31 +626,33 @@ const Admin = () => {
                               Call Now
                             </Button>
                           </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Select
-                                value={lead.status}
-                                onValueChange={(value) => updateLeadStatus(lead.id, value)}
-                              >
-                                <SelectTrigger className="w-32">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="new">New</SelectItem>
-                                  <SelectItem value="contacted">Contacted</SelectItem>
-                                  <SelectItem value="qualified">Qualified</SelectItem>
-                                  <SelectItem value="closed">Closed</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => deleteLead(lead.id)}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
+                           <TableCell>
+                             <div className="flex items-center gap-2">
+                               <Select
+                                 value={lead.status}
+                                 onValueChange={(value) => updateLeadStatus(lead.id, value)}
+                               >
+                                 <SelectTrigger className="w-32">
+                                   <SelectValue />
+                                 </SelectTrigger>
+                                 <SelectContent>
+                                   <SelectItem value="new">New</SelectItem>
+                                   <SelectItem value="contacted">Contacted</SelectItem>
+                                   <SelectItem value="qualified">Qualified</SelectItem>
+                                   <SelectItem value="closed">Closed</SelectItem>
+                                 </SelectContent>
+                               </Select>
+                               {isSuperAdmin && (
+                                 <Button
+                                   variant="destructive"
+                                   size="sm"
+                                   onClick={() => deleteLead(lead.id)}
+                                 >
+                                   <Trash2 className="w-4 h-4" />
+                                 </Button>
+                               )}
+                             </div>
+                           </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
