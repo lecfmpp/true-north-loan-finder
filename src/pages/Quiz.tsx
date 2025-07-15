@@ -466,40 +466,32 @@ const Quiz = () => {
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-4xl mx-auto">
             <Card className="border-0 shadow-[var(--shadow-card)]">
+              {/* The "Hook" Section */}
               <CardHeader className="text-center bg-gradient-to-r from-primary/5 to-secondary/5 rounded-t-lg">
                 <CardTitle className="text-3xl font-bold font-sans text-primary mb-2">
-                  Okay, good news. Your business profile is exactly what our lending partners look for.
+                  Excellent! Your profile is a strong match. Here's what you're pre-qualified for.
                 </CardTitle>
-                <p className="text-lg text-muted-foreground font-serif max-w-2xl mx-auto">
-                  Stop guessing. Here's a clear look at the loan you'll likely qualify for, based on the numbers you just gave us.
-                </p>
               </CardHeader>
               
-              <CardContent className="p-8 space-y-8">
+              <CardContent className="p-8 space-y-10">
                 {/* Main Results Dashboard */}
                 <div className="bg-gradient-to-br from-secondary/5 to-primary/5 rounded-xl p-8 border border-secondary/20">
                   <div className="grid md:grid-cols-2 gap-8 items-center">
-                    {/* Hero Number */}
+                    {/* The Big Number */}
                     <div className="text-center md:text-left">
                       <div className="text-5xl md:text-6xl font-bold text-primary mb-2">
                         ${quizData.loanAmount[0].toLocaleString()}
                       </div>
                       <p className="text-lg text-muted-foreground font-medium">
-                        Total eligible funding
+                        Estimated Eligible Funding
                       </p>
-                      <div className="mt-4">
-                        <div className={`inline-flex items-center px-4 py-2 rounded-full bg-secondary/10 ${scoreInfo.color}`}>
-                          <CheckCircle className="h-5 w-5 mr-2" />
-                          <span className="font-semibold">{scoreInfo.title}</span>
-                        </div>
-                      </div>
                     </div>
 
-                    {/* Key Metrics Grid */}
+                    {/* The Key Metrics */}
                     <div className="grid grid-cols-2 gap-4">
                       <div className="bg-background/60 rounded-lg p-4 text-center">
                         <div className="text-2xl font-bold text-primary">24-48h</div>
-                        <div className="text-sm text-muted-foreground">Time until it's funded</div>
+                        <div className="text-sm text-muted-foreground">Funding Speed</div>
                       </div>
                       <div className="bg-background/60 rounded-lg p-4 text-center">
                         <div className="text-2xl font-bold text-primary">
@@ -507,93 +499,122 @@ const Quiz = () => {
                            quizData.creditScore === "good" ? "12-18%" :
                            quizData.creditScore === "fair" ? "18-25%" : "25-35%"}
                         </div>
-                        <div className="text-sm text-muted-foreground">What you'll pay (est. rate)</div>
+                        <div className="text-sm text-muted-foreground">Est. Rate</div>
                       </div>
                       <div className="bg-background/60 rounded-lg p-4 text-center col-span-2">
                         <div className="text-2xl font-bold text-primary">
                           ${Math.round((quizData.loanAmount[0] * 0.15) / 12).toLocaleString()}/mo
                         </div>
-                        <div className="text-sm text-muted-foreground">Your estimated monthly payment</div>
+                        <div className="text-sm text-muted-foreground">Est. Payment</div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Lender Introductions */}
+                {/* The "Curated Lender Matches" Section */}
                 <div>
-                  <h3 className="text-2xl font-bold font-sans text-primary mb-2 flex items-center">
-                    <Users className="h-6 w-6 mr-3 text-secondary" />
-                    We'll introduce you to these lenders right now.
+                  <h3 className="text-2xl font-bold font-sans text-primary mb-6 text-center">
+                    Based on your profile, here are your Top 3 matches from our network:
                   </h3>
-                  <p className="text-muted-foreground mb-6 font-serif">
-                    Each one has already said yes to businesses like yours. Here's who's waiting to hear from you:
-                  </p>
                   
-                  <div className="space-y-4">
-                    {getLenderData().map((lender, index) => (
+                  <div className="grid md:grid-cols-3 gap-6">
+                    {getLenderData().slice(0, 3).map((lender, index) => (
                       <Card 
                         key={lender.name}
-                        className={`border-l-4 ${lender.borderColor} bg-gradient-to-r ${lender.bgGradient} ${
-                          index === 0 ? 'ring-2 ring-yellow-400/50 shadow-lg shadow-yellow-400/20' : ''
-                        }`}
+                        className="border-2 border-primary/20 hover:border-primary/40 transition-colors bg-gradient-to-br from-background to-primary/5"
                       >
-                        <CardContent className="p-6">
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <h4 className="font-bold text-primary text-lg">{lender.name}</h4>
-                                <div className="flex items-center gap-1">
-                                  {renderMatchScore(lender.matchPercentage, lender.name)}
-                                </div>
-                                {index === 0 && (
-                                  <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-300">
-                                    Top Match
-                                  </Badge>
-                                )}
-                              </div>
-                              <p className="text-secondary font-semibold">{lender.description}</p>
-                            </div>
-                            <Badge variant={lender.badgeVariant} className="shrink-0">
-                              {lender.badge}
-                            </Badge>
+                        <CardContent className="p-6 text-center">
+                          {/* Lender Logo placeholder */}
+                          <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-lg flex items-center justify-center">
+                            <span className="text-primary font-bold text-lg">
+                              {lender.name.substring(0, 2)}
+                            </span>
                           </div>
-                          <p className="text-muted-foreground">
-                            {lender.details}
+                          
+                          {/* Lender Name */}
+                          <h4 className="font-bold text-primary text-xl mb-2">{lender.name}</h4>
+                          
+                          {/* Match Rating */}
+                          <div className="mb-3">
+                            {index === 0 ? (
+                              <span className="inline-flex items-center px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 font-semibold text-sm">
+                                Top Match (5/5)
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 font-semibold text-sm">
+                                Great Match ({5 - index}/5)
+                              </span>
+                            )}
+                          </div>
+                          
+                          {/* "Best for..." tagline */}
+                          <p className="text-muted-foreground text-sm font-medium">
+                            {index === 0 ? "Best for fast, digital applications for businesses over 6 months old." :
+                             index === 1 ? "Best for alternative financing when banks say no." :
+                             "Best for businesses with strong daily credit card sales."}
                           </p>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-4 text-xs">
-                            {lender.stats.map((stat, statIndex) => (
-                              <div key={statIndex} className="bg-background/60 rounded p-2">
-                                <div className="font-semibold text-primary">{stat.value}</div>
-                                <div className="text-muted-foreground">{stat.label}</div>
-                              </div>
-                            ))}
-                          </div>
                         </CardContent>
                       </Card>
-                     ))}
-                   </div>
-                 </div>
+                    ))}
+                  </div>
+                </div>
 
-                {/* Clear Action Section */}
-                <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-xl p-8 text-center border border-primary/20">
-                  <h3 className="text-2xl font-bold text-primary mb-4">
-                    Ready to move forward?
+                {/* The "Call-to-Action" Section */}
+                <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-8 text-center border-2 border-yellow-200 shadow-lg">
+                  <h3 className="text-3xl font-bold text-primary mb-4">
+                    Unlock Your Official Offers in Under 48 Hours
                   </h3>
-                  <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-                    These lenders are expecting to hear from you. One click sends your details to all of them at once.
+                  <p className="text-muted-foreground mb-6 max-w-3xl mx-auto text-lg leading-relaxed">
+                    Your application is ready. The final step is a quick 15-minute 'Pre-Offer Call' with a funding advisor. 
+                    This call is required to get your official offers from the lenders above.
                   </p>
                   
-                  <div className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto">
-                    <Button size="lg" className="flex-1 bg-secondary hover:bg-secondary/90 text-lg py-6">
-                      Okay, send my details to these lenders
+                  <div className="mb-8">
+                    <h4 className="text-lg font-semibold text-primary mb-4">On this call, we will:</h4>
+                    <div className="grid md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+                      <div className="flex items-start gap-3 text-left">
+                        <CheckCircle className="h-5 w-5 text-green-600 mt-1 shrink-0" />
+                        <div>
+                          <p className="font-semibold text-primary">Verify Your Details</p>
+                          <p className="text-sm text-muted-foreground">A quick confirmation to ensure accuracy.</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3 text-left">
+                        <CheckCircle className="h-5 w-5 text-green-600 mt-1 shrink-0" />
+                        <div>
+                          <p className="font-semibold text-primary">Finalize Your Funding Needs</p>
+                          <p className="text-sm text-muted-foreground">We'll confirm the numbers for your official offers.</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3 text-left">
+                        <CheckCircle className="h-5 w-5 text-green-600 mt-1 shrink-0" />
+                        <div>
+                          <p className="font-semibold text-primary">Outline Required Documents</p>
+                          <p className="text-sm text-muted-foreground">We'll tell you exactly which simple documents to have ready (if any).</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Primary CTA Button */}
+                  <div className="mb-4">
+                    <Button 
+                      size="lg" 
+                      className="bg-yellow-500 hover:bg-yellow-600 text-white text-xl py-6 px-12 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all"
+                    >
+                      Book My 15-Min Pre-Offer Call
                     </Button>
                   </div>
                   
-                  <div className="mt-6">
-                    <button className="text-primary hover:text-primary/80 underline text-sm font-medium">
-                      Have a question before you move forward? Chat with us.
-                    </button>
-                  </div>
+                  {/* Reassuring Sub-text */}
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Yes, this call is required to receive your official lender offers.
+                  </p>
+                  
+                  {/* Secondary CTA Link */}
+                  <button className="text-primary hover:text-primary/80 underline text-sm font-medium">
+                    Have a question before booking? Chat with us now.
+                  </button>
                 </div>
 
                 <div className="text-center text-sm text-muted-foreground border-t pt-6">
