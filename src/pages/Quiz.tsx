@@ -459,7 +459,7 @@ const Quiz = () => {
         responseId: savedResponse.id
       });
       
-      window.location.href = `/results?${resultsUrl.toString()}`;
+      window.location.href = `/results/${savedResponse.id}?${resultsUrl.toString()}`;
       
     } catch (error) {
       console.error('Error saving quiz response:', error);

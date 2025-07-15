@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,47 +22,87 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Results = () => {
   const [searchParams] = useSearchParams();
+  const { responseId } = useParams();
   const navigate = useNavigate();
   const [showBooking, setShowBooking] = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
   const [bookingDetails, setBookingDetails] = useState<any>(null);
+  const [quizData, setQuizData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Get quiz data from URL params
+  // Get quiz data from URL params or fetch from database
   const loanAmount = parseInt(searchParams.get('amount') || '50000');
   const name = searchParams.get('name') || '';
   const email = searchParams.get('email') || '';
   const phone = searchParams.get('phone') || '';
   const score = parseInt(searchParams.get('score') || '75');
-  const quizResponseId = searchParams.get('responseId') || '';
+  const quizResponseId = responseId || searchParams.get('responseId') || '';
 
-  // Redirect if missing essential data
+  // Fetch quiz data if we have responseId but missing other data
   useEffect(() => {
-    if (!name || !email || !score) {
+    const fetchQuizData = async () => {
+      if (quizResponseId && (!name || !email)) {
+        try {
+          const { data, error } = await supabase
+            .from('quiz_responses')
+            .select('*')
+            .eq('id', quizResponseId)
+            .single();
+
+          if (error) throw error;
+          
+          if (data) {
+            setQuizData(data);
+          }
+        } catch (error) {
+          console.error('Error fetching quiz data:', error);
+          navigate('/loan-estimator');
+        }
+      }
+      setLoading(false);
+    };
+
+    fetchQuizData();
+  }, [quizResponseId, name, email, navigate]);
+
+  // Redirect if missing essential data and can't fetch it
+  useEffect(() => {
+    if (!loading && !quizResponseId) {
       navigate('/loan-estimator');
     }
-  }, [name, email, score, navigate]);
+  }, [loading, quizResponseId, navigate]);
 
   const calculateLoanTerms = () => {
+    const workingScore = quizData?.score || score;
+    const workingAmount = quizData?.loan_amount || loanAmount;
+    
     let rate = 8.5;
     let speed = "3-5 business days";
     
-    if (score >= 80) {
+    if (workingScore >= 80) {
       rate = 6.5;
       speed = "24-48 hours";
-    } else if (score >= 70) {
+    } else if (workingScore >= 70) {
       rate = 7.5;
       speed = "2-3 business days";
     }
 
-    const monthlyPayment = (loanAmount * (rate / 100 / 12)) / (1 - Math.pow(1 + (rate / 100 / 12), -36));
+    const monthlyPayment = (workingAmount * (rate / 100 / 12)) / (1 - Math.pow(1 + (rate / 100 / 12), -36));
 
     return {
-      estimatedFunding: loanAmount,
+      estimatedFunding: workingAmount,
       fundingSpeed: speed,
       estimatedRate: `${rate}%`,
       estimatedPayment: `$${Math.round(monthlyPayment).toLocaleString()}/mo`
     };
   };
+
+  // Use quiz data from database if available, otherwise use URL params
+  const finalName = quizData?.name || name;
+  const finalEmail = quizData?.email || email;
+  const finalPhone = quizData?.phone || phone;
+  const finalScore = quizData?.score || score;
+  const finalLoanAmount = quizData?.loan_amount || loanAmount;
 
   const loanTerms = calculateLoanTerms();
 
@@ -162,6 +202,17 @@ const Results = () => {
           </div>
         </div>
         <Footer />
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+          <p>Loading your results...</p>
+        </div>
       </div>
     );
   }
@@ -317,9 +368,9 @@ const Results = () => {
                 <BookingCalendar 
                   onBookingConfirmed={handleBookingConfirmed}
                   userInfo={{
-                    name,
-                    email,
-                    phone,
+                    name: finalName,
+                    email: finalEmail,
+                    phone: finalPhone,
                     quizResponseId
                   }}
                 />
