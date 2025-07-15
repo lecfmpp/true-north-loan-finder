@@ -19,6 +19,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BookingCalendar from "@/components/BookingCalendar";
 import { supabase } from "@/integrations/supabase/client";
+import merchantGrowthLogo from "@/assets/merchant-growth-logo.png";
+import greenboxCapitalLogo from "@/assets/greenbox-capital-logo.png";
 
 const Results = () => {
   const [searchParams] = useSearchParams();
@@ -117,14 +119,14 @@ const Results = () => {
     {
       id: 2,
       name: "Merchant Growth",
-      logo: "/src/assets/merchant-growth-logo.png",
+      logo: merchantGrowthLogo,
       matchRating: "4/5", 
       tagline: "Ideal for businesses with consistent monthly revenue streams."
     },
     {
       id: 3,
       name: "Greenbox Capital",
-      logo: "/src/assets/greenbox-capital-logo.png",
+      logo: greenboxCapitalLogo,
       matchRating: "4/5",
       tagline: "Perfect for established businesses seeking flexible terms."
     }
@@ -265,20 +267,20 @@ const Results = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {topLenders.map((lender) => (
-                    <Card key={lender.id} className="text-center">
+                    <Card key={lender.id} className="text-center bg-slate-800 border-slate-700 text-white animate-fade-in">
                       <CardContent className="p-6 space-y-4">
                         <div className="h-16 flex items-center justify-center">
                           <img 
                             src={lender.logo} 
                             alt={`${lender.name} logo`}
-                            className="max-h-12 max-w-full object-contain"
+                            className="max-h-12 max-w-full object-contain filter brightness-0 invert"
                           />
                         </div>
-                        <h3 className="font-bold text-lg">{lender.name}</h3>
+                        <h3 className="font-bold text-lg text-white">{lender.name}</h3>
                         <Badge className="bg-green-100 text-green-800">
                           Top Match ({lender.matchRating})
                         </Badge>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-gray-300">
                           {lender.tagline}
                         </p>
                       </CardContent>
