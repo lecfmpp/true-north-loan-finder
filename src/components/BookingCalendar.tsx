@@ -51,11 +51,16 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({ onBookingConfirmed, u
         .select('*')
         .eq('date', dateStr)
         .eq('is_available', true)
-        .filter('current_bookings', 'lt', 'max_bookings')
         .order('time');
 
       if (error) throw error;
-      setAvailableSlots(data || []);
+      
+      // Filter slots where current_bookings < max_bookings on the client side
+      const availableSlots = (data || []).filter(slot => 
+        slot.current_bookings < slot.max_bookings
+      );
+      
+      setAvailableSlots(availableSlots);
     } catch (error) {
       console.error('Error fetching available slots:', error);
       toast({

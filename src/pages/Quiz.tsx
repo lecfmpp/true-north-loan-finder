@@ -90,7 +90,7 @@ const isValidWebsiteUrl = (url: string) => {
   if (!url.trim()) return true; // Optional field
   
   try {
-    const validUrl = new URL(formatWebsiteUrl(url));
+    const validUrl = new URL(url.startsWith('http') ? url : formatWebsiteUrl(url));
     // Check if it's a valid domain pattern
     return /^https?:\/\/[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(validUrl.href);
   } catch {
