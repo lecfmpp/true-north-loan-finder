@@ -397,24 +397,24 @@ const Partners = () => {
                             />
                           ) : (
                             <div className="w-6 h-6 rounded bg-primary-foreground/10 flex items-center justify-center shrink-0">
-                              <lender.icon className="h-3 w-3 text-primary-foreground" />
+                              <lender.icon className="h-3 w-3 text-slate-800" />
                             </div>
                           )}
-                          <span className="text-xs font-medium text-primary-foreground truncate">{lender.name}</span>
+                          <span className="text-xs font-medium text-slate-800 truncate">{lender.name}</span>
                         </div>
                       </TableCell>
                       <TableCell className="py-3 px-3 border-r border-primary/10">
-                        <Badge variant="secondary" className="text-xs whitespace-nowrap bg-primary-foreground/10 text-primary-foreground border-primary-foreground/20">
+                        <Badge variant="secondary" className="text-xs whitespace-nowrap bg-primary-foreground/10 text-slate-800 border-primary-foreground/20">
                           {lender.badge}
                         </Badge>
                       </TableCell>
-                      <TableCell className="py-3 px-3 text-xs font-medium text-primary-foreground border-r border-primary/10">
+                      <TableCell className="py-3 px-3 text-xs font-medium text-slate-800 border-r border-primary/10">
                         <div className="whitespace-nowrap">{lender.fundingRange}</div>
                       </TableCell>
-                      <TableCell className="py-3 px-3 text-xs text-primary-foreground border-r border-primary/10">
+                      <TableCell className="py-3 px-3 text-xs text-slate-800 border-r border-primary/10">
                         <div className="whitespace-nowrap">{lender.minTimeInBusiness || "Varies*"}</div>
                       </TableCell>
-                      <TableCell className="py-3 px-3 text-xs text-primary-foreground border-r border-primary/10">
+                      <TableCell className="py-3 px-3 text-xs text-slate-800 border-r border-primary/10">
                         <div className="whitespace-nowrap">{lender.minRevenue || "Varies*"}</div>
                       </TableCell>
                       <TableCell className="py-3 px-3 text-xs">
