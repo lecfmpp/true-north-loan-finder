@@ -68,8 +68,8 @@ export function ChatContactForm({ onSubmit, onCancel }: ContactFormProps) {
   };
 
   return (
-    <div className="w-full max-h-96 overflow-y-auto">
-      <div className="p-3 border-b">
+    <div className="w-full">
+      <div className="p-2 border-b">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <MessageSquare size={18} />
@@ -89,11 +89,11 @@ export function ChatContactForm({ onSubmit, onCancel }: ContactFormProps) {
           We'll have a specialist contact you soon.
         </p>
       </div>
-      <div className="p-3">
+      <div className="p-2">
         <form onSubmit={handleSubmit} className="space-y-2">
-          <div className="space-y-1">
-            <Label htmlFor="contact-name" className="flex items-center gap-1 text-xs">
-              <User size={12} />
+          <div>
+            <Label htmlFor="contact-name" className="flex items-center gap-1 text-xs mb-1">
+              <User size={10} />
               Name *
             </Label>
             <Input
@@ -103,13 +103,13 @@ export function ChatContactForm({ onSubmit, onCancel }: ContactFormProps) {
               placeholder="Your full name"
               required
               disabled={isSubmitting}
-              className="h-8 text-sm"
+              className="h-7 text-xs"
             />
           </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="contact-email" className="flex items-center gap-1 text-xs">
-              <Mail size={12} />
+          <div>
+            <Label htmlFor="contact-email" className="flex items-center gap-1 text-xs mb-1">
+              <Mail size={10} />
               Email *
             </Label>
             <Input
@@ -120,13 +120,13 @@ export function ChatContactForm({ onSubmit, onCancel }: ContactFormProps) {
               placeholder="your.email@example.com"
               required
               disabled={isSubmitting}
-              className="h-8 text-sm"
+              className="h-7 text-xs"
             />
           </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="contact-phone" className="flex items-center gap-1 text-xs">
-              <Phone size={12} />
+          <div>
+            <Label htmlFor="contact-phone" className="flex items-center gap-1 text-xs mb-1">
+              <Phone size={10} />
               Phone (Optional)
             </Label>
             <Input
@@ -136,38 +136,39 @@ export function ChatContactForm({ onSubmit, onCancel }: ContactFormProps) {
               onChange={(e) => setPhone(e.target.value)}
               placeholder="(555) 123-4567"
               disabled={isSubmitting}
-              className="h-8 text-sm"
+              className="h-7 text-xs"
             />
           </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="contact-message" className="text-xs">
-              Brief description of your financing needs
+          <div>
+            <Label htmlFor="contact-message" className="text-xs mb-1 block">
+              Brief description
             </Label>
             <Textarea
               id="contact-message"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Tell us about your business and financing requirements..."
+              placeholder="Financing requirements..."
               rows={2}
               disabled={isSubmitting}
-              className="text-sm resize-none"
+              className="text-xs resize-none min-h-[40px]"
             />
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-1 pt-1">
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1"
+              className="flex-1 h-7 text-xs"
             >
-              {isSubmitting ? 'Submitting...' : 'Submit Request'}
+              {isSubmitting ? 'Submitting...' : 'Submit'}
             </Button>
             <Button
               type="button"
               variant="outline"
               onClick={onCancel}
               disabled={isSubmitting}
+              className="h-7 text-xs px-3"
             >
               Cancel
             </Button>
