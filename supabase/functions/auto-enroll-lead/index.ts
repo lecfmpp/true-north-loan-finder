@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,10 +15,8 @@ interface AutoEnrollRequest {
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const resendApiKey = Deno.env.get("RESEND_API_KEY")!;
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
-const resend = new Resend(resendApiKey);
 
 const SUPERADMIN_EMAIL = "lecfmpp@gmail.com";
 
@@ -91,35 +88,22 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Successfully enrolled ${email} in ${sequenceType} sequence`);
 
-    // Send notification to superadmin for new leads using existing email template system
+    // Send the same lead notification email that's used in lead management to admin
     if (sequenceType === 'follow_up' && userData) {
       try {
         console.log(`Sending lead notification to superadmin for ${email}`);
         
-        // Use existing email sequence system to send admin notification
-        const adminNotificationResponse = await supabase.functions.invoke('send-email-sequence', {
+        // Use the same send-lead-email function but send to admin instead
+        const leadNotificationResponse = await supabase.functions.invoke('send-lead-email', {
           body: {
-            type: 'admin_notification',
-            userEmail: SUPERADMIN_EMAIL,
-            userName: 'Admin',
-            templateId: '869d296d-531c-42e1-89ac-b98e4636e6ed', // Admin notification template
-            variables: {
-              user_name: name,
-              user_email: email,
-              user_phone: userData.phone || 'Not provided',
-              loan_amount: userData.loan_amount?.toLocaleString() || 'Not specified',
-              monthly_revenue: userData.monthly_revenue?.toLocaleString() || 'Not specified',
-              credit_score: userData.credit_score || 'Not provided',
-              time_in_business: userData.time_in_business || 'Not provided',
-              use_of_funds: userData.use_of_funds || 'Not specified',
-              website: userData.website || 'Not provided',
-              score: userData.score || 'Not calculated'
-            }
+            leadId: userData.responseId,
+            recipientEmail: SUPERADMIN_EMAIL,
+            recipientName: 'Admin'
           }
         });
 
-        if (adminNotificationResponse.error) {
-          console.error('Error sending admin notification via email sequence:', adminNotificationResponse.error);
+        if (leadNotificationResponse.error) {
+          console.error('Error sending admin notification via send-lead-email:', leadNotificationResponse.error);
         } else {
           console.log(`Lead notification sent to superadmin successfully`);
         }

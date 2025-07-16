@@ -29,26 +29,33 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // First, verify the recipient is an approved lender/broker
-    const { data: recipient, error: recipientError } = await supabase
-      .from('lender_broker_applications')
-      .select('id, applicant_name, applicant_email, status')
-      .eq('applicant_email', recipientEmail)
-      .eq('status', 'approved')
-      .single();
+    // Check if this is an admin notification (bypass partner verification)
+    const isAdminNotification = recipientEmail === 'lecfmpp@gmail.com';
+    
+    if (!isAdminNotification) {
+      // Only verify partner status for non-admin recipients
+      const { data: recipient, error: recipientError } = await supabase
+        .from('lender_broker_applications')
+        .select('id, applicant_name, applicant_email, status')
+        .eq('applicant_email', recipientEmail)
+        .eq('status', 'approved')
+        .single();
 
-    if (recipientError || !recipient) {
-      console.error('Recipient is not an approved partner:', recipientError);
-      return new Response(
-        JSON.stringify({ 
-          error: 'Recipient is not an approved partner',
-          details: 'Only approved lenders and brokers can receive lead communications'
-        }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      if (recipientError || !recipient) {
+        console.error('Recipient is not an approved partner:', recipientError);
+        return new Response(
+          JSON.stringify({ 
+            error: 'Recipient is not an approved partner',
+            details: 'Only approved lenders and brokers can receive lead communications'
+          }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log(`Email recipient verified as approved partner: ${recipient.applicant_name}`);
+    } else {
+      console.log(`Sending admin notification to: ${recipientEmail}`);
     }
-
-    console.log(`Email recipient verified as approved partner: ${recipient.applicant_name}`);
 
     // Fetch lead information
     const { data: lead, error: leadError } = await supabase
