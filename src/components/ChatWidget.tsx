@@ -72,7 +72,7 @@ export function ChatWidget() {
       const { data, error } = await supabase
         .from('chat_widget_config')
         .select('*')
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching config:', error);
