@@ -341,6 +341,23 @@ const Results = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 md:space-y-6 text-center">
+                  <div className="space-y-3 md:space-y-4 max-w-2xl mx-auto px-2">
+                    <Button 
+                      size="lg" 
+                      onClick={handleBookCall}
+                      className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm sm:text-base md:text-xl py-4 md:py-6 px-4 md:px-12 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all w-full min-h-[56px] md:min-h-[72px] flex items-center justify-center"
+                    >
+                      <Calendar className="w-4 h-4 md:w-5 md:h-5 mr-2 flex-shrink-0" />
+                      <span className="text-center leading-tight">
+                        Book My 15-Min<br className="sm:hidden" /> Pre-Offer Call
+                      </span>
+                    </Button>
+                    
+                    <p className="text-xs md:text-sm text-muted-foreground">
+                      Yes, this call is required to receive your official lender offers.
+                    </p>
+                  </div>
+
                   <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-3xl mx-auto px-2">
                     Your application is ready. The final step is a quick 15-minute 'Pre-Offer Call' with a funding advisor. 
                     This call is required to get your official offers from the lenders above.
@@ -363,34 +380,17 @@ const Results = () => {
                       </div>
                     </div>
                   </div>
-
-                  <div className="space-y-3 md:space-y-4 max-w-2xl mx-auto px-2">
-                    <Button 
-                      size="lg" 
-                      onClick={handleBookCall}
-                      className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm sm:text-base md:text-xl py-4 md:py-6 px-4 md:px-12 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all w-full min-h-[56px] md:min-h-[72px] flex items-center justify-center"
-                    >
-                      <Calendar className="w-4 h-4 md:w-5 md:h-5 mr-2 flex-shrink-0" />
-                      <span className="text-center leading-tight">
-                        Book My 15-Min<br className="sm:hidden" /> Pre-Offer Call
-                      </span>
-                    </Button>
                     
-                    <p className="text-xs md:text-sm text-muted-foreground">
-                      Yes, this call is required to receive your official lender offers.
-                    </p>
-                    
-                    <Button 
-                      variant="link" 
-                      onClick={handleChatWithUs}
-                      className="text-blue-600 hover:text-blue-800 text-center leading-relaxed px-2 text-xs md:text-sm"
-                    >
-                      <MessageCircle className="w-3 h-3 md:w-4 md:h-4 mr-2 flex-shrink-0" />
-                      <span className="break-words">
-                        Have a question before booking? Chat with us now.
-                      </span>
-                    </Button>
-                  </div>
+                  <Button 
+                    variant="link" 
+                    onClick={handleChatWithUs}
+                    className="text-blue-600 hover:text-blue-800 text-center leading-relaxed px-2 text-xs md:text-sm"
+                  >
+                    <MessageCircle className="w-3 h-3 md:w-4 md:h-4 mr-2 flex-shrink-0" />
+                    <span className="break-words">
+                      Have a question before booking? Chat with us now.
+                    </span>
+                  </Button>
                 </CardContent>
               </Card>
 
