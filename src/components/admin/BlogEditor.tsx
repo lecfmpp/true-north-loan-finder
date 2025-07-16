@@ -265,7 +265,7 @@ const BlogEditor = ({ post, onSave, onCancel }: BlogEditorProps) => {
               Back
             </Button>
             <div>
-              <h2 className="text-2xl font-bold text-primary">
+              <h2 className="text-lg sm:text-xl font-bold text-primary">
                 {post?.id ? 'Edit Post' : 'New Post'}
               </h2>
               <p className="text-muted-foreground">

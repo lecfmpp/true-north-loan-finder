@@ -370,7 +370,7 @@ const SocialProofManagement = () => {
 
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-semibold">Social Proof Notifications</h2>
+          <h2 className="text-lg sm:text-xl font-semibold">Social Proof Notifications</h2>
           <p className="text-muted-foreground">
             Manage the social proof popups that appear on your website
           </p>

@@ -466,8 +466,8 @@ const AvailableTimesManagement = () => {
       {/* Recent Bookings Section - Moved to Top */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Users className="h-4 w-4 sm:h-5 sm:w-5" />
             Recent Bookings ({bookings.length})
           </CardTitle>
           <CardDescription>
@@ -539,7 +539,7 @@ const AvailableTimesManagement = () => {
       {/* Current Week Time Slots Section */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
             <CalendarIcon className="h-5 w-5" />
             This Week's Time Slots ({timeSlots.length})
           </CardTitle>

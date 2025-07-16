@@ -213,7 +213,7 @@ const BlogManagement = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-primary">Blog Management</h2>
+          <h2 className="text-lg sm:text-xl font-bold text-primary">Blog Management</h2>
           <p className="text-muted-foreground">Create and manage blog posts</p>
         </div>
           <Button onClick={() => setShowEditor(true)}>
