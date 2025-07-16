@@ -13,7 +13,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, MessageCircle, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign, Menu } from 'lucide-react';
+import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, MessageCircle, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -81,7 +81,6 @@ const Admin = () => {
   const [leadToDelete, setLeadToDelete] = useState<string | null>(null);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [leadBookings, setLeadBookings] = useState<Array<{id: string, booking_status: string}>>([]);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, isAdmin, isSuperAdmin, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -1003,119 +1002,117 @@ const Admin = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
-      {/* Admin Dashboard Header */}
-      <div className="border-b bg-background sticky top-[80px] z-40">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-primary">Admin Dashboard</h1>
-            <div className="flex items-center gap-4">
-              {/* Mobile Menu Toggle */}
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="lg:hidden"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-              <Button onClick={signOut} variant="outline">
+      <div className="flex">
+        {/* Desktop Sidebar - Always visible on large screens */}
+        <aside className="hidden lg:flex lg:flex-shrink-0">
+          <div className="flex flex-col w-64 border-r bg-card">
+            {/* Admin Header for Desktop */}
+            <div className="flex items-center justify-between p-4 border-b bg-background">
+              <h1 className="text-xl font-bold text-primary">Admin Dashboard</h1>
+              <Button onClick={signOut} variant="outline" size="sm">
                 <LogOut className="w-4 h-4 mr-2" />
                 Sign Out
               </Button>
             </div>
+            
+            {/* Navigation Menu */}
+            <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+              <div className="text-sm font-medium text-muted-foreground mb-4">Navigation</div>
+              {menuItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.value;
+                
+                return (
+                  <button
+                    key={item.value}
+                    onClick={() => setActiveTab(item.value)}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                      isActive 
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span className="flex-1">{item.title}</span>
+                    {item.count !== undefined && (
+                      <div className={`flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium rounded ${
+                        isActive 
+                          ? 'bg-primary-foreground text-primary' 
+                          : 'bg-green-500 text-white'
+                      }`}>
+                        {item.count}
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
           </div>
+        </aside>
 
-          {/* Desktop Top Menu */}
-          <div className="hidden lg:flex items-center gap-1 mt-4 border-b -mb-4">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.value;
+        {/* Mobile Header - Visible on small screens */}
+        <div className="lg:hidden w-full">
+          <div className="border-b h-16 flex items-center px-4 bg-background">
+            <SidebarProvider>
+              <SidebarTrigger className="mr-4" />
+              <div className="flex-1">
+                <h1 className="text-xl font-bold text-primary">Admin Dashboard</h1>
+              </div>
+              <Button onClick={signOut} variant="outline" size="sm">
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
               
-              return (
-                <button
-                  key={item.value}
-                  onClick={() => setActiveTab(item.value)}
-                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                    isActive 
-                      ? 'border-primary text-primary bg-primary/5' 
-                      : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground'
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span>{item.title}</span>
-                  {item.count !== undefined && (
-                    <div className="ml-1 flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-white bg-primary rounded-full">
-                      {item.count}
-                    </div>
-                  )}
-                </button>
-              );
-            })}
+              {/* Mobile Sidebar Overlay */}
+              <Sidebar collapsible="icon" className="lg:hidden">
+                <SidebarContent className="pt-4">
+                  <SidebarGroup>
+                    <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+                    <SidebarGroupContent>
+                      <SidebarMenu>
+                        {menuItems.map((item) => {
+                          const Icon = item.icon;
+                          const isActive = activeTab === item.value;
+                          
+                          return (
+                            <SidebarMenuItem key={item.value}>
+                              <SidebarMenuButton
+                                asChild
+                                isActive={isActive}
+                                onClick={() => setActiveTab(item.value)}
+                              >
+                                <button className="flex items-center gap-2 w-full">
+                                  <Icon className="h-4 w-4" />
+                                  <span>{item.title}</span>
+                                  {item.count !== undefined && (
+                                    <div className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-blue-900 bg-green-500 rounded">
+                                      {item.count}
+                                    </div>
+                                  )}
+                                </button>
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                          );
+                        })}
+                      </SidebarMenu>
+                    </SidebarGroupContent>
+                  </SidebarGroup>
+                </SidebarContent>
+              </Sidebar>
+            </SidebarProvider>
           </div>
         </div>
+
+        {/* Main Content Area */}
+        <main className="flex-1 min-w-0">
+          <div className="lg:hidden border-b h-16"></div> {/* Spacer for mobile header */}
+          <div className="p-6">
+            <div className="max-w-full">
+              {renderContent()}
+            </div>
+          </div>
+        </main>
       </div>
-
-      {/* Mobile Sidebar */}
-      <SidebarProvider>
-        <div className="lg:hidden">
-          <Sidebar 
-            variant="floating" 
-            className={`${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-200 ease-in-out fixed inset-y-0 left-0 z-50 w-64 border-r bg-background`}
-          >
-            <SidebarContent className="pt-4">
-              <SidebarGroup>
-                <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-                <SidebarGroupContent>
-                  <SidebarMenu>
-                    {menuItems.map((item) => {
-                      const Icon = item.icon;
-                      const isActive = activeTab === item.value;
-                      
-                      return (
-                        <SidebarMenuItem key={item.value}>
-                          <SidebarMenuButton
-                            asChild
-                            isActive={isActive}
-                            onClick={() => {
-                              setActiveTab(item.value);
-                              setIsMobileMenuOpen(false);
-                            }}
-                          >
-                            <button className="flex items-center gap-2 w-full">
-                              <Icon className="h-4 w-4" />
-                              <span>{item.title}</span>
-                              {item.count !== undefined && (
-                                <div className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-white bg-primary rounded-full">
-                                  {item.count}
-                                </div>
-                              )}
-                            </button>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      );
-                    })}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </SidebarGroup>
-            </SidebarContent>
-          </Sidebar>
-          
-          {/* Mobile Overlay */}
-          {isMobileMenuOpen && (
-            <div 
-              className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
-              onClick={() => setIsMobileMenuOpen(false)}
-            />
-          )}
-        </div>
-      </SidebarProvider>
-
-      {/* Main Content */}
-      <main className="p-6">
-        <div className="max-w-full">
-          {renderContent()}
-        </div>
-      </main>
       
       <Footer />
 
