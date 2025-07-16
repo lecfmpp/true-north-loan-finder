@@ -121,7 +121,7 @@ function replaceVariables(text: string, userName: string, variables: any): strin
     .replace(/\[First Name\]/g, userName)
     .replace(/\[Date\]/g, variables.callDate || '')
     .replace(/\[Time\]/g, variables.callTime || '')
-    .replace(/\[Meeting Link\]/g, variables.meetingLink || '')
+    .replace(/\[Phone Number\]/g, variables.userPhone || '')
     .replace(/\[Book Your Call\]/g, 'https://calendly.com/truenorth-business-loan');
 }
 

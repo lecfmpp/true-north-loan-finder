@@ -13,7 +13,7 @@ interface EmailRequest {
   userName: string;
   callDate?: string;
   callTime?: string;
-  meetingLink?: string;
+  userPhone?: string;
 }
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
@@ -27,7 +27,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { type, userEmail, userName, callDate, callTime, meetingLink }: EmailRequest = await req.json();
+    const { type, userEmail, userName, callDate, callTime, userPhone }: EmailRequest = await req.json();
 
     console.log(`Processing email sequence enrollment for ${userEmail}, type: ${type}`);
 
@@ -60,7 +60,7 @@ const handler = async (req: Request): Promise<Response> => {
       sequence_id: sequence.id,
       user_email: userEmail,
       user_name: userName,
-      enrollment_data: { callDate, callTime, meetingLink },
+      enrollment_data: { callDate, callTime, userPhone },
       status: 'active'
     };
 
@@ -80,7 +80,7 @@ const handler = async (req: Request): Promise<Response> => {
     const immediateTemplates = templates.filter(t => t.delay_hours === 0);
     
     for (const template of immediateTemplates) {
-      await sendEmail(enrollment.id, template, userEmail, userName, { callDate, callTime, meetingLink });
+      await sendEmail(enrollment.id, template, userEmail, userName, { callDate, callTime, userPhone });
     }
 
     // Schedule delayed emails
@@ -108,7 +108,7 @@ const handler = async (req: Request): Promise<Response> => {
           enrollment_id: enrollment.id,
           template_id: template.id,
           recipient_email: userEmail,
-          subject_line: replaceVariables(template.subject_line, userName, { callDate, callTime, meetingLink }),
+          subject_line: replaceVariables(template.subject_line, userName, { callDate, callTime, userPhone }),
           status: 'scheduled',
           sent_at: scheduledTime.toISOString()
         });
@@ -196,7 +196,7 @@ function replaceVariables(text: string, userName: string, variables: any): strin
     .replace(/\[First Name\]/g, userName)
     .replace(/\[Date\]/g, variables.callDate || '')
     .replace(/\[Time\]/g, variables.callTime || '')
-    .replace(/\[Meeting Link\]/g, variables.meetingLink || '')
+    .replace(/\[Phone Number\]/g, variables.userPhone || '')
     .replace(/\[Book Your Call\]/g, 'https://calendly.com/truenorth-business-loan');
 }
 

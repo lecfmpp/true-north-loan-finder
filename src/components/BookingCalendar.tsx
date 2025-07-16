@@ -157,7 +157,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({ onBookingConfirmed, u
             userName: userInfo.name.split(' ')[0], // First name
             callDate: appointmentDate,
             callTime: appointmentTime,
-            meetingLink: 'https://meet.google.com/your-meeting-link' // You'll want to generate this
+            userPhone: userInfo.phone // Include phone for the call
           }
         });
       } catch (emailError) {
