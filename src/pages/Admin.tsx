@@ -999,7 +999,7 @@ const Admin = () => {
   };
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
       <div className="dashboard-layout">
         {/* Header */}
         <header className="app-header border-b bg-background">
