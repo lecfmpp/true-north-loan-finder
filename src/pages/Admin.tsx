@@ -999,13 +999,25 @@ const Admin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      
-      <SidebarProvider>
-        <div className="flex min-h-[calc(100vh-160px)]">
+    <SidebarProvider>
+      <div className="min-h-screen bg-background w-full">
+        <Header />
+        
+        {/* Header with sidebar trigger and sign out */}
+        <div className="border-b h-16 flex items-center px-4">
+          <SidebarTrigger className="mr-4" />
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold text-primary">Admin Dashboard</h1>
+          </div>
+          <Button onClick={signOut} variant="outline">
+            <LogOut className="w-4 h-4 mr-2" />
+            Sign Out
+          </Button>
+        </div>
+
+        <div className="flex w-full">
           <Sidebar collapsible="icon" className="border-r">
-            <SidebarContent className="pt-4">
+            <SidebarContent>
               <SidebarGroup>
                 <SidebarGroupLabel>Navigation</SidebarGroupLabel>
                 <SidebarGroupContent>
@@ -1040,31 +1052,13 @@ const Admin = () => {
             </SidebarContent>
           </Sidebar>
 
-          <div className="flex flex-col flex-1">
-            {/* Admin Header with sidebar trigger and sign out */}
-            <div className="border-b h-16 flex items-center px-4 bg-background shrink-0 sticky top-[80px] z-40">
-              <SidebarTrigger className="mr-4" />
-              <div className="flex-1">
-                <h1 className="text-2xl font-bold text-primary">Admin Dashboard</h1>
-              </div>
-              <Button onClick={signOut} variant="outline">
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </Button>
-            </div>
-
-            <main className="flex-1 p-6">
-              <div className="max-w-full">
-                {renderContent()}
-              </div>
-            </main>
-          </div>
+          <main className="flex-1 p-6">
+            {renderContent()}
+          </main>
         </div>
-      </SidebarProvider>
-      
-      <Footer />
+        <Footer />
 
-      {/* Delete Confirmation Modal */}
+        {/* Delete Confirmation Modal */}
         <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
@@ -1111,7 +1105,8 @@ const Admin = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-    </div>
+      </div>
+    </SidebarProvider>
   );
 };
 
