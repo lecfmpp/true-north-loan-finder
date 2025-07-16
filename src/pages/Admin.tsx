@@ -837,7 +837,7 @@ const Admin = () => {
     }
   };
   return <SidebarProvider>
-      <div className="min-h-screen bg-background w-full">
+      <div className="min-h-screen bg-background w-full overflow-x-hidden">
         <Header />
         
         {/* Header with sidebar trigger and sign out */}
@@ -852,7 +852,7 @@ const Admin = () => {
           </Button>
         </div>
 
-        <div className="flex w-full">
+        <div className="flex w-full min-w-0">
           <Sidebar collapsible="icon" className="border-r">
             <SidebarContent>
               <SidebarGroup>
@@ -880,8 +880,10 @@ const Admin = () => {
             </SidebarContent>
           </Sidebar>
 
-          <main className="flex-1 p-6">
-            {renderContent()}
+          <main className="flex-1 p-6 overflow-x-auto min-w-0">
+            <div className="min-w-max">
+              {renderContent()}
+            </div>
           </main>
         </div>
         <Footer />
