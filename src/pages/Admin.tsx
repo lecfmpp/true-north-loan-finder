@@ -1000,22 +1000,10 @@ const Admin = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-background w-full">
+      <div className="min-h-screen bg-background flex flex-col overflow-x-hidden">
         <Header />
         
-        {/* Header with sidebar trigger and sign out */}
-        <div className="border-b h-16 flex items-center px-4">
-          <SidebarTrigger className="mr-4" />
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold text-primary">Admin Dashboard</h1>
-          </div>
-          <Button onClick={signOut} variant="outline">
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </Button>
-        </div>
-
-        <div className="flex w-full">
+        <div className="flex flex-1 overflow-hidden">
           <Sidebar collapsible="icon" className="border-r">
             <SidebarContent>
               <SidebarGroup>
@@ -1052,10 +1040,27 @@ const Admin = () => {
             </SidebarContent>
           </Sidebar>
 
-          <main className="flex-1 p-6">
-            {renderContent()}
-          </main>
+          <div className="flex flex-col flex-1 overflow-hidden">
+            {/* Header with sidebar trigger and sign out */}
+            <div className="border-b h-16 flex items-center px-4 bg-background">
+              <SidebarTrigger className="mr-4" />
+              <div className="flex-1">
+                <h1 className="text-2xl font-bold text-primary">Admin Dashboard</h1>
+              </div>
+              <Button onClick={signOut} variant="outline">
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
+
+            <main className="flex-1 p-6 overflow-auto">
+              <div className="max-w-full">
+                {renderContent()}
+              </div>
+            </main>
+          </div>
         </div>
+        
         <Footer />
 
         {/* Delete Confirmation Modal */}
