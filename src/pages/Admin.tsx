@@ -13,7 +13,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, MessageCircle, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign } from 'lucide-react';
+import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, MessageCircle, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign, Menu } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -81,6 +81,7 @@ const Admin = () => {
   const [leadToDelete, setLeadToDelete] = useState<string | null>(null);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [leadBookings, setLeadBookings] = useState<Array<{id: string, booking_status: string}>>([]);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, isAdmin, isSuperAdmin, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -1002,9 +1003,65 @@ const Admin = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
+      {/* Admin Dashboard Header */}
+      <div className="border-b bg-background sticky top-[80px] z-40">
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-primary">Admin Dashboard</h1>
+            <div className="flex items-center gap-4">
+              {/* Mobile Menu Toggle */}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="lg:hidden"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+              <Button onClick={signOut} variant="outline">
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
+          </div>
+
+          {/* Desktop Top Menu */}
+          <div className="hidden lg:flex items-center gap-1 mt-4 border-b -mb-4">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.value;
+              
+              return (
+                <button
+                  key={item.value}
+                  onClick={() => setActiveTab(item.value)}
+                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                    isActive 
+                      ? 'border-primary text-primary bg-primary/5' 
+                      : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground'
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span>{item.title}</span>
+                  {item.count !== undefined && (
+                    <div className="ml-1 flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-white bg-primary rounded-full">
+                      {item.count}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Sidebar */}
       <SidebarProvider>
-        <div className="flex min-h-[calc(100vh-160px)]">
-          <Sidebar collapsible="icon" className="border-r">
+        <div className="lg:hidden">
+          <Sidebar 
+            variant="floating" 
+            className={`${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-200 ease-in-out fixed inset-y-0 left-0 z-50 w-64 border-r bg-background`}
+          >
             <SidebarContent className="pt-4">
               <SidebarGroup>
                 <SidebarGroupLabel>Navigation</SidebarGroupLabel>
@@ -1019,13 +1076,16 @@ const Admin = () => {
                           <SidebarMenuButton
                             asChild
                             isActive={isActive}
-                            onClick={() => setActiveTab(item.value)}
+                            onClick={() => {
+                              setActiveTab(item.value);
+                              setIsMobileMenuOpen(false);
+                            }}
                           >
                             <button className="flex items-center gap-2 w-full">
                               <Icon className="h-4 w-4" />
                               <span>{item.title}</span>
                               {item.count !== undefined && (
-                                <div className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-blue-900 bg-green-500 rounded">
+                                <div className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-white bg-primary rounded-full">
                                   {item.count}
                                 </div>
                               )}
@@ -1039,28 +1099,23 @@ const Admin = () => {
               </SidebarGroup>
             </SidebarContent>
           </Sidebar>
-
-          <div className="flex flex-col flex-1">
-            {/* Admin Header with sidebar trigger and sign out */}
-            <div className="border-b h-16 flex items-center px-4 bg-background shrink-0 sticky top-[80px] z-40">
-              <SidebarTrigger className="mr-4" />
-              <div className="flex-1">
-                <h1 className="text-2xl font-bold text-primary">Admin Dashboard</h1>
-              </div>
-              <Button onClick={signOut} variant="outline">
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </Button>
-            </div>
-
-            <main className="flex-1 p-6">
-              <div className="max-w-full">
-                {renderContent()}
-              </div>
-            </main>
-          </div>
+          
+          {/* Mobile Overlay */}
+          {isMobileMenuOpen && (
+            <div 
+              className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+          )}
         </div>
       </SidebarProvider>
+
+      {/* Main Content */}
+      <main className="p-6">
+        <div className="max-w-full">
+          {renderContent()}
+        </div>
+      </main>
       
       <Footer />
 
