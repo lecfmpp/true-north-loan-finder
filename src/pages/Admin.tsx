@@ -321,7 +321,16 @@ const Admin = () => {
   };
 
   const deleteLead = async (leadId: string) => {
-    if (!confirm('Are you sure you want to delete this lead? This action cannot be undone.')) {
+    const userInput = prompt('To confirm deletion, please type "DELETE LEAD" (without quotes):');
+    
+    if (userInput !== 'DELETE LEAD') {
+      if (userInput !== null) { // User didn't cancel
+        toast({
+          title: "Deletion Cancelled",
+          description: "Please type exactly 'DELETE LEAD' to confirm deletion",
+          variant: "destructive"
+        });
+      }
       return;
     }
 
