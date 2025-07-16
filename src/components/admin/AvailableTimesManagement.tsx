@@ -272,20 +272,21 @@ const AvailableTimesManagement = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 px-2 sm:px-0">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <h2 className="text-2xl font-bold">Bookings & Time Management</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-lg sm:text-xl font-bold">Bookings & Time Management</h2>
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Manage call bookings and time slot availability
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <Dialog open={showRulesDialog} onOpenChange={setShowRulesDialog}>
             <DialogTrigger asChild>
-              <Button variant="outline">
-                <Settings className="h-4 w-4 mr-2" />
-                Rules & Settings
+              <Button variant="outline" size="sm" className="text-xs">
+                <Settings className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Rules & Settings</span>
+                <span className="sm:hidden">Rules</span>
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -352,9 +353,10 @@ const AvailableTimesManagement = () => {
           
           <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
             <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Time Slot
+              <Button size="sm" className="text-xs">
+                <Plus className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Add Time Slot</span>
+                <span className="sm:hidden">Add</span>
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -422,13 +424,13 @@ const AvailableTimesManagement = () => {
       {/* Current Rules Display */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+            <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
             Current Booking Rules
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div className="flex items-center space-x-2 p-3 bg-muted rounded-lg">
               <Clock className="h-4 w-4 text-blue-500" />
               <div>
@@ -478,21 +480,22 @@ const AvailableTimesManagement = () => {
               No bookings yet. When users book calls, they'll appear here.
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Date & Time</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {bookings.map((booking) => (
-                  <TableRow key={booking.id}>
-                    <TableCell className="font-medium">{booking.user_name}</TableCell>
-                    <TableCell>{booking.user_email}</TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-xs">Name</TableHead>
+                    <TableHead className="text-xs hidden sm:table-cell">Email</TableHead>
+                    <TableHead className="text-xs">Date & Time</TableHead>
+                    <TableHead className="text-xs">Status</TableHead>
+                    <TableHead className="text-xs">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                 {bookings.map((booking) => (
+                   <TableRow key={booking.id}>
+                     <TableCell className="font-medium text-xs sm:text-sm">{booking.user_name}</TableCell>
+                     <TableCell className="hidden sm:table-cell text-xs sm:text-sm">{booking.user_email}</TableCell>
                     <TableCell>
                       {booking.time_slot && (
                         <div>
@@ -525,10 +528,11 @@ const AvailableTimesManagement = () => {
                       </Select>
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+                 ))}
+               </TableBody>
+             </Table>
+           </div>
+           )}
         </CardContent>
       </Card>
 
