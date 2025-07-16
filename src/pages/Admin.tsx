@@ -759,7 +759,7 @@ const Admin = () => {
             {/* Leads Table */}
             <Card>
               <CardContent className="p-0">
-                <div className="overflow-x-auto">
+                <div className="table-container">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -1000,23 +1000,25 @@ const Admin = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-background w-full">
-        <Header />
-        
-        {/* Header with sidebar trigger and sign out */}
-        <div className="border-b h-16 flex items-center px-4">
-          <SidebarTrigger className="mr-4" />
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold text-primary">Admin Dashboard</h1>
+      <div className="dashboard-layout">
+        {/* Header */}
+        <header className="app-header border-b bg-background">
+          <Header />
+          <div className="h-16 flex items-center px-4 border-t">
+            <SidebarTrigger className="mr-4" />
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold text-primary">Admin Dashboard</h1>
+            </div>
+            <Button onClick={signOut} variant="outline">
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
           </div>
-          <Button onClick={signOut} variant="outline">
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </Button>
-        </div>
+        </header>
 
-        <div className="flex w-full">
-          <Sidebar collapsible="icon" className="border-r">
+        {/* Sidebar */}
+        <aside className="app-sidebar">
+          <Sidebar collapsible="icon" className="h-full">
             <SidebarContent>
               <SidebarGroup>
                 <SidebarGroupLabel>Navigation</SidebarGroupLabel>
@@ -1032,12 +1034,13 @@ const Admin = () => {
                             asChild
                             isActive={isActive}
                             onClick={() => setActiveTab(item.value)}
+                            className={isActive ? "bg-accent text-accent-foreground border-l-4 border-l-primary" : ""}
                           >
                             <button className="flex items-center gap-2 w-full">
                               <Icon className="h-4 w-4" />
                               <span>{item.title}</span>
                               {item.count !== undefined && (
-                                <div className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-blue-900 bg-green-500 rounded">
+                                <div className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-white bg-primary rounded">
                                   {item.count}
                                 </div>
                               )}
@@ -1051,12 +1054,17 @@ const Admin = () => {
               </SidebarGroup>
             </SidebarContent>
           </Sidebar>
+        </aside>
 
-          <main className="flex-1 p-6">
-            {renderContent()}
-          </main>
-        </div>
-        <Footer />
+        {/* Main Content */}
+        <main className="app-main-content">
+          {renderContent()}
+        </main>
+
+        {/* Footer */}
+        <footer className="app-footer">
+          <Footer />
+        </footer>
 
         {/* Delete Confirmation Modal */}
         <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
