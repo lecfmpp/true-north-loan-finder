@@ -264,17 +264,17 @@ export function ChatWidgetManagement() {
   return (
     <Tabs defaultValue="settings" className="space-y-6">
       <TabsList className="grid w-full grid-cols-3">
-        <TabsTrigger value="settings" className="flex items-center gap-2">
+        <TabsTrigger value="settings" className="flex items-center gap-1 sm:gap-2">
           <Settings size={16} />
-          Settings
+          <span className="hidden sm:inline">Settings</span>
         </TabsTrigger>
-        <TabsTrigger value="qa" className="flex items-center gap-2">
+        <TabsTrigger value="qa" className="flex items-center gap-1 sm:gap-2">
           <MessageCircle size={16} />
-          Q&A Management
+          <span className="hidden sm:inline">Q&A Management</span>
         </TabsTrigger>
-        <TabsTrigger value="implementation" className="flex items-center gap-2">
+        <TabsTrigger value="implementation" className="flex items-center gap-1 sm:gap-2">
           <Code size={16} />
-          Implementation
+          <span className="hidden sm:inline">Implementation</span>
         </TabsTrigger>
       </TabsList>
 
