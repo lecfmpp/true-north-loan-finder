@@ -13,7 +13,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, MessageCircle, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign } from 'lucide-react';
+import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, MessageCircle, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign, PanelLeftClose, PanelLeft } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -1019,9 +1019,19 @@ const Admin = () => {
         {/* Sidebar */}
         <aside className="app-sidebar">
           <Sidebar collapsible="icon" className="h-full">
-            <SidebarContent>
+            {/* Sidebar Header with Toggle */}
+            <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-sidebar-foreground">Navigation</span>
+              </div>
+              <SidebarTrigger className="h-8 w-8 p-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md">
+                <PanelLeftClose className="h-4 w-4 data-[state=open]:hidden" />
+                <PanelLeft className="h-4 w-4 data-[state=closed]:hidden" />
+              </SidebarTrigger>
+            </div>
+            
+            <SidebarContent className="pt-2">
               <SidebarGroup>
-                <SidebarGroupLabel>Navigation</SidebarGroupLabel>
                 <SidebarGroupContent>
                   <SidebarMenu>
                     {menuItems.map((item) => {
