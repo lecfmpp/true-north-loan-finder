@@ -732,35 +732,35 @@ const Quiz = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
-      {/* Hero Section - Optimized for mobile */}
-      <section className="py-4 md:py-12 lg:py-16 bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+      {/* Hero Section - Condensed for desktop */}
+      <section className="py-4 md:py-8 bg-gradient-to-br from-primary/5 via-background to-secondary/5">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold font-sans text-primary leading-tight mb-2 md:mb-6">
+            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold font-sans text-primary leading-tight mb-2 md:mb-3">
               Find Out Exactly How Much You Can Borrow 
               <span className="text-secondary"> & Get It In Your Account Within 48 Hours</span>
             </h2>
-            <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-3 md:mb-8 max-w-2xl mx-auto font-serif">
+            <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-3 md:mb-4 max-w-2xl mx-auto font-serif">
               No guesswork. No surprises. Just the best options.
             </p>
           </div>
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-2 md:py-6">
+      <div className="container mx-auto px-4 py-2 md:py-4">
         <div className="max-w-2xl mx-auto">
-          {/* Progress Header - Compact on mobile */}
-          <div className="mb-3 md:mb-6">
-            <div className="hidden md:flex items-center justify-between mb-4">
-              <h1 className="text-2xl font-bold font-sans text-primary">
+          {/* Progress Header - Condensed layout */}
+          <div className="mb-3 md:mb-4">
+            <div className="flex items-center justify-between mb-2 md:mb-3">
+              <h1 className="text-xl md:text-2xl font-bold font-sans text-primary">
                 Business Loan Estimator
               </h1>
               <span className="text-sm text-muted-foreground">
                 Step {currentStep} of {totalSteps}
               </span>
             </div>
-            <Progress value={progress} className="mb-1 md:mb-2" />
-            <p className="hidden md:block text-sm text-muted-foreground text-center">
+            <Progress value={progress} className="mb-1" />
+            <p className="text-xs md:text-sm text-muted-foreground text-center">
               Takes about 60 seconds to complete
             </p>
           </div>
