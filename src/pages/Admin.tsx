@@ -1005,7 +1005,7 @@ const Admin = () => {
         
         <div className="flex flex-1 overflow-hidden">
           <Sidebar collapsible="icon" className="border-r">
-            <SidebarContent>
+            <SidebarContent className="pt-4">
               <SidebarGroup>
                 <SidebarGroupLabel>Navigation</SidebarGroupLabel>
                 <SidebarGroupContent>
@@ -1042,7 +1042,7 @@ const Admin = () => {
 
           <div className="flex flex-col flex-1 overflow-hidden">
             {/* Header with sidebar trigger and sign out */}
-            <div className="border-b h-16 flex items-center px-4 bg-background">
+            <div className="border-b h-16 flex items-center px-4 bg-background shrink-0">
               <SidebarTrigger className="mr-4" />
               <div className="flex-1">
                 <h1 className="text-2xl font-bold text-primary">Admin Dashboard</h1>
