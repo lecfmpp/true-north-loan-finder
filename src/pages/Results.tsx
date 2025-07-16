@@ -290,58 +290,60 @@ const Results = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="container mx-auto px-4 py-12">
-        <div className="max-w-4xl mx-auto space-y-8">
+      <div className="container mx-auto px-4 py-6 md:py-12">
+        <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
           
           {!showBooking ? (
             <>
               {/* Hook Section */}
-              <div className="text-center space-y-6">
-                <h1 className="text-4xl font-bold text-primary">
+              <div className="text-center space-y-4 md:space-y-6">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary px-2">
                   Excellent! Your profile is a strong match. Here's what you're pre-qualified for.
                 </h1>
                 
-                <div className="text-center">
-                  <div className="text-5xl font-bold text-green-600 mb-2">
+                <div className="text-center bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-4 md:p-6 border border-green-200">
+                  <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-green-600 mb-1 md:mb-2">
                     ${loanTerms.estimatedFunding.toLocaleString()}
                   </div>
-                  <p className="text-xl text-muted-foreground">Estimated Eligible Funding</p>
+                  <p className="text-base sm:text-lg md:text-xl text-muted-foreground">Estimated Eligible Funding</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
-                  <div className="text-center space-y-2">
-                    <Clock className="h-8 w-8 text-blue-500 mx-auto" />
-                    <h3 className="font-semibold">Funding Speed</h3>
-                    <p className="text-muted-foreground">{loanTerms.fundingSpeed}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-6 max-w-3xl mx-auto">
+                  <div className="text-center space-y-2 p-3 md:p-4 rounded-lg bg-blue-50 border">
+                    <Clock className="h-6 w-6 md:h-8 md:w-8 text-blue-500 mx-auto" />
+                    <h3 className="text-sm md:text-base font-semibold">Funding Speed</h3>
+                    <p className="text-xs md:text-sm text-muted-foreground">{loanTerms.fundingSpeed}</p>
                   </div>
-                  <div className="text-center space-y-2">
-                    <TrendingUp className="h-8 w-8 text-green-500 mx-auto" />
-                    <h3 className="font-semibold">Est. Rate</h3>
-                    <p className="text-muted-foreground">{loanTerms.estimatedRate}</p>
+                  <div className="text-center space-y-2 p-3 md:p-4 rounded-lg bg-green-50 border">
+                    <TrendingUp className="h-6 w-6 md:h-8 md:w-8 text-green-500 mx-auto" />
+                    <h3 className="text-sm md:text-base font-semibold">Est. Rate</h3>
+                    <p className="text-xs md:text-sm text-muted-foreground">{loanTerms.estimatedRate}</p>
                   </div>
-                  <div className="text-center space-y-2">
-                    <DollarSign className="h-8 w-8 text-purple-500 mx-auto" />
-                    <h3 className="font-semibold">Est. Payment</h3>
-                    <p className="text-muted-foreground">{loanTerms.estimatedPayment}</p>
+                  <div className="text-center space-y-2 p-3 md:p-4 rounded-lg bg-purple-50 border">
+                    <DollarSign className="h-6 w-6 md:h-8 md:w-8 text-purple-500 mx-auto" />
+                    <h3 className="text-sm md:text-base font-semibold">Est. Payment</h3>
+                    <p className="text-xs md:text-sm text-muted-foreground">{loanTerms.estimatedPayment}</p>
                   </div>
                 </div>
               </div>
 
               {/* Curated Lender Matches */}
-              <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-center">
+              <div className="space-y-4 md:space-y-6">
+                <h2 className="text-xl sm:text-2xl md:text-2xl font-bold text-center px-2">
                   Based on your profile, here are your Top 3 matches from our network:
                 </h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
                   {topLenders.map((lender) => (
-                    <Card key={lender.id} className="text-center bg-slate-800 border-slate-700 text-white animate-fade-in">
-                      <CardContent className="p-6 space-y-4">
-                        <h3 className="font-bold text-2xl text-white">{lender.name}</h3>
-                        <Badge className="bg-green-100 text-green-800">
-                          Top Match ({lender.matchRating})
-                        </Badge>
-                        <p className="text-sm text-gray-300">
+                    <Card key={lender.id} className="text-center bg-slate-800 border-slate-700 text-white animate-fade-in h-full">
+                      <CardContent className="p-4 md:p-6 space-y-3 md:space-y-4 h-full flex flex-col justify-between">
+                        <div>
+                          <h3 className="font-bold text-lg md:text-2xl text-white">{lender.name}</h3>
+                          <Badge className="bg-green-100 text-green-800 mt-2">
+                            Top Match ({lender.matchRating})
+                          </Badge>
+                        </div>
+                        <p className="text-xs md:text-sm text-gray-300 flex-grow">
                           {lender.tagline}
                         </p>
                       </CardContent>
@@ -352,57 +354,57 @@ const Results = () => {
 
               {/* Call-to-Action Section */}
               <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-                <CardHeader>
-                  <CardTitle className="text-3xl text-center">
+                <CardHeader className="text-center pb-3 md:pb-6">
+                  <CardTitle className="text-xl sm:text-2xl md:text-3xl px-2">
                     Unlock Your Official Offers in Under 48 Hours
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-6 text-center">
-                  <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                <CardContent className="space-y-4 md:space-y-6 text-center">
+                  <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-3xl mx-auto px-2">
                     Your application is ready. The final step is a quick 15-minute 'Pre-Offer Call' with a funding advisor. 
                     This call is required to get your official offers from the lenders above.
                   </p>
 
-                  <div className="space-y-4 max-w-2xl mx-auto text-left">
-                    <p className="font-medium">On this call, we will:</p>
-                    <div className="grid grid-cols-1 md:grid-cols-1 gap-3">
+                  <div className="space-y-3 md:space-y-4 max-w-2xl mx-auto text-left">
+                    <p className="font-medium text-sm md:text-base px-2">On this call, we will:</p>
+                    <div className="grid grid-cols-1 gap-2 md:gap-3 px-2">
                       <div className="flex items-start gap-3">
-                        <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span><strong>Verify Your Details:</strong> A quick confirmation to ensure accuracy.</span>
+                        <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span className="text-xs md:text-sm"><strong>Verify Your Details:</strong> A quick confirmation to ensure accuracy.</span>
                       </div>
                       <div className="flex items-start gap-3">
-                        <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span><strong>Finalize Your Funding Needs:</strong> We'll confirm the numbers for your official offers.</span>
+                        <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span className="text-xs md:text-sm"><strong>Finalize Your Funding Needs:</strong> We'll confirm the numbers for your official offers.</span>
                       </div>
                       <div className="flex items-start gap-3">
-                        <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span><strong>Outline Required Documents:</strong> We'll tell you exactly which simple documents to have ready (if any).</span>
+                        <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span className="text-xs md:text-sm"><strong>Outline Required Documents:</strong> We'll tell you exactly which simple documents to have ready (if any).</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="space-y-4 max-w-2xl mx-auto">
+                  <div className="space-y-3 md:space-y-4 max-w-2xl mx-auto px-2">
                     <Button 
                       size="lg" 
                       onClick={handleBookCall}
-                      className="bg-yellow-500 hover:bg-yellow-600 text-white text-lg md:text-xl py-4 md:py-6 px-6 md:px-12 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all w-full min-h-[60px] md:min-h-[72px] flex items-center justify-center"
+                      className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm sm:text-base md:text-xl py-4 md:py-6 px-4 md:px-12 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all w-full min-h-[56px] md:min-h-[72px] flex items-center justify-center"
                     >
-                      <Calendar className="w-5 h-5 mr-2 flex-shrink-0" />
+                      <Calendar className="w-4 h-4 md:w-5 md:h-5 mr-2 flex-shrink-0" />
                       <span className="text-center leading-tight">
                         Book My 15-Min<br className="sm:hidden" /> Pre-Offer Call
                       </span>
                     </Button>
                     
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs md:text-sm text-muted-foreground">
                       Yes, this call is required to receive your official lender offers.
                     </p>
                     
                     <Button 
                       variant="link" 
                       onClick={handleChatWithUs}
-                      className="text-blue-600 hover:text-blue-800 text-center leading-relaxed px-2"
+                      className="text-blue-600 hover:text-blue-800 text-center leading-relaxed px-2 text-xs md:text-sm"
                     >
-                      <MessageCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+                      <MessageCircle className="w-3 h-3 md:w-4 md:h-4 mr-2 flex-shrink-0" />
                       <span className="break-words">
                         Have a question before booking? Chat with us now.
                       </span>
@@ -414,20 +416,20 @@ const Results = () => {
           ) : (
             <>
               {/* Booking Calendar Section */}
-              <div className="space-y-6">
+              <div className="space-y-4 md:space-y-6">
                 <div className="text-center">
                   <Button 
                     variant="outline" 
                     onClick={() => setShowBooking(false)}
-                    className="mb-4"
+                    className="mb-3 md:mb-4 text-xs md:text-sm"
                   >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    <ArrowLeft className="w-3 h-3 md:w-4 md:h-4 mr-2" />
                     Back to Results
                   </Button>
-                  <h1 className="text-3xl font-bold text-primary">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary px-2">
                     Schedule Your Pre-Offer Call
                   </h1>
-                  <p className="text-lg text-muted-foreground">
+                  <p className="text-sm sm:text-base md:text-lg text-muted-foreground px-2">
                     Choose a convenient time for your 15-minute funding strategy call
                   </p>
                 </div>
