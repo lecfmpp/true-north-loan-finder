@@ -8,12 +8,14 @@ const corsHeaders = {
 };
 
 interface EmailRequest {
-  type: 'follow_up' | 'pre_call_reminder';
+  type: 'follow_up' | 'pre_call_reminder' | 'admin_notification';
   userEmail: string;
   userName: string;
   callDate?: string;
   callTime?: string;
   userPhone?: string;
+  templateId?: string; // For direct template sending (admin notifications)
+  variables?: any; // Custom variables for template replacement
 }
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
@@ -27,11 +29,58 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { type, userEmail, userName, callDate, callTime, userPhone }: EmailRequest = await req.json();
+    const { type, userEmail, userName, callDate, callTime, userPhone, templateId, variables }: EmailRequest = await req.json();
 
-    console.log(`Processing email sequence enrollment for ${userEmail}, type: ${type}`);
+    console.log(`Processing email sequence for ${userEmail}, type: ${type}`);
 
-    // Get the appropriate sequence
+    // Handle direct template sending (for admin notifications)
+    if (templateId) {
+      console.log(`Sending direct template ${templateId} to ${userEmail}`);
+      
+      const { data: template, error: templateError } = await supabase
+        .from('email_templates')
+        .select('*')
+        .eq('id', templateId)
+        .single();
+
+      if (templateError || !template) {
+        throw new Error(`Template not found: ${templateId}`);
+      }
+
+      // Create a minimal enrollment record for tracking
+      const { data: enrollment, error: enrollmentError } = await supabase
+        .from('email_enrollments')
+        .insert({
+          sequence_id: template.sequence_id,
+          user_email: userEmail,
+          user_name: userName,
+          enrollment_data: variables || {},
+          status: 'completed'
+        })
+        .select()
+        .single();
+
+      if (enrollmentError) {
+        console.error('Failed to create enrollment record, continuing with email send');
+      }
+
+      // Send the email immediately
+      await sendEmail(enrollment?.id || 'direct', template, userEmail, userName, variables || {});
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Direct template email sent successfully',
+          templateId
+        }),
+        { 
+          status: 200, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    // Regular sequence enrollment logic
     const { data: sequence, error: sequenceError } = await supabase
       .from('email_sequences')
       .select('*')
@@ -192,12 +241,22 @@ async function sendEmail(
 }
 
 function replaceVariables(text: string, userName: string, variables: any): string {
-  return text
+  let result = text
     .replace(/\[First Name\]/g, userName)
     .replace(/\[Date\]/g, variables.callDate || '')
     .replace(/\[Time\]/g, variables.callTime || '')
     .replace(/\[Phone Number\]/g, variables.userPhone || '')
     .replace(/\[Book Your Call\]/g, 'https://calendly.com/truenorth-business-loan');
+
+  // Handle admin notification variables (using double braces)
+  if (variables) {
+    Object.keys(variables).forEach(key => {
+      const placeholder = `{{${key}}}`;
+      result = result.replace(new RegExp(placeholder, 'g'), variables[key] || '');
+    });
+  }
+
+  return result;
 }
 
 serve(handler);

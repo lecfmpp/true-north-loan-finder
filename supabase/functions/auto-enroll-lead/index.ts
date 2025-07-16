@@ -91,52 +91,38 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Successfully enrolled ${email} in ${sequenceType} sequence`);
 
-    // Send notification to superadmin for new leads (not for reminder sequences)
+    // Send notification to superadmin for new leads using existing email template system
     if (sequenceType === 'follow_up' && userData) {
       try {
         console.log(`Sending lead notification to superadmin for ${email}`);
         
-        const emailBody = `
-          <h2>🎯 New Lead Submission - True North Business Loan</h2>
-          
-          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3>Lead Information:</h3>
-            <ul style="list-style: none; padding: 0;">
-              <li><strong>Name:</strong> ${name}</li>
-              <li><strong>Email:</strong> ${email}</li>
-              <li><strong>Phone:</strong> ${userData.phone || 'Not provided'}</li>
-              <li><strong>Loan Amount:</strong> $${userData.loan_amount?.toLocaleString() || 'Not specified'}</li>
-              <li><strong>Monthly Revenue:</strong> $${userData.monthly_revenue?.toLocaleString() || 'Not specified'}</li>
-              <li><strong>Credit Score:</strong> ${userData.credit_score || 'Not provided'}</li>
-              <li><strong>Time in Business:</strong> ${userData.time_in_business || 'Not provided'}</li>
-              <li><strong>Use of Funds:</strong> ${userData.use_of_funds || 'Not specified'}</li>
-              <li><strong>Website:</strong> ${userData.website || 'Not provided'}</li>
-              <li><strong>Score:</strong> ${userData.score || 'Not calculated'}/100</li>
-            </ul>
-          </div>
-          
-          <div style="background-color: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <p><strong>Next Steps:</strong></p>
-            <ul>
-              <li>Lead has been automatically enrolled in the follow-up email sequence</li>
-              <li>You can view and manage this lead in the admin dashboard</li>
-              <li>Consider reaching out for a personal follow-up if this is a high-quality lead</li>
-            </ul>
-          </div>
-          
-          <p style="color: #666; font-size: 12px; margin-top: 30px;">
-            This notification was sent automatically when a new lead completed the loan estimator wizard.
-          </p>
-        `;
-
-        await resend.emails.send({
-          from: "True North Business Loan <notifications@noboringfunnels.com>",
-          to: [SUPERADMIN_EMAIL],
-          subject: `🎯 New Lead: ${name} - $${userData.loan_amount?.toLocaleString() || 'Amount TBD'}`,
-          html: emailBody,
+        // Use existing email sequence system to send admin notification
+        const adminNotificationResponse = await supabase.functions.invoke('send-email-sequence', {
+          body: {
+            type: 'admin_notification',
+            userEmail: SUPERADMIN_EMAIL,
+            userName: 'Admin',
+            templateId: '869d296d-531c-42e1-89ac-b98e4636e6ed', // Admin notification template
+            variables: {
+              user_name: name,
+              user_email: email,
+              user_phone: userData.phone || 'Not provided',
+              loan_amount: userData.loan_amount?.toLocaleString() || 'Not specified',
+              monthly_revenue: userData.monthly_revenue?.toLocaleString() || 'Not specified',
+              credit_score: userData.credit_score || 'Not provided',
+              time_in_business: userData.time_in_business || 'Not provided',
+              use_of_funds: userData.use_of_funds || 'Not specified',
+              website: userData.website || 'Not provided',
+              score: userData.score || 'Not calculated'
+            }
+          }
         });
 
-        console.log(`Lead notification sent to superadmin successfully`);
+        if (adminNotificationResponse.error) {
+          console.error('Error sending admin notification via email sequence:', adminNotificationResponse.error);
+        } else {
+          console.log(`Lead notification sent to superadmin successfully`);
+        }
       } catch (notificationError) {
         console.error('Error sending superadmin notification:', notificationError);
         // Don't fail the main function if notification fails
