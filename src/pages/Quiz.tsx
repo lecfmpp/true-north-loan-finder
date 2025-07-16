@@ -850,18 +850,18 @@ const Quiz = () => {
 
               {/* Step 3: Time in Business */}
               {currentStep === 3 && (
-                <div className="space-y-8 animate-fade-in">
+                <div className="space-y-5 md:space-y-8 animate-fade-in">
                   <div className="text-center">
-                    <Clock className="h-12 w-12 text-secondary mx-auto mb-4" />
-                    <h2 className="text-3xl font-bold font-sans text-primary mb-3">
+                    <Clock className="h-8 sm:h-10 md:h-12 w-8 sm:w-10 md:w-12 text-secondary mx-auto mb-3 md:mb-4" />
+                    <h2 className="text-lg sm:text-xl md:text-3xl font-bold font-sans text-primary mb-2 md:mb-3 leading-tight">
                       How long has your business been operating?
                     </h2>
-                    <p className="text-lg text-muted-foreground font-serif">
+                    <p className="text-sm sm:text-base md:text-lg text-muted-foreground font-serif">
                       Time in business is a key factor for loan qualification
                     </p>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
                     {timeInBusinessOptions.map((option) => {
                       const IconComponent = option.icon;
                       const isSelected = quizData.timeInBusiness === option.id;
@@ -877,16 +877,16 @@ const Quiz = () => {
                           )}
                           onClick={() => handleOptionSelect('timeInBusiness', option.id)}
                         >
-                          <CardContent className="p-6 flex items-center gap-4 relative">
+                          <CardContent className="p-3 sm:p-4 md:p-6 flex items-center gap-3 md:gap-4 relative min-h-[48px]">
                             {isSelected && (
-                              <div className="absolute top-4 right-4">
-                                <Check className="h-6 w-6 text-secondary animate-scale-in" />
+                              <div className="absolute top-3 right-3">
+                                <Check className="h-5 w-5 md:h-6 md:w-6 text-secondary animate-scale-in" />
                               </div>
                             )}
-                            <IconComponent className="h-8 w-8 text-secondary group-hover:scale-110 transition-transform" />
+                            <IconComponent className="h-6 w-6 md:h-8 md:w-8 text-secondary group-hover:scale-110 transition-transform flex-shrink-0" />
                             <div className="flex-1">
-                              <h3 className="text-lg font-semibold text-primary">{option.label}</h3>
-                              <p className="text-sm text-muted-foreground">{option.description}</p>
+                              <h3 className="text-base md:text-lg font-semibold text-primary">{option.label}</h3>
+                              <p className="text-xs md:text-sm text-muted-foreground">{option.description}</p>
                             </div>
                           </CardContent>
                         </Card>
@@ -932,18 +932,18 @@ const Quiz = () => {
 
               {/* Step 5: Credit Score */}
               {currentStep === 5 && (
-                <div className="space-y-8 animate-fade-in">
+                <div className="space-y-5 md:space-y-8 animate-fade-in">
                   <div className="text-center">
-                    <Star className="h-12 w-12 text-secondary mx-auto mb-4" />
-                    <h2 className="text-3xl font-bold font-sans text-primary mb-3">
+                    <Star className="h-8 sm:h-10 md:h-12 w-8 sm:w-10 md:w-12 text-secondary mx-auto mb-3 md:mb-4" />
+                    <h2 className="text-lg sm:text-xl md:text-3xl font-bold font-sans text-primary mb-2 md:mb-3 leading-tight">
                       What's your estimated personal credit score?
                     </h2>
-                    <p className="text-lg text-muted-foreground font-serif">
+                    <p className="text-sm sm:text-base md:text-lg text-muted-foreground font-serif">
                       Don't worry - we work with businesses across all credit ranges
                     </p>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
                     {creditScoreOptions.map((option) => {
                       const IconComponent = option.icon;
                       const isSelected = quizData.creditScore === option.id;
@@ -959,16 +959,16 @@ const Quiz = () => {
                           )}
                           onClick={() => handleOptionSelect('creditScore', option.id)}
                         >
-                          <CardContent className="p-6 flex items-center gap-4 relative">
+                          <CardContent className="p-3 sm:p-4 md:p-6 flex items-center gap-3 md:gap-4 relative min-h-[48px]">
                             {isSelected && (
-                              <div className="absolute top-4 right-4">
-                                <Check className="h-6 w-6 text-secondary animate-scale-in" />
+                              <div className="absolute top-3 right-3">
+                                <Check className="h-5 w-5 md:h-6 md:w-6 text-secondary animate-scale-in" />
                               </div>
                             )}
-                            <IconComponent className="h-8 w-8 text-secondary group-hover:scale-110 transition-transform" />
+                            <IconComponent className="h-6 w-6 md:h-8 md:w-8 text-secondary group-hover:scale-110 transition-transform flex-shrink-0" />
                             <div className="flex-1">
-                              <h3 className="text-lg font-semibold text-primary">{option.label}</h3>
-                              <p className="text-sm text-muted-foreground">{option.description}</p>
+                              <h3 className="text-base md:text-lg font-semibold text-primary">{option.label}</h3>
+                              <p className="text-xs md:text-sm text-muted-foreground">{option.description}</p>
                             </div>
                           </CardContent>
                         </Card>
@@ -980,41 +980,41 @@ const Quiz = () => {
 
               {/* Step 6: Contact Information */}
               {currentStep === 6 && (
-                <div className="space-y-8 animate-fade-in">
+                <div className="space-y-5 md:space-y-8 animate-fade-in">
                   <div className="text-center">
-                    <CheckCircle className="h-12 w-12 text-secondary mx-auto mb-4" />
-                    <h2 className="text-3xl font-bold font-sans text-primary mb-3">
+                    <CheckCircle className="h-8 sm:h-10 md:h-12 w-8 sm:w-10 md:w-12 text-secondary mx-auto mb-3 md:mb-4" />
+                    <h2 className="text-lg sm:text-xl md:text-3xl font-bold font-sans text-primary mb-2 md:mb-3 leading-tight">
                       Your results are ready!
                     </h2>
-                    <p className="text-lg text-muted-foreground font-serif">
+                    <p className="text-sm sm:text-base md:text-lg text-muted-foreground font-serif">
                       Where should we send your Business Loan Estimate?
                     </p>
                   </div>
                   
-                  <div className="space-y-6">
+                  <div className="space-y-4 md:space-y-6">
                     <div>
-                      <Label htmlFor="name" className="text-lg font-medium">Full Name</Label>
+                      <Label htmlFor="name" className="text-base md:text-lg font-medium">Full Name</Label>
                       <Input
                         id="name"
                         value={quizData.name}
                         onChange={(e) => setQuizData({...quizData, name: e.target.value})}
                         placeholder="Enter your full name"
-                        className="mt-2 text-lg py-3"
+                        className="mt-1 md:mt-2 text-base md:text-lg py-2 md:py-3"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="email" className="text-lg font-medium">Email Address</Label>
+                      <Label htmlFor="email" className="text-base md:text-lg font-medium">Email Address</Label>
                       <Input
                         id="email"
                         type="email"
                         value={quizData.email}
                         onChange={(e) => setQuizData({...quizData, email: e.target.value})}
                         placeholder="Enter your email address"
-                        className="mt-2 text-lg py-3"
+                        className="mt-1 md:mt-2 text-base md:text-lg py-2 md:py-3"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="phone" className="text-lg font-medium">Phone Number (US/Canada)</Label>
+                      <Label htmlFor="phone" className="text-base md:text-lg font-medium">Phone Number (US/Canada)</Label>
                       <Input
                         id="phone"
                         type="tel"
@@ -1024,12 +1024,12 @@ const Quiz = () => {
                           setQuizData({...quizData, phone: formatted});
                         }}
                         placeholder="(555) 123-4567"
-                        className="mt-2 text-lg py-3"
+                        className="mt-1 md:mt-2 text-base md:text-lg py-2 md:py-3"
                         maxLength={14}
                       />
                     </div>
                     <div>
-                      <Label htmlFor="website" className="text-lg font-medium">Website (Optional)</Label>
+                      <Label htmlFor="website" className="text-base md:text-lg font-medium">Website (Optional)</Label>
                       <Input
                         id="website"
                         type="url"
@@ -1046,14 +1046,14 @@ const Quiz = () => {
                           }
                         }}
                         placeholder="yourbusiness.com"
-                        className={`mt-2 text-lg py-3 ${
+                        className={`mt-1 md:mt-2 text-base md:text-lg py-2 md:py-3 ${
                           quizData.website && !isValidWebsiteUrl(quizData.website) 
                             ? 'border-red-500 focus:border-red-500' 
                             : ''
                         }`}
                       />
                       {quizData.website && !isValidWebsiteUrl(quizData.website) && (
-                        <p className="text-sm text-red-600 mt-1">
+                        <p className="text-xs md:text-sm text-red-600 mt-1">
                           Please enter a valid website URL (e.g., yoursite.com)
                         </p>
                       )}
@@ -1064,12 +1064,12 @@ const Quiz = () => {
 
               {/* Navigation - Show Next button only for steps 1, 4, and 6 */}
               {(currentStep === 1 || currentStep === 4 || currentStep === 6) && (
-                <div className="flex justify-between mt-8 pt-6 border-t">
+                <div className="flex justify-between mt-6 md:mt-8 pt-4 md:pt-6 border-t">
                   <Button
                     variant="outline"
                     onClick={handleBack}
                     disabled={currentStep === 1}
-                    className="flex items-center"
+                    className="flex items-center text-sm md:text-base py-2 md:py-3"
                   >
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Back
@@ -1079,7 +1079,7 @@ const Quiz = () => {
                     variant={currentStep === totalSteps ? "cta" : "default"}
                     onClick={handleNext}
                     disabled={!isStepValid()}
-                    className="flex items-center text-lg px-8 py-3"
+                    className="flex items-center text-sm md:text-lg px-6 md:px-8 py-2 md:py-3"
                   >
                     {currentStep === totalSteps ? "See My Results" : "Next"}
                     <ArrowRight className="h-4 w-4 ml-2" />
@@ -1089,11 +1089,11 @@ const Quiz = () => {
 
               {/* Back button only for auto-advancing steps */}
               {(currentStep === 2 || currentStep === 3 || currentStep === 5) && (
-                <div className="flex justify-start mt-8 pt-6 border-t">
+                <div className="flex justify-start mt-6 md:mt-8 pt-4 md:pt-6 border-t">
                   <Button
                     variant="outline"
                     onClick={handleBack}
-                    className="flex items-center"
+                    className="flex items-center text-sm md:text-base py-2 md:py-3"
                   >
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Back
