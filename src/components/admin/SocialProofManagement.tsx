@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Edit2, Trash2, GripVertical, Eye, Settings } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
@@ -267,121 +268,139 @@ const SocialProofManagement = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Widget Configuration Section */}
-      <Card className="p-6">
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <h3 className="text-lg font-semibold">Widget Configuration</h3>
-            <p className="text-sm text-muted-foreground">
-              Control how the social proof notifications behave on your website
-            </p>
-          </div>
-          <Dialog open={isConfigDialogOpen} onOpenChange={setIsConfigDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline">
-                <Settings className="w-4 h-4 mr-2" />
-                Configure Widget
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Widget Settings</DialogTitle>
-              </DialogHeader>
-              {config && (
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="initial_delay">Initial Delay (seconds)</Label>
-                    <Input
-                      id="initial_delay"
-                      type="number"
-                      value={config.initial_delay_seconds}
-                      onChange={(e) => updateConfig({ initial_delay_seconds: Number(e.target.value) })}
-                      min="0"
-                      max="60"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">How long to wait before showing the first notification</p>
-                  </div>
+    <div className="space-y-4">
+      <h2 className="text-lg sm:text-xl font-semibold">Social Proof Management</h2>
+      
+      <Tabs defaultValue="notifications" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="notifications" className="flex items-center gap-1 sm:gap-2">
+            <Plus size={16} />
+            <span className="hidden sm:inline">Notifications</span>
+          </TabsTrigger>
+          <TabsTrigger value="settings" className="flex items-center gap-1 sm:gap-2">
+            <Settings size={16} />
+            <span className="hidden sm:inline">Configure Widget</span>
+          </TabsTrigger>
+        </TabsList>
 
-                  <div>
-                    <Label htmlFor="duration">Notification Duration (seconds)</Label>
-                    <Input
-                      id="duration"
-                      type="number"
-                      value={config.notification_duration_seconds}
-                      onChange={(e) => updateConfig({ notification_duration_seconds: Number(e.target.value) })}
-                      min="3"
-                      max="30"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">How long each notification stays visible</p>
-                  </div>
+        <TabsContent value="settings">
+          {/* Widget Configuration Section */}
+          <Card className="p-6">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h3 className="text-lg font-semibold">Widget Configuration</h3>
+                <p className="text-sm text-muted-foreground">
+                  Control how the social proof notifications behave on your website
+                </p>
+              </div>
+              <Dialog open={isConfigDialogOpen} onOpenChange={setIsConfigDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Configure Widget
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Widget Settings</DialogTitle>
+                  </DialogHeader>
+                  {config && (
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="initial_delay">Initial Delay (seconds)</Label>
+                        <Input
+                          id="initial_delay"
+                          type="number"
+                          value={config.initial_delay_seconds}
+                          onChange={(e) => updateConfig({ initial_delay_seconds: Number(e.target.value) })}
+                          min="0"
+                          max="60"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">How long to wait before showing the first notification</p>
+                      </div>
 
-                  <div>
-                    <Label htmlFor="max_notifications">Max Notifications per Session</Label>
-                    <Input
-                      id="max_notifications"
-                      type="number"
-                      value={config.max_notifications_per_session}
-                      onChange={(e) => updateConfig({ max_notifications_per_session: Number(e.target.value) })}
-                      min="1"
-                      max="20"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">Maximum notifications to show during a user's visit</p>
-                  </div>
+                      <div>
+                        <Label htmlFor="duration">Notification Duration (seconds)</Label>
+                        <Input
+                          id="duration"
+                          type="number"
+                          value={config.notification_duration_seconds}
+                          onChange={(e) => updateConfig({ notification_duration_seconds: Number(e.target.value) })}
+                          min="3"
+                          max="30"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">How long each notification stays visible</p>
+                      </div>
 
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      checked={config.is_enabled}
-                      onCheckedChange={(checked) => updateConfig({ is_enabled: checked })}
-                    />
-                    <Label>Enable Widget</Label>
+                      <div>
+                        <Label htmlFor="max_notifications">Max Notifications per Session</Label>
+                        <Input
+                          id="max_notifications"
+                          type="number"
+                          value={config.max_notifications_per_session}
+                          onChange={(e) => updateConfig({ max_notifications_per_session: Number(e.target.value) })}
+                          min="1"
+                          max="20"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">Maximum notifications to show during a user's visit</p>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          checked={config.is_enabled}
+                          onCheckedChange={(checked) => updateConfig({ is_enabled: checked })}
+                        />
+                        <Label>Enable Widget</Label>
+                      </div>
+                    </div>
+                  )}
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            {config && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div className="bg-muted/50 p-3 rounded-lg">
+                  <div className="font-medium">Initial Delay</div>
+                  <div className="text-muted-foreground">{config.initial_delay_seconds}s</div>
+                </div>
+                <div className="bg-muted/50 p-3 rounded-lg">
+                  <div className="font-medium">Duration</div>
+                  <div className="text-muted-foreground">{config.notification_duration_seconds}s</div>
+                </div>
+                <div className="bg-muted/50 p-3 rounded-lg">
+                  <div className="font-medium">Max per Session</div>
+                  <div className="text-muted-foreground">{config.max_notifications_per_session}</div>
+                </div>
+                <div className="bg-muted/50 p-3 rounded-lg">
+                  <div className="font-medium">Status</div>
+                  <div className="text-muted-foreground">
+                    <Badge variant={config.is_enabled ? "default" : "secondary"}>
+                      {config.is_enabled ? "Enabled" : "Disabled"}
+                    </Badge>
                   </div>
                 </div>
-              )}
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        {config && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div className="bg-muted/50 p-3 rounded-lg">
-              <div className="font-medium">Initial Delay</div>
-              <div className="text-muted-foreground">{config.initial_delay_seconds}s</div>
-            </div>
-            <div className="bg-muted/50 p-3 rounded-lg">
-              <div className="font-medium">Duration</div>
-              <div className="text-muted-foreground">{config.notification_duration_seconds}s</div>
-            </div>
-            <div className="bg-muted/50 p-3 rounded-lg">
-              <div className="font-medium">Max per Session</div>
-              <div className="text-muted-foreground">{config.max_notifications_per_session}</div>
-            </div>
-            <div className="bg-muted/50 p-3 rounded-lg">
-              <div className="font-medium">Status</div>
-              <div className="text-muted-foreground">
-                <Badge variant={config.is_enabled ? "default" : "secondary"}>
-                  {config.is_enabled ? "Enabled" : "Disabled"}
-                </Badge>
               </div>
-            </div>
-          </div>
-        )}
-      </Card>
+            )}
+          </Card>
+        </TabsContent>
 
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-lg sm:text-xl font-semibold">Social Proof Notifications</h2>
-          <p className="text-muted-foreground">
-            Manage the social proof popups that appear on your website
-          </p>
-        </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={resetForm}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Notification
-            </Button>
-          </DialogTrigger>
+        <TabsContent value="notifications">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h3 className="text-base sm:text-lg font-semibold">Social Proof Notifications</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                Manage the social proof popups that appear on your website
+              </p>
+            </div>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={resetForm} size="sm">
+                  <Plus className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Add Notification</span>
+                  <span className="sm:hidden">Add</span>
+                </Button>
+              </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>
@@ -580,11 +599,13 @@ const SocialProofManagement = () => {
         ))}
 
         {notifications.length === 0 && (
-          <Card className="p-8 text-center">
-            <p className="text-gray-500">No social proof notifications yet. Create your first one!</p>
-          </Card>
-        )}
-      </div>
+            <Card className="p-8 text-center">
+              <p className="text-gray-500">No social proof notifications yet. Create your first one!</p>
+            </Card>
+          )}
+        </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Preview Dialog */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
