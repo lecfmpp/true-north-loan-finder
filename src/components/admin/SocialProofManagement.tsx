@@ -527,71 +527,103 @@ const SocialProofManagement = () => {
 
       <div className="grid gap-4">
         {notifications.map((notification) => (
-          <Card key={notification.id} className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-1">
-                  <GripVertical className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-500">#{notification.display_order}</span>
+          <Card key={notification.id} className="overflow-hidden">
+            <div className="p-4 sm:p-6">
+              {/* Header with order and status */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <GripVertical className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">#{notification.display_order}</span>
                 </div>
-                
-                <div 
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-white text-lg"
-                  style={{ backgroundColor: notification.background_color }}
-                >
-                  {notification.emoji}
-                </div>
-
-                {notification.profile_picture_url && (
-                  <img 
-                    src={notification.profile_picture_url} 
-                    alt={notification.client_name}
-                    className="w-10 h-10 rounded-full object-cover"
+                <div className="flex items-center gap-2">
+                  <Badge variant={notification.is_active ? "default" : "secondary"}>
+                    {notification.is_active ? "Active" : "Inactive"}
+                  </Badge>
+                  <Switch
+                    checked={notification.is_active}
+                    onCheckedChange={(checked) => toggleNotificationStatus(notification.id, checked)}
                   />
-                )}
-
-                <div>
-                  <div className="font-medium">
-                    {notification.client_name} from {notification.client_company}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    just got {formatAmount(notification.amount_funded)} with {notification.lender}
-                  </div>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-2">
-                <Badge variant={notification.is_active ? "default" : "secondary"}>
-                  {notification.is_active ? "Active" : "Inactive"}
-                </Badge>
-                
+              {/* Main content area */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                {/* Left side - Notification content */}
+                <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                  {/* Avatar section with guaranteed circular shapes */}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {/* Emoji circle - guaranteed to stay circular */}
+                    <div 
+                      className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full flex items-center justify-center text-white text-lg font-medium shrink-0"
+                      style={{ backgroundColor: notification.background_color }}
+                    >
+                      {notification.emoji}
+                    </div>
+
+                    {/* Profile picture circle - guaranteed to stay circular */}
+                    {notification.profile_picture_url && (
+                      <div className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full overflow-hidden shrink-0">
+                        <img 
+                          src={notification.profile_picture_url} 
+                          alt={notification.client_name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Text content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-sm sm:text-base truncate">
+                      {notification.client_name} from {notification.client_company}
+                    </div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">
+                      just got {formatAmount(notification.amount_funded)} with {notification.lender}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right side - Action buttons */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openPreview(notification)}
+                    className="hidden sm:flex"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openEditDialog(notification)}
+                  >
+                    <Edit2 className="w-4 h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Edit</span>
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => deleteNotification(notification.id)}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Mobile-only preview button */}
+              <div className="mt-3 sm:hidden">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => openPreview(notification)}
+                  className="w-full"
                 >
-                  <Eye className="w-4 h-4" />
-                </Button>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => openEditDialog(notification)}
-                >
-                  <Edit2 className="w-4 h-4" />
-                </Button>
-
-                <Switch
-                  checked={notification.is_active}
-                  onCheckedChange={(checked) => toggleNotificationStatus(notification.id, checked)}
-                />
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => deleteNotification(notification.id)}
-                >
-                  <Trash2 className="w-4 h-4" />
+                  <Eye className="w-4 h-4 mr-2" />
+                  Preview
                 </Button>
               </div>
             </div>
