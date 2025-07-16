@@ -771,10 +771,14 @@ const Quiz = () => {
               {currentStep === 1 && (
                 <div className="space-y-6 md:space-y-8 animate-fade-in">
                   <div className="text-center">
-                    <DollarSign className="h-8 sm:h-10 md:h-12 w-8 sm:w-10 md:w-12 text-secondary mx-auto mb-3 md:mb-4" />
-                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold font-sans text-primary mb-2 md:mb-3 leading-tight">
-                      How much funding are you looking for?
-                    </h2>
+                    <div className="flex items-center justify-center gap-3 mb-2 md:mb-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-green-500 rounded-full flex items-center justify-center">
+                        <DollarSign className="h-4 sm:h-5 md:h-6 w-4 sm:w-5 md:w-6 text-white" />
+                      </div>
+                      <h3 className="text-lg sm:text-xl md:text-2xl font-bold font-sans text-primary leading-tight">
+                        How much funding are you looking for?
+                      </h3>
+                    </div>
                     <p className="text-sm sm:text-base md:text-lg text-muted-foreground font-serif">
                       Select the amount that best fits your business needs
                     </p>
