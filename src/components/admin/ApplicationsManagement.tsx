@@ -211,9 +211,9 @@ export const ApplicationsManagement = () => {
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-2">
                   {getTypeIcon(application.application_type)}
-                  <CardTitle className="capitalize">
+                  <h2 className="capitalize">
                     {application.application_type} Application
-                  </CardTitle>
+                  </h2>
                   {getStatusBadge(application.status)}
                 </div>
                 {isSuperAdmin && (
