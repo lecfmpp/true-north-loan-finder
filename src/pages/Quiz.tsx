@@ -732,25 +732,25 @@ const Quiz = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
-      {/* Hero Section */}
-      <section className="py-8 md:py-12 lg:py-16 bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+      {/* Hero Section - Optimized for mobile */}
+      <section className="py-4 md:py-12 lg:py-16 bg-gradient-to-br from-primary/5 via-background to-secondary/5">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold font-sans text-primary mb-4 md:mb-6">
+            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold font-sans text-primary leading-tight mb-2 md:mb-6">
               Find Out Exactly How Much You Can Borrow 
               <span className="text-secondary"> & Get It In Your Account Within 48 Hours</span>
             </h2>
-            <p className="text-base md:text-lg text-muted-foreground mb-6 md:mb-8 max-w-2xl mx-auto font-serif">
+            <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-3 md:mb-8 max-w-2xl mx-auto font-serif">
               No guesswork. No surprises. Just the best options.
             </p>
           </div>
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-4 md:py-6">
+      <div className="container mx-auto px-4 py-2 md:py-6">
         <div className="max-w-2xl mx-auto">
-          {/* Progress Header */}
-          <div className="mb-4 md:mb-6">
+          {/* Progress Header - Compact on mobile */}
+          <div className="mb-3 md:mb-6">
             <div className="hidden md:flex items-center justify-between mb-4">
               <h1 className="text-2xl font-bold font-sans text-primary">
                 Business Loan Estimator
@@ -759,28 +759,28 @@ const Quiz = () => {
                 Step {currentStep} of {totalSteps}
               </span>
             </div>
-            <Progress value={progress} className="mb-2" />
+            <Progress value={progress} className="mb-1 md:mb-2" />
             <p className="hidden md:block text-sm text-muted-foreground text-center">
               Takes about 60 seconds to complete
             </p>
           </div>
 
           <Card className="border-0 shadow-[var(--shadow-card)]">
-            <CardContent className="p-8">
+            <CardContent className="p-4 sm:p-6 md:p-8">
               {/* Step 1: Loan Amount */}
               {currentStep === 1 && (
-                <div className="space-y-8 animate-fade-in">
+                <div className="space-y-6 md:space-y-8 animate-fade-in">
                   <div className="text-center">
-                    <DollarSign className="h-12 w-12 text-secondary mx-auto mb-4" />
-                    <h2 className="text-3xl font-bold font-sans text-primary mb-3">
+                    <DollarSign className="h-8 sm:h-10 md:h-12 w-8 sm:w-10 md:w-12 text-secondary mx-auto mb-3 md:mb-4" />
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold font-sans text-primary mb-2 md:mb-3 leading-tight">
                       How much funding are you looking for?
                     </h2>
-                    <p className="text-lg text-muted-foreground font-serif">
+                    <p className="text-sm sm:text-base md:text-lg text-muted-foreground font-serif">
                       Select the amount that best fits your business needs
                     </p>
                   </div>
                   
-                  <div className="space-y-6">
+                  <div className="space-y-4 md:space-y-6">
                     <Slider
                       value={quizData.loanAmount}
                       onValueChange={(value) => setQuizData({...quizData, loanAmount: value})}
@@ -790,10 +790,10 @@ const Quiz = () => {
                       className="w-full"
                     />
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-primary mb-2">
+                      <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-1 md:mb-2">
                         ${quizData.loanAmount[0].toLocaleString()}
                       </div>
-                      <div className="text-lg text-muted-foreground">
+                      <div className="text-sm sm:text-base md:text-lg text-muted-foreground">
                         Range: $5,000 - $800,000
                       </div>
                     </div>
@@ -803,18 +803,18 @@ const Quiz = () => {
 
               {/* Step 2: Use of Funds */}
               {currentStep === 2 && (
-                <div className="space-y-8 animate-fade-in">
+                <div className="space-y-5 md:space-y-8 animate-fade-in">
                   <div className="text-center">
-                    <Building className="h-12 w-12 text-secondary mx-auto mb-4" />
-                    <h2 className="text-xl md:text-3xl font-bold font-sans text-primary mb-3">
+                    <Building className="h-8 sm:h-10 md:h-12 w-8 sm:w-10 md:w-12 text-secondary mx-auto mb-3 md:mb-4" />
+                    <h2 className="text-lg sm:text-xl md:text-3xl font-bold font-sans text-primary mb-2 md:mb-3 leading-tight">
                       What's the primary purpose of the funds?
                     </h2>
-                    <p className="text-lg text-muted-foreground font-serif">
+                    <p className="text-sm sm:text-base md:text-lg text-muted-foreground font-serif">
                       This helps us match you with the right type of lenders
                     </p>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                     {useOfFundsOptions.map((option) => {
                       const IconComponent = option.icon;
                       const isSelected = quizData.useOfFunds === option.id;
@@ -830,14 +830,16 @@ const Quiz = () => {
                           )}
                           onClick={() => handleOptionSelect('useOfFunds', option.id)}
                         >
-                          <CardContent className="p-6 text-center relative">
+                          <CardContent className="p-4 sm:p-5 md:p-6 text-center relative min-h-[48px] flex items-center justify-center">
                             {isSelected && (
-                              <div className="absolute top-4 right-4">
-                                <Check className="h-6 w-6 text-secondary animate-scale-in" />
+                              <div className="absolute top-3 right-3">
+                                <Check className="h-5 w-5 md:h-6 md:w-6 text-secondary animate-scale-in" />
                               </div>
                             )}
-                            <IconComponent className="h-12 w-12 text-secondary mx-auto mb-4 group-hover:scale-110 transition-transform" />
-                            <h3 className="text-lg font-semibold text-primary mb-1">{option.label}</h3>
+                            <div className="flex items-center gap-3 w-full">
+                              <IconComponent className="h-8 w-8 md:h-10 md:w-10 text-secondary group-hover:scale-110 transition-transform flex-shrink-0" />
+                              <h3 className="text-base md:text-lg font-semibold text-primary text-left">{option.label}</h3>
+                            </div>
                           </CardContent>
                         </Card>
                       );
@@ -896,18 +898,18 @@ const Quiz = () => {
 
               {/* Step 4: Monthly Revenue */}
               {currentStep === 4 && (
-                <div className="space-y-8 animate-fade-in">
+                <div className="space-y-6 md:space-y-8 animate-fade-in">
                   <div className="text-center">
-                    <TrendingUp className="h-12 w-12 text-secondary mx-auto mb-4" />
-                    <h2 className="text-3xl font-bold font-sans text-primary mb-3">
+                    <TrendingUp className="h-8 sm:h-10 md:h-12 w-8 sm:w-10 md:w-12 text-secondary mx-auto mb-3 md:mb-4" />
+                    <h2 className="text-lg sm:text-xl md:text-3xl font-bold font-sans text-primary mb-2 md:mb-3 leading-tight">
                       What is your average monthly revenue?
                     </h2>
-                    <p className="text-lg text-muted-foreground font-serif">
+                    <p className="text-sm sm:text-base md:text-lg text-muted-foreground font-serif">
                       This helps determine your loan capacity and terms
                     </p>
                   </div>
                   
-                  <div className="space-y-6">
+                  <div className="space-y-4 md:space-y-6">
                     <Slider
                       value={quizData.monthlyRevenue}
                       onValueChange={(value) => setQuizData({...quizData, monthlyRevenue: value})}
@@ -917,10 +919,10 @@ const Quiz = () => {
                       className="w-full"
                     />
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-primary mb-2">
+                      <div className="text-xl sm:text-2xl md:text-4xl font-bold text-primary mb-1 md:mb-2">
                         ${quizData.monthlyRevenue[0].toLocaleString()}/month
                       </div>
-                      <div className="text-lg text-muted-foreground">
+                      <div className="text-sm sm:text-base md:text-lg text-muted-foreground">
                         Range: $1,000 - $200,000+ per month
                       </div>
                     </div>
