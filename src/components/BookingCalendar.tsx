@@ -33,7 +33,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({ onBookingConfirmed, u
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
   const [loading, setLoading] = useState(false);
-  const [booking, setBooKing] = useState(false);
+  const [booking, setBooking] = useState(false);
   const [hasAvailableDates, setHasAvailableDates] = useState(true);
   const { toast } = useToast();
 
@@ -126,7 +126,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({ onBookingConfirmed, u
       return;
     }
 
-    setBooKing(true);
+    setBooking(true);
     try {
       // Create the booking
       const { data: booking, error: bookingError } = await supabase
@@ -185,7 +185,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({ onBookingConfirmed, u
         variant: "destructive",
       });
     } finally {
-      setBooKing(false);
+      setBooking(false);
     }
   };
 
