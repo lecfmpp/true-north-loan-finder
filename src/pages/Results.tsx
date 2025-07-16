@@ -390,11 +390,12 @@ const Results = () => {
                     <Button 
                       variant="link" 
                       onClick={handleChatWithUs}
-                      className="text-blue-600 hover:text-blue-800 text-center leading-relaxed px-2 w-full"
+                      className="text-blue-600 hover:text-blue-800 text-center leading-tight px-1 w-full text-xs sm:text-base sm:px-2 sm:leading-relaxed"
                     >
-                      <MessageCircle className="w-4 h-4 mr-2 flex-shrink-0" />
-                      <span className="break-words text-sm sm:text-base">
-                        Have a question before booking? Chat with us now.
+                      <MessageCircle className="w-4 h-4 mr-1 sm:mr-2 flex-shrink-0" />
+                      <span className="break-words">
+                        <span className="sm:hidden">Questions? Chat with us</span>
+                        <span className="hidden sm:inline">Have a question before booking? Chat with us now.</span>
                       </span>
                     </Button>
                   </div>
