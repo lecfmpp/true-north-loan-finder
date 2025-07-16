@@ -136,10 +136,12 @@ export const ApplicationsManagement = () => {
     return <div className="flex justify-center py-8">Loading applications...</div>;
   }
   return <div className="space-y-4 px-2 sm:px-0">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-        <h2 className="text-lg sm:text-xl font-semibold">Lender & Broker Applications</h2>
-        <div className="text-xs sm:text-sm text-muted-foreground">
-          {filteredApplications.length !== applications.length ? `Showing ${filteredApplications.length} of ${applications.length} applications` : `Total: ${applications.length} applications`}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-3">
+          <h2 className="text-lg sm:text-xl font-semibold">Lender & Broker Applications</h2>
+          <div className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded">
+            {filteredApplications.length !== applications.length ? `${filteredApplications.length}/${applications.length}` : `${applications.length}`}
+          </div>
         </div>
       </div>
 
