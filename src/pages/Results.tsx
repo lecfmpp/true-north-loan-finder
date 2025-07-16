@@ -225,10 +225,10 @@ const Results = () => {
 
   if (bookingConfirmed && bookingDetails) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background overflow-x-hidden">
         <Header />
-        <div className="container mx-auto px-4 py-12">
-          <div className="max-w-3xl mx-auto text-center space-y-8">
+        <div className="container mx-auto px-4 py-12 max-w-full overflow-x-hidden">
+          <div className="max-w-3xl mx-auto text-center space-y-8 overflow-x-hidden">
             <div className="space-y-4">
               <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
               <h1 className="text-4xl font-bold text-primary">
@@ -296,16 +296,16 @@ const Results = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <Header />
-      <div className="container mx-auto px-4 py-6 md:py-12">
-        <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
+      <div className="container mx-auto px-4 py-6 md:py-12 max-w-full overflow-x-hidden">
+        <div className="max-w-4xl mx-auto space-y-6 md:space-y-8 overflow-x-hidden">
           
           {!showBooking ? (
             <>
               {/* Hook Section */}
-              <div className="text-center space-y-4 md:space-y-6">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary px-2">
+              <div className="text-center space-y-4 md:space-y-6 overflow-x-hidden">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary px-2 break-words">
                   Excellent! Your profile is a strong match. Here's what you're pre-qualified for.
                 </h1>
                 
