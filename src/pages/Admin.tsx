@@ -1002,65 +1002,117 @@ const Admin = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <SidebarProvider>
-        <div className="flex min-h-[calc(100vh-160px)]">
-          <Sidebar collapsible="icon" className="border-r">
-            <SidebarContent className="pt-4">
-              <SidebarGroup>
-                <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-                <SidebarGroupContent>
-                  <SidebarMenu>
-                    {menuItems.map((item) => {
-                      const Icon = item.icon;
-                      const isActive = activeTab === item.value;
-                      
-                      return (
-                        <SidebarMenuItem key={item.value}>
-                          <SidebarMenuButton
-                            asChild
-                            isActive={isActive}
-                            onClick={() => setActiveTab(item.value)}
-                          >
-                            <button className="flex items-center gap-2 w-full">
-                              <Icon className="h-4 w-4" />
-                              <span>{item.title}</span>
-                              {item.count !== undefined && (
-                                <div className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-blue-900 bg-green-500 rounded">
-                                  {item.count}
-                                </div>
-                              )}
-                            </button>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      );
-                    })}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </SidebarGroup>
-            </SidebarContent>
-          </Sidebar>
-
-          <div className="flex flex-col flex-1">
-            {/* Admin Header with sidebar trigger and sign out */}
-            <div className="border-b h-16 flex items-center px-4 bg-background shrink-0 sticky top-[80px] z-40">
-              <SidebarTrigger className="mr-4" />
-              <div className="flex-1">
-                <h1 className="text-2xl font-bold text-primary">Admin Dashboard</h1>
-              </div>
-              <Button onClick={signOut} variant="outline">
+      <div className="flex">
+        {/* Desktop Sidebar - Always visible on large screens */}
+        <aside className="hidden lg:flex lg:flex-shrink-0">
+          <div className="flex flex-col w-64 border-r bg-card">
+            {/* Admin Header for Desktop */}
+            <div className="flex items-center justify-between p-4 border-b bg-background">
+              <h1 className="text-xl font-bold text-primary">Admin Dashboard</h1>
+              <Button onClick={signOut} variant="outline" size="sm">
                 <LogOut className="w-4 h-4 mr-2" />
                 Sign Out
               </Button>
             </div>
+            
+            {/* Navigation Menu */}
+            <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+              <div className="text-sm font-medium text-muted-foreground mb-4">Navigation</div>
+              {menuItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.value;
+                
+                return (
+                  <button
+                    key={item.value}
+                    onClick={() => setActiveTab(item.value)}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                      isActive 
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span className="flex-1">{item.title}</span>
+                    {item.count !== undefined && (
+                      <div className={`flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium rounded ${
+                        isActive 
+                          ? 'bg-primary-foreground text-primary' 
+                          : 'bg-green-500 text-white'
+                      }`}>
+                        {item.count}
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+        </aside>
 
-            <main className="flex-1 p-6">
-              <div className="max-w-full">
-                {renderContent()}
+        {/* Mobile Header - Visible on small screens */}
+        <div className="lg:hidden w-full">
+          <div className="border-b h-16 flex items-center px-4 bg-background">
+            <SidebarProvider>
+              <SidebarTrigger className="mr-4" />
+              <div className="flex-1">
+                <h1 className="text-xl font-bold text-primary">Admin Dashboard</h1>
               </div>
-            </main>
+              <Button onClick={signOut} variant="outline" size="sm">
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+              
+              {/* Mobile Sidebar Overlay */}
+              <Sidebar collapsible="icon" className="lg:hidden">
+                <SidebarContent className="pt-4">
+                  <SidebarGroup>
+                    <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+                    <SidebarGroupContent>
+                      <SidebarMenu>
+                        {menuItems.map((item) => {
+                          const Icon = item.icon;
+                          const isActive = activeTab === item.value;
+                          
+                          return (
+                            <SidebarMenuItem key={item.value}>
+                              <SidebarMenuButton
+                                asChild
+                                isActive={isActive}
+                                onClick={() => setActiveTab(item.value)}
+                              >
+                                <button className="flex items-center gap-2 w-full">
+                                  <Icon className="h-4 w-4" />
+                                  <span>{item.title}</span>
+                                  {item.count !== undefined && (
+                                    <div className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-blue-900 bg-green-500 rounded">
+                                      {item.count}
+                                    </div>
+                                  )}
+                                </button>
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                          );
+                        })}
+                      </SidebarMenu>
+                    </SidebarGroupContent>
+                  </SidebarGroup>
+                </SidebarContent>
+              </Sidebar>
+            </SidebarProvider>
           </div>
         </div>
-      </SidebarProvider>
+
+        {/* Main Content Area */}
+        <main className="flex-1 min-w-0">
+          <div className="lg:hidden border-b h-16"></div> {/* Spacer for mobile header */}
+          <div className="p-6">
+            <div className="max-w-full">
+              {renderContent()}
+            </div>
+          </div>
+        </main>
+      </div>
       
       <Footer />
 
