@@ -15,6 +15,14 @@ import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, MessageCircle, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign } from 'lucide-react';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
@@ -69,6 +77,9 @@ const Admin = () => {
   const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
   const [sendingEmails, setSendingEmails] = useState<{ [key: string]: boolean }>({});
   const [selectedRecipients, setSelectedRecipients] = useState<{ [key: string]: string }>({});
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [leadToDelete, setLeadToDelete] = useState<string | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const { user, isAdmin, isSuperAdmin, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -320,38 +331,57 @@ const Admin = () => {
     }
   };
 
-  const deleteLead = async (leadId: string) => {
-    const userInput = prompt('To confirm deletion, please type "DELETE LEAD" (without quotes):');
-    
-    if (userInput !== 'DELETE LEAD') {
-      if (userInput !== null) { // User didn't cancel
-        toast({
-          title: "Deletion Cancelled",
-          description: "Please type exactly 'DELETE LEAD' to confirm deletion",
-          variant: "destructive"
-        });
-      }
+  const openDeleteModal = (leadId: string) => {
+    setLeadToDelete(leadId);
+    setDeleteModalOpen(true);
+    setDeleteConfirmText('');
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModalOpen(false);
+    setLeadToDelete(null);
+    setDeleteConfirmText('');
+  };
+
+  const confirmDelete = async () => {
+    if (deleteConfirmText !== 'DELETE LEAD') {
+      toast({
+        title: "Deletion Cancelled",
+        description: "Please type exactly 'DELETE LEAD' to confirm deletion",
+        variant: "destructive"
+      });
       return;
     }
 
+    if (!leadToDelete) return;
+
     try {
+      console.log('Attempting to delete lead with ID:', leadToDelete);
+      
       const { error } = await supabase
         .from('quiz_responses')
         .delete()
-        .eq('id', leadId);
+        .eq('id', leadToDelete);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase delete error:', error);
+        throw error;
+      }
 
-      setLeads(leads.filter(lead => lead.id !== leadId));
+      console.log('Lead deleted successfully');
+      setLeads(leads.filter(lead => lead.id !== leadToDelete));
       
       toast({
         title: "Success",
         description: "Lead deleted successfully"
       });
-    } catch (error) {
+      
+      closeDeleteModal();
+    } catch (error: any) {
+      console.error('Error deleting lead:', error);
       toast({
         title: "Error",
-        description: "Failed to delete lead",
+        description: error.message || "Failed to delete lead",
         variant: "destructive"
       });
     }
@@ -885,7 +915,7 @@ const Admin = () => {
                                 <Button
                                   variant="destructive"
                                   size="sm"
-                                  onClick={() => deleteLead(lead.id)}
+                                  onClick={() => openDeleteModal(lead.id)}
                                 >
                                   <Trash2 className="w-4 h-4" />
                                 </Button>
@@ -985,6 +1015,43 @@ const Admin = () => {
           </main>
         </div>
         <Footer />
+
+        {/* Delete Confirmation Modal */}
+        <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle className="text-destructive">Delete Lead</DialogTitle>
+              <DialogDescription>
+                This action cannot be undone. This will permanently delete the lead and all associated data.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <p className="text-sm font-medium">
+                  To confirm deletion, please type <span className="font-mono bg-muted px-1 rounded">DELETE LEAD</span> below:
+                </p>
+                <Input
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder="Type DELETE LEAD to confirm"
+                  className="font-mono"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={closeDeleteModal}>
+                Cancel
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={confirmDelete}
+                disabled={deleteConfirmText !== 'DELETE LEAD'}
+              >
+                Delete Lead
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </SidebarProvider>
   );
