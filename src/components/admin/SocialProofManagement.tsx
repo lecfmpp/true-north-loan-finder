@@ -395,10 +395,9 @@ const SocialProofManagement = () => {
             </div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button onClick={resetForm} size="sm">
+                <Button onClick={resetForm} size="sm" className="hidden sm:flex">
                   <Plus className="w-4 h-4 mr-2" />
-                  <span className="hidden sm:inline">Add Notification</span>
-                  <span className="sm:hidden">Add</span>
+                  Add Notification
                 </Button>
               </DialogTrigger>
           <DialogContent className="max-w-2xl">
