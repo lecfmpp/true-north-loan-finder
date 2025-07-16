@@ -171,7 +171,6 @@ const Results = () => {
   ];
 
   const handleBookCall = () => {
-    // Debug logging to check if data is available
     console.log('Book call clicked with data:', {
       finalName,
       finalEmail,
@@ -179,19 +178,30 @@ const Results = () => {
       quizResponseId
     });
     
-    if (!finalName || !finalEmail) {
-      toast({
-        title: "Missing Information",
-        description: "Please complete the loan estimator first to book a call.",
-        variant: "destructive",
-      });
-      navigate('/loan-estimator');
-      return;
+    try {
+      if (!finalName || !finalEmail) {
+        console.log('Missing data - showing toast and redirecting');
+        toast({
+          title: "Missing Information",
+          description: "Please complete the loan estimator first to book a call.",
+          variant: "destructive",
+        });
+        navigate('/loan-estimator');
+        return;
+      }
+      
+      console.log('Setting showBooking to true');
+      setShowBooking(true);
+      
+      // Scroll to top when showing booking calendar
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 100);
+      
+      console.log('Booking state should now be:', true);
+    } catch (error) {
+      console.error('Error in handleBookCall:', error);
     }
-    
-    setShowBooking(true);
-    // Scroll to top when showing booking calendar
-    window.scrollTo(0, 0);
   };
 
   const handleBookingConfirmed = (bookingData: any) => {
