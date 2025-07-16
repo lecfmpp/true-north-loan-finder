@@ -369,7 +369,7 @@ const EmailSequenceManagement = () => {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
                 {sequence.name}
                 <Badge variant={sequence.is_active ? "status-active" : "status-inactive"}>
                   {sequence.is_active ? "Active" : "Paused"}
