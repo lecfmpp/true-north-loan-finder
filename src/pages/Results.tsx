@@ -309,46 +309,27 @@ const Results = () => {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-6 max-w-3xl mx-auto">
-                  <div className="text-center space-y-2 p-3 md:p-4 rounded-lg bg-blue-50 border">
-                    <Clock className="h-6 w-6 md:h-8 md:w-8 text-blue-500 mx-auto" />
-                    <h3 className="text-sm md:text-base font-semibold">Funding Speed</h3>
-                    <p className="text-xs md:text-sm text-muted-foreground">{loanTerms.fundingSpeed}</p>
-                  </div>
-                  <div className="text-center space-y-2 p-3 md:p-4 rounded-lg bg-green-50 border">
-                    <TrendingUp className="h-6 w-6 md:h-8 md:w-8 text-green-500 mx-auto" />
-                    <h3 className="text-sm md:text-base font-semibold">Est. Rate</h3>
-                    <p className="text-xs md:text-sm text-muted-foreground">{loanTerms.estimatedRate}</p>
-                  </div>
-                  <div className="text-center space-y-2 p-3 md:p-4 rounded-lg bg-purple-50 border">
-                    <DollarSign className="h-6 w-6 md:h-8 md:w-8 text-purple-500 mx-auto" />
-                    <h3 className="text-sm md:text-base font-semibold">Est. Payment</h3>
-                    <p className="text-xs md:text-sm text-muted-foreground">{loanTerms.estimatedPayment}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Curated Lender Matches */}
-              <div className="space-y-4 md:space-y-6">
-                <h2 className="text-xl sm:text-2xl md:text-2xl font-bold text-center px-2">
-                  Based on your profile, here are your Top 3 matches from our network:
-                </h2>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
-                  {topLenders.map((lender) => (
-                    <Card key={lender.id} className="text-center bg-slate-800 border-slate-700 text-white animate-fade-in h-full">
-                      <CardContent className="p-4 md:p-6 space-y-3 md:space-y-4 h-full flex flex-col justify-between">
-                        <div>
-                          <h3 className="font-bold text-lg md:text-2xl text-white">{lender.name}</h3>
-                          <Badge className="bg-green-100 text-green-800 mt-2">
-                            Top Match ({lender.matchRating})
-                          </Badge>
-                        </div>
-                        <p className="text-xs md:text-sm text-gray-300 flex-grow">
-                          {lender.tagline}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ))}
+                  <Card className="bg-blue-50 border-blue-200">
+                    <CardContent className="text-center space-y-2 p-3 md:p-4">
+                      <Clock className="h-6 w-6 md:h-8 md:w-8 text-blue-500 mx-auto" />
+                      <h3 className="text-sm md:text-base font-semibold">Funding Speed</h3>
+                      <p className="text-xs md:text-sm text-muted-foreground">{loanTerms.fundingSpeed}</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-green-50 border-green-200">
+                    <CardContent className="text-center space-y-2 p-3 md:p-4">
+                      <TrendingUp className="h-6 w-6 md:h-8 md:w-8 text-green-500 mx-auto" />
+                      <h3 className="text-sm md:text-base font-semibold">Est. Rate</h3>
+                      <p className="text-xs md:text-sm text-muted-foreground">{loanTerms.estimatedRate}</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-purple-50 border-purple-200">
+                    <CardContent className="text-center space-y-2 p-3 md:p-4">
+                      <DollarSign className="h-6 w-6 md:h-8 md:w-8 text-purple-500 mx-auto" />
+                      <h3 className="text-sm md:text-base font-semibold">Est. Payment</h3>
+                      <p className="text-xs md:text-sm text-muted-foreground">{loanTerms.estimatedPayment}</p>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
 
@@ -412,6 +393,31 @@ const Results = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Curated Lender Matches */}
+              <div className="space-y-4 md:space-y-6">
+                <h2 className="text-xl sm:text-2xl md:text-2xl font-bold text-center px-2">
+                  Based on your profile, here are your Top 3 matches from our network:
+                </h2>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+                  {topLenders.map((lender) => (
+                    <Card key={lender.id} className="text-center bg-slate-800 border-slate-700 text-white animate-fade-in h-full">
+                      <CardContent className="p-4 md:p-6 space-y-3 md:space-y-4 h-full flex flex-col justify-between">
+                        <div>
+                          <h3 className="font-bold text-lg md:text-2xl text-white">{lender.name}</h3>
+                          <Badge className="bg-green-100 text-green-800 mt-2">
+                            Top Match ({lender.matchRating})
+                          </Badge>
+                        </div>
+                        <p className="text-xs md:text-sm text-gray-300 flex-grow">
+                          {lender.tagline}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
             </>
           ) : (
             <>
