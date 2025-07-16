@@ -135,10 +135,10 @@ export const ApplicationsManagement = () => {
   if (loading) {
     return <div className="flex justify-center py-8">Loading applications...</div>;
   }
-  return <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold">Lender & Broker Applications</h2>
-        <div className="text-sm text-muted-foreground">
+  return <div className="space-y-4 px-2 sm:px-0">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+        <h2 className="text-lg sm:text-xl font-semibold">Lender & Broker Applications</h2>
+        <div className="text-xs sm:text-sm text-muted-foreground">
           {filteredApplications.length !== applications.length ? `Showing ${filteredApplications.length} of ${applications.length} applications` : `Total: ${applications.length} applications`}
         </div>
       </div>
@@ -168,60 +168,62 @@ export const ApplicationsManagement = () => {
         </CardContent>
       </Card>
 
-      <div className="grid gap-6">
-        {filteredApplications.map(application => <Card key={application.id} className="relative">
-            <CardHeader className="pb-4">
-              <div className="flex justify-between items-start">
-                <div className="flex items-center gap-2">
-                  {getTypeIcon(application.application_type)}
-                  <CardTitle className="capitalize">
-                    {application.application_type} Application
-                  </CardTitle>
+      <div className="grid gap-4">
+        {filteredApplications.map(application => <Card key={application.id} className="relative overflow-hidden">
+            <CardHeader className="pb-3">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    {getTypeIcon(application.application_type)}
+                    <CardTitle className="capitalize text-sm sm:text-base">
+                      {application.application_type} Application
+                    </CardTitle>
+                  </div>
                   {getStatusBadge(application.status)}
                 </div>
-                {isSuperAdmin && <Button variant="outline" size="sm" onClick={() => deleteApplication(application.id)} disabled={processingId === application.id} className="text-destructive hover:text-destructive">
+                {isSuperAdmin && <Button variant="outline" size="sm" onClick={() => deleteApplication(application.id)} disabled={processingId === application.id} className="text-destructive hover:text-destructive self-start">
                     <Trash2 className="w-4 h-4" />
                   </Button>}
               </div>
             </CardHeader>
             
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-muted-foreground" />
-                    <span className="font-medium">{application.applicant_name}</span>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-xs sm:text-sm">
+                    <User className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
+                    <span className="font-medium truncate">{application.applicant_name}</span>
                   </div>
                   
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-muted-foreground" />
-                    <span>{application.applicant_email}</span>
+                  <div className="flex items-center gap-2 text-xs sm:text-sm">
+                    <Mail className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
+                    <span className="truncate">{application.applicant_email}</span>
                   </div>
                   
-                  {application.applicant_phone && <div className="flex items-center gap-2">
-                      <Phone className="w-4 h-4 text-muted-foreground" />
-                      <span>{application.applicant_phone}</span>
+                  {application.applicant_phone && <div className="flex items-center gap-2 text-xs sm:text-sm">
+                      <Phone className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
+                      <span className="truncate">{application.applicant_phone}</span>
                     </div>}
                   
-                  <div className="flex items-center gap-2">
-                    <Building className="w-4 h-4 text-muted-foreground" />
-                    <span className="font-medium">{application.company_name}</span>
+                  <div className="flex items-center gap-2 text-xs sm:text-sm">
+                    <Building className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
+                    <span className="font-medium truncate">{application.company_name}</span>
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="text-sm text-muted-foreground">
+                <div className="space-y-2">
+                  <div className="text-xs sm:text-sm text-muted-foreground">
                     Applied: {new Date(application.created_at).toLocaleDateString()}
                   </div>
                   
-                  {application.reviewed_at && <div className="text-sm text-muted-foreground">
+                  {application.reviewed_at && <div className="text-xs sm:text-sm text-muted-foreground">
                       Reviewed: {new Date(application.reviewed_at).toLocaleDateString()}
                     </div>}
                 </div>
               </div>
 
               {/* Company Information */}
-              <div className="grid md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-3 bg-muted/50 rounded-lg">
                 {application.license_number && <div>
                     <div className="flex items-center gap-2 mb-1">
                       <FileText className="w-4 h-4 text-muted-foreground" />
