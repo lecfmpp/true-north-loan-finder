@@ -171,6 +171,8 @@ const Results = () => {
   ];
 
   const handleBookCall = () => {
+    console.log('=== BOOK CALL BUTTON CLICKED ===');
+    console.log('Current showBooking state:', showBooking);
     console.log('Book call clicked with data:', {
       finalName,
       finalEmail,
@@ -190,15 +192,21 @@ const Results = () => {
         return;
       }
       
-      console.log('Setting showBooking to true');
+      console.log('About to set showBooking to true...');
       setShowBooking(true);
+      console.log('setShowBooking(true) called');
       
       // Scroll to top when showing booking calendar
       setTimeout(() => {
+        console.log('Scrolling to top...');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }, 100);
       
-      console.log('Booking state should now be:', true);
+      // Add a timeout to check if state actually changed
+      setTimeout(() => {
+        console.log('Checking showBooking state after timeout:', showBooking);
+      }, 200);
+      
     } catch (error) {
       console.error('Error in handleBookCall:', error);
     }
@@ -348,8 +356,14 @@ const Results = () => {
                   <div className="space-y-3 md:space-y-4 max-w-2xl mx-auto px-2">
                     <Button 
                       size="lg" 
-                      onClick={handleBookCall}
-                      className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm sm:text-base md:text-xl py-4 md:py-6 px-4 md:px-12 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all w-full min-h-[56px] md:min-h-[72px] flex items-center justify-center"
+                      onClick={(e) => {
+                        console.log('Button click event triggered:', e);
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleBookCall();
+                      }}
+                      className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm sm:text-base md:text-xl py-4 md:py-6 px-4 md:px-12 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all w-full min-h-[56px] md:min-h-[72px] flex items-center justify-center cursor-pointer"
+                      type="button"
                     >
                       <Calendar className="w-4 h-4 md:w-5 md:h-5 mr-2 flex-shrink-0" />
                       <span className="text-center leading-tight">
