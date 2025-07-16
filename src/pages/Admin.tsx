@@ -837,12 +837,15 @@ const Admin = () => {
     }
   };
   return <SidebarProvider>
-      <div className="min-h-screen bg-background w-full overflow-x-hidden">
-        <Header />
+      <div className="dashboard-container min-h-screen bg-background w-full">
+        {/* Top header - spans full width */}
+        <div className="app-header">
+          <Header />
+        </div>
         
-        {/* Header with sidebar trigger and sign out */}
-        <div className="border-b h-16 flex items-center px-4">
-          <SidebarTrigger className="mr-4" />
+        {/* Dashboard header with sidebar trigger and sign out */}
+        <div className="dashboard-header border-b h-16 flex items-center px-4 lg:col-span-2">
+          <SidebarTrigger className="mr-4 lg:hidden" />
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-primary">Dashboard</h1>
           </div>
@@ -852,41 +855,45 @@ const Admin = () => {
           </Button>
         </div>
 
-        <div className="flex w-full min-w-0">
-          <Sidebar collapsible="icon" className="border-r">
-            <SidebarContent>
-              <SidebarGroup>
-                <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-                <SidebarGroupContent>
-                  <SidebarMenu>
-                    {menuItems.map(item => {
-                    const Icon = item.icon;
-                    const isActive = activeTab === item.value;
-                    return <SidebarMenuItem key={item.value}>
-                          <SidebarMenuButton asChild isActive={isActive} onClick={() => setActiveTab(item.value)}>
-                            <button className="flex items-center gap-2 w-full">
-                              <Icon className="h-4 w-4" />
-                              <span>{item.title}</span>
-                              {item.count !== undefined && <div className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-blue-900 bg-green-500 rounded">
-                                  {item.count}
-                                </div>}
-                            </button>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>;
-                  })}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </SidebarGroup>
-            </SidebarContent>
-          </Sidebar>
+        {/* Sidebar */}
+        <Sidebar collapsible="icon" className="app-sidebar border-r">
+          <SidebarContent>
+            <SidebarGroup>
+              <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {menuItems.map(item => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.value;
+                  return <SidebarMenuItem key={item.value}>
+                        <SidebarMenuButton asChild isActive={isActive} onClick={() => setActiveTab(item.value)}>
+                          <button className="flex items-center gap-2 w-full">
+                            <Icon className="h-4 w-4" />
+                            <span>{item.title}</span>
+                            {item.count !== undefined && <div className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-blue-900 bg-green-500 rounded">
+                                {item.count}
+                              </div>}
+                          </button>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>;
+                })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+        </Sidebar>
 
-          <main className="flex-1 p-2 sm:p-4 md:p-6 overflow-x-auto min-w-0">
-            <div className="min-w-0 max-w-full">
-              {renderContent()}
-            </div>
-          </main>
+        {/* Main content */}
+        <main className="main-content p-2 sm:p-4 md:p-6 overflow-y-auto min-w-0">
+          <div className="min-w-0 max-w-full">
+            {renderContent()}
+          </div>
+        </main>
+
+        {/* Footer */}
+        <div className="app-footer">
+          <Footer />
         </div>
-        <Footer />
 
         {/* Delete Confirmation Modal */}
         <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
