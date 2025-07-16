@@ -880,8 +880,8 @@ const Admin = () => {
             </SidebarContent>
           </Sidebar>
 
-          <main className="flex-1 p-6 overflow-x-auto min-w-0">
-            <div className="min-w-max">
+          <main className="flex-1 p-2 sm:p-4 md:p-6 overflow-x-auto min-w-0">
+            <div className="min-w-0 max-w-full">
               {renderContent()}
             </div>
           </main>
