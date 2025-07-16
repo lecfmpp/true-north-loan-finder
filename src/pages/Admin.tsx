@@ -999,11 +999,11 @@ const Admin = () => {
   };
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen bg-background flex flex-col overflow-x-hidden">
-        <Header />
-        
-        <div className="flex flex-1 overflow-hidden">
+    <div className="min-h-screen bg-background">
+      <Header />
+      
+      <SidebarProvider>
+        <div className="flex min-h-[calc(100vh-160px)]">
           <Sidebar collapsible="icon" className="border-r">
             <SidebarContent className="pt-4">
               <SidebarGroup>
@@ -1040,9 +1040,9 @@ const Admin = () => {
             </SidebarContent>
           </Sidebar>
 
-          <div className="flex flex-col flex-1 overflow-hidden">
-            {/* Header with sidebar trigger and sign out */}
-            <div className="border-b h-16 flex items-center px-4 bg-background shrink-0">
+          <div className="flex flex-col flex-1">
+            {/* Admin Header with sidebar trigger and sign out */}
+            <div className="border-b h-16 flex items-center px-4 bg-background shrink-0 sticky top-[80px] z-40">
               <SidebarTrigger className="mr-4" />
               <div className="flex-1">
                 <h1 className="text-2xl font-bold text-primary">Admin Dashboard</h1>
@@ -1053,17 +1053,18 @@ const Admin = () => {
               </Button>
             </div>
 
-            <main className="flex-1 p-6 overflow-auto">
+            <main className="flex-1 p-6">
               <div className="max-w-full">
                 {renderContent()}
               </div>
             </main>
           </div>
         </div>
-        
-        <Footer />
+      </SidebarProvider>
+      
+      <Footer />
 
-        {/* Delete Confirmation Modal */}
+      {/* Delete Confirmation Modal */}
         <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
@@ -1110,8 +1111,7 @@ const Admin = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
-    </SidebarProvider>
+    </div>
   );
 };
 
