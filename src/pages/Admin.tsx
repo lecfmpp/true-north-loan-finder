@@ -80,6 +80,7 @@ const Admin = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [leadToDelete, setLeadToDelete] = useState<string | null>(null);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [leadBookings, setLeadBookings] = useState<Array<{id: string, booking_status: string}>>([]);
   const { user, isAdmin, isSuperAdmin, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -331,10 +332,31 @@ const Admin = () => {
     }
   };
 
-  const openDeleteModal = (leadId: string) => {
-    setLeadToDelete(leadId);
-    setDeleteModalOpen(true);
-    setDeleteConfirmText('');
+  const openDeleteModal = async (leadId: string) => {
+    // Check if lead has associated call bookings
+    try {
+      const { data: bookings, error } = await supabase
+        .from('call_bookings')
+        .select('id, booking_status')
+        .eq('quiz_response_id', leadId);
+      
+      if (error) {
+        console.error('Error checking bookings:', error);
+      }
+      
+      setLeadToDelete(leadId);
+      setDeleteModalOpen(true);
+      setDeleteConfirmText('');
+      
+      // Store booking info for the modal
+      setLeadBookings(bookings || []);
+    } catch (error) {
+      console.error('Error checking lead bookings:', error);
+      setLeadToDelete(leadId);
+      setDeleteModalOpen(true);
+      setDeleteConfirmText('');
+      setLeadBookings([]);
+    }
   };
 
   const closeDeleteModal = () => {
@@ -358,6 +380,22 @@ const Admin = () => {
     try {
       console.log('Attempting to delete lead with ID:', leadToDelete);
       
+      // First, delete any associated call bookings to avoid foreign key constraint
+      if (leadBookings.length > 0) {
+        console.log('Deleting associated call bookings:', leadBookings);
+        const { error: bookingsError } = await supabase
+          .from('call_bookings')
+          .delete()
+          .eq('quiz_response_id', leadToDelete);
+
+        if (bookingsError) {
+          console.error('Error deleting call bookings:', bookingsError);
+          throw bookingsError;
+        }
+        console.log('Associated call bookings deleted successfully');
+      }
+
+      // Then delete the lead
       const { error } = await supabase
         .from('quiz_responses')
         .delete()
@@ -371,9 +409,13 @@ const Admin = () => {
       console.log('Lead deleted successfully');
       setLeads(leads.filter(lead => lead.id !== leadToDelete));
       
+      const deletionMessage = leadBookings.length > 0 
+        ? `Lead and ${leadBookings.length} associated call booking(s) deleted successfully`
+        : "Lead deleted successfully";
+      
       toast({
         title: "Success",
-        description: "Lead deleted successfully"
+        description: deletionMessage
       });
       
       closeDeleteModal();
@@ -1023,6 +1065,17 @@ const Admin = () => {
               <DialogTitle className="text-destructive">Delete Lead</DialogTitle>
               <DialogDescription>
                 This action cannot be undone. This will permanently delete the lead and all associated data.
+                {leadBookings.length > 0 && (
+                  <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                    <div className="flex items-center gap-2 text-yellow-800">
+                      <Clock className="h-4 w-4" />
+                      <strong>Warning:</strong>
+                    </div>
+                    <p className="text-yellow-700 mt-1">
+                      This lead has {leadBookings.length} associated call booking(s) that will also be cancelled and removed permanently.
+                    </p>
+                  </div>
+                )}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
