@@ -12,6 +12,7 @@ import Quiz from "./pages/Quiz";
 import HowItWorks from "./pages/HowItWorks";
 import About from "./pages/About";
 import Partners from "./pages/Partners";
+import IndustriesWeServe from "./pages/IndustriesWeServe";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import EquipmentFinancing from "./pages/EquipmentFinancing";
@@ -50,6 +51,7 @@ const App = () => (
             <Route path="/how-it-works" element={<HowItWorks />} />
             <Route path="/about" element={<About />} />
             <Route path="/partners" element={<Partners />} />
+            <Route path="/industries-we-serve" element={<IndustriesWeServe />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/equipment-financing" element={<EquipmentFinancing />} />

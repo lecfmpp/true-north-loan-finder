@@ -61,8 +61,8 @@ const Header = () => {
               Blog
             </Link>
 
-            <Link to="/partners" className={`text-sm font-medium transition-colors hover:text-primary-foreground/80 ${isActive("/partners") ? "text-primary-foreground" : "text-primary-foreground/70"}`}>
-              Partners
+            <Link to="/industries-we-serve" className={`text-sm font-medium transition-colors hover:text-primary-foreground/80 ${isActive("/industries-we-serve") ? "text-primary-foreground" : "text-primary-foreground/70"}`}>
+              Industries We Serve
             </Link>
 
             <Link to="/about" className={`text-sm font-medium transition-colors hover:text-primary-foreground/80 ${isActive("/about") ? "text-primary-foreground" : "text-primary-foreground/70"}`}>
@@ -130,8 +130,8 @@ const Header = () => {
               <Link to="/blog" className="block text-sm font-medium text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
                 Blog
               </Link>
-              <Link to="/partners" className="block text-sm font-medium text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
-                Partners
+              <Link to="/industries-we-serve" className="block text-sm font-medium text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
+                Industries We Serve
               </Link>
               <Link to="/about" className="block text-sm font-medium text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
                 About Us
