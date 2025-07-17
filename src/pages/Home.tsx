@@ -149,8 +149,7 @@ const Home = () => {
               </Badge>
               
               <h1 className="text-4xl lg:text-6xl font-bold font-sans text-primary mb-6 leading-tight">
-                Find the Right Business Loan to Grow Your
-                <span className="text-secondary"> Canadian Business</span>
+                Business Loans Designed for Canadian Entrepreneurs
               </h1>
               
               <p className="text-xl lg:text-2xl text-muted-foreground mb-8 font-serif">
