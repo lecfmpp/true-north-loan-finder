@@ -145,15 +145,15 @@ const Home = () => {
             {/* Left Column - Text Content (60% width) */}
             <div className="lg:col-span-3 text-left lg:pl-8 lg:pr-12">
               <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm font-medium">
-                🍁 Canada's Trusted Business Loan Marketplace
+                🍁 Your Trusted Source for Business Loans in Canada
               </Badge>
               
               <h1 className="text-4xl lg:text-6xl font-bold font-sans text-primary mb-6 leading-tight">
-                Business Loans Designed for Canadian Entrepreneurs
+                Business Loans Designed for <span className="text-accent">Canadian Entrepreneurs</span>
               </h1>
               
               <p className="text-xl lg:text-2xl text-muted-foreground mb-8 font-serif">
-                Use our Business Loan Estimator to see what you could qualify for in under 2 minutes.
+                We provide fast, flexible financing solutions from $5,000 to $1.5M. Use our Business Loan Estimator to see what you qualify for in under 2 minutes.
               </p>
               
               <div className="mb-12">
