@@ -28,6 +28,9 @@ const Footer = () => {
               <Link to="/loan-estimator" className="block text-primary-foreground/80 hover:text-primary-foreground text-sm transition-colors">
                 Loan Estimator
               </Link>
+              <Link to="/industries-we-serve" className="block text-primary-foreground/80 hover:text-primary-foreground text-sm transition-colors">
+                Industries We Serve
+              </Link>
               <Link to="/about" className="block text-primary-foreground/80 hover:text-primary-foreground text-sm transition-colors">
                 About Us
               </Link>
