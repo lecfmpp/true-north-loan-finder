@@ -1,12 +1,16 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { X, User } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type SocialProofNotification = Tables<"social_proof_notifications">;
 type WidgetConfig = Tables<"social_proof_widget_config">;
 
 const SocialProofWidget = () => {
+  const location = useLocation();
+  const isMobile = useIsMobile();
   const [notifications, setNotifications] = useState<SocialProofNotification[]>([]);
   const [config, setConfig] = useState<WidgetConfig | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -111,6 +115,11 @@ const SocialProofWidget = () => {
       maximumFractionDigits: 0
     }).format(amount);
   };
+
+  // Hide on mobile for loan estimator page
+  if (isMobile && location.pathname === '/loan-estimator') {
+    return null;
+  }
 
   if (!config || !config.is_enabled || !isEnabled || notifications.length === 0 || !isVisible || sessionCount > config.max_notifications_per_session) {
     return null;
