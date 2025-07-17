@@ -306,7 +306,7 @@ const Results = () => {
               {/* Hook Section */}
               <div className="text-center space-y-4 md:space-y-6 overflow-x-hidden">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary px-2 break-words">
-                  Excellent! Your profile is a strong match. Here's what you're pre-qualified for.
+                  Excellent! Your profile is a strong match for our funding solutions.
                 </h1>
                 
                 <div className="text-center bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-4 md:p-6 border border-green-200">
@@ -349,7 +349,7 @@ const Results = () => {
               <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
                 <CardHeader className="text-center pb-3 md:pb-6">
                   <CardTitle className="text-xl sm:text-2xl md:text-3xl px-2">
-                    Unlock Your Official Offers in Under 48 Hours
+                    Finalize Your Application for Official Offers
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 md:space-y-6 text-center">
@@ -415,7 +415,7 @@ const Results = () => {
               {/* Curated Lender Matches */}
               <div className="space-y-4 md:space-y-6">
                 <h2 className="text-xl sm:text-2xl md:text-2xl font-bold text-center px-2">
-                  Based on your profile, here are your Top 3 matches from our network:
+                  Your Loan Will Be Funded by One of Our Trusted Capital Partners:
                 </h2>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">

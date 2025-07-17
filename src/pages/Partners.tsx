@@ -139,11 +139,10 @@ const Partners = () => {
       <section className="bg-gradient-to-r from-primary/10 to-secondary/10 py-16">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl lg:text-6xl font-bold font-sans text-primary mb-6 leading-tight">
-            Meet Our Trusted
-            <span className="text-secondary"> Lending Partners</span>
+            Our Funding Network
           </h1>
           <p className="text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto font-serif mb-8">
-            We've carefully vetted each lender to ensure they offer competitive rates, transparent terms, and excellent service to Canadian businesses.
+            At True North Business Loan, we provide fast and reliable financing by working with a curated network of Canada's most reputable capital partners. This allows us to offer a wide range of flexible solutions tailored to your specific needs.
           </p>
           <Button asChild size="lg" variant="cta">
             <Link to="/loan-estimator">
@@ -159,10 +158,10 @@ const Partners = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold font-sans text-primary mb-4">
-              Choose from Canada's Top Business Lenders
+              Our Capital Partners
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Each partner has been selected for their expertise, reliability, and commitment to helping Canadian businesses succeed.
+              These trusted capital sources allow us to fund the loans we provide to Canadian businesses.
             </p>
           </div>
 
