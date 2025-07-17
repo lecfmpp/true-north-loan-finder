@@ -138,7 +138,7 @@ const Home = () => {
           <div className="grid lg:grid-cols-5 gap-12 items-center max-w-7xl mx-auto">
             {/* Left Column - Text Content (60% width) */}
             <div className="lg:col-span-3 text-left lg:pl-8 lg:pr-12">
-              <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm font-medium">
+              <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm font-medium bg-yellow-400 text-black">
                 🍁 Your Trusted Source for Business Loans in Canada
               </Badge>
               
