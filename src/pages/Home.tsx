@@ -132,7 +132,7 @@ const Home = () => {
       <Header />
       
       {/* Hero Section */}
-      <section className="relative py-20 lg:py-32 overflow-hidden">
+      <section className="relative py-12 lg:py-20 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5"></div>
         <div className="container mx-auto px-4 relative">
           <div className="grid lg:grid-cols-5 gap-12 items-center max-w-7xl mx-auto">
@@ -183,7 +183,7 @@ const Home = () => {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-12 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold font-sans text-primary mb-4">
