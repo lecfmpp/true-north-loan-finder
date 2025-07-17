@@ -88,6 +88,28 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Successfully enrolled ${email} in ${sequenceType} sequence`);
 
+    // Trigger the email sequence to start sending emails
+    try {
+      console.log(`Starting email sequence for ${email}`);
+      const emailSequenceResponse = await supabase.functions.invoke('send-email-sequence', {
+        body: {
+          email: email,
+          name: name,
+          sequenceType: sequenceType,
+          variables: userData || {}
+        }
+      });
+
+      if (emailSequenceResponse.error) {
+        console.error('Error starting email sequence:', emailSequenceResponse.error);
+      } else {
+        console.log(`Email sequence started successfully for ${email}`);
+      }
+    } catch (emailError) {
+      console.error('Error triggering email sequence:', emailError);
+      // Don't fail the main function if email sequence fails
+    }
+
     // Send the same lead notification email that's used in lead management to admin
     if (sequenceType === 'follow_up' && userData) {
       try {
