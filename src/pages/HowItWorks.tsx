@@ -4,12 +4,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { 
   CheckCircle, 
   TrendingUp, 
-  Users, 
+  Phone,
   Shield,
   Clock,
   Search,
-  FileText,
-  Handshake,
   Star,
   ArrowRight
 } from "lucide-react";
@@ -26,55 +24,42 @@ const HowItWorks = () => {
   const steps = [
     {
       number: "1",
-      title: "Use the Business Loan Estimator",
-      description: "Answer straightforward questions about your business, funding needs, and financial situation so we can calculate your funding potential.",
+      title: "See Your Estimate",
+      description: "Start by using our secure Business Loan Estimator to see the funding you're eligible for.",
       details: [
-        "Loan amount and purpose",
-        "Time in business and revenue",
-        "Credit score estimation",
-        "Basic contact information"
+        "Answer simple questions about your business",
+        "Get instant funding eligibility assessment", 
+        "See your loan options and estimated rates",
+        "No impact on your credit score"
       ],
       icon: <CheckCircle className="h-12 w-12 text-accent" />,
       color: "from-secondary/10 to-secondary/5"
     },
     {
       number: "2",
-      title: "Get Your Instant Results",
-      description: "Receive your personalized Loan Readiness Score and see exactly which lenders you pre-qualify for based on our advanced matching algorithm.",
+      title: "Complete Your Application",
+      description: "A dedicated funding advisor from our team will guide you through a simple application to finalize your details.",
       details: [
-        "Loan Readiness Score (0-100)",
-        "Personalized profile assessment",
-        "Pre-qualified lender matches",
-        "Estimated rates and terms"
+        "Work with a dedicated funding advisor",
+        "Complete your application with expert guidance",
+        "Submit required documentation",
+        "Get personalized support throughout"
       ],
       icon: <TrendingUp className="h-12 w-12 text-accent" />,
       color: "from-accent/10 to-accent/5"
     },
     {
       number: "3",
-      title: "You Choose to Connect",
-      description: "Review your matches and decide which lenders to connect with. You're in complete control - your information is only shared when you click 'Submit'.",
+      title: "Receive Your Funds",
+      description: "Once approved, your funds are deposited directly into your business bank account, often within 24 hours.",
       details: [
-        "Review lender profiles",
-        "Compare rates and terms",
-        "Select preferred lenders",
-        "Submit with confidence"
+        "Fast approval process",
+        "Direct deposit to your business account",
+        "Often funded within 24 hours",
+        "Start using your funds immediately"
       ],
-      icon: <Users className="h-12 w-12 text-accent" />,
+      icon: <Phone className="h-12 w-12 text-accent" />,
       color: "from-primary/10 to-primary/5"
-    },
-    {
-      number: "4",
-      title: "Lenders Reach Out",
-      description: "Your selected lenders will contact you directly to complete the application process and provide competitive offers tailored to your business.",
-      details: [
-        "Direct lender contact",
-        "Competitive offers",
-        "Personalized service",
-        "Fast funding decisions"
-      ],
-      icon: <Handshake className="h-12 w-12 text-accent" />,
-      color: "from-secondary/10 to-secondary/5"
     }
   ];
 
@@ -87,36 +72,36 @@ const HowItWorks = () => {
     {
       icon: <Clock className="h-8 w-8 text-accent" />,
       title: "Save Time",
-      description: "One application connects you with multiple lenders instead of applying everywhere separately."
+      description: "Get approved and funded quickly with our streamlined process - often within 24 hours."
     },
     {
       icon: <Search className="h-8 w-8 text-primary" />,
-      title: "Better Matches",
-      description: "Our algorithm ensures you only see lenders who are likely to approve your application."
+      title: "Dedicated Support",
+      description: "Our funding advisors guide you through every step to ensure you get the best financing solution."
     },
     {
       icon: <Star className="h-8 w-8 text-secondary" />,
-      title: "Top-Rated Lenders",
-      description: "We only work with reputable, licensed lenders with proven track records."
+      title: "Competitive Rates",
+      description: "We work directly with top Canadian lenders to secure the best possible rates for your business."
     }
   ];
 
   const faqs = [
     {
       question: "Is the Business Loan Estimator really free?",
-      answer: "Yes, completely free. There are no hidden fees or costs to use our matching service."
+      answer: "Yes, completely free. There are no hidden fees or costs to get your funding estimate and work with our team."
     },
     {
       question: "Will this affect my credit score?",
-      answer: "No, our Business Loan Estimator and matching process uses a soft credit inquiry that doesn't impact your credit score."
+      answer: "No, our Business Loan Estimator uses a soft credit inquiry that doesn't impact your credit score."
     },
     {
-      question: "How accurate is the Loan Readiness Score?",
-      answer: "Our scoring algorithm is based on real lending criteria from our partner lenders, providing highly accurate pre-qualification assessments."
+      question: "How quickly can I get funded?",
+      answer: "Once approved, funds are typically deposited within 24 hours. Our streamlined process ensures you get your funding as quickly as possible."
     },
     {
-      question: "What if I don't qualify with any lenders?",
-      answer: "Even if you don't initially qualify, we provide guidance on improving your business profile and can match you with specialized lenders who work with challenging situations."
+      question: "What if I don't qualify for financing?",
+      answer: "Our funding advisors will work with you to understand your options and provide guidance on improving your business profile for future applications."
     }
   ];
 
@@ -132,7 +117,7 @@ const HowItWorks = () => {
               How True North Business Loan Works
             </h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto font-serif">
-              We've simplified business lending by connecting you directly with the right lenders. 
+              We've streamlined business lending to get you the funding you need quickly and efficiently. 
               Here's exactly how our transparent process works.
             </p>
             <Button asChild variant="cta" size="lg">
@@ -148,10 +133,10 @@ const HowItWorks = () => {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
               <h2 className="text-3xl lg:text-4xl font-bold font-sans text-primary mb-4">
-                Your Path to Business Funding
+                Get Your Funding in Three Simple Steps
               </h2>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-serif">
-                Four simple steps from application to funding
+                From application to funding in as little as 24 hours
               </p>
             </div>
 
@@ -257,7 +242,7 @@ const HowItWorks = () => {
                 Why Choose True North Business Loan?
               </h2>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-serif">
-                We're more than just a loan marketplace - we're your partner in business growth
+                We're your trusted partner in business growth and success
               </p>
             </div>
 
@@ -318,7 +303,7 @@ const HowItWorks = () => {
             Ready to Get Started?
           </h2>
           <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto font-serif">
-            Use our Business Loan Estimator and discover your funding options today
+            Use our Business Loan Estimator and get your funding estimate today
           </p>
           <Button asChild size="xl" variant="secondary" className="text-lg px-8">
             <Link to="/loan-estimator">
