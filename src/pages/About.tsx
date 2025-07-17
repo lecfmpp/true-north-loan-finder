@@ -31,12 +31,12 @@ const About = () => {
     {
       icon: <Handshake className="h-8 w-8 text-primary" />,
       title: "Partnership",
-      description: "We're not just a financial services company - we're your partner in growth. We succeed when your business succeeds, and we're here to support you every step of the way."
+      description: "We're not just a platform - we're your partner in growth. We succeed when your business succeeds, and we're here to support you every step of the way."
     },
     {
       icon: <Award className="h-8 w-8 text-secondary" />,
       title: "Excellence",
-      description: "We maintain the highest standards in everything we do, from our funding solutions to our capital partnerships and customer service."
+      description: "We maintain the highest standards in everything we do, from our technology platform to our lender partnerships and customer service."
     }
   ];
 
@@ -49,12 +49,12 @@ const About = () => {
     {
       number: "$250M+",
       label: "Funding Facilitated",
-      description: "Total funding provided through our network"
+      description: "Total funding matched through our platform"
     },
     {
       number: "50+",
-      label: "Capital Partners",
-      description: "Vetted, reputable capital sources across Canada"
+      label: "Lender Partners",
+      description: "Vetted, reputable lenders across Canada"
     },
     {
       number: "4.9/5",
@@ -72,14 +72,14 @@ const About = () => {
     },
     {
       name: "David Chen",
-      role: "Head of Capital Relations",
-      description: "20+ years in commercial lending. David built our network of trusted capital partners and ensures every relationship meets our high standards.",
+      role: "Head of Lender Relations",
+      description: "20+ years in commercial lending. David built our network of trusted lender partners and ensures every relationship meets our high standards.",
       image: "👨‍💼"
     },
     {
       name: "Maria Gonzalez",
       role: "Chief Technology Officer",
-      description: "Former fintech entrepreneur who developed our proprietary underwriting system. Maria ensures our platform delivers accurate, fast funding decisions.",
+      description: "Former fintech entrepreneur who developed our proprietary matching algorithm. Maria ensures our platform delivers accurate, fast results.",
       image: "👩‍💻"
     }
   ];
@@ -96,8 +96,8 @@ const About = () => {
               About True North Business Loan
             </h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto font-serif">
-              We're a Canadian direct funding provider dedicated to providing capital to Canadian SMEs 
-              and empowering small businesses across the True North to achieve their growth goals.
+              We're a Canadian company dedicated to simplifying business financing and 
+              empowering small businesses across the True North to achieve their growth goals.
             </p>
             <div className="flex items-center justify-center gap-2 text-2xl mb-8">
               <span>🍁</span>
@@ -118,14 +118,14 @@ const About = () => {
                   Our Mission
                 </h2>
                 <p className="text-lg text-muted-foreground mb-6 font-serif">
-                  To provide capital to Canadian small businesses through simple, transparent financing solutions. 
+                  To empower Canadian small businesses by providing simple, transparent access to financing. 
                   We believe that every business owner should have the opportunity to grow their company without 
                   the frustration and complexity of traditional lending.
                 </p>
                 <p className="text-lg text-muted-foreground mb-8 font-serif">
                   Founded in Kitchener, Ontario, we understand the unique challenges facing Canadian entrepreneurs. 
-                  Our team of funding advisors and underwriting specialists work directly with businesses 
-                  to provide the capital they need to succeed.
+                  That's why we've built a platform that puts business owners in control, connecting them directly 
+                  with lenders who want to help them succeed.
                 </p>
                 <Button asChild variant="cta" size="lg">
                   <Link to="/loan-estimator">Use the Loan Estimator</Link>
