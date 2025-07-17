@@ -16,7 +16,42 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const webhook = await req.json();
+    // Verify webhook signature
+    const signature = req.headers.get('resend-signature');
+    const webhookSecret = Deno.env.get('RESEND_WEBHOOK_SECRET');
+    
+    if (!signature || !webhookSecret) {
+      console.log('Missing signature or webhook secret');
+      return new Response('Unauthorized', { status: 401, headers: corsHeaders });
+    }
+
+    // Get raw body for signature verification
+    const body = await req.text();
+    
+    // Verify signature using crypto
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(webhookSecret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['verify']
+    );
+    
+    const signatureBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(body));
+    const expectedSignature = Array.from(new Uint8Array(signatureBuffer))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+    
+    // Extract signature from header (format: "v1=signature")
+    const receivedSignature = signature.split('=')[1];
+    
+    if (expectedSignature !== receivedSignature) {
+      console.log('Invalid webhook signature');
+      return new Response('Unauthorized', { status: 401, headers: corsHeaders });
+    }
+
+    const webhook = JSON.parse(body);
     console.log('Received Resend webhook:', webhook);
 
     const { type, data } = webhook;
