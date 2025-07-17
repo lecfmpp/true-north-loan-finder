@@ -405,23 +405,26 @@ const Admin = () => {
   const toggleEmailSequence = async (leadEmail: string, leadName: string, sequenceId: string, isEnabled: boolean) => {
     try {
       if (isEnabled) {
-        // Enroll in sequence
-        const {
-          error
-        } = await supabase.from('email_enrollments').insert({
-          user_email: leadEmail,
-          user_name: leadName,
-          sequence_id: sequenceId,
-          status: 'active'
+        // Enroll in sequence by calling the auto-enroll function which will trigger emails
+        const sequenceType = sequenceId === EMAIL_SEQUENCES.FOLLOW_UP ? 'follow_up' : 'pre_call_reminder';
+        
+        const { error } = await supabase.functions.invoke('auto-enroll-lead', {
+          body: {
+            email: leadEmail,
+            name: leadName,
+            sequenceType: sequenceType,
+            userData: leads.find(l => l.email === leadEmail) || {}
+          }
         });
+        
         if (error) throw error;
       } else {
         // Unenroll from sequence
-        const {
-          error
-        } = await supabase.from('email_enrollments').update({
-          status: 'cancelled'
-        }).eq('user_email', leadEmail).eq('sequence_id', sequenceId);
+        const { error } = await supabase.from('email_enrollments')
+          .update({ status: 'cancelled' })
+          .eq('user_email', leadEmail)
+          .eq('sequence_id', sequenceId);
+        
         if (error) throw error;
       }
 
@@ -433,6 +436,7 @@ const Admin = () => {
           [sequenceId]: isEnabled
         }
       }));
+
       const sequenceName = sequenceId === EMAIL_SEQUENCES.FOLLOW_UP ? 'Follow-up' : 'Pre-Call';
       toast({
         title: "Success",
@@ -441,7 +445,7 @@ const Admin = () => {
     } catch (error) {
       console.error('Error in toggleEmailSequence:', error);
       toast({
-        title: "Error",
+        title: "Error", 
         description: "Failed to update email sequence",
         variant: "destructive"
       });
@@ -743,11 +747,19 @@ const Admin = () => {
                           <TableCell>
                             <div className="space-y-2">
                               <div className="flex items-center gap-2">
-                                <Switch key={`${lead.id}-follow-up`} checked={emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.FOLLOW_UP] || false} onCheckedChange={checked => toggleEmailSequence(lead.email, lead.name, EMAIL_SEQUENCES.FOLLOW_UP, checked)} />
+                                <Switch 
+                                  key={`follow-up-${lead.email}-${emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.FOLLOW_UP] || false}`}
+                                  checked={emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.FOLLOW_UP] || false} 
+                                  onCheckedChange={checked => toggleEmailSequence(lead.email, lead.name, EMAIL_SEQUENCES.FOLLOW_UP, checked)} 
+                                />
                                 <span className="text-sm text-muted-foreground">Follow-up</span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <Switch key={`${lead.id}-pre-call`} checked={emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.PRE_CALL] || false} onCheckedChange={checked => toggleEmailSequence(lead.email, lead.name, EMAIL_SEQUENCES.PRE_CALL, checked)} />
+                                <Switch 
+                                  key={`pre-call-${lead.email}-${emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.PRE_CALL] || false}`}
+                                  checked={emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.PRE_CALL] || false} 
+                                  onCheckedChange={checked => toggleEmailSequence(lead.email, lead.name, EMAIL_SEQUENCES.PRE_CALL, checked)} 
+                                />
                                 <span className="text-sm text-muted-foreground">Pre-Call</span>
                               </div>
                             </div>
