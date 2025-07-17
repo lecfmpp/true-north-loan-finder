@@ -28,6 +28,16 @@ const SEOHead = ({
   structuredData
 }: SEOHeadProps) => {
   
+  // Auto-generate canonical URL if not provided
+  const getCanonicalUrl = () => {
+    if (canonicalUrl) return canonicalUrl;
+    
+    const currentPath = window.location.pathname;
+    // Remove trailing slash for consistency
+    const cleanPath = currentPath === '/' ? '/' : currentPath.replace(/\/$/, '');
+    return `https://truenorthbusinessloan.ca${cleanPath}`;
+  };
+  
   useEffect(() => {
     // Update document title
     document.title = title;
@@ -85,16 +95,18 @@ const SEOHead = ({
       }
     }
     
-    // Canonical URL
-    if (canonicalUrl) {
-      let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
-      if (!canonical) {
-        canonical = document.createElement('link');
-        canonical.setAttribute('rel', 'canonical');
-        document.head.appendChild(canonical);
-      }
-      canonical.setAttribute('href', canonicalUrl);
+    // Canonical URL - always set one
+    const finalCanonicalUrl = getCanonicalUrl();
+    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
     }
+    canonical.setAttribute('href', finalCanonicalUrl);
+    
+    // Also update Open Graph URL
+    updateMetaTag('og:url', finalCanonicalUrl, true);
     
     // Structured Data
     if (structuredData) {
