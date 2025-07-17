@@ -28,27 +28,21 @@ const Home = () => {
   const steps = [
     {
       number: "1",
-      title: "Use the Estimator",
-      description: "Answer simple questions about your business in 60 seconds",
+      title: "See Your Estimate",
+      description: "Start by using our secure Business Loan Estimator to see the funding you're eligible for.",
       icon: <CheckCircle className="h-8 w-8 text-secondary" />
     },
     {
       number: "2", 
-      title: "See Your Score & Matches",
-      description: "Get your instant Loan Readiness Score and pre-qualified lender matches",
+      title: "Complete Your Application",
+      description: "A dedicated funding advisor from our team will guide you through a simple application to finalize your details.",
       icon: <TrendingUp className="h-8 w-8 text-secondary" />
     },
     {
       number: "3",
-      title: "15-Min Pre-Offer Call", 
-      description: "Quick call to match you with the perfect offer and speed up the process by 80%",
+      title: "Receive Your Funds", 
+      description: "Once approved, your funds are deposited directly into your business bank account, often within 24 hours.",
       icon: <Phone className="h-8 w-8 text-secondary" />
-    },
-    {
-      number: "4",
-      title: "Get Your Offers", 
-      description: "Receive competitive offers from matched lenders within 24-48 hours",
-      icon: <Users className="h-8 w-8 text-secondary" />
     }
   ];
 
@@ -196,11 +190,11 @@ const Home = () => {
               How It Works
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-serif">
-              Get matched with the right lenders in four simple steps
+              Get your funding in three simple steps
             </p>
           </div>
           
-          <div className="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {steps.map((step, index) => (
               <Card key={index} className="text-center border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                 <CardContent className="p-8">
