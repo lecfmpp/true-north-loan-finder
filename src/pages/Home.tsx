@@ -147,12 +147,12 @@ const Home = () => {
               </h1>
               
               <p className="text-xl lg:text-2xl text-muted-foreground mb-8 font-serif">
-                We provide fast, flexible financing solutions from $5,000 to $1.5M. Use our Business Loan Estimator to see what you qualify for in under 2 minutes.
+                Start your application and get a response today. Fast, flexible financing from $5,000 to $1.5M for Canadian businesses.
               </p>
               
               <div className="mb-12">
                 <Button asChild variant="cta" size="xl" className="text-lg px-8 bg-accent hover:bg-accent/90 text-accent-foreground">
-                  <Link to="/loan-estimator">Get My Loan Estimate</Link>
+                  <Link to="/loan-estimator">Start My Application</Link>
                 </Button>
               </div>
               
