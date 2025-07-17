@@ -28,9 +28,9 @@ All colors MUST be HSL.
     --secondary-foreground: 0 0% 100%;
     --secondary-light: 145 50% 55%;
 
-    /* Forest Green - Accent Color */
-    --accent: 145 63% 42%;
-    --accent-foreground: 0 0% 100%;
+    /* Compass Gold - Accent Color */
+    --accent: 35 84% 62%;
+    --accent-foreground: 210 22% 22%;
 
     --muted: 210 20% 95%;
     --muted-foreground: 210 6% 46%;
