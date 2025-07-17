@@ -245,8 +245,22 @@ function replaceVariables(text: string, userName: string, variables: any): strin
     .replace(/\[First Name\]/g, userName)
     .replace(/\[Date\]/g, variables.callDate || '')
     .replace(/\[Time\]/g, variables.callTime || '')
-    .replace(/\[Phone Number\]/g, variables.userPhone || '')
-    .replace(/\[Book Your Call\]/g, 'https://calendly.com/truenorth-business-loan');
+    .replace(/\[Phone Number\]/g, variables.userPhone || '');
+
+  // Handle meeting link replacement - only show if one exists
+  if (variables.meetingLink) {
+    result = result.replace(/\[Meeting Link\]/g, variables.meetingLink);
+  } else {
+    // Remove lines that contain meeting link placeholder if no link provided
+    result = result.replace(/.*\[Meeting Link\].*\n?/g, '');
+    // Also remove any standalone "Meeting Link:" text
+    result = result.replace(/Meeting Link:\s*\n/g, '');
+    result = result.replace(/Here is the link to join:\s*\n/g, '');
+    result = result.replace(/If this is a virtual meeting.*\n?/g, '');
+  }
+
+  // Replace booking call placeholder
+  result = result.replace(/\[Book Your Call\]/g, 'https://calendly.com/truenorth-business-loan');
 
   // Handle admin notification variables (using double braces)
   if (variables) {
