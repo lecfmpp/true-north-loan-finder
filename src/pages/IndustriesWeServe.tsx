@@ -174,31 +174,33 @@ const IndustriesWeServe = () => {
           <div className="space-y-12 md:space-y-16 max-w-7xl mx-auto">
             {industries.map((industry, index) => (
               <Card key={industry.id} className="overflow-hidden border border-muted/20 shadow-lg">
-                <div className={`grid lg:grid-cols-2 gap-0 ${index % 2 === 1 ? 'lg:grid-flow-col-dense' : ''}`}>
+                <div className="flex flex-col lg:grid lg:grid-cols-2 lg:gap-0">
                   {/* Industry Image */}
-                  <div className={`relative h-48 md:h-64 lg:h-auto ${index % 2 === 1 ? 'lg:col-start-2' : ''}`}>
+                  <div className={`relative h-48 md:h-64 lg:h-auto ${index % 2 === 1 ? 'lg:order-2' : 'lg:order-1'}`}>
                     <img 
                       src={industry.image} 
                       alt={`${industry.title} business financing`}
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                    <div className="absolute bottom-3 md:bottom-4 left-3 md:left-4 flex items-center space-x-2">
-                      <div className="w-8 h-8 md:w-10 md:h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                        {industry.icon}
+                    <div className="absolute bottom-3 md:bottom-4 left-3 md:left-4 right-3 md:right-4">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-8 h-8 md:w-10 md:h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center flex-shrink-0">
+                          {industry.icon}
+                        </div>
+                        <h3 className="text-white font-bold text-base md:text-lg lg:text-xl break-words">{industry.title}</h3>
                       </div>
-                      <h3 className="text-white font-bold text-lg md:text-xl">{industry.title}</h3>
                     </div>
                   </div>
 
                   {/* Content */}
-                  <div className={`p-6 md:p-8 lg:p-12 ${index % 2 === 1 ? 'lg:col-start-1' : ''}`}>
+                  <div className={`p-4 md:p-6 lg:p-12 w-full ${index % 2 === 1 ? 'lg:order-1' : 'lg:order-2'}`}>
                     {/* The Challenge */}
                     <div className="mb-6 md:mb-8">
-                      <h3 className="text-xl md:text-2xl font-bold font-sans text-primary mb-3 md:mb-4">
+                      <h3 className="text-lg md:text-xl lg:text-2xl font-bold font-sans text-primary mb-3 md:mb-4 break-words leading-tight">
                         {industry.challenge.headline}
                       </h3>
-                      <p className="text-muted-foreground text-base md:text-lg font-serif leading-relaxed">
+                      <p className="text-muted-foreground text-sm md:text-base lg:text-lg font-serif leading-relaxed break-words">
                         {industry.challenge.description.split('**').map((part, i) => 
                           i % 2 === 1 ? <strong key={i} className="text-primary">{part}</strong> : part
                         )}
@@ -207,16 +209,16 @@ const IndustriesWeServe = () => {
 
                     {/* Recommended Solutions */}
                     <div className="mb-6 md:mb-8">
-                      <h4 className="text-lg md:text-xl font-bold font-sans text-primary mb-3 md:mb-4">
+                      <h4 className="text-base md:text-lg lg:text-xl font-bold font-sans text-primary mb-3 md:mb-4 break-words leading-tight">
                         Recommended Business Financing for {industry.title.split(' &')[0]}
                       </h4>
                       <div className="space-y-3 md:space-y-4">
                         {industry.solutions.map((solution, solutionIndex) => (
                           <div key={solutionIndex} className="flex items-start space-x-3">
                             <div className="w-2 h-2 bg-secondary rounded-full mt-2 flex-shrink-0" />
-                            <div>
-                              <h5 className="font-semibold text-primary text-sm md:text-base">{solution.title}</h5>
-                              <p className="text-muted-foreground text-sm">{solution.description}</p>
+                            <div className="min-w-0 flex-1">
+                              <h5 className="font-semibold text-primary text-sm md:text-base break-words">{solution.title}</h5>
+                              <p className="text-muted-foreground text-xs md:text-sm break-words leading-relaxed">{solution.description}</p>
                             </div>
                           </div>
                         ))}
@@ -225,28 +227,28 @@ const IndustriesWeServe = () => {
 
                     {/* Cash Flow Impact */}
                     <div className="mb-6 md:mb-8">
-                      <h4 className="text-lg md:text-xl font-bold font-sans text-primary mb-3 md:mb-4">
+                      <h4 className="text-base md:text-lg lg:text-xl font-bold font-sans text-primary mb-3 md:mb-4 break-words leading-tight">
                         How a Canadian Business Loan Transforms Your Cash Flow
                       </h4>
-                      <div className="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-lg p-4 md:p-6">
-                        <div className="flex items-end justify-between h-24 md:h-32 space-x-1 md:space-x-2">
+                      <div className="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-lg p-4 md:p-6 w-full">
+                        <div className="flex items-end justify-between h-20 md:h-24 lg:h-32 space-x-1 md:space-x-2">
                           {cashFlowData.map((data, chartIndex) => (
-                            <div key={chartIndex} className="flex-1 flex flex-col items-center space-y-1 md:space-y-2">
-                              <div className="flex flex-col items-center space-y-1 h-16 md:h-24 justify-end">
+                            <div key={chartIndex} className="flex-1 flex flex-col items-center space-y-1 md:space-y-2 min-w-0">
+                              <div className="flex flex-col items-center space-y-1 h-12 md:h-16 lg:h-24 justify-end w-full">
                                 {/* After funding bar */}
                                 <div 
-                                  className="w-full bg-secondary rounded-t"
-                                  style={{ height: `${(data.after / 52000) * 60}px` }}
+                                  className="w-full bg-secondary rounded-t max-w-full"
+                                  style={{ height: `${Math.min((data.after / 52000) * 40, 40)}px` }}
                                 />
                                 {/* Before funding bar (if different) */}
                                 {data.before !== data.after && (
                                   <div 
-                                    className="w-full bg-muted/40 border-2 border-dashed border-muted-foreground/30"
-                                    style={{ height: `${(data.before / 52000) * 60}px` }}
+                                    className="w-full bg-muted/40 border-2 border-dashed border-muted-foreground/30 max-w-full"
+                                    style={{ height: `${Math.min((data.before / 52000) * 40, 40)}px` }}
                                   />
                                 )}
                               </div>
-                              <span className="text-xs text-muted-foreground font-medium">{data.month.replace('Month ', 'M')}</span>
+                              <span className="text-xs text-muted-foreground font-medium truncate">{data.month.replace('Month ', 'M')}</span>
                             </div>
                           ))}
                         </div>
@@ -271,13 +273,13 @@ const IndustriesWeServe = () => {
 
                     {/* CTA */}
                     <div className="border-t border-muted/20 pt-4 md:pt-6">
-                      <h4 className="text-base md:text-lg font-bold font-sans text-primary mb-2 md:mb-3">
+                      <h4 className="text-sm md:text-base lg:text-lg font-bold font-sans text-primary mb-2 md:mb-3 break-words leading-tight">
                         Get Your {industry.title.split(' &')[0]} Loan Estimate
                       </h4>
-                      <p className="text-muted-foreground mb-3 md:mb-4 font-serif text-sm md:text-base">
+                      <p className="text-muted-foreground mb-3 md:mb-4 font-serif text-xs md:text-sm lg:text-base break-words leading-relaxed">
                         Use our free <strong className="text-primary">business loan estimator</strong> to see how much funding your {industry.title.toLowerCase()} can get. This simple tool helps you understand your options for a <strong className="text-primary">small business loan in Canada</strong>.
                       </p>
-                      <Button asChild className="w-full lg:w-auto bg-accent hover:bg-accent/90 text-accent-foreground font-bold text-sm md:text-base">
+                      <Button asChild className="w-full lg:w-auto bg-accent hover:bg-accent/90 text-accent-foreground font-bold text-xs md:text-sm lg:text-base">
                         <Link to="/loan-estimator">
                           <DollarSign className="w-4 h-4 mr-2" />
                           {industry.ctaButton}
