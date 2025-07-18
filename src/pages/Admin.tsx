@@ -405,19 +405,41 @@ const Admin = () => {
   const toggleEmailSequence = async (leadEmail: string, leadName: string, sequenceId: string, isEnabled: boolean) => {
     try {
       if (isEnabled) {
-        // Enroll in sequence by calling the auto-enroll function which will trigger emails
-        const sequenceType = sequenceId === EMAIL_SEQUENCES.FOLLOW_UP ? 'follow_up' : 'pre_call_reminder';
-        
-        const { error } = await supabase.functions.invoke('auto-enroll-lead', {
-          body: {
-            email: leadEmail,
-            name: leadName,
-            sequenceType: sequenceType,
-            userData: leads.find(l => l.email === leadEmail) || {}
-          }
-        });
-        
-        if (error) throw error;
+        // Check if there's an existing enrollment first
+        const { data: existingEnrollment } = await supabase
+          .from('email_enrollments')
+          .select('id, status')
+          .eq('user_email', leadEmail)
+          .eq('sequence_id', sequenceId)
+          .single();
+
+        if (existingEnrollment) {
+          // Reactivate existing enrollment
+          const { error } = await supabase
+            .from('email_enrollments')
+            .update({ 
+              status: 'active',
+              enrolled_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', existingEnrollment.id);
+          
+          if (error) throw error;
+        } else {
+          // Create new enrollment using auto-enroll function
+          const sequenceType = sequenceId === EMAIL_SEQUENCES.FOLLOW_UP ? 'follow_up' : 'pre_call_reminder';
+          
+          const { error } = await supabase.functions.invoke('auto-enroll-lead', {
+            body: {
+              email: leadEmail,
+              name: leadName,
+              sequenceType: sequenceType,
+              userData: leads.find(l => l.email === leadEmail) || {}
+            }
+          });
+          
+          if (error) throw error;
+        }
       } else {
         // Unenroll from sequence
         const { error } = await supabase.from('email_enrollments')
