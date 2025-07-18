@@ -68,6 +68,9 @@ verify_jwt = true
 [functions.generate-blog-post]
 verify_jwt = true
 
+[functions.resend-webhook]
+verify_jwt = false
+
 [analytics]
 enabled = false
 port = 54327
