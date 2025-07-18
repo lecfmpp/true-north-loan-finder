@@ -35,7 +35,7 @@ const handler = async (req: Request): Promise<Response> => {
       encoder.encode(webhookSecret),
       { name: 'HMAC', hash: 'SHA-256' },
       false,
-      ['verify']
+      ['sign']
     );
     
     const signatureBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(body));
@@ -43,11 +43,11 @@ const handler = async (req: Request): Promise<Response> => {
       .map(b => b.toString(16).padStart(2, '0'))
       .join('');
     
-    // Extract signature from header (format: "v1=signature")
-    const receivedSignature = signature.split('=')[1];
+    // Extract signature from header (format: "v1=signature" or just the signature)
+    const receivedSignature = signature.includes('=') ? signature.split('=')[1] : signature;
     
     if (expectedSignature !== receivedSignature) {
-      console.log('Invalid webhook signature');
+      console.log('Invalid webhook signature. Expected:', expectedSignature, 'Received:', receivedSignature);
       return new Response('Unauthorized', { status: 401, headers: corsHeaders });
     }
 

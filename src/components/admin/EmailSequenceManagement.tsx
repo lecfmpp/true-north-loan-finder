@@ -36,6 +36,8 @@ interface SequenceMetrics {
   open_rate: number;
   click_rate: number;
   enrolled_leads: number;
+  total_opens: number;
+  total_clicks: number;
 }
 
 const EmailSequenceManagement = () => {
@@ -144,6 +146,8 @@ const EmailSequenceManagement = () => {
           open_rate: totalSent > 0 ? (totalOpens / totalSent) * 100 : 0,
           click_rate: totalSent > 0 ? (totalClicks / totalSent) * 100 : 0,
           enrolled_leads: enrolledCount,
+          total_opens: totalOpens,
+          total_clicks: totalClicks,
         };
       }
       setMetrics(metricsData);
@@ -373,7 +377,7 @@ const EmailSequenceManagement = () => {
 
   const renderSequenceSection = (sequence: EmailSequence) => {
     const sequenceTemplates = templates[sequence.id] || [];
-    const sequenceMetrics = metrics[sequence.id] || { emails_sent: 0, open_rate: 0, click_rate: 0, enrolled_leads: 0 };
+    const sequenceMetrics = metrics[sequence.id] || { emails_sent: 0, open_rate: 0, click_rate: 0, enrolled_leads: 0, total_opens: 0, total_clicks: 0 };
 
     return (
       <Card key={sequence.id} className="mb-8">
@@ -409,6 +413,7 @@ const EmailSequenceManagement = () => {
               <div>
                 <p className="text-sm font-medium">Average Open Rate</p>
                 <p className="text-2xl font-bold">{sequenceMetrics.open_rate.toFixed(1)}%</p>
+                <p className="text-xs text-muted-foreground">{sequenceMetrics.total_opens} opens</p>
               </div>
             </div>
             <div className="flex items-center space-x-2 p-4 bg-muted rounded-lg">
@@ -416,6 +421,7 @@ const EmailSequenceManagement = () => {
               <div>
                 <p className="text-sm font-medium">Average CTR</p>
                 <p className="text-2xl font-bold">{sequenceMetrics.click_rate.toFixed(1)}%</p>
+                <p className="text-xs text-muted-foreground">{sequenceMetrics.total_clicks} clicks</p>
               </div>
             </div>
             <div className="flex items-center space-x-2 p-4 bg-muted rounded-lg">
