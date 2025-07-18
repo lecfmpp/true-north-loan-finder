@@ -414,7 +414,7 @@ const Admin = () => {
           .single();
 
         if (existingEnrollment) {
-          // Reactivate existing enrollment
+          // Reactivate existing enrollment AND trigger email sequence
           const { error } = await supabase
             .from('email_enrollments')
             .update({ 
@@ -425,6 +425,19 @@ const Admin = () => {
             .eq('id', existingEnrollment.id);
           
           if (error) throw error;
+
+          // Trigger the email sequence
+          const sequenceType = sequenceId === EMAIL_SEQUENCES.FOLLOW_UP ? 'follow_up' : 'pre_call_reminder';
+          const { error: emailError } = await supabase.functions.invoke('send-email-sequence', {
+            body: {
+              type: sequenceType,
+              userEmail: leadEmail,
+              userName: leadName,
+              variables: leads.find(l => l.email === leadEmail) || {}
+            }
+          });
+          
+          if (emailError) throw emailError;
         } else {
           // Create new enrollment using auto-enroll function
           const sequenceType = sequenceId === EMAIL_SEQUENCES.FOLLOW_UP ? 'follow_up' : 'pre_call_reminder';
