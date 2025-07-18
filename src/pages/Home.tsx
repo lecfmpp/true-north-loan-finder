@@ -313,7 +313,7 @@ const Home = () => {
             We get it. Payroll, inventory, and unexpected costs can't wait. We provide fast, direct funding from $5,000 to $800K so you can get back to what matters: running your business.
           </p>
           <Button asChild size="xl" variant="secondary" className="text-lg px-8">
-            <Link to="/loan-estimator">Get My Loan Estimate</Link>
+            <Link to="/loan-estimator">Check My Eligibility Now</Link>
           </Button>
         </div>
       </section>
