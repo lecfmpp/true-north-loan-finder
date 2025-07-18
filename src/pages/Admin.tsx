@@ -13,7 +13,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, MessageCircle, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign } from 'lucide-react';
+import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, MessageCircle, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign, Settings as SettingsIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import Header from '@/components/Header';
@@ -777,7 +777,19 @@ const Admin = () => {
     title: "Social Proof",
     value: "social-proof",
     icon: Megaphone
+  }, {
+    title: "Settings",
+    value: "settings",
+    icon: SettingsIcon
   }] : [])];
+
+  const handleMenuItemClick = (value: string) => {
+    if (value === 'settings') {
+      navigate('/settings');
+    } else {
+      setActiveTab(value);
+    }
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -1088,7 +1100,7 @@ const Admin = () => {
                   const Icon = item.icon;
                   const isActive = activeTab === item.value;
                   return <SidebarMenuItem key={item.value}>
-                        <SidebarMenuButton asChild isActive={isActive} onClick={() => setActiveTab(item.value)}>
+                        <SidebarMenuButton asChild isActive={isActive} onClick={() => handleMenuItemClick(item.value)}>
                           <button className="flex items-center gap-2 w-full">
                             <Icon className="h-4 w-4" />
                             <span>{item.title}</span>
