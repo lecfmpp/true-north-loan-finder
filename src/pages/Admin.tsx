@@ -519,6 +519,44 @@ const Admin = () => {
     a.click();
     window.URL.revokeObjectURL(url);
   };
+
+  const deleteSelectedLeads = async () => {
+    if (selectedLeads.length === 0) return;
+    
+    try {
+      // First, delete any associated call bookings to avoid foreign key constraint
+      const { error: bookingsError } = await supabase
+        .from('call_bookings')
+        .delete()
+        .in('quiz_response_id', selectedLeads);
+      
+      if (bookingsError) throw bookingsError;
+
+      // Then delete the selected leads
+      const { error } = await supabase
+        .from('quiz_responses')
+        .delete()
+        .in('id', selectedLeads);
+      
+      if (error) throw error;
+
+      // Update local state
+      setLeads(leads.filter(lead => !selectedLeads.includes(lead.id)));
+      setSelectedLeads([]);
+      
+      toast({
+        title: "Success",
+        description: `${selectedLeads.length} lead(s) deleted successfully`
+      });
+    } catch (error: any) {
+      console.error('Error deleting selected leads:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete selected leads",
+        variant: "destructive"
+      });
+    }
+  };
   const updateLeadStatus = async (leadId: string, newStatus: string) => {
     try {
       const {
@@ -678,10 +716,22 @@ const Admin = () => {
                     </SelectContent>
                   </Select>
                   <div className="flex gap-2">
-                    {selectedLeads.length > 0 && <Button onClick={exportSelectedToCSV} className="bg-green-600 hover:bg-green-700 text-white">
-                        <Download className="w-4 h-4 mr-2" />
-                        Export Selected ({selectedLeads.length})
-                      </Button>}
+                    {selectedLeads.length > 0 && (
+                      <>
+                        <Button 
+                          onClick={deleteSelectedLeads}
+                          variant="destructive"
+                          className="text-white"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete Selected ({selectedLeads.length})
+                        </Button>
+                        <Button onClick={exportSelectedToCSV} className="bg-green-600 hover:bg-green-700 text-white">
+                          <Download className="w-4 h-4 mr-2" />
+                          Export Selected ({selectedLeads.length})
+                        </Button>
+                      </>
+                    )}
                     <Button onClick={exportSelectedToCSV} variant="outline">
                       <Download className="w-4 h-4 mr-2" />
                       Export All
