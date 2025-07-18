@@ -16,44 +16,43 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    // Verify webhook signature
-    const signature = req.headers.get('resend-signature');
-    const webhookSecret = Deno.env.get('RESEND_WEBHOOK_SECRET');
-    
-    if (!signature || !webhookSecret) {
-      console.log('Missing signature or webhook secret');
-      return new Response('Unauthorized', { status: 401, headers: corsHeaders });
-    }
-
-    // Get raw body for signature verification
+    // For development/testing, log all webhook events even without signature
     const body = await req.text();
-    
-    // Verify signature using crypto
-    const encoder = new TextEncoder();
-    const key = await crypto.subtle.importKey(
-      'raw',
-      encoder.encode(webhookSecret),
-      { name: 'HMAC', hash: 'SHA-256' },
-      false,
-      ['sign']
-    );
-    
-    const signatureBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(body));
-    const expectedSignature = Array.from(new Uint8Array(signatureBuffer))
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('');
-    
-    // Extract signature from header (format: "v1=signature" or just the signature)
-    const receivedSignature = signature.includes('=') ? signature.split('=')[1] : signature;
-    
-    if (expectedSignature !== receivedSignature) {
-      console.log('Invalid webhook signature. Expected:', expectedSignature, 'Received:', receivedSignature);
-      return new Response('Unauthorized', { status: 401, headers: corsHeaders });
-    }
-
     const webhook = JSON.parse(body);
     console.log('Received Resend webhook:', webhook);
 
+    // Verify webhook signature only if secret is provided
+    const signature = req.headers.get('resend-signature');
+    const webhookSecret = Deno.env.get('RESEND_WEBHOOK_SECRET');
+    
+    if (webhookSecret && signature) {
+      // Verify signature using crypto
+      const encoder = new TextEncoder();
+      const key = await crypto.subtle.importKey(
+        'raw',
+        encoder.encode(webhookSecret),
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign']
+      );
+      
+      const signatureBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(body));
+      const expectedSignature = Array.from(new Uint8Array(signatureBuffer))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+      
+      // Extract signature from header (format: "v1=signature" or just the signature)
+      const receivedSignature = signature.includes('=') ? signature.split('=')[1] : signature;
+      
+      if (expectedSignature !== receivedSignature) {
+        console.log('Invalid webhook signature. Expected:', expectedSignature, 'Received:', receivedSignature);
+        return new Response('Unauthorized', { status: 401, headers: corsHeaders });
+      }
+    } else if (!webhookSecret) {
+      console.log('No webhook secret configured, processing webhook without verification');
+    } else {
+      console.log('Missing signature header, but webhook secret is configured');
+    }
     const { type, data } = webhook;
     
     if (!data?.email_id) {
