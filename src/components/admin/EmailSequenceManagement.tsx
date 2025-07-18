@@ -70,16 +70,16 @@ const EmailSequenceManagement = () => {
 
   // Email variables for insertion
   const emailVariables = [
-    { name: '{{name}}', description: 'User name' },
-    { name: '{{email}}', description: 'User email' },
-    { name: '{{phone}}', description: 'User phone' },
-    { name: '{{score}}', description: 'Quiz score' },
-    { name: '{{loan_amount}}', description: 'Loan amount' },
-    { name: '{{monthly_revenue}}', description: 'Monthly revenue' },
-    { name: '{{credit_score}}', description: 'Credit score' },
-    { name: '{{time_in_business}}', description: 'Time in business' },
-    { name: '{{use_of_funds}}', description: 'Use of funds' },
-    { name: '{{booking_link}}', description: 'Booking link for meetings' },
+    { name: '[name]', description: 'User name' },
+    { name: '[email]', description: 'User email' },
+    { name: '[phone]', description: 'User phone' },
+    { name: '[score]', description: 'Quiz score' },
+    { name: '[loan_amount]', description: 'Loan amount' },
+    { name: '[monthly_revenue]', description: 'Monthly revenue' },
+    { name: '[credit_score]', description: 'Credit score' },
+    { name: '[time_in_business]', description: 'Time in business' },
+    { name: '[use_of_funds]', description: 'Use of funds' },
+    { name: '[booking_link]', description: 'Booking link for meetings' },
   ];
   const { toast } = useToast();
 

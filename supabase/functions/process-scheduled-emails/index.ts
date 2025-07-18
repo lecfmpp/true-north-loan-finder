@@ -138,6 +138,14 @@ function replaceVariables(text: string, userName: string, variables: any): strin
   // Replace booking call placeholder
   result = result.replace(/\[Book Your Call\]/g, 'https://calendly.com/truenorth-business-loan');
 
+  // Handle new square bracket variables
+  if (variables) {
+    Object.keys(variables).forEach(key => {
+      const placeholder = `[${key}]`;
+      result = result.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), variables[key] || '');
+    });
+  }
+
   return result;
 }
 
