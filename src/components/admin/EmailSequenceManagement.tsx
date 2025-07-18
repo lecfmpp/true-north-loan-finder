@@ -124,14 +124,14 @@ const EmailSequenceManagement = () => {
           .eq('sequence_id', sequence.id);
 
         const totalSent = sendsData?.length || 0;
-        const opened = sendsData?.filter(s => s.opened_at).length || 0;
-        const clicked = sendsData?.filter(s => s.clicked_at).length || 0;
+        const totalOpens = sendsData?.reduce((sum, s) => sum + (s.open_count || 0), 0) || 0;
+        const totalClicks = sendsData?.reduce((sum, s) => sum + (s.click_count || 0), 0) || 0;
         const enrolledCount = enrollmentsData?.length || 0;
 
         metricsData[sequence.id] = {
           emails_sent: totalSent,
-          open_rate: totalSent > 0 ? (opened / totalSent) * 100 : 0,
-          click_rate: totalSent > 0 ? (clicked / totalSent) * 100 : 0,
+          open_rate: totalSent > 0 ? (totalOpens / totalSent) * 100 : 0,
+          click_rate: totalSent > 0 ? (totalClicks / totalSent) * 100 : 0,
           enrolled_leads: enrolledCount,
         };
       }
