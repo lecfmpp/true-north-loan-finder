@@ -143,7 +143,7 @@ const Home = () => {
               </Badge>
               
               <h1 className="text-4xl lg:text-6xl font-bold font-sans text-primary mb-6 leading-tight">
-                Business Loans Designed for <span className="text-accent">Need business funding, like, yesterday?</span>
+                Need <span className="text-accent">business loan</span>, like, <span className="text-accent">yesterday</span>?
               </h1>
               
               <p className="text-xl lg:text-2xl text-muted-foreground mb-8 font-serif">
