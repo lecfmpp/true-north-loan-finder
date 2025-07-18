@@ -307,7 +307,7 @@ const Home = () => {
       <section className="py-20 bg-gradient-to-r from-primary to-secondary text-primary-foreground">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl lg:text-4xl font-bold font-sans mb-4">
-            Ready to Find Your Perfect Loan Match?
+            Worried About Cash Flow? Let's Fix That.
           </h2>
           <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto font-serif">
             Join thousands of Canadian businesses who've found their ideal funding through our platform
