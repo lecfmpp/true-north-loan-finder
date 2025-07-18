@@ -481,7 +481,7 @@ const Admin = () => {
           .select('id, status')
           .eq('user_email', leadEmail)
           .eq('sequence_id', sequenceId)
-          .single();
+          .maybeSingle();
 
         if (existingEnrollment) {
           // Reactivate existing enrollment AND trigger email sequence
@@ -549,6 +549,16 @@ const Admin = () => {
       });
     } catch (error) {
       console.error('Error in toggleEmailSequence:', error);
+      
+      // Reset the toggle state on error
+      setEmailEnrollments(prev => ({
+        ...prev,
+        [leadEmail]: {
+          ...prev[leadEmail],
+          [sequenceId]: !isEnabled
+        }
+      }));
+      
       toast({
         title: "Error", 
         description: "Failed to update email sequence",
