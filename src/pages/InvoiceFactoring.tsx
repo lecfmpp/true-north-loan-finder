@@ -484,7 +484,7 @@ const InvoiceFactoring = () => {
                 Check My Factoring Options
               </Link>
             </Button>
-            <Button asChild size="xl" variant="outline" className="text-lg px-8 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
+            <Button asChild size="xl" variant="outline" className="text-lg px-8 border-primary-foreground text-primary-foreground hover:bg-primary-foreground">
               <Link to="/blog">
                 Learn More About Invoice Factoring
               </Link>
