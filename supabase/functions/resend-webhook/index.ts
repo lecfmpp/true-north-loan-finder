@@ -86,6 +86,7 @@ const handler = async (req: Request): Promise<Response> => {
         
       case 'email.opened':
         updates.opened_at = new Date().toISOString();
+        updates.open_count = (emailSend.open_count || 0) + 1;
         if (['sent', 'delivered'].includes(emailSend.status)) {
           updates.status = 'opened';
         }
@@ -93,6 +94,7 @@ const handler = async (req: Request): Promise<Response> => {
         
       case 'email.clicked':
         updates.clicked_at = new Date().toISOString();
+        updates.click_count = (emailSend.click_count || 0) + 1;
         updates.status = 'clicked';
         break;
         

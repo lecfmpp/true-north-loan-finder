@@ -212,7 +212,11 @@ async function sendEmail(
       from: "True North Business Loan <noreply@email.truenorthbusinessloan.ca>",
       to: [userEmail],
       subject: subject,
-      html: content.replace(/\n/g, '<br>')
+      html: content.replace(/\n/g, '<br>'),
+      tags: [
+        { name: 'sequence_type', value: variables.sequenceType || 'follow_up' },
+        { name: 'template_id', value: template.id }
+      ]
     });
 
     console.log(`Email sent successfully:`, emailResponse);
