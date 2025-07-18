@@ -147,7 +147,7 @@ const Home = () => {
               </h1>
               
               <p className="text-xl lg:text-2xl text-muted-foreground mb-8 font-serif">
-                Start your application and get a response today. Fast, flexible financing from $5,000 to $800K for Canadian businesses.
+                Stop chasing paperwork and waiting weeks for an answer. Get the capital you need to cover payroll, buy inventory, or seize your next big opportunity. Apply in minutes, get a decision today.
               </p>
               
               <div className="mb-12">
