@@ -141,8 +141,16 @@ const handler = async (req: Request): Promise<Response> => {
       if (type === 'pre_call_reminder' && callDate && callTime) {
         // For pre-call reminders, calculate based on appointment time
         // Note: delay_hours should be negative for "before appointment" emails
-        const appointmentTime = new Date(`${callDate} ${callTime}`);
-        scheduledTime = new Date(appointmentTime.getTime() + (template.delay_hours * 60 * 60 * 1000));
+        try {
+          const appointmentTime = new Date(`${callDate}T${callTime}:00`);
+          if (isNaN(appointmentTime.getTime())) {
+            throw new Error(`Invalid appointment time: ${callDate} ${callTime}`);
+          }
+          scheduledTime = new Date(appointmentTime.getTime() + (template.delay_hours * 60 * 60 * 1000));
+        } catch (dateError) {
+          console.error('Date parsing error, using current time + delay:', dateError);
+          scheduledTime = new Date(Date.now() + (template.delay_hours * 60 * 60 * 1000));
+        }
       } else {
         // For follow-up sequence, calculate based on enrollment time
         scheduledTime = new Date(Date.now() + (template.delay_hours * 60 * 60 * 1000));
