@@ -25,6 +25,7 @@ import { ChatWidgetManagement } from '@/components/admin/ChatWidgetManagement';
 import { ApplicationsManagement } from '@/components/admin/ApplicationsManagement';
 import SocialProofManagement from '@/components/admin/SocialProofManagement';
 import Footer from '@/components/Footer';
+
 interface QuizResponse {
   id: string;
   name: string;
@@ -41,6 +42,7 @@ interface QuizResponse {
   admin_notes: string;
   created_at: string;
 }
+
 const Admin = () => {
   const [leads, setLeads] = useState<QuizResponse[]>([]);
   const [filteredLeads, setFilteredLeads] = useState<QuizResponse[]>([]);
@@ -95,20 +97,24 @@ const Admin = () => {
     FOLLOW_UP: '7473795a-4822-49ef-9f5f-d1b35857277a',
     PRE_CALL: 'a4eb9d81-6602-4e99-959d-1a1b8e5592a5'
   };
+
   const toggleExpandedLead = (leadId: string) => {
     setExpandedLeads(prev => ({
       ...prev,
       [leadId]: !prev[leadId]
     }));
   };
+
   const handleCallNow = (phone: string) => {
     window.open(`tel:${phone}`, '_self');
   };
+
   useEffect(() => {
     if (!authLoading && (!user || !isAdmin)) {
       navigate('/auth');
     }
   }, [user, isAdmin, authLoading, navigate]);
+
   useEffect(() => {
     if (user && isAdmin) {
       fetchLeads();
@@ -119,9 +125,11 @@ const Admin = () => {
       }
     }
   }, [user, isAdmin, isSuperAdmin]);
+
   useEffect(() => {
     filterLeads();
   }, [leads, searchTerm, statusFilter]);
+
   const fetchLeads = async () => {
     try {
       const {
@@ -136,6 +144,7 @@ const Admin = () => {
       // Fetch email enrollments for all leads
       await fetchEmailEnrollments(data || []);
     } catch (error) {
+      console.error('Error fetching leads:', error);
       toast({
         title: "Error",
         description: "Failed to fetch leads",
@@ -145,13 +154,22 @@ const Admin = () => {
       setLoading(false);
     }
   };
+
   const fetchEmailEnrollments = async (leadsData: QuizResponse[]) => {
     try {
+      console.log('Fetching email enrollments for leads:', leadsData.length);
+      
       const {
         data: enrollments,
         error
-      } = await supabase.from('email_enrollments').select('user_email, sequence_id, status').in('user_email', leadsData.map(lead => lead.email)).eq('status', 'active');
-      if (error) throw error;
+      } = await supabase.from('email_enrollments').select('user_email, sequence_id, status').in('user_email', leadsData.map(lead => lead.email));
+      
+      if (error) {
+        console.error('Error fetching enrollments:', error);
+        throw error;
+      }
+
+      console.log('Retrieved enrollments:', enrollments);
 
       // Initialize enrollment map for all leads first
       const enrollmentMap: {
@@ -159,6 +177,7 @@ const Admin = () => {
           [key: string]: boolean;
         };
       } = {};
+      
       leadsData.forEach(lead => {
         enrollmentMap[lead.email] = {
           [EMAIL_SEQUENCES.FOLLOW_UP]: false,
@@ -166,17 +185,21 @@ const Admin = () => {
         };
       });
 
-      // Then update with actual enrollments
+      // Then update with actual ACTIVE enrollments
       enrollments?.forEach(enrollment => {
-        if (enrollmentMap[enrollment.user_email]) {
+        if (enrollmentMap[enrollment.user_email] && enrollment.status === 'active') {
           enrollmentMap[enrollment.user_email][enrollment.sequence_id] = true;
+          console.log(`Setting ${enrollment.user_email} sequence ${enrollment.sequence_id} to active`);
         }
       });
+      
+      console.log('Final enrollment map:', enrollmentMap);
       setEmailEnrollments(enrollmentMap);
     } catch (error) {
       console.error('Error fetching email enrollments:', error);
     }
   };
+
   const fetchApplicationsCount = async () => {
     try {
       const {
@@ -192,6 +215,7 @@ const Admin = () => {
       console.error('Error fetching applications count:', error);
     }
   };
+
   const fetchBookingsCount = async () => {
     try {
       const {
@@ -207,6 +231,7 @@ const Admin = () => {
       console.error('Error fetching bookings count:', error);
     }
   };
+
   const fetchApprovedPartners = async () => {
     try {
       const {
@@ -240,6 +265,7 @@ const Admin = () => {
       };
     }
   }, [isSuperAdmin]);
+
   const sendLeadEmail = async (leadId: string, recipientId: string) => {
     const recipient = approvedPartners.find(p => p.id === recipientId);
     if (!recipient) {
@@ -323,8 +349,8 @@ const Admin = () => {
       }));
     }
   };
+
   const openDeleteModal = async (leadId: string) => {
-    // Check if lead has associated call bookings
     try {
       const {
         data: bookings,
@@ -349,12 +375,14 @@ const Admin = () => {
       setLeadBookings([]);
     }
   };
+
   const closeDeleteModal = () => {
     setDeleteModalOpen(false);
     setLeadToDelete(null);
     setBulkDelete(false);
     setDeleteConfirmText('');
   };
+
   const confirmDelete = async () => {
     if (deleteConfirmText !== 'DELETE LEAD') {
       toast({
@@ -476,7 +504,19 @@ const Admin = () => {
       }
     }
   };
+
   const toggleEmailSequence = async (leadEmail: string, leadName: string, sequenceId: string, isEnabled: boolean) => {
+    console.log(`Toggling email sequence for ${leadEmail}, sequence: ${sequenceId}, enabled: ${isEnabled}`);
+    
+    // Optimistically update UI
+    setEmailEnrollments(prev => ({
+      ...prev,
+      [leadEmail]: {
+        ...prev[leadEmail],
+        [sequenceId]: isEnabled
+      }
+    }));
+
     try {
       if (isEnabled) {
         // Check if there's an existing enrollment first
@@ -487,8 +527,9 @@ const Admin = () => {
           .eq('sequence_id', sequenceId)
           .maybeSingle();
 
-        if (existingEnrollment) {
-          // Reactivate existing enrollment AND trigger email sequence
+        if (existingEnrollment && existingEnrollment.status === 'cancelled') {
+          // Reactivate existing enrollment
+          console.log('Reactivating existing enrollment:', existingEnrollment.id);
           const { error } = await supabase
             .from('email_enrollments')
             .update({ 
@@ -499,58 +540,56 @@ const Admin = () => {
             .eq('id', existingEnrollment.id);
           
           if (error) throw error;
-
-          // Trigger the email sequence
-          const sequenceType = sequenceId === EMAIL_SEQUENCES.FOLLOW_UP ? 'follow_up' : 'pre_call_reminder';
-          const { error: emailError } = await supabase.functions.invoke('send-email-sequence', {
-            body: {
-              type: sequenceType,
-              userEmail: leadEmail,
-              userName: leadName,
-              variables: leads.find(l => l.email === leadEmail) || {}
-            }
-          });
-          
-          if (emailError) throw emailError;
-        } else {
-          // Create new enrollment using auto-enroll function
-          const sequenceType = sequenceId === EMAIL_SEQUENCES.FOLLOW_UP ? 'follow_up' : 'pre_call_reminder';
-          
-          const { error } = await supabase.functions.invoke('auto-enroll-lead', {
-            body: {
-              email: leadEmail,
-              name: leadName,
-              sequenceType: sequenceType,
-              userData: leads.find(l => l.email === leadEmail) || {}
-            }
-          });
-          
-          if (error) throw error;
         }
+
+        // Always trigger the email sequence when enabling (for both new and reactivated enrollments)
+        const sequenceType = sequenceId === EMAIL_SEQUENCES.FOLLOW_UP ? 'follow_up' : 'pre_call_reminder';
+        console.log(`Triggering email sequence: ${sequenceType}`);
+        
+        const leadData = leads.find(l => l.email === leadEmail);
+        
+        const { error: emailError } = await supabase.functions.invoke('send-email-sequence', {
+          body: {
+            type: sequenceType,
+            userEmail: leadEmail,
+            userName: leadName,
+            variables: {
+              callDate: '',
+              callTime: '',
+              userPhone: leadData?.phone || '',
+              monthly_revenue: leadData?.monthly_revenue || 0,
+              loan_amount: leadData?.loan_amount || 0,
+              credit_score: leadData?.credit_score || '',
+              time_in_business: leadData?.time_in_business || '',
+              use_of_funds: leadData?.use_of_funds || ''
+            }
+          }
+        });
+        
+        if (emailError) {
+          console.error('Email sequence error:', emailError);
+          throw emailError;
+        }
+
+        console.log('Email sequence triggered successfully');
       } else {
         // Unenroll from sequence
+        console.log('Unenrolling from sequence');
         const { error } = await supabase.from('email_enrollments')
           .update({ status: 'cancelled' })
           .eq('user_email', leadEmail)
           .eq('sequence_id', sequenceId);
         
         if (error) throw error;
+        console.log('Successfully unenrolled from sequence');
       }
-
-      // Update local state
-      setEmailEnrollments(prev => ({
-        ...prev,
-        [leadEmail]: {
-          ...prev[leadEmail],
-          [sequenceId]: isEnabled
-        }
-      }));
 
       const sequenceName = sequenceId === EMAIL_SEQUENCES.FOLLOW_UP ? 'Follow-up' : 'Pre-Call';
       toast({
         title: "Success",
-        description: `${sequenceName} sequence ${isEnabled ? 'enabled' : 'disabled'} for ${leadName}`
+        description: `${sequenceName} sequence ${isEnabled ? 'enabled' : 'disabled'} for ${leadName}${isEnabled ? ' - Email sent!' : ''}`
       });
+      
     } catch (error) {
       console.error('Error in toggleEmailSequence:', error);
       
@@ -565,11 +604,12 @@ const Admin = () => {
       
       toast({
         title: "Error", 
-        description: "Failed to update email sequence",
+        description: `Failed to ${isEnabled ? 'enable' : 'disable'} email sequence: ${error.message}`,
         variant: "destructive"
       });
     }
   };
+
   const filterLeads = () => {
     let filtered = leads;
     if (searchTerm) {
@@ -583,9 +623,11 @@ const Admin = () => {
     // Clear selected leads that are no longer in filtered results
     setSelectedLeads(prev => prev.filter(id => filtered.some(lead => lead.id === id)));
   };
+
   const toggleSelectLead = (leadId: string) => {
     setSelectedLeads(prev => prev.includes(leadId) ? prev.filter(id => id !== leadId) : [...prev, leadId]);
   };
+
   const toggleSelectAll = () => {
     if (selectedLeads.length === filteredLeads.length) {
       setSelectedLeads([]);
@@ -593,6 +635,7 @@ const Admin = () => {
       setSelectedLeads(filteredLeads.map(lead => lead.id));
     }
   };
+
   const exportSelectedToCSV = () => {
     const leadsToExport = selectedLeads.length > 0 ? leads.filter(lead => selectedLeads.includes(lead.id)) : filteredLeads;
     const headers = ['Name', 'Email', 'Phone', 'Monthly Revenue', 'Loan Amount', 'Credit Score', 'Time in Business', 'Use of Funds', 'Score', 'Status', 'Created At'];
@@ -634,6 +677,7 @@ const Admin = () => {
       setLeadBookings([]);
     }
   };
+
   const updateLeadStatus = async (leadId: string, newStatus: string) => {
     try {
       const {
@@ -651,6 +695,7 @@ const Admin = () => {
         description: "Lead status updated"
       });
     } catch (error) {
+      console.error('Error updating lead status:', error);
       toast({
         title: "Error",
         description: "Failed to update lead status",
@@ -658,6 +703,7 @@ const Admin = () => {
       });
     }
   };
+
   const exportToCSV = () => {
     const headers = ['Name', 'Email', 'Phone', 'Monthly Revenue', 'Loan Amount', 'Credit Score', 'Time in Business', 'Use of Funds', 'Score', 'Status', 'Created At'];
     const csvContent = [headers.join(','), ...filteredLeads.map(lead => [lead.name, lead.email, lead.phone, lead.monthly_revenue, lead.loan_amount, lead.credit_score, lead.time_in_business, lead.use_of_funds, lead.score, lead.status, format(new Date(lead.created_at), 'yyyy-MM-dd HH:mm:ss')].join(','))].join('\n');
@@ -671,6 +717,7 @@ const Admin = () => {
     a.click();
     window.URL.revokeObjectURL(url);
   };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'new':
@@ -685,6 +732,7 @@ const Admin = () => {
         return 'bg-gray-100 text-gray-800 hover:bg-gray-100 hover:text-gray-800';
     }
   };
+
   if (authLoading || loading) {
     return <div className="min-h-screen bg-background">
         <Header />
@@ -693,9 +741,11 @@ const Admin = () => {
         </div>
       </div>;
   }
+
   if (!user || !isAdmin) {
     return null;
   }
+
   const menuItems = [{
     title: "Leads",
     value: "leads",
@@ -728,6 +778,7 @@ const Admin = () => {
     value: "social-proof",
     icon: Megaphone
   }] : [])];
+
   const renderContent = () => {
     switch (activeTab) {
       case 'leads':
@@ -1006,6 +1057,7 @@ const Admin = () => {
         return <div>Select a menu item</div>;
     }
   };
+
   return <SidebarProvider>
       <div className="dashboard-container min-h-screen bg-background w-full">
         {/* Top header - spans full width */}
@@ -1109,4 +1161,5 @@ const Admin = () => {
       </div>
     </SidebarProvider>;
 };
+
 export default Admin;
