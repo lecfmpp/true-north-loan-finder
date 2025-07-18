@@ -28,20 +28,20 @@ const Home = () => {
   const steps = [
     {
       number: "1",
-      title: "See Your Estimate",
-      description: "Start by using our secure Business Loan Estimator to see the funding you're eligible for.",
+      title: "Start Your Application",
+      description: "Tell us about your business in 60 seconds. No waiting rooms, no lengthy forms - just the essentials we need to find your perfect match.",
       icon: <CheckCircle className="h-8 w-8 text-secondary" />
     },
     {
       number: "2", 
-      title: "Complete Your Application",
-      description: "A dedicated funding advisor from our team will guide you through a simple application to finalize your details.",
+      title: "Receive Your Pre-Offer",
+      description: "Get matched with pre-screened lenders who actually want your business. See real offers with real terms - not vague estimates.",
       icon: <TrendingUp className="h-8 w-8 text-secondary" />
     },
     {
       number: "3",
-      title: "Receive Your Funds", 
-      description: "Once approved, your funds are deposited directly into your business bank account, often within 24 hours.",
+      title: "Funds Deposited in Your Bank", 
+      description: "Accept your offer and watch the money hit your account. Often same-day, always transparent - because your business can't wait for bureaucracy.",
       icon: <Phone className="h-8 w-8 text-secondary" />
     }
   ];
