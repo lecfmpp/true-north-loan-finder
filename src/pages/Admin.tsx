@@ -152,7 +152,7 @@ const Admin = () => {
       } = await supabase.from('email_enrollments').select('user_email, sequence_id, status').in('user_email', leadsData.map(lead => lead.email)).eq('status', 'active');
       if (error) throw error;
 
-      // Initialize enrollment map for all leads first
+      // Initialize enrollment map for all leads - always start with disabled state
       const enrollmentMap: {
         [key: string]: {
           [key: string]: boolean;
@@ -165,12 +165,8 @@ const Admin = () => {
         };
       });
 
-      // Then update with actual enrollments
-      enrollments?.forEach(enrollment => {
-        if (enrollmentMap[enrollment.user_email]) {
-          enrollmentMap[enrollment.user_email][enrollment.sequence_id] = true;
-        }
-      });
+      // Keep all toggles disabled by default - don't update with existing enrollments
+      // This ensures admins can manually control email sequences
       setEmailEnrollments(enrollmentMap);
     } catch (error) {
       console.error('Error fetching email enrollments:', error);
