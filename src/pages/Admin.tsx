@@ -24,6 +24,7 @@ import AvailableTimesManagement from '@/components/admin/AvailableTimesManagemen
 import { ChatWidgetManagement } from '@/components/admin/ChatWidgetManagement';
 import { ApplicationsManagement } from '@/components/admin/ApplicationsManagement';
 import SocialProofManagement from '@/components/admin/SocialProofManagement';
+import SettingsManagement from '@/components/admin/SettingsManagement';
 import Footer from '@/components/Footer';
 
 interface QuizResponse {
@@ -784,11 +785,7 @@ const Admin = () => {
   }] : [])];
 
   const handleMenuItemClick = (value: string) => {
-    if (value === 'settings') {
-      navigate('/settings');
-    } else {
-      setActiveTab(value);
-    }
+    setActiveTab(value);
   };
 
   const renderContent = () => {
@@ -1065,6 +1062,8 @@ const Admin = () => {
         return <BlogManagement />;
       case 'social-proof':
         return <SocialProofManagement />;
+      case 'settings':
+        return <SettingsManagement />;
       default:
         return <div>Select a menu item</div>;
     }
