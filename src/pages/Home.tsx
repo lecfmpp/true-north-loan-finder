@@ -310,7 +310,7 @@ const Home = () => {
             Worried About Cash Flow? Let's Fix That.
           </h2>
           <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto font-serif">
-            Join thousands of Canadian businesses who've found their ideal funding through our platform
+            We get it. Payroll, inventory, and unexpected costs can't wait. We provide fast, direct funding from $5,000 to $800K so you can get back to what matters: running your business.
           </p>
           <Button asChild size="xl" variant="secondary" className="text-lg px-8">
             <Link to="/loan-estimator">Get My Loan Estimate</Link>
