@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -51,7 +52,8 @@ const EmailSequenceManagement = () => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [resetSequenceId, setResetSequenceId] = useState<string | null>(null);
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+  const [resetSequenceData, setResetSequenceData] = useState<{ id: string; name: string } | null>(null);
   const [createSequenceId, setCreateSequenceId] = useState('');
   const [editFormData, setEditFormData] = useState({
     purpose: '',
@@ -370,17 +372,20 @@ const EmailSequenceManagement = () => {
     }
   };
 
-  const handleResetMetrics = async (sequenceId: string, sequenceName: string) => {
-    if (!confirm(`Are you sure you want to reset all email metrics for "${sequenceName}"? This will permanently delete all email tracking data for this sequence and cannot be undone.`)) {
-      return;
-    }
+  const handleResetMetricsClick = (sequenceId: string, sequenceName: string) => {
+    setResetSequenceData({ id: sequenceId, name: sequenceName });
+    setResetConfirmOpen(true);
+  };
+
+  const handleResetMetricsConfirm = async () => {
+    if (!resetSequenceData) return;
 
     try {
       // Get all templates for this sequence
       const { data: templates, error: templatesError } = await supabase
         .from('email_templates')
         .select('id')
-        .eq('sequence_id', sequenceId);
+        .eq('sequence_id', resetSequenceData.id);
 
       if (templatesError) throw templatesError;
 
@@ -399,11 +404,11 @@ const EmailSequenceManagement = () => {
       // Reset metrics for this sequence
       setMetrics(prev => ({
         ...prev,
-        [sequenceId]: {
+        [resetSequenceData.id]: {
           emails_sent: 0,
           open_rate: 0,
           click_rate: 0,
-          enrolled_leads: prev[sequenceId]?.enrolled_leads || 0,
+          enrolled_leads: prev[resetSequenceData.id]?.enrolled_leads || 0,
           total_opens: 0,
           total_clicks: 0,
         }
@@ -411,8 +416,11 @@ const EmailSequenceManagement = () => {
 
       toast({
         title: "Metrics Reset",
-        description: `All email metrics for "${sequenceName}" have been reset successfully`,
+        description: `All email metrics for "${resetSequenceData.name}" have been reset successfully`,
       });
+
+      setResetConfirmOpen(false);
+      setResetSequenceData(null);
     } catch (error) {
       console.error('Error resetting metrics:', error);
       toast({
@@ -458,7 +466,7 @@ const EmailSequenceManagement = () => {
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => handleResetMetrics(sequence.id, sequence.name)}
+                onClick={() => handleResetMetricsClick(sequence.id, sequence.name)}
                 className="text-destructive hover:text-destructive"
               >
                 <RotateCcw className="h-4 w-4 mr-1" />
@@ -621,6 +629,33 @@ const EmailSequenceManagement = () => {
       </div>
 
       {sequences.map(sequence => renderSequenceSection(sequence))}
+
+      {/* Reset Metrics Confirmation Modal */}
+      <AlertDialog open={resetConfirmOpen} onOpenChange={setResetConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset Email Metrics</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to reset all email metrics for "{resetSequenceData?.name}"? 
+              This will permanently delete all email tracking data for this sequence and cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setResetConfirmOpen(false);
+              setResetSequenceData(null);
+            }}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleResetMetricsConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Reset Metrics
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* View Email Modal */}
       <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
