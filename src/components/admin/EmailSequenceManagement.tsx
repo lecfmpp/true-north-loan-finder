@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Edit, Eye, Mail, TrendingUp, Users, MousePointer, Trash2, Plus, Variable } from "lucide-react";
+import { Edit, Eye, Mail, TrendingUp, Users, MousePointer, Trash2, Plus, Variable, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -43,6 +43,7 @@ const EmailSequenceManagement = () => {
   const [templates, setTemplates] = useState<{ [key: string]: EmailTemplate[] }>({});
   const [metrics, setMetrics] = useState<{ [key: string]: SequenceMetrics }>({});
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -79,6 +80,16 @@ const EmailSequenceManagement = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchData();
+    setRefreshing(false);
+    toast({
+      title: "Refreshed",
+      description: "Email metrics updated with latest Resend data",
+    });
+  };
 
   const fetchData = async () => {
     try {
@@ -520,6 +531,14 @@ const EmailSequenceManagement = () => {
             Manage and monitor automated email sequences sent to your users
           </p>
         </div>
+        <Button 
+          onClick={handleRefresh}
+          disabled={refreshing}
+          variant="outline"
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+          {refreshing ? 'Refreshing...' : 'Refresh Metrics'}
+        </Button>
       </div>
 
       {sequences.map(sequence => renderSequenceSection(sequence))}
