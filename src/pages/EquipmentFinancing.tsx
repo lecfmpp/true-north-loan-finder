@@ -83,28 +83,18 @@ const EquipmentFinancing = () => {
   const applicationSteps = [
     {
       step: "1",
-      title: "Determine Your Needs",
-      description: "Calculate exactly how much financing you need and get equipment quotes"
+      title: "Start Your Application",
+      description: "Tell us about your equipment needs and business in 60 seconds. No waiting rooms, no lengthy forms - just the essentials we need to find your perfect match."
     },
     {
       step: "2", 
-      title: "Gather Documentation",
-      description: "Prepare financial statements, tax returns, and equipment specifications"
+      title: "Documentation Review",
+      description: "Our financing specialist will review your documentation and work with you to ensure everything is complete. We handle the heavy lifting while you focus on your business."
     },
     {
       step: "3",
-      title: "Compare Options",
-      description: "Shop around for the best rates, terms, and lender requirements"
-    },
-    {
-      step: "4",
-      title: "Submit Application",
-      description: "Complete application with all required documents and equipment details"
-    },
-    {
-      step: "5",
-      title: "Get Approved & Purchase",
-      description: "Once approved, purchase your equipment and start growing your business"
+      title: "Get Your Equipment",
+      description: "Once approved, purchase your equipment and start growing your business. Funds are typically available within 24-48 hours of approval."
     }
   ];
 
@@ -326,7 +316,7 @@ const EquipmentFinancing = () => {
               Simple Application Process
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-serif">
-              Get approved for equipment financing in 5 easy steps
+              Get approved for equipment financing in 3 simple steps
             </p>
           </div>
           
