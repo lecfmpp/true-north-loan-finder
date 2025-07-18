@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Edit, Eye, Mail, TrendingUp, Users, MousePointer, Trash2, Plus, Variable, RefreshCw } from "lucide-react";
+import { Edit, Eye, Mail, TrendingUp, Users, MousePointer, Trash2, Plus, Variable, RefreshCw, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -51,6 +51,7 @@ const EmailSequenceManagement = () => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [resetSequenceId, setResetSequenceId] = useState<string | null>(null);
   const [createSequenceId, setCreateSequenceId] = useState('');
   const [editFormData, setEditFormData] = useState({
     purpose: '',
@@ -369,6 +370,59 @@ const EmailSequenceManagement = () => {
     }
   };
 
+  const handleResetMetrics = async (sequenceId: string, sequenceName: string) => {
+    if (!confirm(`Are you sure you want to reset all email metrics for "${sequenceName}"? This will permanently delete all email tracking data for this sequence and cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      // Get all templates for this sequence
+      const { data: templates, error: templatesError } = await supabase
+        .from('email_templates')
+        .select('id')
+        .eq('sequence_id', sequenceId);
+
+      if (templatesError) throw templatesError;
+
+      const templateIds = templates?.map(t => t.id) || [];
+
+      if (templateIds.length > 0) {
+        // Delete all email_sends records for templates in this sequence
+        const { error: deleteError } = await supabase
+          .from('email_sends')
+          .delete()
+          .in('template_id', templateIds);
+
+        if (deleteError) throw deleteError;
+      }
+
+      // Reset metrics for this sequence
+      setMetrics(prev => ({
+        ...prev,
+        [sequenceId]: {
+          emails_sent: 0,
+          open_rate: 0,
+          click_rate: 0,
+          enrolled_leads: prev[sequenceId]?.enrolled_leads || 0,
+          total_opens: 0,
+          total_clicks: 0,
+        }
+      }));
+
+      toast({
+        title: "Metrics Reset",
+        description: `All email metrics for "${sequenceName}" have been reset successfully`,
+      });
+    } catch (error) {
+      console.error('Error resetting metrics:', error);
+      toast({
+        title: "Error",
+        description: "Failed to reset email metrics",
+        variant: "destructive",
+      });
+    }
+  };
+
   const insertVariable = (variable: string, isEdit: boolean = false) => {
     if (isEdit) {
       setEditFormData(prev => ({
@@ -400,10 +454,21 @@ const EmailSequenceManagement = () => {
               </CardTitle>
               <CardDescription>{sequence.description}</CardDescription>
             </div>
-            <Switch
-              checked={sequence.is_active}
-              onCheckedChange={(checked) => toggleSequenceStatus(sequence.id, checked)}
-            />
+            <div className="flex items-center space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => handleResetMetrics(sequence.id, sequence.name)}
+                className="text-destructive hover:text-destructive"
+              >
+                <RotateCcw className="h-4 w-4 mr-1" />
+                Reset Metrics
+              </Button>
+              <Switch
+                checked={sequence.is_active}
+                onCheckedChange={(checked) => toggleSequenceStatus(sequence.id, checked)}
+              />
+            </div>
           </div>
         </CardHeader>
         <CardContent>
