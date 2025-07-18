@@ -29,6 +29,7 @@ interface EmailTemplate {
   email_content: string;
   delay_hours: number;
   is_active: boolean;
+  booking_link?: string;
 }
 
 interface SequenceMetrics {
@@ -55,14 +56,16 @@ const EmailSequenceManagement = () => {
     purpose: '',
     subject_line: '',
     email_content: '',
-    delay_hours: 0
+    delay_hours: 0,
+    booking_link: ''
   });
   const [createFormData, setCreateFormData] = useState({
     purpose: '',
     subject_line: '',
     email_content: '',
     delay_hours: 0,
-    email_order: 1
+    email_order: 1,
+    booking_link: ''
   });
 
   // Email variables for insertion
@@ -76,6 +79,7 @@ const EmailSequenceManagement = () => {
     { name: '{{credit_score}}', description: 'Credit score' },
     { name: '{{time_in_business}}', description: 'Time in business' },
     { name: '{{use_of_funds}}', description: 'Use of funds' },
+    { name: '{{booking_link}}', description: 'Booking link for meetings' },
   ];
   const { toast } = useToast();
 
@@ -234,7 +238,8 @@ const EmailSequenceManagement = () => {
       purpose: template.purpose,
       subject_line: template.subject_line,
       email_content: template.email_content,
-      delay_hours: template.delay_hours
+      delay_hours: template.delay_hours,
+      booking_link: template.booking_link || ''
     });
     setIsEditModalOpen(true);
   };
@@ -249,7 +254,8 @@ const EmailSequenceManagement = () => {
           purpose: editFormData.purpose,
           subject_line: editFormData.subject_line,
           email_content: editFormData.email_content,
-          delay_hours: editFormData.delay_hours
+          delay_hours: editFormData.delay_hours,
+          booking_link: editFormData.booking_link
         })
         .eq('id', selectedTemplate.id);
 
@@ -330,7 +336,8 @@ const EmailSequenceManagement = () => {
           email_content: createFormData.email_content,
           delay_hours: createFormData.delay_hours,
           email_order: createFormData.email_order,
-          is_active: true
+          is_active: true,
+          booking_link: createFormData.booking_link
         });
 
       if (error) throw error;
@@ -344,7 +351,8 @@ const EmailSequenceManagement = () => {
         subject_line: '',
         email_content: '',
         delay_hours: 0,
-        email_order: 1
+        email_order: 1,
+        booking_link: ''
       });
 
       toast({
@@ -620,6 +628,15 @@ const EmailSequenceManagement = () => {
               />
             </div>
             <div>
+              <Label htmlFor="booking-link">Booking Link</Label>
+              <Input
+                id="booking-link"
+                value={editFormData.booking_link}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, booking_link: e.target.value }))}
+                placeholder="https://calendly.com/your-link or https://zoom.us/j/your-meeting-id"
+              />
+            </div>
+            <div>
               <Label htmlFor="content">Email Content</Label>
               <div className="mb-2">
                 <Label className="text-sm font-medium">Insert Variables:</Label>
@@ -704,6 +721,15 @@ const EmailSequenceManagement = () => {
                 value={createFormData.delay_hours}
                 onChange={(e) => setCreateFormData(prev => ({ ...prev, delay_hours: parseInt(e.target.value) || 0 }))}
                 placeholder="Delay in hours"
+              />
+            </div>
+            <div>
+              <Label htmlFor="create-booking-link">Booking Link</Label>
+              <Input
+                id="create-booking-link"
+                value={createFormData.booking_link}
+                onChange={(e) => setCreateFormData(prev => ({ ...prev, booking_link: e.target.value }))}
+                placeholder="https://calendly.com/your-link or https://zoom.us/j/your-meeting-id"
               />
             </div>
             <div>

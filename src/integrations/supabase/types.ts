@@ -535,6 +535,7 @@ export type Database = {
       }
       email_templates: {
         Row: {
+          booking_link: string | null
           created_at: string
           delay_hours: number
           email_content: string
@@ -547,6 +548,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          booking_link?: string | null
           created_at?: string
           delay_hours?: number
           email_content: string
@@ -559,6 +561,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          booking_link?: string | null
           created_at?: string
           delay_hours?: number
           email_content?: string
