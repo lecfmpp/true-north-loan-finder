@@ -144,9 +144,32 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({ onBookingConfirmed, u
 
       if (bookingError) throw bookingError;
 
+      // Create Google Meet event
+      const appointmentDateTime = new Date(selectedSlot.date);
+      const [hours, minutes] = selectedSlot.time.split(':');
+      appointmentDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+
+      try {
+        const { error: meetError } = await supabase.functions.invoke('create-google-meet-event', {
+          body: {
+            bookingId: booking.id,
+            userEmail: userInfo.email,
+            userName: userInfo.name,
+            userPhone: userInfo.phone,
+            appointmentDateTime: appointmentDateTime.toISOString(),
+            durationMinutes: selectedSlot.duration_minutes
+          }
+        });
+
+        if (meetError) {
+          console.error('Error creating Google Meet event:', meetError);
+        }
+      } catch (meetError) {
+        console.error('Error creating Google Meet event:', meetError);
+      }
+
       // Remove from follow-up sequence and start pre-call reminder sequence
       try {
-        const appointmentDateTime = `${selectedSlot.date} ${selectedSlot.time}`;
         const appointmentDate = format(new Date(selectedSlot.date), 'MMMM do, yyyy');
         const appointmentTime = format(new Date(`2000-01-01 ${selectedSlot.time}`), 'h:mm a');
         

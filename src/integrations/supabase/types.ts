@@ -165,7 +165,10 @@ export type Database = {
       call_bookings: {
         Row: {
           booking_status: string
+          calendar_sync_status: string | null
           created_at: string
+          google_calendar_event_id: string | null
+          google_meet_link: string | null
           id: string
           meeting_link: string | null
           notes: string | null
@@ -178,7 +181,10 @@ export type Database = {
         }
         Insert: {
           booking_status?: string
+          calendar_sync_status?: string | null
           created_at?: string
+          google_calendar_event_id?: string | null
+          google_meet_link?: string | null
           id?: string
           meeting_link?: string | null
           notes?: string | null
@@ -191,7 +197,10 @@ export type Database = {
         }
         Update: {
           booking_status?: string
+          calendar_sync_status?: string | null
           created_at?: string
+          google_calendar_event_id?: string | null
+          google_meet_link?: string | null
           id?: string
           meeting_link?: string | null
           notes?: string | null
