@@ -140,6 +140,7 @@ const handler = async (req: Request): Promise<Response> => {
       
       if (type === 'pre_call_reminder' && callDate && callTime) {
         // For pre-call reminders, calculate based on appointment time
+        // Note: delay_hours should be negative for "before appointment" emails
         const appointmentTime = new Date(`${callDate} ${callTime}`);
         scheduledTime = new Date(appointmentTime.getTime() + (template.delay_hours * 60 * 60 * 1000));
       } else {
