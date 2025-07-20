@@ -1,4 +1,10 @@
 import React, { useState, useEffect } from 'react';
+
+declare global {
+  interface Window {
+    gtag: (...args: any[]) => void;
+  }
+}
 import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -109,6 +115,11 @@ const Results = () => {
     // Only enroll if we have the necessary data and haven't enrolled yet
     if (!loading && (quizData || (name && email))) {
       enrollInEmailSequence();
+      
+      // Fire Google Ads conversion tracking
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'ads_conversion_SUBMIT_LEAD_FORM_1', {});
+      }
     }
   }, [loading, quizData, quizResponseId, name, email, phone, score, loanAmount]);
 

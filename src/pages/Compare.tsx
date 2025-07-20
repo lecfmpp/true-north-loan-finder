@@ -88,170 +88,178 @@ const Compare = () => {
       
       <main className="min-h-screen">
         {/* Hero Section */}
-        <section className="py-20 px-4 bg-gradient-to-br from-primary/10 to-secondary/10">
-          <div className="max-w-7xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Why Choose Us Over <span className="text-primary">Traditional Banks?</span>
-            </h1>
-            <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-              See the clear differences and discover why thousands of Canadian businesses choose 
-              our flexible financing over traditional bank loans.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" asChild>
-                <Link to="/loan-estimator">Get Your Quote Now</Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link to="/how-it-works">How It Works</Link>
-              </Button>
+        <section className="py-20 px-4 bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto text-center">
+              <h1 className="text-4xl lg:text-5xl font-bold font-sans text-primary mb-6">
+                Why Choose Us Over <span className="text-primary">Traditional Banks?</span>
+              </h1>
+              <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto font-serif">
+                See the clear differences and discover why thousands of Canadian businesses choose 
+                our flexible financing over traditional bank loans.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button size="lg" variant="cta" asChild>
+                  <Link to="/loan-estimator">Get Your Quote Now</Link>
+                </Button>
+                <Button size="lg" variant="outline" asChild>
+                  <Link to="/how-it-works">How It Works</Link>
+                </Button>
+              </div>
             </div>
           </div>
         </section>
 
         {/* Comparison Table */}
-        <section className="py-20 px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Side-by-Side Comparison
-              </h2>
-              <p className="text-xl text-muted-foreground">
-                See exactly how we stack up against traditional banks
-              </p>
-            </div>
+        <section className="py-20">
+          <div className="container mx-auto px-4">
+            <div className="max-w-6xl mx-auto">
+              <div className="text-center mb-16">
+                <h2 className="text-3xl lg:text-4xl font-bold font-sans text-primary mb-4">
+                  Side-by-Side Comparison
+                </h2>
+                <p className="text-xl text-muted-foreground font-serif">
+                  See exactly how we stack up against traditional banks
+                </p>
+              </div>
 
-            <div className="overflow-x-auto">
-              <div className="min-w-[600px]">
-                {/* Header */}
-                <div className="grid grid-cols-3 gap-4 mb-6">
-                  <div></div>
-                  <Card className="bg-primary text-primary-foreground">
-                    <CardHeader className="text-center py-6">
-                      <CardTitle className="text-2xl">True North Business Loan</CardTitle>
-                      <Badge variant="secondary" className="mx-auto">Better Choice</Badge>
-                    </CardHeader>
-                  </Card>
-                  <Card className="bg-muted">
-                    <CardHeader className="text-center py-6">
-                      <CardTitle className="text-2xl">Traditional Banks</CardTitle>
-                    </CardHeader>
-                  </Card>
-                </div>
-
-                {/* Comparison Rows */}
-                {comparisonData.map((item, index) => (
-                  <div key={index} className="grid grid-cols-3 gap-4 mb-4">
-                    <Card className="flex items-center justify-center">
-                      <CardContent className="py-4">
-                        <h3 className="font-semibold text-center">{item.feature}</h3>
-                      </CardContent>
+              <div className="overflow-x-auto">
+                <div className="min-w-[600px]">
+                  {/* Header */}
+                  <div className="grid grid-cols-3 gap-4 mb-6">
+                    <div></div>
+                    <Card className="bg-primary text-primary-foreground">
+                      <CardHeader className="text-center py-6">
+                        <CardTitle className="text-2xl">True North Business Loan</CardTitle>
+                        <Badge variant="secondary" className="mx-auto">Better Choice</Badge>
+                      </CardHeader>
                     </Card>
-                    <Card className="bg-success/10 border-success/20">
-                      <CardContent className="py-4 flex items-center justify-center gap-2">
-                        {item.usIcon}
-                        <span className="font-medium">{item.us}</span>
-                      </CardContent>
-                    </Card>
-                    <Card className="bg-destructive/10 border-destructive/20">
-                      <CardContent className="py-4 flex items-center justify-center gap-2">
-                        {item.bankIcon}
-                        <span className="font-medium">{item.banks}</span>
-                      </CardContent>
+                    <Card className="bg-muted">
+                      <CardHeader className="text-center py-6">
+                        <CardTitle className="text-2xl">Traditional Banks</CardTitle>
+                      </CardHeader>
                     </Card>
                   </div>
-                ))}
+
+                  {/* Comparison Rows */}
+                  {comparisonData.map((item, index) => (
+                    <div key={index} className="grid grid-cols-3 gap-4 mb-4">
+                      <Card className="flex items-center justify-center">
+                        <CardContent className="py-4">
+                          <h3 className="font-semibold text-center">{item.feature}</h3>
+                        </CardContent>
+                      </Card>
+                      <Card className="bg-success/10 border-success/20">
+                        <CardContent className="py-4 flex items-center justify-center gap-2">
+                          {item.usIcon}
+                          <span className="font-medium">{item.us}</span>
+                        </CardContent>
+                      </Card>
+                      <Card className="bg-destructive/10 border-destructive/20">
+                        <CardContent className="py-4 flex items-center justify-center gap-2">
+                          {item.bankIcon}
+                          <span className="font-medium">{item.banks}</span>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         </section>
 
         {/* Benefits Section */}
-        <section className="py-20 px-4 bg-muted/50">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                The True North Advantage
-              </h2>
-              <p className="text-xl text-muted-foreground">
-                Here's what makes us the better choice for your business
-              </p>
-            </div>
+        <section className="py-20 bg-muted/30">
+          <div className="container mx-auto px-4">
+            <div className="max-w-6xl mx-auto">
+              <div className="text-center mb-16">
+                <h2 className="text-3xl lg:text-4xl font-bold font-sans text-primary mb-4">
+                  The True North Advantage
+                </h2>
+                <p className="text-xl text-muted-foreground font-serif">
+                  Here's what makes us the better choice for your business
+                </p>
+              </div>
 
-            <div className="grid md:grid-cols-2 gap-8">
-              {benefits.map((benefit, index) => (
-                <Card key={index} className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0">{benefit.icon}</div>
-                    <div>
-                      <h3 className="text-xl font-semibold mb-2">{benefit.title}</h3>
-                      <p className="text-muted-foreground">{benefit.description}</p>
+              <div className="grid md:grid-cols-2 gap-8">
+                {benefits.map((benefit, index) => (
+                  <Card key={index} className="p-6 border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0">{benefit.icon}</div>
+                      <div>
+                        <h3 className="text-xl font-semibold font-sans text-primary mb-2">{benefit.title}</h3>
+                        <p className="text-muted-foreground font-serif">{benefit.description}</p>
+                      </div>
                     </div>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
         {/* Real Stories Section */}
-        <section className="py-20 px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Real Stories from Real Businesses
-              </h2>
-              <p className="text-xl text-muted-foreground">
-                See why businesses switched from banks to True North
-              </p>
-            </div>
+        <section className="py-20">
+          <div className="container mx-auto px-4">
+            <div className="max-w-6xl mx-auto">
+              <div className="text-center mb-16">
+                <h2 className="text-3xl lg:text-4xl font-bold font-sans text-primary mb-4">
+                  Real Stories from Real Businesses
+                </h2>
+                <p className="text-xl text-muted-foreground font-serif">
+                  See why businesses switched from banks to True North
+                </p>
+              </div>
 
-            <div className="grid md:grid-cols-2 gap-8">
-              <Card className="p-6">
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <div className="flex text-yellow-500">
-                      {"★".repeat(5)}
+              <div className="grid md:grid-cols-2 gap-8">
+                <Card className="p-6 border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300">
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <div className="flex text-yellow-500">
+                        {"★".repeat(5)}
+                      </div>
                     </div>
-                  </div>
-                  <blockquote className="text-lg italic">
-                    "The bank wanted me to wait 6 weeks and provide endless paperwork. 
-                    True North approved me in 2 days with minimal documentation. 
-                    I was able to purchase the equipment I needed immediately."
-                  </blockquote>
-                  <footer className="font-semibold">
-                    - Sarah M., Manufacturing Business Owner
-                  </footer>
-                </CardContent>
-              </Card>
+                    <blockquote className="text-lg italic font-serif">
+                      "The bank wanted me to wait 6 weeks and provide endless paperwork. 
+                      True North approved me in 2 days with minimal documentation. 
+                      I was able to purchase the equipment I needed immediately."
+                    </blockquote>
+                    <footer className="font-semibold font-sans">
+                      - Sarah M., Manufacturing Business Owner
+                    </footer>
+                  </CardContent>
+                </Card>
 
-              <Card className="p-6">
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <div className="flex text-yellow-500">
-                      {"★".repeat(5)}
+                <Card className="p-6 border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300">
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <div className="flex text-yellow-500">
+                        {"★".repeat(5)}
+                      </div>
                     </div>
-                  </div>
-                  <blockquote className="text-lg italic">
-                    "My credit wasn't perfect, and every bank turned me down. 
-                    True North looked at my business potential, not just my credit score. 
-                    They gave me the funding to grow my restaurant."
-                  </blockquote>
-                  <footer className="font-semibold">
-                    - Mike R., Restaurant Owner
-                  </footer>
-                </CardContent>
-              </Card>
+                    <blockquote className="text-lg italic font-serif">
+                      "My credit wasn't perfect, and every bank turned me down. 
+                      True North looked at my business potential, not just my credit score. 
+                      They gave me the funding to grow my restaurant."
+                    </blockquote>
+                    <footer className="font-semibold font-sans">
+                      - Mike R., Restaurant Owner
+                    </footer>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
         </section>
 
         {/* CTA Section */}
-        <section className="py-20 px-4 bg-primary text-primary-foreground">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+        <section className="py-20 bg-gradient-to-r from-primary to-secondary text-primary-foreground">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-3xl lg:text-4xl font-bold font-sans mb-4">
               Ready to Experience the Difference?
             </h2>
-            <p className="text-xl mb-8 opacity-90">
+            <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto font-serif">
               Don't wait weeks for a bank decision. Get your business loan quote in minutes 
               and funding in 24-48 hours.
             </p>
