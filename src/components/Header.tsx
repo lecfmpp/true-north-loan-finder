@@ -23,49 +23,53 @@ const Header = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/how-it-works" className={`text-sm font-medium transition-colors hover:text-primary-foreground/80 ${isActive("/how-it-works") ? "text-primary-foreground" : "text-primary-foreground/70"}`}>
+          <nav className="hidden md:flex items-center space-x-6">
+            <Link to="/how-it-works" className={`text-xs font-medium transition-colors hover:text-primary-foreground/80 ${isActive("/how-it-works") ? "text-primary-foreground" : "text-primary-foreground/70"}`}>
               How It Works
             </Link>
 
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center text-sm font-medium text-primary-foreground/70 hover:text-primary-foreground/80 transition-colors">
+              <DropdownMenuTrigger className="flex items-center text-xs font-medium text-primary-foreground/70 hover:text-primary-foreground/80 transition-colors">
                 Types of Loans
                 <ChevronDown className="ml-1 h-4 w-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56">
                 <DropdownMenuItem asChild>
-                  <Link to="/equipment-financing" className="w-full">
+                  <Link to="/equipment-financing" className="w-full text-xs">
                     Equipment Financing
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/small-business-loans" className="w-full">
+                  <Link to="/small-business-loans" className="w-full text-xs">
                     Small Business Loans
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/merchant-cash-advance" className="w-full">
+                  <Link to="/merchant-cash-advance" className="w-full text-xs">
                     Merchant Cash Advance
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/invoice-factoring" className="w-full">
+                  <Link to="/invoice-factoring" className="w-full text-xs">
                     Invoice Factoring
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Link to="/blog" className={`text-sm font-medium transition-colors hover:text-primary-foreground/80 ${isActive("/blog") ? "text-primary-foreground" : "text-primary-foreground/70"}`}>
+            <Link to="/compare" className={`text-xs font-medium transition-colors hover:text-primary-foreground/80 ${isActive("/compare") ? "text-primary-foreground" : "text-primary-foreground/70"}`}>
+              Compare Options
+            </Link>
+
+            <Link to="/blog" className={`text-xs font-medium transition-colors hover:text-primary-foreground/80 ${isActive("/blog") ? "text-primary-foreground" : "text-primary-foreground/70"}`}>
               Blog
             </Link>
 
-            <Link to="/industries-we-serve" className={`text-sm font-medium transition-colors hover:text-primary-foreground/80 ${isActive("/industries-we-serve") ? "text-primary-foreground" : "text-primary-foreground/70"}`}>
+            <Link to="/industries-we-serve" className={`text-xs font-medium transition-colors hover:text-primary-foreground/80 ${isActive("/industries-we-serve") ? "text-primary-foreground" : "text-primary-foreground/70"}`}>
               Industries We Serve
             </Link>
 
-            <Link to="/about" className={`text-sm font-medium transition-colors hover:text-primary-foreground/80 ${isActive("/about") ? "text-primary-foreground" : "text-primary-foreground/70"}`}>
+            <Link to="/about" className={`text-xs font-medium transition-colors hover:text-primary-foreground/80 ${isActive("/about") ? "text-primary-foreground" : "text-primary-foreground/70"}`}>
               About Us
             </Link>
           </nav>
@@ -107,33 +111,36 @@ const Header = () => {
         {/* Mobile Navigation */}
         {isMenuOpen && <div className="md:hidden border-t border-primary-foreground/20 bg-primary">
             <nav className="py-4 space-y-4">
-              <Link to="/how-it-works" className="block text-sm font-medium text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
+              <Link to="/how-it-works" className="block text-xs font-medium text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
                 How It Works
               </Link>
               <div className="space-y-2">
-                <div className="text-sm font-medium text-primary-foreground/70">Types of Loans</div>
+                <div className="text-xs font-medium text-primary-foreground/70">Types of Loans</div>
                 <div className="pl-4 space-y-2">
-                  <Link to="/equipment-financing" className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
+                  <Link to="/equipment-financing" className="block text-xs text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
                     Equipment Financing
                   </Link>
-                  <Link to="/small-business-loans" className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
+                  <Link to="/small-business-loans" className="block text-xs text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
                     Small Business Loans
                   </Link>
-                  <Link to="/merchant-cash-advance" className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
+                  <Link to="/merchant-cash-advance" className="block text-xs text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
                     Merchant Cash Advance
                   </Link>
-                  <Link to="/invoice-factoring" className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
+                  <Link to="/invoice-factoring" className="block text-xs text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
                     Invoice Factoring
                   </Link>
                 </div>
               </div>
-              <Link to="/blog" className="block text-sm font-medium text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
+              <Link to="/compare" className="block text-xs font-medium text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
+                Compare Options
+              </Link>
+              <Link to="/blog" className="block text-xs font-medium text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
                 Blog
               </Link>
-              <Link to="/industries-we-serve" className="block text-sm font-medium text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
+              <Link to="/industries-we-serve" className="block text-xs font-medium text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
                 Industries We Serve
               </Link>
-              <Link to="/about" className="block text-sm font-medium text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
+              <Link to="/about" className="block text-xs font-medium text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
                 About Us
               </Link>
               <div className="pt-4 space-y-2">
