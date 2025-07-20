@@ -148,32 +148,34 @@ const IndustriesWeServe = () => {
       <Header />
       
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-primary/10 to-secondary/10 py-12 md:py-16">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold font-sans text-primary mb-4 md:mb-6 leading-tight">
-            Industries We Serve
-          </h1>
-          <h2 className="text-xl md:text-2xl lg:text-3xl font-bold font-sans text-secondary mb-4 md:mb-6">
-            Small Business Loans in Canada, Tailored for Your Industry
-          </h2>
-          <p className="text-base md:text-lg lg:text-xl text-muted-foreground max-w-4xl mx-auto font-serif mb-6 md:mb-8">
-            We provide specialized <strong>business financing in Canada</strong> to help entrepreneurs overcome their unique challenges. From a <strong>Canadian business loan</strong> for expansion to equipment financing, we have the right funding for your company.
-          </p>
-          <Button asChild size="lg" variant="cta">
-            <Link to="/loan-estimator">
-              Get Your Free Estimate
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
-          </Button>
+      <section className="py-20 bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-4xl lg:text-5xl font-bold font-sans text-primary mb-6">
+              Industries We Serve
+            </h1>
+            <h2 className="text-2xl lg:text-3xl font-bold font-sans text-secondary mb-6">
+              Small Business Loans in Canada, Tailored for Your Industry
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto font-serif mb-8">
+              We provide specialized <strong>business financing in Canada</strong> to help entrepreneurs overcome their unique challenges. From a <strong>Canadian business loan</strong> for expansion to equipment financing, we have the right funding for your company.
+            </p>
+            <Button asChild size="lg" variant="cta">
+              <Link to="/loan-estimator">
+                Get Your Free Estimate
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
 
       {/* Industries Section */}
-      <section className="py-12 md:py-16">
+      <section className="py-20">
         <div className="container mx-auto px-4">
-          <div className="space-y-12 md:space-y-16 max-w-7xl mx-auto">
+          <div className="space-y-16 max-w-7xl mx-auto">
             {industries.map((industry, index) => (
-              <Card key={industry.id} className="overflow-hidden border border-muted/20 shadow-lg">
+              <Card key={industry.id} className="overflow-hidden border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300">
                 <div className="flex flex-col lg:grid lg:grid-cols-2 lg:gap-0">
                   {/* Industry Image */}
                   <div className={`relative h-48 md:h-64 lg:h-auto ${index % 2 === 1 ? 'lg:order-2' : 'lg:order-1'}`}>
@@ -197,10 +199,10 @@ const IndustriesWeServe = () => {
                   <div className={`p-4 md:p-6 lg:p-12 w-full ${index % 2 === 1 ? 'lg:order-1' : 'lg:order-2'}`}>
                     {/* The Challenge */}
                     <div className="mb-6 md:mb-8">
-                      <h3 className="text-lg md:text-xl lg:text-2xl font-bold font-sans text-primary mb-3 md:mb-4 break-words leading-tight">
+                      <h3 className="text-xl lg:text-2xl font-bold font-sans text-primary mb-4 break-words leading-tight">
                         {industry.challenge.headline}
                       </h3>
-                      <p className="text-muted-foreground text-sm md:text-base lg:text-lg font-serif leading-relaxed break-words">
+                      <p className="text-muted-foreground text-base lg:text-lg font-serif leading-relaxed break-words">
                         {industry.challenge.description.split('**').map((part, i) => 
                           i % 2 === 1 ? <strong key={i} className="text-primary">{part}</strong> : part
                         )}
@@ -209,16 +211,16 @@ const IndustriesWeServe = () => {
 
                     {/* Recommended Solutions */}
                     <div className="mb-6 md:mb-8">
-                      <h4 className="text-base md:text-lg lg:text-xl font-bold font-sans text-primary mb-3 md:mb-4 break-words leading-tight">
+                      <h4 className="text-lg lg:text-xl font-bold font-sans text-primary mb-4 break-words leading-tight">
                         Recommended Business Financing for {industry.title.split(' &')[0]}
                       </h4>
-                      <div className="space-y-3 md:space-y-4">
+                      <div className="space-y-4">
                         {industry.solutions.map((solution, solutionIndex) => (
                           <div key={solutionIndex} className="flex items-start space-x-3">
                             <div className="w-2 h-2 bg-secondary rounded-full mt-2 flex-shrink-0" />
                             <div className="min-w-0 flex-1">
-                              <h5 className="font-semibold text-primary text-sm md:text-base break-words">{solution.title}</h5>
-                              <p className="text-muted-foreground text-xs md:text-sm break-words leading-relaxed">{solution.description}</p>
+                              <h5 className="font-semibold text-primary text-base break-words">{solution.title}</h5>
+                              <p className="text-muted-foreground text-sm break-words leading-relaxed">{solution.description}</p>
                             </div>
                           </div>
                         ))}
@@ -227,14 +229,14 @@ const IndustriesWeServe = () => {
 
                     {/* Cash Flow Impact */}
                     <div className="mb-6 md:mb-8">
-                      <h4 className="text-base md:text-lg lg:text-xl font-bold font-sans text-primary mb-3 md:mb-4 break-words leading-tight">
+                      <h4 className="text-lg lg:text-xl font-bold font-sans text-primary mb-4 break-words leading-tight">
                         How a Canadian Business Loan Transforms Your Cash Flow
                       </h4>
-                      <div className="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-lg p-4 md:p-6 w-full">
-                        <div className="flex items-end justify-between h-20 md:h-24 lg:h-32 space-x-1 md:space-x-2">
+                      <div className="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-lg p-6 w-full">
+                        <div className="flex items-end justify-between h-32 space-x-2">
                           {cashFlowData.map((data, chartIndex) => (
-                            <div key={chartIndex} className="flex-1 flex flex-col items-center space-y-1 md:space-y-2 min-w-0">
-                              <div className="flex flex-col items-center space-y-1 h-12 md:h-16 lg:h-24 justify-end w-full">
+                            <div key={chartIndex} className="flex-1 flex flex-col items-center space-y-2 min-w-0">
+                              <div className="flex flex-col items-center space-y-1 h-24 justify-end w-full">
                                 {/* After funding bar */}
                                 <div 
                                   className="w-full bg-secondary rounded-t max-w-full"
@@ -252,7 +254,7 @@ const IndustriesWeServe = () => {
                             </div>
                           ))}
                         </div>
-                        <div className="mt-3 md:mt-4 flex flex-wrap items-center justify-center gap-3 md:gap-6 text-xs md:text-sm">
+                        <div className="mt-4 flex flex-wrap items-center justify-center gap-6 text-sm">
                           <div className="flex items-center space-x-2">
                             <div className="w-3 h-3 bg-secondary rounded" />
                             <span className="text-muted-foreground">With Funding</span>
@@ -272,14 +274,14 @@ const IndustriesWeServe = () => {
                     </div>
 
                     {/* CTA */}
-                    <div className="border-t border-muted/20 pt-4 md:pt-6">
-                      <h4 className="text-sm md:text-base lg:text-lg font-bold font-sans text-primary mb-2 md:mb-3 break-words leading-tight">
+                    <div className="border-t border-muted/20 pt-6">
+                      <h4 className="text-lg font-bold font-sans text-primary mb-3 break-words leading-tight">
                         Get Your {industry.title.split(' &')[0]} Loan Estimate
                       </h4>
-                      <p className="text-muted-foreground mb-3 md:mb-4 font-serif text-xs md:text-sm lg:text-base break-words leading-relaxed">
+                      <p className="text-muted-foreground mb-4 font-serif text-base break-words leading-relaxed">
                         Use our free <strong className="text-primary">business loan estimator</strong> to see how much funding your {industry.title.toLowerCase()} can get. This simple tool helps you understand your options for a <strong className="text-primary">small business loan in Canada</strong>.
                       </p>
-                      <Button asChild className="w-full lg:w-auto bg-accent hover:bg-accent/90 text-accent-foreground font-bold text-xs md:text-sm lg:text-base">
+                      <Button asChild className="w-full lg:w-auto bg-accent hover:bg-accent/90 text-accent-foreground font-bold text-base">
                         <Link to="/loan-estimator">
                           <DollarSign className="w-4 h-4 mr-2" />
                           {industry.ctaButton}
@@ -296,15 +298,15 @@ const IndustriesWeServe = () => {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-12 md:py-16 bg-gradient-to-r from-primary/10 to-secondary/10">
+      <section className="py-20 bg-gradient-to-r from-primary to-secondary text-primary-foreground">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold font-sans text-primary mb-3 md:mb-4">
+          <h2 className="text-3xl lg:text-4xl font-bold font-sans mb-4">
             Ready to Get Your Industry-Specific Funding?
           </h2>
-          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mb-6 md:mb-8 font-serif">
-            Don&apos;t let cash flow challenges hold your business back. Our <strong className="text-primary">business loan estimator</strong> will show you exactly what funding options are available for your industry.
+          <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto font-serif">
+            Don&apos;t let cash flow challenges hold your business back. Our <strong>business loan estimator</strong> will show you exactly what funding options are available for your industry.
           </p>
-          <Button asChild size="lg" variant="cta">
+          <Button asChild size="lg" variant="secondary">
             <Link to="/loan-estimator">
               Get My Free Loan Estimate
               <ArrowRight className="ml-2 h-5 w-5" />
