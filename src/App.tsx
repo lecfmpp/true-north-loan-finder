@@ -24,6 +24,7 @@ import Admin from "./pages/Admin";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import Results from "./pages/Results";
+import Compare from "./pages/Compare";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -58,6 +59,7 @@ const App = () => (
             <Route path="/small-business-loans" element={<SmallBusinessLoans />} />
             <Route path="/merchant-cash-advance" element={<MerchantCashAdvance />} />
             <Route path="/invoice-factoring" element={<InvoiceFactoring />} />
+            <Route path="/compare" element={<Compare />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin" element={<Admin />} />
             
