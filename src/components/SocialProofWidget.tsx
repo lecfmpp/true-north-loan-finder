@@ -19,6 +19,14 @@ const SocialProofWidget = () => {
   const [sessionCount, setSessionCount] = useState(0);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
 
+  // Don't show notifications on loan estimator and results pages
+  const hiddenPaths = ['/loan-estimator', '/results'];
+  const shouldHide = hiddenPaths.some(path => location.pathname.startsWith(path));
+  
+  if (shouldHide) {
+    return null;
+  }
+
   useEffect(() => {
     fetchNotifications();
     fetchConfig();
