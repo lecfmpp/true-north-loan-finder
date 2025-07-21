@@ -1,12 +1,14 @@
+
 # Redirect rules for consistent URL structure
+# Handle legacy URLs - these should be 301 redirects
+/quiz /loan-estimator 301
+/privacy-policy /privacy 301
+/terms-of-service /terms 301
+
 # Handle legacy URLs with trailing slashes
 /quiz/ /loan-estimator 301
 /privacy-policy/ /privacy 301
 /terms-of-service/ /terms 301
-
-# Handle legacy URLs without trailing slashes  
-/privacy-policy /privacy 301
-/terms-of-service /terms 301
 
 # Ensure HTTPS redirects (handled by hosting provider usually)
 # Force WWW removal if applicable
@@ -16,12 +18,14 @@ https://www.truenorthbusinessloan.ca/* https://truenorthbusinessloan.ca/:splat 3
 /how-it-works/ /how-it-works 301
 /about/ /about 301
 /partners/ /partners 301
+/industries-we-serve/ /industries-we-serve 301
 /blog/ /blog 301
 /equipment-financing/ /equipment-financing 301
 /small-business-loans/ /small-business-loans 301
 /merchant-cash-advance/ /merchant-cash-advance 301
 /invoice-factoring/ /invoice-factoring 301
 /loan-estimator/ /loan-estimator 301
+/compare/ /compare 301
 /privacy/ /privacy 301
 /terms/ /terms 301
 /auth/ /auth 301

@@ -1,9 +1,31 @@
+
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
 
 const PrivacyPolicy = () => {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Privacy Policy - True North Business Loan",
+    "description": "Privacy policy for True North Business Loan - how we collect, use, and protect your information.",
+    "url": "https://truenorthbusinessloan.ca/privacy",
+    "mainEntity": {
+      "@type": "Organization",
+      "name": "True North Business Loan",
+      "url": "https://truenorthbusinessloan.ca"
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Privacy Policy - True North Business Loan"
+        description="Privacy policy for True North Business Loan - how we collect, use, and protect your information when you apply for business loans in Canada."
+        keywords={["privacy policy", "data protection", "business loan privacy", "canadian privacy policy"]}
+        canonicalUrl="https://truenorthbusinessloan.ca/privacy"
+        structuredData={structuredData}
+      />
       <Header />
       
       {/* Hero Section */}
@@ -106,7 +128,7 @@ const PrivacyPolicy = () => {
 
               <div>
                 <p className="text-sm text-muted-foreground italic">
-                  This Privacy Policy was last updated on January 13, 2025.
+                  This Privacy Policy was last updated on January 21, 2025.
                 </p>
               </div>
             </div>

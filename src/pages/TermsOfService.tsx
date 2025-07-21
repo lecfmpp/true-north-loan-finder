@@ -1,9 +1,31 @@
+
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
 
 const TermsOfService = () => {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Terms of Service - True North Business Loan",
+    "description": "Terms of service for True North Business Loan - the rules and conditions for using our business loan platform.",
+    "url": "https://truenorthbusinessloan.ca/terms",
+    "mainEntity": {
+      "@type": "Organization",
+      "name": "True North Business Loan",
+      "url": "https://truenorthbusinessloan.ca"
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Terms of Service - True North Business Loan"
+        description="Terms of service for True North Business Loan - the rules and conditions for using our business loan platform in Canada."
+        keywords={["terms of service", "user agreement", "business loan terms", "legal terms"]}
+        canonicalUrl="https://truenorthbusinessloan.ca/terms"
+        structuredData={structuredData}
+      />
       <Header />
       
       {/* Hero Section */}
@@ -144,7 +166,7 @@ const TermsOfService = () => {
 
               <div>
                 <p className="text-sm text-muted-foreground italic">
-                  These Terms of Service were last updated on January 13, 2025.
+                  These Terms of Service were last updated on January 21, 2025.
                 </p>
               </div>
             </div>

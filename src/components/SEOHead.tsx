@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 
 interface SEOHeadProps {
@@ -28,21 +29,30 @@ const SEOHead = ({
   structuredData
 }: SEOHeadProps) => {
   
-  // Auto-generate canonical URL if not provided
+  // Auto-generate canonical URL if not provided - more robust handling
   const getCanonicalUrl = () => {
     if (canonicalUrl) return canonicalUrl;
     
     const currentPath = window.location.pathname;
-    // Remove trailing slash for consistency
-    const cleanPath = currentPath === '/' ? '/' : currentPath.replace(/\/$/, '');
-    return `https://truenorthbusinessloan.ca${cleanPath}`;
+    // Remove trailing slash for consistency and handle edge cases
+    const cleanPath = currentPath === '/' ? '/' : currentPath.replace(/\/+$/, '');
+    
+    // Ensure we're using the correct domain
+    const baseUrl = 'https://truenorthbusinessloan.ca';
+    return `${baseUrl}${cleanPath}`;
   };
   
   useEffect(() => {
     // Update document title
     document.title = title;
     
-    // Update meta tags
+    // Clear any existing duplicate meta tags to avoid conflicts
+    const clearDuplicateTags = (selector: string) => {
+      const existingTags = document.querySelectorAll(selector);
+      existingTags.forEach(tag => tag.remove());
+    };
+    
+    // Update meta tags with better conflict resolution
     const updateMetaTag = (name: string, content: string, property?: boolean) => {
       const selector = property ? `meta[property="${name}"]` : `meta[name="${name}"]`;
       let meta = document.querySelector(selector) as HTMLMetaElement;
@@ -64,6 +74,7 @@ const SEOHead = ({
     updateMetaTag('keywords', keywords.join(', '));
     updateMetaTag('author', 'True North Business Loan');
     updateMetaTag('robots', 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1');
+    updateMetaTag('googlebot', 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1');
     
     // Open Graph tags
     updateMetaTag('og:title', title, true);
@@ -81,6 +92,9 @@ const SEOHead = ({
     
     // Article specific tags
     if (article && ogType === 'article') {
+      // Clear existing article tags first
+      clearDuplicateTags('meta[property^="article:"]');
+      
       if (article.author) updateMetaTag('article:author', article.author, true);
       if (article.publishedTime) updateMetaTag('article:published_time', article.publishedTime, true);
       if (article.modifiedTime) updateMetaTag('article:modified_time', article.modifiedTime, true);
@@ -95,7 +109,7 @@ const SEOHead = ({
       }
     }
     
-    // Canonical URL - always set one
+    // Canonical URL - always set one and ensure it's correct
     const finalCanonicalUrl = getCanonicalUrl();
     let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
     if (!canonical) {
@@ -105,18 +119,23 @@ const SEOHead = ({
     }
     canonical.setAttribute('href', finalCanonicalUrl);
     
-    // Also update Open Graph URL
+    // Also update Open Graph URL to match canonical
     updateMetaTag('og:url', finalCanonicalUrl, true);
     
-    // Structured Data
-    if (structuredData) {
-      let script = document.querySelector('script[type="application/ld+json"]');
-      if (!script) {
-        script = document.createElement('script');
-        script.setAttribute('type', 'application/ld+json');
-        document.head.appendChild(script);
+    // Structured Data - clear existing and add new
+    const existingStructuredData = document.querySelectorAll('script[type="application/ld+json"]');
+    existingStructuredData.forEach(script => {
+      // Only remove if it's not the base organization schema
+      if (!script.textContent?.includes('"@type": "Organization"')) {
+        script.remove();
       }
+    });
+    
+    if (structuredData) {
+      const script = document.createElement('script');
+      script.setAttribute('type', 'application/ld+json');
       script.textContent = JSON.stringify(structuredData);
+      document.head.appendChild(script);
     }
     
   }, [title, description, keywords, canonicalUrl, ogType, ogImage, article, structuredData]);
