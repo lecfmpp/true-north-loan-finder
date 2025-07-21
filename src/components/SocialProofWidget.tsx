@@ -22,10 +22,6 @@ const SocialProofWidget = () => {
   // Don't show notifications on loan estimator and results pages
   const hiddenPaths = ['/loan-estimator', '/results'];
   const shouldHide = hiddenPaths.some(path => location.pathname.startsWith(path));
-  
-  if (shouldHide) {
-    return null;
-  }
 
   useEffect(() => {
     fetchNotifications();
@@ -124,8 +120,8 @@ const SocialProofWidget = () => {
     }).format(amount);
   };
 
-  // Hide on mobile for loan estimator page
-  if (isMobile && location.pathname === '/loan-estimator') {
+  // Hide on mobile for loan estimator page or if on hidden paths
+  if (shouldHide || (isMobile && location.pathname === '/loan-estimator')) {
     return null;
   }
 
