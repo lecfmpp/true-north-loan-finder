@@ -149,7 +149,7 @@ const Quiz = () => {
       }
     },
 
-    async submitLead(formData: QuizData) {
+    async submitLead(formData: QuizData, quizScore: number) {
       const sessionId = localStorage.getItem('visitor_session_id');
       
       try {
@@ -168,7 +168,7 @@ const Quiz = () => {
               time_in_business: formData.timeInBusiness,
               monthly_revenue: formData.monthlyRevenue[0],
               credit_score: formData.creditScore,
-              quiz_score: calculateScore(),
+              quiz_score: quizScore,
               source: 'business_loan_quiz',
               submitted_at: new Date().toISOString()
             }
@@ -505,7 +505,7 @@ const Quiz = () => {
       if (error) throw error;
 
       // Submit to external tracking system
-      await EXTERNAL_TRACKER.submitLead(data);
+      await EXTERNAL_TRACKER.submitLead(data, score);
 
       // Start follow-up email sequence (15-minute delay)
       setTimeout(async () => {
