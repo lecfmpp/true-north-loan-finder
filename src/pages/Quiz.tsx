@@ -26,12 +26,14 @@ import {
   Home,
   Target,
   Calendar,
-  CreditCard
+  CreditCard,
+  Loader2
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 interface QuizData {
   loanAmount: number[];
@@ -102,6 +104,7 @@ const isValidWebsiteUrl = (url: string) => {
 };
 
 const Quiz = () => {
+  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [quizData, setQuizData] = useState<QuizData>({
     loanAmount: [50000],
@@ -115,6 +118,7 @@ const Quiz = () => {
     website: ""
   });
   const [showResults, setShowResults] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // External tracking system integration
   const EXTERNAL_TRACKER = {
@@ -465,6 +469,15 @@ const Quiz = () => {
   };
 
   const saveQuizResponse = async (data: QuizData) => {
+    setIsSubmitting(true);
+    
+    // Show toast immediately when submission starts
+    toast({
+      title: "Sending your information...",
+      description: "We're sending your details to our specialists to get you the best offers possible!",
+      duration: 4000,
+    });
+
     try {
       const score = calculateScore();
       
@@ -529,7 +542,14 @@ const Quiz = () => {
       
     } catch (error) {
       console.error('Error saving quiz response:', error);
+      toast({
+        title: "Submission Error",
+        description: "There was an issue submitting your information. Please try again.",
+        variant: "destructive",
+      });
       setShowResults(true); // Fallback to showing results inline if redirect fails
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1107,13 +1127,22 @@ const Quiz = () => {
                   </Button>
                   
                   <Button
-                    variant={currentStep === totalSteps ? "cta" : "default"}
+                    variant={currentStep === totalSteps ? "cta-simple" : "default"}
                     onClick={handleNext}
-                    disabled={!isStepValid()}
+                    disabled={!isStepValid() || isSubmitting}
                     className="flex items-center text-sm md:text-lg px-6 md:px-8 py-2 md:py-3"
                   >
-                    {currentStep === totalSteps ? "See My Results" : "Next"}
-                    <ArrowRight className="h-4 w-4 ml-2" />
+                    {currentStep === totalSteps && isSubmitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Sending your info...
+                      </>
+                    ) : (
+                      <>
+                        {currentStep === totalSteps ? "See My Results" : "Next"}
+                        {!isSubmitting && <ArrowRight className="h-4 w-4 ml-2" />}
+                      </>
+                    )}
                   </Button>
                 </div>
               )}
