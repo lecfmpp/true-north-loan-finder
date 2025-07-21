@@ -267,7 +267,7 @@ const Compare = () => {
               <Button size="lg" variant="secondary" asChild>
                 <Link to="/loan-estimator">Get Your Free Quote</Link>
               </Button>
-              <Button size="lg" variant="outline" className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" asChild>
+              <Button size="lg" variant="outline" className="border-primary-foreground text-black hover:bg-primary-foreground hover:text-black focus:text-black active:text-black" asChild>
                 <Link to="/how-it-works">Learn More</Link>
               </Button>
             </div>
