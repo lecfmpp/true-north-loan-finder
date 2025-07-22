@@ -29,6 +29,7 @@ https://www.truenorthbusinessloan.ca/* https://truenorthbusinessloan.ca/:splat 3
 /privacy/ /privacy 301
 /terms/ /terms 301
 /auth/ /auth 301
+/results/ /results 301
 
 # Catch-all for any other trailing slashes
 /*/ /:splat 301
