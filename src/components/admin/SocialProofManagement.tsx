@@ -89,7 +89,8 @@ const SocialProofManagement = () => {
         max_notifications_per_session: 5,
         notification_duration_seconds: 8,
         initial_delay_seconds: 3,
-        is_enabled: true
+        is_enabled: true,
+        excluded_routes: ['/admin', '/auth']
       };
       
       const { data, error: insertError } = await supabase
@@ -345,6 +346,24 @@ const SocialProofManagement = () => {
                         <p className="text-xs text-muted-foreground mt-1">Maximum notifications to show during a user's visit</p>
                       </div>
 
+                      <div>
+                        <Label htmlFor="excluded_routes">Excluded Routes</Label>
+                        <textarea
+                          id="excluded_routes"
+                          rows={3}
+                          className="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          value={(config.excluded_routes || []).join('\n')}
+                          onChange={(e) => {
+                            const routes = e.target.value.split('\n').filter(route => route.trim() !== '');
+                            updateConfig({ excluded_routes: routes });
+                          }}
+                          placeholder="Enter routes one per line (e.g., /admin, /auth, /quiz)"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Routes where social proof notifications should not appear. Enter one route per line.
+                        </p>
+                      </div>
+
                       <div className="flex items-center space-x-2">
                         <Switch
                           checked={config.is_enabled}
@@ -359,27 +378,42 @@ const SocialProofManagement = () => {
             </div>
 
             {config && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div className="bg-muted/50 p-3 rounded-lg">
-                  <div className="font-medium">Initial Delay</div>
-                  <div className="text-muted-foreground">{config.initial_delay_seconds}s</div>
-                </div>
-                <div className="bg-muted/50 p-3 rounded-lg">
-                  <div className="font-medium">Duration</div>
-                  <div className="text-muted-foreground">{config.notification_duration_seconds}s</div>
-                </div>
-                <div className="bg-muted/50 p-3 rounded-lg">
-                  <div className="font-medium">Max per Session</div>
-                  <div className="text-muted-foreground">{config.max_notifications_per_session}</div>
-                </div>
-                <div className="bg-muted/50 p-3 rounded-lg">
-                  <div className="font-medium">Status</div>
-                  <div className="text-muted-foreground">
-                    <Badge variant={config.is_enabled ? "default" : "secondary"}>
-                      {config.is_enabled ? "Enabled" : "Disabled"}
-                    </Badge>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div className="bg-muted/50 p-3 rounded-lg">
+                    <div className="font-medium">Initial Delay</div>
+                    <div className="text-muted-foreground">{config.initial_delay_seconds}s</div>
+                  </div>
+                  <div className="bg-muted/50 p-3 rounded-lg">
+                    <div className="font-medium">Duration</div>
+                    <div className="text-muted-foreground">{config.notification_duration_seconds}s</div>
+                  </div>
+                  <div className="bg-muted/50 p-3 rounded-lg">
+                    <div className="font-medium">Max per Session</div>
+                    <div className="text-muted-foreground">{config.max_notifications_per_session}</div>
+                  </div>
+                  <div className="bg-muted/50 p-3 rounded-lg">
+                    <div className="font-medium">Status</div>
+                    <div className="text-muted-foreground">
+                      <Badge variant={config.is_enabled ? "default" : "secondary"}>
+                        {config.is_enabled ? "Enabled" : "Disabled"}
+                      </Badge>
+                    </div>
                   </div>
                 </div>
+                
+                {config.excluded_routes && config.excluded_routes.length > 0 && (
+                  <div className="bg-muted/50 p-3 rounded-lg">
+                    <div className="font-medium mb-2">Excluded Routes</div>
+                    <div className="flex flex-wrap gap-1">
+                      {config.excluded_routes.map((route, index) => (
+                        <Badge key={index} variant="outline" className="text-xs">
+                          {route}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </Card>

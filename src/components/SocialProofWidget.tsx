@@ -19,9 +19,10 @@ const SocialProofWidget = () => {
   const [sessionCount, setSessionCount] = useState(0);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
 
-  // Don't show notifications on loan estimator and results pages
-  const hiddenPaths = ['/loan-estimator', '/results'];
-  const shouldHide = hiddenPaths.some(path => location.pathname.startsWith(path));
+  // Check if current route should be excluded
+  const shouldHide = config?.excluded_routes?.some(path => 
+    location.pathname.startsWith(path)
+  ) || false;
 
   useEffect(() => {
     fetchNotifications();
@@ -95,6 +96,7 @@ const SocialProofWidget = () => {
         notification_duration_seconds: 8,
         initial_delay_seconds: 3,
         is_enabled: true,
+        excluded_routes: ['/admin', '/auth'],
         created_at: '',
         updated_at: ''
       });

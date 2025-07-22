@@ -828,6 +828,7 @@ export type Database = {
       social_proof_widget_config: {
         Row: {
           created_at: string
+          excluded_routes: string[] | null
           id: string
           initial_delay_seconds: number
           interval_seconds: number
@@ -838,6 +839,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          excluded_routes?: string[] | null
           id?: string
           initial_delay_seconds?: number
           interval_seconds?: number
@@ -848,6 +850,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          excluded_routes?: string[] | null
           id?: string
           initial_delay_seconds?: number
           interval_seconds?: number
