@@ -399,6 +399,180 @@ export type Database = {
           },
         ]
       }
+      canadian_applications: {
+        Row: {
+          admin_notes: string | null
+          amount_requested: number
+          annual_credit_card_sales: number | null
+          annual_gross_sales: number
+          average_monthly_cc_volume: number | null
+          business_fax: string | null
+          business_phone: string
+          business_property_type: string
+          business_start_date: string
+          cell_phone: string | null
+          cell_phone_2: string | null
+          city: string
+          city_owner: string
+          city_owner_2: string | null
+          created_at: string
+          current_credit_card_processor: string | null
+          dba_name: string | null
+          dob: string
+          dob_2: string | null
+          document_files: Json | null
+          email_address: string
+          email_address_2: string | null
+          existing_advance: boolean
+          federal_tax_id: string
+          home_address: string
+          home_address_2: string | null
+          home_phone: string | null
+          home_phone_2: string | null
+          id: string
+          if_so_with_who: string | null
+          landlord_or_bank_company_name: string | null
+          landlord_or_bank_phone: string | null
+          legal_business_name: string
+          mailing_address: string | null
+          monthly_rent_or_mortgage: number | null
+          number_of_locations: number
+          outstanding_balance: number | null
+          ownership_percentage: number
+          ownership_percentage_2: number | null
+          physical_address: string
+          principal_owner_name: string
+          principal_owner_name_2: string | null
+          processing_statements: Json | null
+          ssn: string
+          ssn_2: string | null
+          state: string
+          state_owner: string
+          state_owner_2: string | null
+          status: string
+          type_of_entity: string
+          updated_at: string
+          use_of_funds: string
+          zip: string
+          zip_owner: string
+          zip_owner_2: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount_requested: number
+          annual_credit_card_sales?: number | null
+          annual_gross_sales: number
+          average_monthly_cc_volume?: number | null
+          business_fax?: string | null
+          business_phone: string
+          business_property_type: string
+          business_start_date: string
+          cell_phone?: string | null
+          cell_phone_2?: string | null
+          city: string
+          city_owner: string
+          city_owner_2?: string | null
+          created_at?: string
+          current_credit_card_processor?: string | null
+          dba_name?: string | null
+          dob: string
+          dob_2?: string | null
+          document_files?: Json | null
+          email_address: string
+          email_address_2?: string | null
+          existing_advance?: boolean
+          federal_tax_id: string
+          home_address: string
+          home_address_2?: string | null
+          home_phone?: string | null
+          home_phone_2?: string | null
+          id?: string
+          if_so_with_who?: string | null
+          landlord_or_bank_company_name?: string | null
+          landlord_or_bank_phone?: string | null
+          legal_business_name: string
+          mailing_address?: string | null
+          monthly_rent_or_mortgage?: number | null
+          number_of_locations?: number
+          outstanding_balance?: number | null
+          ownership_percentage: number
+          ownership_percentage_2?: number | null
+          physical_address: string
+          principal_owner_name: string
+          principal_owner_name_2?: string | null
+          processing_statements?: Json | null
+          ssn: string
+          ssn_2?: string | null
+          state: string
+          state_owner: string
+          state_owner_2?: string | null
+          status?: string
+          type_of_entity: string
+          updated_at?: string
+          use_of_funds: string
+          zip: string
+          zip_owner: string
+          zip_owner_2?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          amount_requested?: number
+          annual_credit_card_sales?: number | null
+          annual_gross_sales?: number
+          average_monthly_cc_volume?: number | null
+          business_fax?: string | null
+          business_phone?: string
+          business_property_type?: string
+          business_start_date?: string
+          cell_phone?: string | null
+          cell_phone_2?: string | null
+          city?: string
+          city_owner?: string
+          city_owner_2?: string | null
+          created_at?: string
+          current_credit_card_processor?: string | null
+          dba_name?: string | null
+          dob?: string
+          dob_2?: string | null
+          document_files?: Json | null
+          email_address?: string
+          email_address_2?: string | null
+          existing_advance?: boolean
+          federal_tax_id?: string
+          home_address?: string
+          home_address_2?: string | null
+          home_phone?: string | null
+          home_phone_2?: string | null
+          id?: string
+          if_so_with_who?: string | null
+          landlord_or_bank_company_name?: string | null
+          landlord_or_bank_phone?: string | null
+          legal_business_name?: string
+          mailing_address?: string | null
+          monthly_rent_or_mortgage?: number | null
+          number_of_locations?: number
+          outstanding_balance?: number | null
+          ownership_percentage?: number
+          ownership_percentage_2?: number | null
+          physical_address?: string
+          principal_owner_name?: string
+          principal_owner_name_2?: string | null
+          processing_statements?: Json | null
+          ssn?: string
+          ssn_2?: string | null
+          state?: string
+          state_owner?: string
+          state_owner_2?: string | null
+          status?: string
+          type_of_entity?: string
+          updated_at?: string
+          use_of_funds?: string
+          zip?: string
+          zip_owner?: string
+          zip_owner_2?: string | null
+        }
+        Relationships: []
+      }
       chat_contact_submissions: {
         Row: {
           admin_notes: string | null

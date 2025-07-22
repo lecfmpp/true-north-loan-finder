@@ -27,6 +27,7 @@ import Results from "./pages/Results";
 import Compare from "./pages/Compare";
 import Application from "./pages/Application";
 import ApplicationSuccess from "./pages/ApplicationSuccess";
+import CanadianApplication from "./pages/CanadianApplication";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -63,6 +64,7 @@ const App = () => (
             <Route path="/invoice-factoring" element={<InvoiceFactoring />} />
             <Route path="/compare" element={<Compare />} />
             <Route path="/application" element={<Application />} />
+            <Route path="/application-canadian" element={<CanadianApplication />} />
             <Route path="/application-success" element={<ApplicationSuccess />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin" element={<Admin />} />
