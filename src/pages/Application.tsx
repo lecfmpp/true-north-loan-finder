@@ -330,7 +330,12 @@ const Application = () => {
                 <Input
                   id="zip"
                   value={formData.zip}
-                  onChange={(e) => updateFormData('zip', e.target.value)}
+                  onChange={(e) => {
+                    const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{5})(\d{4})/, '$1-$2');
+                    updateFormData('zip', formatted.slice(0, 10));
+                  }}
+                  placeholder="12345 or 12345-6789"
+                  maxLength={10}
                   required
                 />
               </div>
@@ -356,7 +361,11 @@ const Application = () => {
                   id="telephone_number"
                   type="tel"
                   value={formData.telephone_number}
-                  onChange={(e) => updateFormData('telephone_number', e.target.value)}
+                  onChange={(e) => {
+                    const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+                    updateFormData('telephone_number', formatted);
+                  }}
+                  placeholder="(555) 123-4567"
                   required
                 />
               </div>
@@ -367,7 +376,11 @@ const Application = () => {
                   id="fax_number"
                   type="tel"
                   value={formData.fax_number}
-                  onChange={(e) => updateFormData('fax_number', e.target.value)}
+                  onChange={(e) => {
+                    const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+                    updateFormData('fax_number', formatted);
+                  }}
+                  placeholder="(555) 123-4567"
                 />
               </div>
               
@@ -378,6 +391,7 @@ const Application = () => {
                   type="email"
                   value={formData.email_address}
                   onChange={(e) => updateFormData('email_address', e.target.value)}
+                  placeholder="example@domain.com"
                   required
                 />
               </div>
@@ -405,11 +419,16 @@ const Application = () => {
             
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
               <div className="space-y-2">
-                <Label htmlFor="federal_tax_id">Federal Tax ID *</Label>
+                <Label htmlFor="federal_tax_id">Federal Tax ID (EIN) *</Label>
                 <Input
                   id="federal_tax_id"
                   value={formData.federal_tax_id}
-                  onChange={(e) => updateFormData('federal_tax_id', e.target.value)}
+                  onChange={(e) => {
+                    const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{2})(\d{7})/, '$1-$2');
+                    updateFormData('federal_tax_id', formatted.slice(0, 10));
+                  }}
+                  placeholder="12-3456789"
+                  maxLength={10}
                   required
                 />
               </div>
@@ -479,7 +498,12 @@ const Application = () => {
                 <Input
                   id="principal_ssn"
                   value={formData.principal_ssn}
-                  onChange={(e) => updateFormData('principal_ssn', e.target.value)}
+                  onChange={(e) => {
+                    const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{2})(\d{4})/, '$1-$2-$3');
+                    updateFormData('principal_ssn', formatted.slice(0, 11));
+                  }}
+                  placeholder="123-45-6789"
+                  maxLength={11}
                   required
                 />
               </div>
@@ -530,7 +554,12 @@ const Application = () => {
                 <Input
                   id="principal_zip"
                   value={formData.principal_zip}
-                  onChange={(e) => updateFormData('principal_zip', e.target.value)}
+                  onChange={(e) => {
+                    const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{5})(\d{4})/, '$1-$2');
+                    updateFormData('principal_zip', formatted.slice(0, 10));
+                  }}
+                  placeholder="12345 or 12345-6789"
+                  maxLength={10}
                   required
                 />
               </div>
@@ -541,7 +570,11 @@ const Application = () => {
                   id="principal_home_phone"
                   type="tel"
                   value={formData.principal_home_phone}
-                  onChange={(e) => updateFormData('principal_home_phone', e.target.value)}
+                  onChange={(e) => {
+                    const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+                    updateFormData('principal_home_phone', formatted);
+                  }}
+                  placeholder="(555) 123-4567"
                 />
               </div>
               
@@ -551,7 +584,11 @@ const Application = () => {
                   id="principal_cell_phone"
                   type="tel"
                   value={formData.principal_cell_phone}
-                  onChange={(e) => updateFormData('principal_cell_phone', e.target.value)}
+                  onChange={(e) => {
+                    const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+                    updateFormData('principal_cell_phone', formatted);
+                  }}
+                  placeholder="(555) 123-4567"
                 />
               </div>
               
@@ -562,6 +599,7 @@ const Application = () => {
                   type="email"
                   value={formData.principal_email}
                   onChange={(e) => updateFormData('principal_email', e.target.value)}
+                  placeholder="example@domain.com"
                   required
                 />
               </div>
@@ -575,6 +613,7 @@ const Application = () => {
                   max="100"
                   value={formData.principal_ownership_percentage}
                   onChange={(e) => updateFormData('principal_ownership_percentage', e.target.value)}
+                  placeholder="%"
                   required
                 />
               </div>
@@ -657,8 +696,10 @@ const Application = () => {
                   min="0"
                   value={formData.average_monthly_deposits}
                   onChange={(e) => updateFormData('average_monthly_deposits', e.target.value)}
+                  placeholder="$0"
                   required
                 />
+                <p className="text-xs text-muted-foreground mt-1">Amount in USD</p>
               </div>
               
               <div className="space-y-2">
@@ -669,8 +710,10 @@ const Application = () => {
                   min="0"
                   value={formData.monthly_rent_mortgage}
                   onChange={(e) => updateFormData('monthly_rent_mortgage', e.target.value)}
+                  placeholder="$0"
                   required
                 />
+                <p className="text-xs text-muted-foreground mt-1">Amount in USD</p>
               </div>
             </div>
           </div>
@@ -714,7 +757,12 @@ const Application = () => {
                 <Input
                   id="bank_routing_number"
                   value={formData.bank_routing_number}
-                  onChange={(e) => updateFormData('bank_routing_number', e.target.value)}
+                  onChange={(e) => {
+                    const formatted = e.target.value.replace(/\D/g, '').slice(0, 9);
+                    updateFormData('bank_routing_number', formatted);
+                  }}
+                  placeholder="123456789"
+                  maxLength={9}
                   required
                 />
               </div>
@@ -724,7 +772,11 @@ const Application = () => {
                 <Input
                   id="bank_account_number"
                   value={formData.bank_account_number}
-                  onChange={(e) => updateFormData('bank_account_number', e.target.value)}
+                  onChange={(e) => {
+                    const formatted = e.target.value.replace(/\s/g, '');
+                    updateFormData('bank_account_number', formatted);
+                  }}
+                  placeholder="Account number"
                   required
                 />
               </div>
@@ -789,7 +841,9 @@ const Application = () => {
                   min="0"
                   value={formData.monthly_processing_volume}
                   onChange={(e) => updateFormData('monthly_processing_volume', e.target.value)}
+                  placeholder="$0"
                 />
+                <p className="text-xs text-muted-foreground mt-1">Amount in USD</p>
               </div>
               
               <div className="space-y-2">
@@ -800,7 +854,9 @@ const Application = () => {
                   min="0"
                   value={formData.average_ticket}
                   onChange={(e) => updateFormData('average_ticket', e.target.value)}
+                  placeholder="$0"
                 />
+                <p className="text-xs text-muted-foreground mt-1">Amount in USD</p>
               </div>
               
               <div className="space-y-2">
@@ -811,7 +867,9 @@ const Application = () => {
                   min="0"
                   value={formData.high_ticket}
                   onChange={(e) => updateFormData('high_ticket', e.target.value)}
+                  placeholder="$0"
                 />
+                <p className="text-xs text-muted-foreground mt-1">Amount in USD</p>
               </div>
             </div>
           </div>
@@ -834,8 +892,10 @@ const Application = () => {
                   min="1000"
                   value={formData.loan_amount_requested}
                   onChange={(e) => updateFormData('loan_amount_requested', e.target.value)}
+                  placeholder="$1,000"
                   required
                 />
+                <p className="text-xs text-muted-foreground mt-1">Amount in USD</p>
               </div>
               
               <div className="space-y-2 md:col-span-2">
