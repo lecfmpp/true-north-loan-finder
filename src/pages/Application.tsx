@@ -270,12 +270,12 @@ const Application = () => {
       case 1:
         return (
           <div className="space-y-6">
-            <div className="flex items-center gap-3 mb-6">
-              <Building2 className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold">Company Information</h2>
+            <div className="flex items-center gap-3 mb-4 md:mb-6">
+              <Building2 className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+              <h2 className="text-xl md:text-2xl font-bold">Company Information</h2>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
               <div className="space-y-2">
                 <Label htmlFor="legal_corporation_name">Legal Corporation Name *</Label>
                 <Input
@@ -398,12 +398,12 @@ const Application = () => {
       case 2:
         return (
           <div className="space-y-6">
-            <div className="flex items-center gap-3 mb-6">
-              <FileText className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold">Federal & State Information</h2>
+            <div className="flex items-center gap-3 mb-4 md:mb-6">
+              <FileText className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+              <h2 className="text-xl md:text-2xl font-bold">Federal & State Information</h2>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
               <div className="space-y-2">
                 <Label htmlFor="federal_tax_id">Federal Tax ID *</Label>
                 <Input
@@ -448,9 +448,9 @@ const Application = () => {
       case 3:
         return (
           <div className="space-y-6">
-            <div className="flex items-center gap-3 mb-6">
-              <User className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold">Principal Information</h2>
+            <div className="flex items-center gap-3 mb-4 md:mb-6">
+              <User className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+              <h2 className="text-xl md:text-2xl font-bold">Principal Information</h2>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -585,12 +585,12 @@ const Application = () => {
       case 4:
         return (
           <div className="space-y-6">
-            <div className="flex items-center gap-3 mb-6">
-              <Building2 className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold">Business & Financial Information</h2>
+            <div className="flex items-center gap-3 mb-4 md:mb-6">
+              <Building2 className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+              <h2 className="text-xl md:text-2xl font-bold">Business & Financial Information</h2>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
               <div className="space-y-2">
                 <Label htmlFor="years_in_business">Years in Business *</Label>
                 <Input
@@ -679,12 +679,12 @@ const Application = () => {
       case 5:
         return (
           <div className="space-y-6">
-            <div className="flex items-center gap-3 mb-6">
-              <CreditCard className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold">Banking & Processing Information</h2>
+            <div className="flex items-center gap-3 mb-4 md:mb-6">
+              <CreditCard className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+              <h2 className="text-xl md:text-2xl font-bold">Banking & Processing Information</h2>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
               <div className="space-y-2">
                 <Label htmlFor="bank_name">Bank Name *</Label>
                 <Input
@@ -820,12 +820,12 @@ const Application = () => {
       case 6:
         return (
           <div className="space-y-6">
-            <div className="flex items-center gap-3 mb-6">
-              <FileText className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold">Loan Information & Documents</h2>
+            <div className="flex items-center gap-3 mb-4 md:mb-6">
+              <FileText className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+              <h2 className="text-xl md:text-2xl font-bold">Loan Information & Documents</h2>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
               <div className="space-y-2">
                 <Label htmlFor="loan_amount_requested">Loan Amount Requested *</Label>
                 <Input
@@ -935,90 +935,72 @@ const Application = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
       <Header />
-      
-      <main className="flex-1 bg-gradient-to-br from-background to-secondary/20 py-12">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            {/* Header */}
-            <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold mb-4">Business Loan Application</h1>
-              <p className="text-lg text-muted-foreground">
-                Complete your application in {totalSteps} easy steps
-              </p>
-            </div>
-
-            {/* Progress */}
-            <div className="mb-8">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium">Step {currentStep} of {totalSteps}</span>
-                <span className="text-sm text-muted-foreground">
-                  {Math.round((currentStep / totalSteps) * 100)}% Complete
-                </span>
-              </div>
-              <Progress value={(currentStep / totalSteps) * 100} className="h-2" />
-            </div>
-
-            {/* Form Card */}
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  Step {currentStep} of {totalSteps}
-                </CardTitle>
-                <CardDescription>
-                  Please fill out all required fields to continue
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {renderStep()}
-              </CardContent>
-            </Card>
-
-            {/* Navigation */}
-            <div className="flex justify-between">
-              <Button
-                variant="outline"
-                onClick={prevStep}
-                disabled={currentStep === 1}
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Previous
-              </Button>
-
-              {currentStep === totalSteps ? (
-                <Button
-                  onClick={handleSubmit}
-                  disabled={isSubmitting}
-                  className="flex items-center gap-2"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      Submitting...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="h-4 w-4" />
-                      Submit Application
-                    </>
-                  )}
-                </Button>
-              ) : (
-                <Button
-                  onClick={nextStep}
-                  className="flex items-center gap-2"
-                >
-                  Next
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
+      <div className="container mx-auto px-4 py-4 md:py-8">
+        {/* Mobile-optimized header */}
+        <div className="text-center mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-primary mb-2">Business Loan Application</h1>
+          <p className="text-sm md:text-base text-muted-foreground mb-4">
+            Complete your secure application in {totalSteps} steps
+          </p>
+          <div className="max-w-md mx-auto">
+            <Progress value={(currentStep / totalSteps) * 100} className="h-2 md:h-3" />
+            <p className="text-xs md:text-sm text-muted-foreground mt-2">
+              Step {currentStep} of {totalSteps}
+            </p>
           </div>
         </div>
-      </main>
-      
+
+        <div className="max-w-2xl mx-auto">
+          <Card className="shadow-xl border-0 md:border">
+            <CardContent className="p-4 md:p-8">
+              {renderStep()}
+              
+              {/* Mobile-optimized navigation */}
+              <div className="flex flex-col sm:flex-row justify-between gap-4 mt-8 pt-6 border-t">
+                <Button
+                  variant="outline"
+                  onClick={prevStep}
+                  disabled={currentStep === 1}
+                  className="flex items-center justify-center gap-2 w-full sm:w-auto order-2 sm:order-1"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+                
+                {currentStep < totalSteps ? (
+                  <Button
+                    onClick={nextStep}
+                    className="flex items-center justify-center gap-2 w-full sm:w-auto order-1 sm:order-2"
+                  >
+                    Next
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={isSubmitting}
+                    className="flex items-center justify-center gap-2 w-full sm:w-auto order-1 sm:order-2"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        Submitting...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="h-4 w-4" />
+                        Submit Application
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
       <Footer />
     </div>
   );
