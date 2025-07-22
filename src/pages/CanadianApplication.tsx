@@ -353,9 +353,13 @@ const CanadianApplication = () => {
                 <Input
                   id="zip"
                   value={formData.zip}
-                  onChange={(e) => updateFormData('zip', e.target.value)}
+                  onChange={(e) => {
+                    const formatted = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/(\w{3})(\w{3})/, '$1 $2');
+                    updateFormData('zip', formatted);
+                  }}
                   className="mt-1"
                   placeholder="A1A 1A1"
+                  maxLength={7}
                   required
                 />
               </div>
@@ -367,8 +371,12 @@ const CanadianApplication = () => {
                     id="business_phone"
                     type="tel"
                     value={formData.business_phone}
-                    onChange={(e) => updateFormData('business_phone', e.target.value)}
+                    onChange={(e) => {
+                      const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+                      updateFormData('business_phone', formatted);
+                    }}
                     className="mt-1"
+                    placeholder="(555) 123-4567"
                     required
                   />
                 </div>
@@ -378,8 +386,12 @@ const CanadianApplication = () => {
                     id="business_fax"
                     type="tel"
                     value={formData.business_fax}
-                    onChange={(e) => updateFormData('business_fax', e.target.value)}
+                    onChange={(e) => {
+                      const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+                      updateFormData('business_fax', formatted);
+                    }}
                     className="mt-1"
+                    placeholder="(555) 123-4567"
                   />
                 </div>
               </div>
@@ -413,12 +425,17 @@ const CanadianApplication = () => {
               </div>
               
               <div>
-                <Label htmlFor="federal_tax_id" className="text-sm font-medium">Federal Tax ID *</Label>
+                <Label htmlFor="federal_tax_id" className="text-sm font-medium">Federal Tax ID (Business Number) *</Label>
                 <Input
                   id="federal_tax_id"
                   value={formData.federal_tax_id}
-                  onChange={(e) => updateFormData('federal_tax_id', e.target.value)}
+                  onChange={(e) => {
+                    const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{9})(\d{2})(\d{4})/, '$1 $2 $3');
+                    updateFormData('federal_tax_id', formatted);
+                  }}
                   className="mt-1"
+                  placeholder="123456789 RT 0001"
+                  maxLength={15}
                   required
                 />
               </div>
@@ -476,8 +493,10 @@ const CanadianApplication = () => {
                   value={formData.monthly_rent_or_mortgage}
                   onChange={(e) => updateFormData('monthly_rent_or_mortgage', e.target.value)}
                   className="mt-1"
-                  placeholder="CAD amount"
+                  placeholder="0"
+                  min="0"
                 />
+                <p className="text-xs text-muted-foreground mt-1">Amount in CAD</p>
               </div>
               
               <div>
@@ -496,8 +515,12 @@ const CanadianApplication = () => {
                   id="landlord_or_bank_phone"
                   type="tel"
                   value={formData.landlord_or_bank_phone}
-                  onChange={(e) => updateFormData('landlord_or_bank_phone', e.target.value)}
+                  onChange={(e) => {
+                    const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+                    updateFormData('landlord_or_bank_phone', formatted);
+                  }}
                   className="mt-1"
+                  placeholder="(555) 123-4567"
                 />
               </div>
             </div>
@@ -521,9 +544,11 @@ const CanadianApplication = () => {
                   value={formData.annual_gross_sales}
                   onChange={(e) => updateFormData('annual_gross_sales', e.target.value)}
                   className="mt-1"
-                  placeholder="CAD amount"
+                  placeholder="0"
+                  min="0"
                   required
                 />
+                <p className="text-xs text-muted-foreground mt-1">Amount in CAD</p>
               </div>
               
               <div>
@@ -534,9 +559,11 @@ const CanadianApplication = () => {
                   value={formData.amount_requested}
                   onChange={(e) => updateFormData('amount_requested', e.target.value)}
                   className="mt-1"
-                  placeholder="CAD amount"
+                  placeholder="0"
+                  min="0"
                   required
                 />
+                <p className="text-xs text-muted-foreground mt-1">Amount in CAD</p>
               </div>
               
               <div>
@@ -591,8 +618,10 @@ const CanadianApplication = () => {
                       value={formData.outstanding_balance}
                       onChange={(e) => updateFormData('outstanding_balance', e.target.value)}
                       className="mt-1"
-                      placeholder="CAD amount"
+                      placeholder="0"
+                      min="0"
                     />
+                    <p className="text-xs text-muted-foreground mt-1">Amount in CAD</p>
                   </div>
                 </>
               )}
@@ -635,6 +664,7 @@ const CanadianApplication = () => {
                         value={formData.ownership_percentage}
                         onChange={(e) => updateFormData('ownership_percentage', e.target.value)}
                         className="mt-1"
+                        placeholder="%"
                         required
                       />
                     </div>
@@ -643,8 +673,13 @@ const CanadianApplication = () => {
                       <Input
                         id="ssn"
                         value={formData.ssn}
-                        onChange={(e) => updateFormData('ssn', e.target.value)}
+                        onChange={(e) => {
+                          const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+                          updateFormData('ssn', formatted);
+                        }}
                         className="mt-1"
+                        placeholder="123 456 789"
+                        maxLength={11}
                         required
                       />
                     </div>
@@ -701,9 +736,13 @@ const CanadianApplication = () => {
                     <Input
                       id="zip_owner"
                       value={formData.zip_owner}
-                      onChange={(e) => updateFormData('zip_owner', e.target.value)}
+                      onChange={(e) => {
+                        const formatted = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/(\w{3})(\w{3})/, '$1 $2');
+                        updateFormData('zip_owner', formatted);
+                      }}
                       className="mt-1"
                       placeholder="A1A 1A1"
+                      maxLength={7}
                       required
                     />
                   </div>
@@ -715,8 +754,12 @@ const CanadianApplication = () => {
                         id="home_phone"
                         type="tel"
                         value={formData.home_phone}
-                        onChange={(e) => updateFormData('home_phone', e.target.value)}
+                        onChange={(e) => {
+                          const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+                          updateFormData('home_phone', formatted);
+                        }}
                         className="mt-1"
+                        placeholder="(555) 123-4567"
                       />
                     </div>
                     <div>
@@ -725,8 +768,12 @@ const CanadianApplication = () => {
                         id="cell_phone"
                         type="tel"
                         value={formData.cell_phone}
-                        onChange={(e) => updateFormData('cell_phone', e.target.value)}
+                        onChange={(e) => {
+                          const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+                          updateFormData('cell_phone', formatted);
+                        }}
                         className="mt-1"
+                        placeholder="(555) 123-4567"
                       />
                     </div>
                   </div>
@@ -769,6 +816,7 @@ const CanadianApplication = () => {
                         value={formData.ownership_percentage_2}
                         onChange={(e) => updateFormData('ownership_percentage_2', e.target.value)}
                         className="mt-1"
+                        placeholder="%"
                       />
                     </div>
                     <div>
@@ -776,8 +824,13 @@ const CanadianApplication = () => {
                       <Input
                         id="ssn_2"
                         value={formData.ssn_2}
-                        onChange={(e) => updateFormData('ssn_2', e.target.value)}
+                        onChange={(e) => {
+                          const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+                          updateFormData('ssn_2', formatted);
+                        }}
                         className="mt-1"
+                        placeholder="123 456 789"
+                        maxLength={11}
                       />
                     </div>
                   </div>
@@ -814,8 +867,10 @@ const CanadianApplication = () => {
                   value={formData.annual_credit_card_sales}
                   onChange={(e) => updateFormData('annual_credit_card_sales', e.target.value)}
                   className="mt-1"
-                  placeholder="CAD amount"
+                  placeholder="0"
+                  min="0"
                 />
+                <p className="text-xs text-muted-foreground mt-1">Amount in CAD</p>
               </div>
               
               <div>
@@ -826,8 +881,10 @@ const CanadianApplication = () => {
                   value={formData.average_monthly_cc_volume}
                   onChange={(e) => updateFormData('average_monthly_cc_volume', e.target.value)}
                   className="mt-1"
-                  placeholder="CAD amount"
+                  placeholder="0"
+                  min="0"
                 />
+                <p className="text-xs text-muted-foreground mt-1">Amount in CAD</p>
               </div>
 
               {/* Document Upload Section */}
