@@ -24,6 +24,7 @@ const SocialProofManagement = () => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewNotification, setPreviewNotification] = useState<SocialProofNotification | null>(null);
   const [isConfigDialogOpen, setIsConfigDialogOpen] = useState(false);
+  const [tempConfig, setTempConfig] = useState<Partial<WidgetConfig>>({});
   const { toast } = useToast();
 
   const colorOptions = [
@@ -126,6 +127,46 @@ const SocialProofManagement = () => {
       toast({
         title: "Error",
         description: "Failed to update widget configuration",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const openConfigDialog = () => {
+    if (config) {
+      setTempConfig({
+        initial_delay_seconds: config.initial_delay_seconds,
+        notification_duration_seconds: config.notification_duration_seconds,
+        max_notifications_per_session: config.max_notifications_per_session,
+        excluded_routes: config.excluded_routes || [],
+        is_enabled: config.is_enabled
+      });
+    }
+    setIsConfigDialogOpen(true);
+  };
+
+  const saveWidgetSettings = async () => {
+    if (!config) return;
+
+    try {
+      const { error } = await supabase
+        .from('social_proof_widget_config')
+        .update(tempConfig)
+        .eq('id', config.id);
+
+      if (error) throw error;
+      
+      setConfig({ ...config, ...tempConfig });
+      setIsConfigDialogOpen(false);
+      toast({
+        title: "Success",
+        description: "Widget configuration saved successfully"
+      });
+    } catch (error) {
+      console.error('Error saving widget config:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save widget configuration",
         variant: "destructive"
       });
     }
@@ -296,7 +337,7 @@ const SocialProofManagement = () => {
               </div>
               <Dialog open={isConfigDialogOpen} onOpenChange={setIsConfigDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline">
+                  <Button variant="outline" onClick={openConfigDialog}>
                     <Settings className="w-4 h-4 mr-2" />
                     Configure Widget
                   </Button>
@@ -305,15 +346,15 @@ const SocialProofManagement = () => {
                   <DialogHeader>
                     <DialogTitle>Widget Settings</DialogTitle>
                   </DialogHeader>
-                  {config && (
+                  {tempConfig && (
                     <div className="space-y-4">
                       <div>
                         <Label htmlFor="initial_delay">Initial Delay (seconds)</Label>
                         <Input
                           id="initial_delay"
                           type="number"
-                          value={config.initial_delay_seconds}
-                          onChange={(e) => updateConfig({ initial_delay_seconds: Number(e.target.value) })}
+                          value={tempConfig.initial_delay_seconds || 0}
+                          onChange={(e) => setTempConfig({ ...tempConfig, initial_delay_seconds: Number(e.target.value) })}
                           min="0"
                           max="60"
                         />
@@ -325,8 +366,8 @@ const SocialProofManagement = () => {
                         <Input
                           id="duration"
                           type="number"
-                          value={config.notification_duration_seconds}
-                          onChange={(e) => updateConfig({ notification_duration_seconds: Number(e.target.value) })}
+                          value={tempConfig.notification_duration_seconds || 0}
+                          onChange={(e) => setTempConfig({ ...tempConfig, notification_duration_seconds: Number(e.target.value) })}
                           min="3"
                           max="30"
                         />
@@ -338,8 +379,8 @@ const SocialProofManagement = () => {
                         <Input
                           id="max_notifications"
                           type="number"
-                          value={config.max_notifications_per_session}
-                          onChange={(e) => updateConfig({ max_notifications_per_session: Number(e.target.value) })}
+                          value={tempConfig.max_notifications_per_session || 0}
+                          onChange={(e) => setTempConfig({ ...tempConfig, max_notifications_per_session: Number(e.target.value) })}
                           min="1"
                           max="20"
                         />
@@ -352,10 +393,10 @@ const SocialProofManagement = () => {
                           id="excluded_routes"
                           rows={3}
                           className="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                          value={(config.excluded_routes || []).join('\n')}
+                          value={(tempConfig.excluded_routes || []).join('\n')}
                           onChange={(e) => {
-                            const routes = e.target.value.split('\n').map(route => route.trim()).filter(route => route !== '');
-                            updateConfig({ excluded_routes: routes });
+                            const value = e.target.value;
+                            setTempConfig({ ...tempConfig, excluded_routes: value.split('\n') });
                           }}
                           onKeyDown={(e) => {
                             // Allow Enter key to create new lines
@@ -372,10 +413,19 @@ const SocialProofManagement = () => {
 
                       <div className="flex items-center space-x-2">
                         <Switch
-                          checked={config.is_enabled}
-                          onCheckedChange={(checked) => updateConfig({ is_enabled: checked })}
+                          checked={tempConfig.is_enabled || false}
+                          onCheckedChange={(checked) => setTempConfig({ ...tempConfig, is_enabled: checked })}
                         />
                         <Label>Enable Widget</Label>
+                      </div>
+
+                      <div className="flex justify-end space-x-2 pt-4">
+                        <Button type="button" variant="outline" onClick={() => setIsConfigDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button type="button" onClick={saveWidgetSettings}>
+                          Save Changes
+                        </Button>
                       </div>
                     </div>
                   )}
