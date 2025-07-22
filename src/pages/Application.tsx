@@ -146,7 +146,69 @@ const Application = () => {
     }));
   };
 
+  const validateStep = (step: number): boolean => {
+    switch (step) {
+      case 1:
+        return !!(
+          formData.legal_corporation_name &&
+          formData.physical_address &&
+          formData.city &&
+          formData.state &&
+          formData.zip &&
+          formData.entity_type &&
+          formData.telephone_number &&
+          formData.email_address
+        );
+      case 2:
+        return !!(formData.federal_tax_id);
+      case 3:
+        return !!(
+          formData.principal_name &&
+          formData.principal_title &&
+          formData.principal_ssn &&
+          formData.principal_date_of_birth &&
+          formData.principal_home_address &&
+          formData.principal_city &&
+          formData.principal_state &&
+          formData.principal_zip &&
+          formData.principal_email &&
+          formData.principal_ownership_percentage
+        );
+      case 4:
+        return !!(
+          formData.years_in_business &&
+          formData.months_in_business &&
+          formData.number_of_employees &&
+          formData.business_type &&
+          formData.business_description
+        );
+      case 5:
+        return !!(
+          formData.bank_name &&
+          formData.bank_account_type &&
+          formData.bank_routing_number &&
+          formData.bank_account_number &&
+          formData.months_with_bank &&
+          formData.average_monthly_deposits &&
+          formData.monthly_rent_mortgage &&
+          formData.accept_cards.length > 0
+        );
+      case 6:
+        return !!(
+          formData.loan_amount_requested &&
+          formData.use_of_funds
+        );
+      default:
+        return true;
+    }
+  };
+
   const nextStep = () => {
+    if (!validateStep(currentStep)) {
+      toast.error("Please fill in all required fields before proceeding.");
+      return;
+    }
+    
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
       window.scrollTo(0, 0);

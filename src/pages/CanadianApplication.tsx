@@ -140,7 +140,57 @@ const CanadianApplication = () => {
     }));
   };
 
+  const validateStep = (step: number): boolean => {
+    switch (step) {
+      case 1:
+        return !!(
+          formData.legal_business_name &&
+          formData.physical_address &&
+          formData.city &&
+          formData.state &&
+          formData.zip &&
+          formData.business_phone
+        );
+      case 2:
+        return !!(
+          formData.type_of_entity &&
+          formData.federal_tax_id &&
+          formData.business_start_date &&
+          formData.number_of_locations &&
+          formData.business_property_type &&
+          formData.annual_gross_sales &&
+          formData.amount_requested &&
+          formData.use_of_funds
+        );
+      case 3:
+        return !!(
+          formData.principal_owner_name &&
+          formData.ownership_percentage &&
+          formData.ssn &&
+          formData.dob &&
+          formData.home_address &&
+          formData.city_owner &&
+          formData.state_owner &&
+          formData.zip_owner &&
+          formData.email_address
+        );
+      case 4:
+        // Credit card processing step - no required fields
+        return true;
+      case 5:
+        // Documents step - no required fields
+        return true;
+      default:
+        return true;
+    }
+  };
+
   const nextStep = () => {
+    if (!validateStep(currentStep)) {
+      toast.error("Please fill in all required fields before proceeding.");
+      return;
+    }
+    
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
       window.scrollTo(0, 0);
