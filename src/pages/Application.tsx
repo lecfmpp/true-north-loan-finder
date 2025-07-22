@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, ArrowRight, Building2, User, CreditCard, FileText, CheckCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, Building2, User, CreditCard, FileText, CheckCircle, Upload, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -75,6 +75,9 @@ interface ApplicationData {
   // Loan Information
   loan_amount_requested: string;
   use_of_funds: string;
+  
+  // Document Files
+  document_files: File[];
 }
 
 const Application = () => {
@@ -131,6 +134,7 @@ const Application = () => {
     high_ticket: "",
     loan_amount_requested: "",
     use_of_funds: "",
+    document_files: [],
   });
 
   const updateFormData = (field: keyof ApplicationData, value: any) => {
@@ -154,10 +158,36 @@ const Application = () => {
     }
   };
 
+  const handleFileUpload = async (files: File[]): Promise<string[]> => {
+    const uploadedFiles: string[] = [];
+    
+    for (const file of files) {
+      const fileName = `${Date.now()}_${file.name}`;
+      const { error } = await supabase.storage
+        .from('application-documents')
+        .upload(fileName, file);
+      
+      if (error) {
+        console.error('Error uploading file:', error);
+        throw new Error(`Failed to upload ${file.name}`);
+      }
+      
+      uploadedFiles.push(fileName);
+    }
+    
+    return uploadedFiles;
+  };
+
   const handleSubmit = async () => {
     setIsSubmitting(true);
     
     try {
+      // Upload documents first
+      let uploadedFileNames: string[] = [];
+      if (formData.document_files.length > 0) {
+        uploadedFileNames = await handleFileUpload(formData.document_files);
+      }
+
       const applicationData = {
         legal_corporation_name: formData.legal_corporation_name,
         dba_name: formData.dba_name || null,
@@ -206,6 +236,8 @@ const Application = () => {
         high_ticket: formData.high_ticket ? parseInt(formData.high_ticket) : null,
         loan_amount_requested: parseInt(formData.loan_amount_requested),
         use_of_funds: formData.use_of_funds,
+        document_files: uploadedFileNames,
+        status: 'applicant',
       };
 
       const { error } = await supabase
@@ -788,7 +820,7 @@ const Application = () => {
           <div className="space-y-6">
             <div className="flex items-center gap-3 mb-6">
               <FileText className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold">Loan Information</h2>
+              <h2 className="text-2xl font-bold">Loan Information & Documents</h2>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -814,6 +846,70 @@ const Application = () => {
                   placeholder="Please describe how you plan to use the loan funds..."
                   required
                 />
+              </div>
+            </div>
+
+            {/* Document Upload Section */}
+            <div className="space-y-4 border-t pt-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Upload className="h-5 w-5 text-primary" />
+                <h3 className="text-xl font-semibold">Required Documents</h3>
+              </div>
+              
+              <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                <div className="flex items-start gap-3">
+                  <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                  <div className="space-y-2 text-sm">
+                    <p className="font-medium text-blue-800 dark:text-blue-200">
+                      📱 Mobile Upload Tips - Make it Faster:
+                    </p>
+                    <ul className="list-disc pl-4 space-y-1 text-blue-700 dark:text-blue-300">
+                      <li>Use your phone's banking app to download statements as PDFs</li>
+                      <li>Take clear, well-lit photos if documents are physical</li>
+                      <li>Ensure all text is readable before uploading</li>
+                      <li>Upload files one by one rather than selecting multiple at once</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-base font-medium">Bank Statements & Business Registration *</Label>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Please upload the following documents:
+                  </p>
+                  <ul className="text-sm text-muted-foreground list-disc pl-4 space-y-1 mb-4">
+                    <li><strong>Bank Statements:</strong> Minimum 4 months (6-12 months preferred)</li>
+                    <li><strong>Business Registration:</strong> Articles of incorporation, business license, or registration certificate</li>
+                    <li><strong>Additional:</strong> Any other supporting financial documents</li>
+                  </ul>
+                  
+                  <Input
+                    type="file"
+                    multiple
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files || []);
+                      updateFormData('document_files', files);
+                    }}
+                    className="cursor-pointer"
+                  />
+                  
+                  {formData.document_files.length > 0 && (
+                    <div className="mt-3">
+                      <p className="text-sm font-medium mb-2">Selected Files:</p>
+                      <ul className="text-sm text-muted-foreground space-y-1">
+                        {formData.document_files.map((file, index) => (
+                          <li key={index} className="flex items-center gap-2">
+                            <FileText className="h-4 w-4" />
+                            {file.name} ({Math.round(file.size / 1024)}KB)
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

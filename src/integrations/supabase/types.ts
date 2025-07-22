@@ -179,6 +179,7 @@ export type Database = {
           current_processor: string | null
           date_incorporated: string | null
           dba_name: string | null
+          document_files: Json | null
           email_address: string
           entity_type: string
           fax_number: string | null
@@ -234,6 +235,7 @@ export type Database = {
           current_processor?: string | null
           date_incorporated?: string | null
           dba_name?: string | null
+          document_files?: Json | null
           email_address: string
           entity_type: string
           fax_number?: string | null
@@ -289,6 +291,7 @@ export type Database = {
           current_processor?: string | null
           date_incorporated?: string | null
           dba_name?: string | null
+          document_files?: Json | null
           email_address?: string
           entity_type?: string
           fax_number?: string | null
