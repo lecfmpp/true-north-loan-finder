@@ -887,16 +887,28 @@ const Application = () => {
                     <li><strong>Additional:</strong> Any other supporting financial documents</li>
                   </ul>
                   
-                  <Input
-                    type="file"
-                    multiple
-                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                    onChange={(e) => {
-                      const files = Array.from(e.target.files || []);
-                      updateFormData('document_files', files);
-                    }}
-                    className="cursor-pointer"
-                  />
+                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
+                    <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <div className="space-y-2">
+                      <p className="text-base font-medium">Upload Your Documents</p>
+                      <p className="text-sm text-muted-foreground">
+                        Click here or drag and drop your files
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Supported formats: PDF, JPG, PNG, DOC, DOCX (Max 10MB each)
+                      </p>
+                    </div>
+                    <Input
+                      type="file"
+                      multiple
+                      accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files || []);
+                        updateFormData('document_files', files);
+                      }}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                  </div>
                   
                   {formData.document_files.length > 0 && (
                     <div className="mt-3">
