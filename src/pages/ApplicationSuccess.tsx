@@ -1,0 +1,114 @@
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CheckCircle, Clock, Mail, Phone } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+const ApplicationSuccess = () => {
+  const navigate = useNavigate();
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20 py-12">
+      <div className="container mx-auto px-4">
+        <div className="max-w-2xl mx-auto text-center">
+          {/* Success Icon */}
+          <div className="mb-8">
+            <div className="mx-auto w-24 h-24 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mb-6">
+              <CheckCircle className="w-12 h-12 text-green-600 dark:text-green-400" />
+            </div>
+            <h1 className="text-4xl font-bold mb-4">Application Submitted Successfully!</h1>
+            <p className="text-lg text-muted-foreground">
+              Thank you for your business loan application. We've received your information and will review it promptly.
+            </p>
+          </div>
+
+          {/* Next Steps */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                What Happens Next?
+              </CardTitle>
+              <CardDescription>
+                Here's what you can expect from us
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-left space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold mt-0.5">
+                  1
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-1">Initial Review</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Our team will review your application within 24 hours and may contact you for additional information.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold mt-0.5">
+                  2
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-1">Documentation</h3>
+                  <p className="text-sm text-muted-foreground">
+                    We may request additional documents such as bank statements, tax returns, or financial statements.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold mt-0.5">
+                  3
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-1">Decision & Funding</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Once approved, we'll work with you to finalize terms and get you funded quickly.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Contact Information */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Need Help?</CardTitle>
+              <CardDescription>
+                Our team is here to assist you with any questions
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-center gap-6">
+                <div className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-primary" />
+                  <span className="text-sm">(888) 123-4567</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-primary" />
+                  <span className="text-sm">support@truenorthbusinessloan.ca</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Actions */}
+          <div className="space-y-4">
+            <Button 
+              onClick={() => navigate("/")}
+              className="w-full sm:w-auto"
+            >
+              Return to Home
+            </Button>
+            <div className="text-sm text-muted-foreground">
+              Application Reference: #{Math.random().toString(36).substring(2, 15).toUpperCase()}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ApplicationSuccess;

@@ -162,6 +162,174 @@ export type Database = {
           },
         ]
       }
+      business_applications: {
+        Row: {
+          accept_cards: string[]
+          admin_notes: string | null
+          average_monthly_deposits: number
+          average_ticket: number | null
+          bank_account_number: string
+          bank_account_type: string
+          bank_name: string
+          bank_routing_number: string
+          business_description: string
+          business_type: string
+          city: string
+          created_at: string
+          current_processor: string | null
+          date_incorporated: string | null
+          dba_name: string | null
+          email_address: string
+          entity_type: string
+          fax_number: string | null
+          federal_tax_id: string
+          high_ticket: number | null
+          id: string
+          legal_corporation_name: string
+          loan_amount_requested: number
+          mid_number: string | null
+          monthly_processing_volume: number | null
+          monthly_rent_mortgage: number
+          months_in_business: number
+          months_with_bank: number
+          number_of_employees: number
+          physical_address: string
+          principal_cell_phone: string | null
+          principal_city: string
+          principal_date_of_birth: string
+          principal_email: string
+          principal_home_address: string
+          principal_home_phone: string | null
+          principal_name: string
+          principal_ownership_percentage: number
+          principal_ssn: string
+          principal_state: string
+          principal_title: string
+          principal_zip: string
+          state: string
+          state_of_incorporation: string | null
+          state_tax_id: string | null
+          status: string
+          submitted_at: string
+          telephone_number: string
+          updated_at: string
+          use_of_funds: string
+          website: string | null
+          years_in_business: number
+          zip: string
+        }
+        Insert: {
+          accept_cards?: string[]
+          admin_notes?: string | null
+          average_monthly_deposits: number
+          average_ticket?: number | null
+          bank_account_number: string
+          bank_account_type: string
+          bank_name: string
+          bank_routing_number: string
+          business_description: string
+          business_type: string
+          city: string
+          created_at?: string
+          current_processor?: string | null
+          date_incorporated?: string | null
+          dba_name?: string | null
+          email_address: string
+          entity_type: string
+          fax_number?: string | null
+          federal_tax_id: string
+          high_ticket?: number | null
+          id?: string
+          legal_corporation_name: string
+          loan_amount_requested: number
+          mid_number?: string | null
+          monthly_processing_volume?: number | null
+          monthly_rent_mortgage: number
+          months_in_business: number
+          months_with_bank: number
+          number_of_employees: number
+          physical_address: string
+          principal_cell_phone?: string | null
+          principal_city: string
+          principal_date_of_birth: string
+          principal_email: string
+          principal_home_address: string
+          principal_home_phone?: string | null
+          principal_name: string
+          principal_ownership_percentage: number
+          principal_ssn: string
+          principal_state: string
+          principal_title: string
+          principal_zip: string
+          state: string
+          state_of_incorporation?: string | null
+          state_tax_id?: string | null
+          status?: string
+          submitted_at?: string
+          telephone_number: string
+          updated_at?: string
+          use_of_funds: string
+          website?: string | null
+          years_in_business: number
+          zip: string
+        }
+        Update: {
+          accept_cards?: string[]
+          admin_notes?: string | null
+          average_monthly_deposits?: number
+          average_ticket?: number | null
+          bank_account_number?: string
+          bank_account_type?: string
+          bank_name?: string
+          bank_routing_number?: string
+          business_description?: string
+          business_type?: string
+          city?: string
+          created_at?: string
+          current_processor?: string | null
+          date_incorporated?: string | null
+          dba_name?: string | null
+          email_address?: string
+          entity_type?: string
+          fax_number?: string | null
+          federal_tax_id?: string
+          high_ticket?: number | null
+          id?: string
+          legal_corporation_name?: string
+          loan_amount_requested?: number
+          mid_number?: string | null
+          monthly_processing_volume?: number | null
+          monthly_rent_mortgage?: number
+          months_in_business?: number
+          months_with_bank?: number
+          number_of_employees?: number
+          physical_address?: string
+          principal_cell_phone?: string | null
+          principal_city?: string
+          principal_date_of_birth?: string
+          principal_email?: string
+          principal_home_address?: string
+          principal_home_phone?: string | null
+          principal_name?: string
+          principal_ownership_percentage?: number
+          principal_ssn?: string
+          principal_state?: string
+          principal_title?: string
+          principal_zip?: string
+          state?: string
+          state_of_incorporation?: string | null
+          state_tax_id?: string | null
+          status?: string
+          submitted_at?: string
+          telephone_number?: string
+          updated_at?: string
+          use_of_funds?: string
+          website?: string | null
+          years_in_business?: number
+          zip?: string
+        }
+        Relationships: []
+      }
       call_bookings: {
         Row: {
           booking_status: string

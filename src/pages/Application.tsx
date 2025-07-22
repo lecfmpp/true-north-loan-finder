@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,154 +13,124 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ApplicationData {
-  // Business Information
-  legalCorporationName: string;
-  dbaName: string;
-  physicalAddress: string;
+  // Company Information
+  legal_corporation_name: string;
+  dba_name: string;
+  physical_address: string;
   city: string;
   state: string;
   zip: string;
-  entityType: string;
-  telephoneNumber: string;
-  taxId: string;
-  email: string;
+  entity_type: string;
+  telephone_number: string;
+  fax_number: string;
   website: string;
-  businessStartDate: string;
-  natureOfBusiness: string;
-  numberOfLocations: string;
-  productsSold: string;
-  seasonalBusiness: string;
-  taxLiens: string;
-  isBusinessForSale: string;
-  currentlyInBankruptcy: string;
-  dischargedBankruptcy: string;
-  cashAdvanceNow: string;
-  withWhatLenders: string;
-  notes: string;
+  email_address: string;
   
-  // Funding Information
-  requestedFundingAmount: string;
-  fundingUse: string;
-  numberOfEmployees: string;
-  ownRentLocation: string;
-  timeRemainingOnLease: string;
-  businessLandlord: string;
-  phone: string;
-  pendingLegalActions: string;
-  monthlyBankAmount: string;
+  // Federal & State Information
+  federal_tax_id: string;
+  state_tax_id: string;
+  state_of_incorporation: string;
+  date_incorporated: string;
   
-  // Owner Information
-  ownerName: string;
-  ownerTitle: string;
-  ownershipPercentage: string;
-  ownerHomeAddress: string;
-  ownerCity: string;
-  ownerState: string;
-  ownerZip: string;
-  ownerSSN: string;
-  ownerDOB: string;
-  ownerHomePhone: string;
-  ownerCell: string;
-  ownerOwnRent: string;
-  ownerDriversLicense: string;
-  ownerStateIssued: string;
+  // Principal Information
+  principal_name: string;
+  principal_title: string;
+  principal_ssn: string;
+  principal_date_of_birth: string;
+  principal_home_address: string;
+  principal_city: string;
+  principal_state: string;
+  principal_zip: string;
+  principal_home_phone: string;
+  principal_cell_phone: string;
+  principal_email: string;
+  principal_ownership_percentage: string;
   
-  // Partner Information (if applicable)
-  partnerName: string;
-  partnerTitle: string;
-  partnerOwnershipPercentage: string;
-  partnerHomeAddress: string;
-  partnerCity: string;
-  partnerState: string;
-  partnerZip: string;
-  partnerSSN: string;
-  partnerDOB: string;
-  partnerHomePhone: string;
-  partnerCell: string;
-  partnerOwnRent: string;
-  partnerDriversLicense: string;
-  partnerStateIssued: string;
+  // Business Information
+  years_in_business: string;
+  months_in_business: string;
+  number_of_employees: string;
+  business_type: string;
+  business_description: string;
+  
+  // Bank Information
+  bank_name: string;
+  bank_account_type: string;
+  bank_routing_number: string;
+  bank_account_number: string;
+  months_with_bank: string;
+  
+  // Financial Information
+  average_monthly_deposits: string;
+  monthly_rent_mortgage: string;
   
   // Processing Information
-  acceptCards: string[];
-  monthlyCardVolume: string;
-  numberOfTerminals: string;
-  posVersion: string;
-  highTicket: string;
+  accept_cards: string[];
+  current_processor: string;
+  mid_number: string;
+  monthly_processing_volume: string;
+  average_ticket: string;
+  high_ticket: string;
+  
+  // Loan Information
+  loan_amount_requested: string;
+  use_of_funds: string;
 }
 
 const Application = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const totalSteps = 5;
+  const totalSteps = 6;
   
   const [formData, setFormData] = useState<ApplicationData>({
-    legalCorporationName: "",
-    dbaName: "",
-    physicalAddress: "",
+    legal_corporation_name: "",
+    dba_name: "",
+    physical_address: "",
     city: "",
     state: "",
     zip: "",
-    entityType: "",
-    telephoneNumber: "",
-    taxId: "",
-    email: "",
+    entity_type: "",
+    telephone_number: "",
+    fax_number: "",
     website: "",
-    businessStartDate: "",
-    natureOfBusiness: "",
-    numberOfLocations: "",
-    productsSold: "",
-    seasonalBusiness: "",
-    taxLiens: "",
-    isBusinessForSale: "",
-    currentlyInBankruptcy: "",
-    dischargedBankruptcy: "",
-    cashAdvanceNow: "",
-    withWhatLenders: "",
-    notes: "",
-    requestedFundingAmount: "",
-    fundingUse: "",
-    numberOfEmployees: "",
-    ownRentLocation: "",
-    timeRemainingOnLease: "",
-    businessLandlord: "",
-    phone: "",
-    pendingLegalActions: "",
-    monthlyBankAmount: "",
-    ownerName: "",
-    ownerTitle: "",
-    ownershipPercentage: "",
-    ownerHomeAddress: "",
-    ownerCity: "",
-    ownerState: "",
-    ownerZip: "",
-    ownerSSN: "",
-    ownerDOB: "",
-    ownerHomePhone: "",
-    ownerCell: "",
-    ownerOwnRent: "",
-    ownerDriversLicense: "",
-    ownerStateIssued: "",
-    partnerName: "",
-    partnerTitle: "",
-    partnerOwnershipPercentage: "",
-    partnerHomeAddress: "",
-    partnerCity: "",
-    partnerState: "",
-    partnerZip: "",
-    partnerSSN: "",
-    partnerDOB: "",
-    partnerHomePhone: "",
-    partnerCell: "",
-    partnerOwnRent: "",
-    partnerDriversLicense: "",
-    partnerStateIssued: "",
-    acceptCards: [],
-    monthlyCardVolume: "",
-    numberOfTerminals: "",
-    posVersion: "",
-    highTicket: "",
+    email_address: "",
+    federal_tax_id: "",
+    state_tax_id: "",
+    state_of_incorporation: "",
+    date_incorporated: "",
+    principal_name: "",
+    principal_title: "",
+    principal_ssn: "",
+    principal_date_of_birth: "",
+    principal_home_address: "",
+    principal_city: "",
+    principal_state: "",
+    principal_zip: "",
+    principal_home_phone: "",
+    principal_cell_phone: "",
+    principal_email: "",
+    principal_ownership_percentage: "",
+    years_in_business: "",
+    months_in_business: "",
+    number_of_employees: "",
+    business_type: "",
+    business_description: "",
+    bank_name: "",
+    bank_account_type: "",
+    bank_routing_number: "",
+    bank_account_number: "",
+    months_with_bank: "",
+    average_monthly_deposits: "",
+    monthly_rent_mortgage: "",
+    accept_cards: [],
+    current_processor: "",
+    mid_number: "",
+    monthly_processing_volume: "",
+    average_ticket: "",
+    high_ticket: "",
+    loan_amount_requested: "",
+    use_of_funds: "",
   });
 
   const updateFormData = (field: keyof ApplicationData, value: any) => {
@@ -188,19 +158,65 @@ const Application = () => {
     setIsSubmitting(true);
     
     try {
+      const applicationData = {
+        legal_corporation_name: formData.legal_corporation_name,
+        dba_name: formData.dba_name || null,
+        physical_address: formData.physical_address,
+        city: formData.city,
+        state: formData.state,
+        zip: formData.zip,
+        entity_type: formData.entity_type,
+        telephone_number: formData.telephone_number,
+        fax_number: formData.fax_number || null,
+        website: formData.website || null,
+        email_address: formData.email_address,
+        federal_tax_id: formData.federal_tax_id,
+        state_tax_id: formData.state_tax_id || null,
+        state_of_incorporation: formData.state_of_incorporation || null,
+        date_incorporated: formData.date_incorporated || null,
+        principal_name: formData.principal_name,
+        principal_title: formData.principal_title,
+        principal_ssn: formData.principal_ssn,
+        principal_date_of_birth: formData.principal_date_of_birth,
+        principal_home_address: formData.principal_home_address,
+        principal_city: formData.principal_city,
+        principal_state: formData.principal_state,
+        principal_zip: formData.principal_zip,
+        principal_home_phone: formData.principal_home_phone || null,
+        principal_cell_phone: formData.principal_cell_phone || null,
+        principal_email: formData.principal_email,
+        principal_ownership_percentage: parseInt(formData.principal_ownership_percentage),
+        years_in_business: parseInt(formData.years_in_business),
+        months_in_business: parseInt(formData.months_in_business),
+        number_of_employees: parseInt(formData.number_of_employees),
+        business_type: formData.business_type,
+        business_description: formData.business_description,
+        bank_name: formData.bank_name,
+        bank_account_type: formData.bank_account_type,
+        bank_routing_number: formData.bank_routing_number,
+        bank_account_number: formData.bank_account_number,
+        months_with_bank: parseInt(formData.months_with_bank),
+        average_monthly_deposits: parseInt(formData.average_monthly_deposits),
+        monthly_rent_mortgage: parseInt(formData.monthly_rent_mortgage),
+        accept_cards: formData.accept_cards,
+        current_processor: formData.current_processor || null,
+        mid_number: formData.mid_number || null,
+        monthly_processing_volume: formData.monthly_processing_volume ? parseInt(formData.monthly_processing_volume) : null,
+        average_ticket: formData.average_ticket ? parseInt(formData.average_ticket) : null,
+        high_ticket: formData.high_ticket ? parseInt(formData.high_ticket) : null,
+        loan_amount_requested: parseInt(formData.loan_amount_requested),
+        use_of_funds: formData.use_of_funds,
+      };
+
       const { error } = await supabase
         .from('business_applications')
-        .insert([{
-          ...formData,
-          accept_cards: formData.acceptCards,
-          submitted_at: new Date().toISOString()
-        }]);
+        .insert([applicationData]);
 
       if (error) throw error;
 
       // Track conversion
-      if (typeof gtag !== 'undefined') {
-        gtag('event', 'conversion', {
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'conversion', {
           'send_to': 'AW-16458367327/ads_conversion_SUBMIT_APPLICATION_1'
         });
       }
@@ -222,35 +238,35 @@ const Application = () => {
           <div className="space-y-6">
             <div className="flex items-center gap-3 mb-6">
               <Building2 className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold">Business Information</h2>
+              <h2 className="text-2xl font-bold">Company Information</h2>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="legalCorporationName">Legal Corporation Name *</Label>
+                <Label htmlFor="legal_corporation_name">Legal Corporation Name *</Label>
                 <Input
-                  id="legalCorporationName"
-                  value={formData.legalCorporationName}
-                  onChange={(e) => updateFormData('legalCorporationName', e.target.value)}
+                  id="legal_corporation_name"
+                  value={formData.legal_corporation_name}
+                  onChange={(e) => updateFormData('legal_corporation_name', e.target.value)}
                   required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="dbaName">DBA Name</Label>
+                <Label htmlFor="dba_name">DBA Name</Label>
                 <Input
-                  id="dbaName"
-                  value={formData.dbaName}
-                  onChange={(e) => updateFormData('dbaName', e.target.value)}
+                  id="dba_name"
+                  value={formData.dba_name}
+                  onChange={(e) => updateFormData('dba_name', e.target.value)}
                 />
               </div>
               
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="physicalAddress">Physical Address *</Label>
+                <Label htmlFor="physical_address">Physical Address *</Label>
                 <Input
-                  id="physicalAddress"
-                  value={formData.physicalAddress}
-                  onChange={(e) => updateFormData('physicalAddress', e.target.value)}
+                  id="physical_address"
+                  value={formData.physical_address}
+                  onChange={(e) => updateFormData('physical_address', e.target.value)}
                   required
                 />
               </div>
@@ -266,66 +282,68 @@ const Application = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="state">State/Zip *</Label>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="State"
-                    value={formData.state}
-                    onChange={(e) => updateFormData('state', e.target.value)}
-                    required
-                  />
-                  <Input
-                    placeholder="Zip"
-                    value={formData.zip}
-                    onChange={(e) => updateFormData('zip', e.target.value)}
-                    required
-                  />
-                </div>
+                <Label htmlFor="state">State *</Label>
+                <Input
+                  id="state"
+                  value={formData.state}
+                  onChange={(e) => updateFormData('state', e.target.value)}
+                  required
+                />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="entityType">Entity Type</Label>
-                <Select value={formData.entityType} onValueChange={(value) => updateFormData('entityType', value)}>
+                <Label htmlFor="zip">ZIP Code *</Label>
+                <Input
+                  id="zip"
+                  value={formData.zip}
+                  onChange={(e) => updateFormData('zip', e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="entity_type">Entity Type *</Label>
+                <Select value={formData.entity_type} onValueChange={(value) => updateFormData('entity_type', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select entity type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="corporation">Corporation</SelectItem>
-                    <SelectItem value="llc">LLC</SelectItem>
-                    <SelectItem value="partnership">Partnership</SelectItem>
-                    <SelectItem value="sole-proprietorship">Sole Proprietorship</SelectItem>
+                    <SelectItem value="Corporation">Corporation</SelectItem>
+                    <SelectItem value="LLC">LLC</SelectItem>
+                    <SelectItem value="Partnership">Partnership</SelectItem>
+                    <SelectItem value="Sole Proprietorship">Sole Proprietorship</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="telephoneNumber">Telephone Number *</Label>
+                <Label htmlFor="telephone_number">Telephone Number *</Label>
                 <Input
-                  id="telephoneNumber"
+                  id="telephone_number"
                   type="tel"
-                  value={formData.telephoneNumber}
-                  onChange={(e) => updateFormData('telephoneNumber', e.target.value)}
+                  value={formData.telephone_number}
+                  onChange={(e) => updateFormData('telephone_number', e.target.value)}
                   required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="taxId">Tax ID *</Label>
+                <Label htmlFor="fax_number">Fax Number</Label>
                 <Input
-                  id="taxId"
-                  value={formData.taxId}
-                  onChange={(e) => updateFormData('taxId', e.target.value)}
-                  required
+                  id="fax_number"
+                  type="tel"
+                  value={formData.fax_number}
+                  onChange={(e) => updateFormData('fax_number', e.target.value)}
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="email">Email *</Label>
+                <Label htmlFor="email_address">Email Address *</Label>
                 <Input
-                  id="email"
+                  id="email_address"
                   type="email"
-                  value={formData.email}
-                  onChange={(e) => updateFormData('email', e.target.value)}
+                  value={formData.email_address}
+                  onChange={(e) => updateFormData('email_address', e.target.value)}
                   required
                 />
               </div>
@@ -339,37 +357,6 @@ const Application = () => {
                   onChange={(e) => updateFormData('website', e.target.value)}
                 />
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="businessStartDate">Business Start Date *</Label>
-                <Input
-                  id="businessStartDate"
-                  type="date"
-                  value={formData.businessStartDate}
-                  onChange={(e) => updateFormData('businessStartDate', e.target.value)}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="natureOfBusiness">Nature of Business *</Label>
-                <Input
-                  id="natureOfBusiness"
-                  value={formData.natureOfBusiness}
-                  onChange={(e) => updateFormData('natureOfBusiness', e.target.value)}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="numberOfLocations"># of Locations</Label>
-                <Input
-                  id="numberOfLocations"
-                  type="number"
-                  value={formData.numberOfLocations}
-                  onChange={(e) => updateFormData('numberOfLocations', e.target.value)}
-                />
-              </div>
             </div>
           </div>
         );
@@ -378,115 +365,46 @@ const Application = () => {
         return (
           <div className="space-y-6">
             <div className="flex items-center gap-3 mb-6">
-              <Building2 className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold">Business Details</h2>
+              <FileText className="h-6 w-6 text-primary" />
+              <h2 className="text-2xl font-bold">Federal & State Information</h2>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="productsSold">Products/Services Sold</Label>
-                <Textarea
-                  id="productsSold"
-                  value={formData.productsSold}
-                  onChange={(e) => updateFormData('productsSold', e.target.value)}
-                  rows={3}
-                />
-              </div>
-              
               <div className="space-y-2">
-                <Label>Seasonal Business?</Label>
-                <Select value={formData.seasonalBusiness} onValueChange={(value) => updateFormData('seasonalBusiness', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Yes/No" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="yes">Yes</SelectItem>
-                    <SelectItem value="no">No</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Tax Liens?</Label>
-                <Select value={formData.taxLiens} onValueChange={(value) => updateFormData('taxLiens', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Yes/No" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="yes">Yes</SelectItem>
-                    <SelectItem value="no">No</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Is the Business for Sale?</Label>
-                <Select value={formData.isBusinessForSale} onValueChange={(value) => updateFormData('isBusinessForSale', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Yes/No" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="yes">Yes</SelectItem>
-                    <SelectItem value="no">No</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Currently in Bankruptcy?</Label>
-                <Select value={formData.currentlyInBankruptcy} onValueChange={(value) => updateFormData('currentlyInBankruptcy', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Yes/No" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="yes">Yes</SelectItem>
-                    <SelectItem value="no">No</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Discharged Bankruptcy in Last 7 years?</Label>
-                <Select value={formData.dischargedBankruptcy} onValueChange={(value) => updateFormData('dischargedBankruptcy', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Yes/No" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="yes">Yes</SelectItem>
-                    <SelectItem value="no">No</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Are you in a Cash Advance Now?</Label>
-                <Select value={formData.cashAdvanceNow} onValueChange={(value) => updateFormData('cashAdvanceNow', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Yes/No" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="yes">Yes</SelectItem>
-                    <SelectItem value="no">No</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="withWhatLenders">With What Lenders?</Label>
+                <Label htmlFor="federal_tax_id">Federal Tax ID *</Label>
                 <Input
-                  id="withWhatLenders"
-                  value={formData.withWhatLenders}
-                  onChange={(e) => updateFormData('withWhatLenders', e.target.value)}
+                  id="federal_tax_id"
+                  value={formData.federal_tax_id}
+                  onChange={(e) => updateFormData('federal_tax_id', e.target.value)}
+                  required
                 />
               </div>
               
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="notes">Notes</Label>
-                <Textarea
-                  id="notes"
-                  value={formData.notes}
-                  onChange={(e) => updateFormData('notes', e.target.value)}
-                  rows={4}
+              <div className="space-y-2">
+                <Label htmlFor="state_tax_id">State Tax ID</Label>
+                <Input
+                  id="state_tax_id"
+                  value={formData.state_tax_id}
+                  onChange={(e) => updateFormData('state_tax_id', e.target.value)}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="state_of_incorporation">State of Incorporation</Label>
+                <Input
+                  id="state_of_incorporation"
+                  value={formData.state_of_incorporation}
+                  onChange={(e) => updateFormData('state_of_incorporation', e.target.value)}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="date_incorporated">Date Incorporated</Label>
+                <Input
+                  id="date_incorporated"
+                  type="date"
+                  value={formData.date_incorporated}
+                  onChange={(e) => updateFormData('date_incorporated', e.target.value)}
                 />
               </div>
             </div>
@@ -497,101 +415,133 @@ const Application = () => {
         return (
           <div className="space-y-6">
             <div className="flex items-center gap-3 mb-6">
-              <FileText className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold">Funding Information</h2>
+              <User className="h-6 w-6 text-primary" />
+              <h2 className="text-2xl font-bold">Principal Information</h2>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="requestedFundingAmount">Requested Funding Amount *</Label>
+                <Label htmlFor="principal_name">Principal Name *</Label>
                 <Input
-                  id="requestedFundingAmount"
-                  value={formData.requestedFundingAmount}
-                  onChange={(e) => updateFormData('requestedFundingAmount', e.target.value)}
+                  id="principal_name"
+                  value={formData.principal_name}
+                  onChange={(e) => updateFormData('principal_name', e.target.value)}
                   required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="fundingUse">What Will Funds be Used For? *</Label>
+                <Label htmlFor="principal_title">Principal Title *</Label>
                 <Input
-                  id="fundingUse"
-                  value={formData.fundingUse}
-                  onChange={(e) => updateFormData('fundingUse', e.target.value)}
+                  id="principal_title"
+                  value={formData.principal_title}
+                  onChange={(e) => updateFormData('principal_title', e.target.value)}
                   required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="numberOfEmployees">Number of Employees</Label>
+                <Label htmlFor="principal_ssn">Principal SSN *</Label>
                 <Input
-                  id="numberOfEmployees"
-                  type="number"
-                  value={formData.numberOfEmployees}
-                  onChange={(e) => updateFormData('numberOfEmployees', e.target.value)}
+                  id="principal_ssn"
+                  value={formData.principal_ssn}
+                  onChange={(e) => updateFormData('principal_ssn', e.target.value)}
+                  required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label>Own / Rent Business Location</Label>
-                <Select value={formData.ownRentLocation} onValueChange={(value) => updateFormData('ownRentLocation', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Own/Rent" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="own">Own</SelectItem>
-                    <SelectItem value="rent">Rent</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="principal_date_of_birth">Principal Date of Birth *</Label>
+                <Input
+                  id="principal_date_of_birth"
+                  type="date"
+                  value={formData.principal_date_of_birth}
+                  onChange={(e) => updateFormData('principal_date_of_birth', e.target.value)}
+                  required
+                />
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="timeRemainingOnLease">Time Remaining on Lease</Label>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="principal_home_address">Principal Home Address *</Label>
                 <Input
-                  id="timeRemainingOnLease"
-                  value={formData.timeRemainingOnLease}
-                  onChange={(e) => updateFormData('timeRemainingOnLease', e.target.value)}
+                  id="principal_home_address"
+                  value={formData.principal_home_address}
+                  onChange={(e) => updateFormData('principal_home_address', e.target.value)}
+                  required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="businessLandlord">Business Landlord</Label>
+                <Label htmlFor="principal_city">City *</Label>
                 <Input
-                  id="businessLandlord"
-                  value={formData.businessLandlord}
-                  onChange={(e) => updateFormData('businessLandlord', e.target.value)}
+                  id="principal_city"
+                  value={formData.principal_city}
+                  onChange={(e) => updateFormData('principal_city', e.target.value)}
+                  required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
+                <Label htmlFor="principal_state">State *</Label>
                 <Input
-                  id="phone"
+                  id="principal_state"
+                  value={formData.principal_state}
+                  onChange={(e) => updateFormData('principal_state', e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="principal_zip">ZIP Code *</Label>
+                <Input
+                  id="principal_zip"
+                  value={formData.principal_zip}
+                  onChange={(e) => updateFormData('principal_zip', e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="principal_home_phone">Home Phone</Label>
+                <Input
+                  id="principal_home_phone"
                   type="tel"
-                  value={formData.phone}
-                  onChange={(e) => updateFormData('phone', e.target.value)}
+                  value={formData.principal_home_phone}
+                  onChange={(e) => updateFormData('principal_home_phone', e.target.value)}
                 />
               </div>
               
               <div className="space-y-2">
-                <Label>Any Pending Legal Actions or Claims?</Label>
-                <Select value={formData.pendingLegalActions} onValueChange={(value) => updateFormData('pendingLegalActions', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Yes/No" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="yes">Yes</SelectItem>
-                    <SelectItem value="no">No</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="principal_cell_phone">Cell Phone</Label>
+                <Input
+                  id="principal_cell_phone"
+                  type="tel"
+                  value={formData.principal_cell_phone}
+                  onChange={(e) => updateFormData('principal_cell_phone', e.target.value)}
+                />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="monthlyBankAmount">Monthly Bank Amount</Label>
+                <Label htmlFor="principal_email">Principal Email *</Label>
                 <Input
-                  id="monthlyBankAmount"
-                  value={formData.monthlyBankAmount}
-                  onChange={(e) => updateFormData('monthlyBankAmount', e.target.value)}
+                  id="principal_email"
+                  type="email"
+                  value={formData.principal_email}
+                  onChange={(e) => updateFormData('principal_email', e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="principal_ownership_percentage">Ownership Percentage *</Label>
+                <Input
+                  id="principal_ownership_percentage"
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={formData.principal_ownership_percentage}
+                  onChange={(e) => updateFormData('principal_ownership_percentage', e.target.value)}
+                  required
                 />
               </div>
             </div>
@@ -602,242 +552,91 @@ const Application = () => {
         return (
           <div className="space-y-6">
             <div className="flex items-center gap-3 mb-6">
-              <User className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold">Owner Information</h2>
+              <Building2 className="h-6 w-6 text-primary" />
+              <h2 className="text-2xl font-bold">Business & Financial Information</h2>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="ownerName">Owner Name *</Label>
+                <Label htmlFor="years_in_business">Years in Business *</Label>
                 <Input
-                  id="ownerName"
-                  value={formData.ownerName}
-                  onChange={(e) => updateFormData('ownerName', e.target.value)}
+                  id="years_in_business"
+                  type="number"
+                  min="0"
+                  value={formData.years_in_business}
+                  onChange={(e) => updateFormData('years_in_business', e.target.value)}
                   required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="ownerTitle">Title</Label>
+                <Label htmlFor="months_in_business">Additional Months *</Label>
                 <Input
-                  id="ownerTitle"
-                  value={formData.ownerTitle}
-                  onChange={(e) => updateFormData('ownerTitle', e.target.value)}
+                  id="months_in_business"
+                  type="number"
+                  min="0"
+                  max="11"
+                  value={formData.months_in_business}
+                  onChange={(e) => updateFormData('months_in_business', e.target.value)}
+                  required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="ownershipPercentage">Ownership %</Label>
+                <Label htmlFor="number_of_employees">Number of Employees *</Label>
                 <Input
-                  id="ownershipPercentage"
+                  id="number_of_employees"
                   type="number"
-                  max="100"
-                  value={formData.ownershipPercentage}
-                  onChange={(e) => updateFormData('ownershipPercentage', e.target.value)}
+                  min="1"
+                  value={formData.number_of_employees}
+                  onChange={(e) => updateFormData('number_of_employees', e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="business_type">Business Type *</Label>
+                <Input
+                  id="business_type"
+                  value={formData.business_type}
+                  onChange={(e) => updateFormData('business_type', e.target.value)}
+                  required
                 />
               </div>
               
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="ownerHomeAddress">Home Address *</Label>
-                <Input
-                  id="ownerHomeAddress"
-                  value={formData.ownerHomeAddress}
-                  onChange={(e) => updateFormData('ownerHomeAddress', e.target.value)}
+                <Label htmlFor="business_description">Business Description *</Label>
+                <Textarea
+                  id="business_description"
+                  value={formData.business_description}
+                  onChange={(e) => updateFormData('business_description', e.target.value)}
+                  rows={3}
                   required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="ownerCity">City *</Label>
+                <Label htmlFor="average_monthly_deposits">Average Monthly Deposits *</Label>
                 <Input
-                  id="ownerCity"
-                  value={formData.ownerCity}
-                  onChange={(e) => updateFormData('ownerCity', e.target.value)}
+                  id="average_monthly_deposits"
+                  type="number"
+                  min="0"
+                  value={formData.average_monthly_deposits}
+                  onChange={(e) => updateFormData('average_monthly_deposits', e.target.value)}
                   required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="ownerState">State/Zip *</Label>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="State"
-                    value={formData.ownerState}
-                    onChange={(e) => updateFormData('ownerState', e.target.value)}
-                    required
-                  />
-                  <Input
-                    placeholder="Zip"
-                    value={formData.ownerZip}
-                    onChange={(e) => updateFormData('ownerZip', e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="ownerSSN">SSN *</Label>
+                <Label htmlFor="monthly_rent_mortgage">Monthly Rent/Mortgage *</Label>
                 <Input
-                  id="ownerSSN"
-                  value={formData.ownerSSN}
-                  onChange={(e) => updateFormData('ownerSSN', e.target.value)}
+                  id="monthly_rent_mortgage"
+                  type="number"
+                  min="0"
+                  value={formData.monthly_rent_mortgage}
+                  onChange={(e) => updateFormData('monthly_rent_mortgage', e.target.value)}
                   required
                 />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="ownerDOB">DOB *</Label>
-                <Input
-                  id="ownerDOB"
-                  type="date"
-                  value={formData.ownerDOB}
-                  onChange={(e) => updateFormData('ownerDOB', e.target.value)}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="ownerHomePhone">Home Phone</Label>
-                <Input
-                  id="ownerHomePhone"
-                  type="tel"
-                  value={formData.ownerHomePhone}
-                  onChange={(e) => updateFormData('ownerHomePhone', e.target.value)}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="ownerCell">Cell</Label>
-                <Input
-                  id="ownerCell"
-                  type="tel"
-                  value={formData.ownerCell}
-                  onChange={(e) => updateFormData('ownerCell', e.target.value)}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Do you own or rent your residence?</Label>
-                <Select value={formData.ownerOwnRent} onValueChange={(value) => updateFormData('ownerOwnRent', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Own/Rent" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="own">Own</SelectItem>
-                    <SelectItem value="rent">Rent</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="ownerDriversLicense">Drivers License #</Label>
-                <Input
-                  id="ownerDriversLicense"
-                  value={formData.ownerDriversLicense}
-                  onChange={(e) => updateFormData('ownerDriversLicense', e.target.value)}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="ownerStateIssued">State Issued</Label>
-                <Input
-                  id="ownerStateIssued"
-                  value={formData.ownerStateIssued}
-                  onChange={(e) => updateFormData('ownerStateIssued', e.target.value)}
-                />
-              </div>
-            </div>
-            
-            {/* Partner Information Section */}
-            <div className="mt-8 pt-8 border-t">
-              <h3 className="text-xl font-semibold mb-4">Owner/Partner Information (if applicable)</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="partnerName">Partner Name</Label>
-                  <Input
-                    id="partnerName"
-                    value={formData.partnerName}
-                    onChange={(e) => updateFormData('partnerName', e.target.value)}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="partnerTitle">Title</Label>
-                  <Input
-                    id="partnerTitle"
-                    value={formData.partnerTitle}
-                    onChange={(e) => updateFormData('partnerTitle', e.target.value)}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="partnerOwnershipPercentage">Ownership %</Label>
-                  <Input
-                    id="partnerOwnershipPercentage"
-                    type="number"
-                    max="100"
-                    value={formData.partnerOwnershipPercentage}
-                    onChange={(e) => updateFormData('partnerOwnershipPercentage', e.target.value)}
-                  />
-                </div>
-                
-                {formData.partnerName && (
-                  <>
-                    <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="partnerHomeAddress">Home Address</Label>
-                      <Input
-                        id="partnerHomeAddress"
-                        value={formData.partnerHomeAddress}
-                        onChange={(e) => updateFormData('partnerHomeAddress', e.target.value)}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="partnerCity">City</Label>
-                      <Input
-                        id="partnerCity"
-                        value={formData.partnerCity}
-                        onChange={(e) => updateFormData('partnerCity', e.target.value)}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="partnerState">State/Zip</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="State"
-                          value={formData.partnerState}
-                          onChange={(e) => updateFormData('partnerState', e.target.value)}
-                        />
-                        <Input
-                          placeholder="Zip"
-                          value={formData.partnerZip}
-                          onChange={(e) => updateFormData('partnerZip', e.target.value)}
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="partnerSSN">SSN</Label>
-                      <Input
-                        id="partnerSSN"
-                        value={formData.partnerSSN}
-                        onChange={(e) => updateFormData('partnerSSN', e.target.value)}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="partnerDOB">DOB</Label>
-                      <Input
-                        id="partnerDOB"
-                        type="date"
-                        value={formData.partnerDOB}
-                        onChange={(e) => updateFormData('partnerDOB', e.target.value)}
-                      />
-                    </div>
-                  </>
-                )}
               </div>
             </div>
           </div>
@@ -848,23 +647,79 @@ const Application = () => {
           <div className="space-y-6">
             <div className="flex items-center gap-3 mb-6">
               <CreditCard className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold">Processing Information</h2>
+              <h2 className="text-2xl font-bold">Banking & Processing Information</h2>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-4 md:col-span-2">
-                <Label>Do you Accept Cards:</Label>
-                <div className="flex flex-wrap gap-4">
-                  {['Visa', 'Visa Debit', 'Mastercard', 'Discover', 'AMEX', 'Pinpad Debit'].map((card) => (
+              <div className="space-y-2">
+                <Label htmlFor="bank_name">Bank Name *</Label>
+                <Input
+                  id="bank_name"
+                  value={formData.bank_name}
+                  onChange={(e) => updateFormData('bank_name', e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="bank_account_type">Account Type *</Label>
+                <Select value={formData.bank_account_type} onValueChange={(value) => updateFormData('bank_account_type', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select account type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Checking">Checking</SelectItem>
+                    <SelectItem value="Savings">Savings</SelectItem>
+                    <SelectItem value="Business Checking">Business Checking</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="bank_routing_number">Routing Number *</Label>
+                <Input
+                  id="bank_routing_number"
+                  value={formData.bank_routing_number}
+                  onChange={(e) => updateFormData('bank_routing_number', e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="bank_account_number">Account Number *</Label>
+                <Input
+                  id="bank_account_number"
+                  value={formData.bank_account_number}
+                  onChange={(e) => updateFormData('bank_account_number', e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="months_with_bank">Months with Bank *</Label>
+                <Input
+                  id="months_with_bank"
+                  type="number"
+                  min="0"
+                  value={formData.months_with_bank}
+                  onChange={(e) => updateFormData('months_with_bank', e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Do you accept credit cards?</Label>
+                <div className="space-y-2">
+                  {['Visa', 'MasterCard', 'American Express', 'Discover'].map((card) => (
                     <div key={card} className="flex items-center space-x-2">
                       <Checkbox
                         id={card}
-                        checked={formData.acceptCards.includes(card)}
+                        checked={formData.accept_cards.includes(card)}
                         onCheckedChange={(checked) => {
                           if (checked) {
-                            updateFormData('acceptCards', [...formData.acceptCards, card]);
+                            updateFormData('accept_cards', [...formData.accept_cards, card]);
                           } else {
-                            updateFormData('acceptCards', formData.acceptCards.filter(c => c !== card));
+                            updateFormData('accept_cards', formData.accept_cards.filter(c => c !== card));
                           }
                         }}
                       />
@@ -875,57 +730,90 @@ const Application = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="monthlyCardVolume">Monthly Card Volume</Label>
+                <Label htmlFor="current_processor">Current Processor</Label>
                 <Input
-                  id="monthlyCardVolume"
-                  value={formData.monthlyCardVolume}
-                  onChange={(e) => updateFormData('monthlyCardVolume', e.target.value)}
+                  id="current_processor"
+                  value={formData.current_processor}
+                  onChange={(e) => updateFormData('current_processor', e.target.value)}
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="numberOfTerminals">Number of Terminals</Label>
+                <Label htmlFor="mid_number">MID Number</Label>
                 <Input
-                  id="numberOfTerminals"
+                  id="mid_number"
+                  value={formData.mid_number}
+                  onChange={(e) => updateFormData('mid_number', e.target.value)}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="monthly_processing_volume">Monthly Processing Volume</Label>
+                <Input
+                  id="monthly_processing_volume"
                   type="number"
-                  value={formData.numberOfTerminals}
-                  onChange={(e) => updateFormData('numberOfTerminals', e.target.value)}
+                  min="0"
+                  value={formData.monthly_processing_volume}
+                  onChange={(e) => updateFormData('monthly_processing_volume', e.target.value)}
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="posVersion">POS Version</Label>
+                <Label htmlFor="average_ticket">Average Ticket</Label>
                 <Input
-                  id="posVersion"
-                  value={formData.posVersion}
-                  onChange={(e) => updateFormData('posVersion', e.target.value)}
+                  id="average_ticket"
+                  type="number"
+                  min="0"
+                  value={formData.average_ticket}
+                  onChange={(e) => updateFormData('average_ticket', e.target.value)}
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="highTicket">High Ticket</Label>
+                <Label htmlFor="high_ticket">High Ticket</Label>
                 <Input
-                  id="highTicket"
-                  value={formData.highTicket}
-                  onChange={(e) => updateFormData('highTicket', e.target.value)}
+                  id="high_ticket"
+                  type="number"
+                  min="0"
+                  value={formData.high_ticket}
+                  onChange={(e) => updateFormData('high_ticket', e.target.value)}
                 />
               </div>
             </div>
+          </div>
+        );
+
+      case 6:
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center gap-3 mb-6">
+              <FileText className="h-6 w-6 text-primary" />
+              <h2 className="text-2xl font-bold">Loan Information</h2>
+            </div>
             
-            <div className="mt-8 p-6 bg-muted rounded-lg">
-              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                Review Your Application
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                Please review all the information you've provided before submitting your application. 
-                Our team will review your application and contact you within 1-2 business days.
-              </p>
-              <div className="text-sm space-y-2">
-                <p><strong>Business:</strong> {formData.legalCorporationName}</p>
-                <p><strong>Contact:</strong> {formData.email} | {formData.telephoneNumber}</p>
-                <p><strong>Funding Amount:</strong> {formData.requestedFundingAmount}</p>
-                <p><strong>Owner:</strong> {formData.ownerName}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="loan_amount_requested">Loan Amount Requested *</Label>
+                <Input
+                  id="loan_amount_requested"
+                  type="number"
+                  min="1000"
+                  value={formData.loan_amount_requested}
+                  onChange={(e) => updateFormData('loan_amount_requested', e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="use_of_funds">Use of Funds *</Label>
+                <Textarea
+                  id="use_of_funds"
+                  value={formData.use_of_funds}
+                  onChange={(e) => updateFormData('use_of_funds', e.target.value)}
+                  rows={4}
+                  placeholder="Please describe how you plan to use the loan funds..."
+                  required
+                />
               </div>
             </div>
           </div>
@@ -936,73 +824,85 @@ const Application = () => {
     }
   };
 
-  const progress = (currentStep / totalSteps) * 100;
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
-      <div className="container mx-auto px-4 max-w-4xl">
-        <Card className="shadow-xl">
-          <CardHeader className="text-center pb-4">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <FileText className="h-8 w-8 text-primary" />
-              <CardTitle className="text-3xl font-bold text-primary">Business Loan Application</CardTitle>
-            </div>
-            <CardDescription className="text-lg">
-              Complete your full application in {totalSteps} easy steps
-            </CardDescription>
-            <div className="mt-6">
-              <div className="flex justify-between text-sm text-muted-foreground mb-2">
-                <span>Step {currentStep} of {totalSteps}</span>
-                <span>{Math.round(progress)}% Complete</span>
-              </div>
-              <Progress value={progress} className="w-full" />
-            </div>
-          </CardHeader>
+    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20 py-12">
+      <div className="container mx-auto px-4">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold mb-4">Business Loan Application</h1>
+            <p className="text-lg text-muted-foreground">
+              Complete your application in {totalSteps} easy steps
+            </p>
+          </div>
 
-          <CardContent className="p-8">
-            {renderStep()}
+          {/* Progress */}
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium">Step {currentStep} of {totalSteps}</span>
+              <span className="text-sm text-muted-foreground">
+                {Math.round((currentStep / totalSteps) * 100)}% Complete
+              </span>
+            </div>
+            <Progress value={(currentStep / totalSteps) * 100} className="h-2" />
+          </div>
 
-            <div className="flex justify-between mt-8 pt-8 border-t">
+          {/* Form Card */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                Step {currentStep} of {totalSteps}
+              </CardTitle>
+              <CardDescription>
+                Please fill out all required fields to continue
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {renderStep()}
+            </CardContent>
+          </Card>
+
+          {/* Navigation */}
+          <div className="flex justify-between">
+            <Button
+              variant="outline"
+              onClick={prevStep}
+              disabled={currentStep === 1}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Previous
+            </Button>
+
+            {currentStep === totalSteps ? (
               <Button
-                variant="outline"
-                onClick={prevStep}
-                disabled={currentStep === 1}
+                onClick={handleSubmit}
+                disabled={isSubmitting}
                 className="flex items-center gap-2"
               >
-                <ArrowLeft className="h-4 w-4" />
-                Previous
+                {isSubmitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="h-4 w-4" />
+                    Submit Application
+                  </>
+                )}
               </Button>
-
-              {currentStep < totalSteps ? (
-                <Button
-                  onClick={nextStep}
-                  className="flex items-center gap-2"
-                >
-                  Next
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleSubmit}
-                  disabled={isSubmitting}
-                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      Submitting...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="h-4 w-4" />
-                      Submit Application
-                    </>
-                  )}
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+            ) : (
+              <Button
+                onClick={nextStep}
+                className="flex items-center gap-2"
+              >
+                Next
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
