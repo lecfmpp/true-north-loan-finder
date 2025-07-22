@@ -11,6 +11,8 @@ import { ArrowLeft, ArrowRight, Building2, User, CreditCard, FileText, CheckCirc
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 interface ApplicationData {
   // Company Information
@@ -921,85 +923,91 @@ const Application = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20 py-12">
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-4">Business Loan Application</h1>
-            <p className="text-lg text-muted-foreground">
-              Complete your application in {totalSteps} easy steps
-            </p>
-          </div>
-
-          {/* Progress */}
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium">Step {currentStep} of {totalSteps}</span>
-              <span className="text-sm text-muted-foreground">
-                {Math.round((currentStep / totalSteps) * 100)}% Complete
-              </span>
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      
+      <main className="flex-1 bg-gradient-to-br from-background to-secondary/20 py-12">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <h1 className="text-4xl font-bold mb-4">Business Loan Application</h1>
+              <p className="text-lg text-muted-foreground">
+                Complete your application in {totalSteps} easy steps
+              </p>
             </div>
-            <Progress value={(currentStep / totalSteps) * 100} className="h-2" />
-          </div>
 
-          {/* Form Card */}
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                Step {currentStep} of {totalSteps}
-              </CardTitle>
-              <CardDescription>
-                Please fill out all required fields to continue
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {renderStep()}
-            </CardContent>
-          </Card>
+            {/* Progress */}
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium">Step {currentStep} of {totalSteps}</span>
+                <span className="text-sm text-muted-foreground">
+                  {Math.round((currentStep / totalSteps) * 100)}% Complete
+                </span>
+              </div>
+              <Progress value={(currentStep / totalSteps) * 100} className="h-2" />
+            </div>
 
-          {/* Navigation */}
-          <div className="flex justify-between">
-            <Button
-              variant="outline"
-              onClick={prevStep}
-              disabled={currentStep === 1}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Previous
-            </Button>
+            {/* Form Card */}
+            <Card className="mb-8">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  Step {currentStep} of {totalSteps}
+                </CardTitle>
+                <CardDescription>
+                  Please fill out all required fields to continue
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {renderStep()}
+              </CardContent>
+            </Card>
 
-            {currentStep === totalSteps ? (
+            {/* Navigation */}
+            <div className="flex justify-between">
               <Button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
+                variant="outline"
+                onClick={prevStep}
+                disabled={currentStep === 1}
                 className="flex items-center gap-2"
               >
-                {isSubmitting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="h-4 w-4" />
-                    Submit Application
-                  </>
-                )}
+                <ArrowLeft className="h-4 w-4" />
+                Previous
               </Button>
-            ) : (
-              <Button
-                onClick={nextStep}
-                className="flex items-center gap-2"
-              >
-                Next
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            )}
+
+              {currentStep === totalSteps ? (
+                <Button
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-4 w-4" />
+                      Submit Application
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  onClick={nextStep}
+                  className="flex items-center gap-2"
+                >
+                  Next
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      </main>
+      
+      <Footer />
     </div>
   );
 };
