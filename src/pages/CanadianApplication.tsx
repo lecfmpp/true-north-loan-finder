@@ -73,6 +73,9 @@ interface CanadianApplicationData {
   
   // Documents
   document_files: File[];
+  
+  // Tracking fields
+  quiz_response_id: string;
 }
 
 const CanadianApplication = () => {
@@ -132,6 +135,7 @@ const CanadianApplication = () => {
     annual_credit_card_sales: "",
     average_monthly_cc_volume: "",
     document_files: [],
+    quiz_response_id: "",
   });
 
   // Auto-fill form from URL parameters when coming from quiz results
@@ -157,6 +161,7 @@ const CanadianApplication = () => {
         amount_requested: loanAmount || prev.amount_requested,
         annual_gross_sales: monthlyRevenue ? (parseInt(monthlyRevenue) * 12).toString() : prev.annual_gross_sales,
         use_of_funds: useOfFunds || prev.use_of_funds,
+        quiz_response_id: quizResponseId || prev.quiz_response_id,
       }));
 
     }
@@ -262,9 +267,8 @@ const CanadianApplication = () => {
     setIsSubmitting(true);
     
     try {
-      // Get quiz response ID from URL params or localStorage
-      const urlParams = new URLSearchParams(window.location.search);
-      const quizResponseId = urlParams.get('quiz_id') || localStorage.getItem('quiz_response_id');
+      // Use quiz response ID from form data (pre-filled from URL params)
+      const quizResponseId = formData.quiz_response_id || null;
       
       // Upload documents first
       let uploadedFileNames: string[] = [];
