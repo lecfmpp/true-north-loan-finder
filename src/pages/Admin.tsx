@@ -25,6 +25,7 @@ import AvailableTimesManagement from '@/components/admin/AvailableTimesManagemen
 import { ChatWidgetManagement } from '@/components/admin/ChatWidgetManagement';
 import { ApplicationsManagement } from '@/components/admin/ApplicationsManagement';
 import USAApplicationsManagement from '@/components/admin/USAApplicationsManagement';
+import CanadianApplicationsManagement from '@/components/admin/CanadianApplicationsManagement';
 import SocialProofManagement from '@/components/admin/SocialProofManagement';
 import SettingsManagement from '@/components/admin/SettingsManagement';
 import Footer from '@/components/Footer';
@@ -905,6 +906,10 @@ const Admin = () => {
     title: "USA Applications",
     value: "usa-applications", 
     icon: FileText
+  }, {
+    title: "Canadian Applications",
+    value: "canadian-applications",
+    icon: FileText
   }, ...(isSuperAdmin ? [{
     title: "Email Sequence",
     value: "email-sequence",
@@ -1248,6 +1253,8 @@ const Admin = () => {
         return <ApplicationsManagement />;
       case 'usa-applications':
         return <USAApplicationsManagement />;
+      case 'canadian-applications':
+        return <CanadianApplicationsManagement />;
       case 'email-sequence':
         return <EmailSequenceManagement />;
       case 'chat-widget':
