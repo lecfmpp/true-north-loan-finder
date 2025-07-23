@@ -181,10 +181,9 @@ const Results = () => {
     }
   ];
 
-  const handleBookCall = () => {
-    console.log('=== BOOK CALL BUTTON CLICKED ===');
-    console.log('Current showBooking state:', showBooking);
-    console.log('Book call clicked with data:', {
+  const handleStartApplication = () => {
+    console.log('=== START APPLICATION BUTTON CLICKED ===');
+    console.log('Navigating to Canadian application with data:', {
       finalName,
       finalEmail,
       finalPhone,
@@ -196,30 +195,31 @@ const Results = () => {
         console.log('Missing data - showing toast and redirecting');
         toast({
           title: "Missing Information",
-          description: "Please complete the loan estimator first to book a call.",
+          description: "Please complete the loan estimator first to start your application.",
           variant: "destructive",
         });
         navigate('/loan-estimator');
         return;
       }
       
-      console.log('About to set showBooking to true...');
-      setShowBooking(true);
-      console.log('setShowBooking(true) called');
+      // Create URL params to pre-fill the Canadian application form
+      const applicationParams = new URLSearchParams({
+        name: finalName,
+        email: finalEmail,
+        phone: finalPhone || '',
+        quizResponseId: quizResponseId || '',
+        loanAmount: finalLoanAmount.toString(),
+        monthlyRevenue: (quizData?.monthly_revenue || 0).toString(),
+        creditScore: quizData?.credit_score || '',
+        timeInBusiness: quizData?.time_in_business || '',
+        useOfFunds: quizData?.use_of_funds || ''
+      });
       
-      // Scroll to top when showing booking calendar
-      setTimeout(() => {
-        console.log('Scrolling to top...');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }, 100);
-      
-      // Add a timeout to check if state actually changed
-      setTimeout(() => {
-        console.log('Checking showBooking state after timeout:', showBooking);
-      }, 200);
+      console.log('Navigating to Canadian application with params:', applicationParams.toString());
+      navigate(`/canadian-application?${applicationParams.toString()}`);
       
     } catch (error) {
-      console.error('Error in handleBookCall:', error);
+      console.error('Error in handleStartApplication:', error);
     }
   };
 
@@ -320,38 +320,41 @@ const Results = () => {
                   Excellent! Your profile is a strong match. Here's what you're pre-qualified for.
                 </h1>
                 
-                <div className="text-center bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-4 md:p-6 border border-green-200">
-                  <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-green-600 mb-1 md:mb-2">
-                    ${loanTerms.estimatedFunding.toLocaleString()}
-                  </div>
-                  <p className="text-base sm:text-lg md:text-xl text-muted-foreground">Estimated Eligible Funding</p>
-                </div>
-
-                <div className="space-y-3 md:space-y-4 max-w-3xl mx-auto">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-6">
-                    <Card className="bg-blue-50 border-blue-200">
-                      <CardContent className="text-center space-y-2 p-3 md:p-4">
-                        <Clock className="h-6 w-6 md:h-8 md:w-8 text-blue-500 mx-auto" />
-                        <h3 className="text-sm md:text-base font-semibold">Funding Speed</h3>
-                        <p className="text-base md:text-lg font-bold text-foreground">{loanTerms.fundingSpeed}</p>
-                      </CardContent>
-                    </Card>
-                    <Card className="bg-green-50 border-green-200">
-                      <CardContent className="text-center space-y-2 p-3 md:p-4">
-                        <TrendingUp className="h-6 w-6 md:h-8 md:w-8 text-green-500 mx-auto" />
-                        <h3 className="text-sm md:text-base font-semibold">Est. Rate</h3>
-                        <p className="text-base md:text-lg font-bold text-foreground">{loanTerms.estimatedRate}</p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                  <div className="grid grid-cols-1 max-w-md mx-auto">
-                    <Card className="bg-purple-50 border-purple-200">
-                      <CardContent className="text-center space-y-2 p-3 md:p-4">
-                        <DollarSign className="h-6 w-6 md:h-8 md:w-8 text-purple-500 mx-auto" />
-                        <h3 className="text-sm md:text-base font-semibold">Est. Payment</h3>
-                        <p className="text-base md:text-lg font-bold text-foreground">{loanTerms.estimatedPayment}</p>
-                      </CardContent>
-                    </Card>
+                {/* Optimized compact layout */}
+                <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-4 md:p-6 border border-green-200">
+                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6 items-center">
+                    {/* Main funding amount */}
+                    <div className="lg:col-span-1 text-center">
+                      <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-green-600 mb-1">
+                        ${loanTerms.estimatedFunding.toLocaleString()}
+                      </div>
+                      <p className="text-sm md:text-base text-muted-foreground">Estimated Eligible Funding</p>
+                    </div>
+                    
+                    {/* Funding details in a row */}
+                    <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+                      <Card className="bg-blue-50 border-blue-200">
+                        <CardContent className="text-center space-y-1 p-2 md:p-3">
+                          <Clock className="h-5 w-5 md:h-6 md:w-6 text-blue-500 mx-auto" />
+                          <h3 className="text-xs md:text-sm font-semibold">Funding Speed</h3>
+                          <p className="text-sm md:text-base font-bold text-foreground">{loanTerms.fundingSpeed}</p>
+                        </CardContent>
+                      </Card>
+                      <Card className="bg-green-50 border-green-200">
+                        <CardContent className="text-center space-y-1 p-2 md:p-3">
+                          <TrendingUp className="h-5 w-5 md:h-6 md:w-6 text-green-500 mx-auto" />
+                          <h3 className="text-xs md:text-sm font-semibold">Est. Rate</h3>
+                          <p className="text-sm md:text-base font-bold text-foreground">{loanTerms.estimatedRate}</p>
+                        </CardContent>
+                      </Card>
+                      <Card className="bg-purple-50 border-purple-200">
+                        <CardContent className="text-center space-y-1 p-2 md:p-3">
+                          <DollarSign className="h-5 w-5 md:h-6 md:w-6 text-purple-500 mx-auto" />
+                          <h3 className="text-xs md:text-sm font-semibold">Est. Payment</h3>
+                          <p className="text-sm md:text-base font-bold text-foreground">{loanTerms.estimatedPayment}</p>
+                        </CardContent>
+                      </Card>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -371,41 +374,40 @@ const Results = () => {
                         console.log('Button click event triggered:', e);
                         e.preventDefault();
                         e.stopPropagation();
-                        handleBookCall();
+                        handleStartApplication();
                       }}
                       className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm sm:text-base md:text-xl py-4 md:py-6 px-4 md:px-12 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all w-full min-h-[56px] md:min-h-[72px] flex items-center justify-center cursor-pointer"
                       type="button"
                     >
-                      <Calendar className="w-4 h-4 md:w-5 md:h-5 mr-2 flex-shrink-0" />
+                      <CheckCircle className="w-4 h-4 md:w-5 md:h-5 mr-2 flex-shrink-0" />
                       <span className="text-center leading-tight">
-                        Book My 15-Min<br className="sm:hidden" /> Pre-Offer Call
+                        Complete Your Application<br className="sm:hidden" /> & Get Response Today
                       </span>
                     </Button>
                     
                     <p className="text-xs md:text-sm text-muted-foreground">
-                      Yes, this call is required to receive your official lender offers.
+                      Fast track your funding - complete your application now to get offers today.
                     </p>
                   </div>
 
                   <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-3xl mx-auto px-2">
-                    Your application is ready. The final step is a quick 15-minute 'Pre-Offer Call' with a funding advisor. 
-                    This call is required to get your official offers from the lenders above.
+                    Based on your profile, you're pre-qualified for funding. Complete your detailed application now to receive official offers from our lender network today.
                   </p>
 
                   <div className="space-y-3 md:space-y-4 max-w-2xl mx-auto text-left">
-                    <p className="font-medium text-sm md:text-base px-2">On this call, we will:</p>
+                    <p className="font-medium text-sm md:text-base px-2">Your application will include:</p>
                     <div className="grid grid-cols-1 gap-2 md:gap-3 px-2">
                       <div className="flex items-start gap-3">
                         <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-xs md:text-sm"><strong>Verify Your Details:</strong> A quick confirmation to ensure accuracy.</span>
+                        <span className="text-xs md:text-sm"><strong>Pre-filled Information:</strong> Your quiz answers will auto-complete most fields.</span>
                       </div>
                       <div className="flex items-start gap-3">
                         <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-xs md:text-sm"><strong>Finalize Your Funding Needs:</strong> We'll confirm the numbers for your official offers.</span>
+                        <span className="text-xs md:text-sm"><strong>Business Details:</strong> Additional information to finalize your funding profile.</span>
                       </div>
                       <div className="flex items-start gap-3">
                         <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-xs md:text-sm"><strong>Outline Required Documents:</strong> We'll tell you exactly which simple documents to have ready (if any).</span>
+                        <span className="text-xs md:text-sm"><strong>Fast Response:</strong> Get official offers from multiple lenders within 24-48 hours.</span>
                       </div>
                     </div>
                   </div>
@@ -417,36 +419,12 @@ const Results = () => {
                   >
                     <MessageCircle className="w-3 h-3 md:w-4 md:h-4 mr-2 flex-shrink-0" />
                     <span className="break-words">
-                      Have a question before booking? Chat with us now.
+                      Have a question before applying? Chat with us now.
                     </span>
                   </Button>
                 </CardContent>
               </Card>
 
-              {/* Curated Lender Matches */}
-              <div className="space-y-4 md:space-y-6">
-                <h2 className="text-xl sm:text-2xl md:text-2xl font-bold text-center px-2">
-                  Based on your profile, here are your Top 3 matches from our network:
-                </h2>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
-                  {topLenders.map((lender) => (
-                    <Card key={lender.id} className="text-center bg-slate-800 border-slate-700 text-white animate-fade-in h-full">
-                      <CardContent className="p-4 md:p-6 space-y-3 md:space-y-4 h-full flex flex-col justify-between">
-                        <div>
-                          <h3 className="font-bold text-lg md:text-2xl text-white">{lender.name}</h3>
-                          <Badge className="bg-green-100 text-green-800 mt-2">
-                            Top Match ({lender.matchRating})
-                          </Badge>
-                        </div>
-                        <p className="text-xs md:text-sm text-gray-300 flex-grow">
-                          {lender.tagline}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
             </>
           ) : (
             <>

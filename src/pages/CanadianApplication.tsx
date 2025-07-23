@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, ArrowRight, Building2, User, CreditCard, FileText, CheckCircle, Upload, Info, MapPin, DollarSign } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
@@ -77,6 +77,7 @@ interface CanadianApplicationData {
 
 const CanadianApplication = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const totalSteps = 5;
@@ -132,6 +133,40 @@ const CanadianApplication = () => {
     average_monthly_cc_volume: "",
     document_files: [],
   });
+
+  // Auto-fill form from URL parameters when coming from quiz results
+  useEffect(() => {
+    const name = searchParams.get('name');
+    const email = searchParams.get('email');
+    const phone = searchParams.get('phone');
+    const loanAmount = searchParams.get('loanAmount');
+    const monthlyRevenue = searchParams.get('monthlyRevenue');
+    const useOfFunds = searchParams.get('useOfFunds');
+    const quizResponseId = searchParams.get('quizResponseId');
+
+    if (name || email || phone || loanAmount) {
+      console.log('Pre-filling Canadian application with quiz data:', {
+        name, email, phone, loanAmount, monthlyRevenue, useOfFunds, quizResponseId
+      });
+
+      setFormData(prev => ({
+        ...prev,
+        principal_owner_name: name || prev.principal_owner_name,
+        email_address: email || prev.email_address,
+        cell_phone: phone || prev.cell_phone,
+        amount_requested: loanAmount || prev.amount_requested,
+        annual_gross_sales: monthlyRevenue ? (parseInt(monthlyRevenue) * 12).toString() : prev.annual_gross_sales,
+        use_of_funds: useOfFunds || prev.use_of_funds,
+      }));
+
+      // Show toast to indicate pre-filling
+      if (name || email) {
+        toast.success("Your information from the quiz has been pre-filled!", {
+          description: "Please review and complete the remaining fields."
+        });
+      }
+    }
+  }, [searchParams]);
 
   const updateFormData = (field: keyof CanadianApplicationData, value: any) => {
     setFormData(prev => ({
