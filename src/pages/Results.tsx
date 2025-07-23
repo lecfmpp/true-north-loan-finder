@@ -376,7 +376,7 @@ const Results = () => {
                         e.stopPropagation();
                         handleStartApplication();
                       }}
-                      className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm sm:text-base md:text-xl py-4 md:py-6 px-4 md:px-12 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all w-full min-h-[56px] md:min-h-[72px] flex items-center justify-center cursor-pointer"
+                      className="bg-green-500 hover:bg-green-600 text-white text-sm sm:text-base md:text-xl py-4 md:py-6 px-4 md:px-12 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all w-full min-h-[56px] md:min-h-[72px] flex items-center justify-center cursor-pointer"
                       type="button"
                     >
                       <CheckCircle className="w-4 h-4 md:w-5 md:h-5 mr-2 flex-shrink-0" />
