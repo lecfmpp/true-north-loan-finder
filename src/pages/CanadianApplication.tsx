@@ -11,8 +11,10 @@ import { ArrowLeft, ArrowRight, Building2, User, CreditCard, FileText, CheckCirc
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { ApplicationAuth } from "@/components/ApplicationAuth";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { useAuth } from "@/hooks/use-auth";
 
 interface CanadianApplicationData {
   // Business Information
@@ -83,6 +85,8 @@ const CanadianApplication = () => {
   const [searchParams] = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+  const { user, loading } = useAuth();
   const totalSteps = 5;
   
   const [formData, setFormData] = useState<CanadianApplicationData>({
@@ -264,6 +268,12 @@ const CanadianApplication = () => {
   };
 
   const handleSubmit = async () => {
+    // Check if user is authenticated first
+    if (!user) {
+      setShowAuth(true);
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
@@ -1223,6 +1233,53 @@ const CanadianApplication = () => {
         return null;
     }
   };
+
+  // Show authentication form if user is not authenticated and showAuth is true
+  if (showAuth || (!user && !loading)) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        
+        <main className="flex-1 bg-gradient-to-br from-background to-secondary/20 py-6 md:py-12">
+          <div className="container mx-auto px-4">
+            <div className="max-w-2xl mx-auto">
+              {/* Header */}
+              <div className="text-center mb-6">
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <MapPin className="h-6 w-6 text-red-600" />
+                  <h1 className="text-2xl md:text-3xl font-bold">Canadian Business Application</h1>
+                </div>
+                <p className="text-sm md:text-base text-muted-foreground mb-6">
+                  Secure your application data and track your progress
+                </p>
+              </div>
+              
+              <ApplicationAuth
+                email={formData.email_address}
+                name={formData.principal_owner_name}
+                onAuthSuccess={() => setShowAuth(false)}
+              />
+            </div>
+          </div>
+        </main>
+        
+        <Footer />
+      </div>
+    );
+  }
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
