@@ -415,35 +415,43 @@ const CanadianApplication = () => {
               </div>
               
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="business_phone" className="text-sm font-medium">Business Phone *</Label>
-                  <Input
-                    id="business_phone"
-                    type="tel"
-                    value={formData.business_phone}
-                    onChange={(e) => {
-                      const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-                      updateFormData('business_phone', formatted);
-                    }}
-                    className="mt-1"
-                    placeholder="(555) 123-4567"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="business_fax" className="text-sm font-medium">Business Fax</Label>
-                  <Input
-                    id="business_fax"
-                    type="tel"
-                    value={formData.business_fax}
-                    onChange={(e) => {
-                      const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-                      updateFormData('business_fax', formatted);
-                    }}
-                    className="mt-1"
-                    placeholder="(555) 123-4567"
-                  />
-                </div>
+                 <div>
+                   <Label htmlFor="business_phone" className="text-sm font-medium">Business Phone *</Label>
+                   <Input
+                     id="business_phone"
+                     type="tel"
+                     value={formData.business_phone}
+                     onChange={(e) => {
+                       const value = e.target.value.replace(/\D/g, '');
+                       if (value.length <= 10) {
+                         const formatted = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+                         updateFormData('business_phone', formatted);
+                       }
+                     }}
+                     className="mt-1"
+                     placeholder="(555) 123-4567"
+                     maxLength={14}
+                     required
+                   />
+                 </div>
+                 <div>
+                   <Label htmlFor="business_fax" className="text-sm font-medium">Business Fax</Label>
+                   <Input
+                     id="business_fax"
+                     type="tel"
+                     value={formData.business_fax}
+                     onChange={(e) => {
+                       const value = e.target.value.replace(/\D/g, '');
+                       if (value.length <= 10) {
+                         const formatted = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+                         updateFormData('business_fax', formatted);
+                       }
+                     }}
+                     className="mt-1"
+                     placeholder="(555) 123-4567"
+                     maxLength={14}
+                   />
+                 </div>
               </div>
             </div>
           </div>
@@ -474,21 +482,24 @@ const CanadianApplication = () => {
                 </Select>
               </div>
               
-              <div>
-                <Label htmlFor="federal_tax_id" className="text-sm font-medium">Federal Tax ID (Business Number) *</Label>
-                <Input
-                  id="federal_tax_id"
-                  value={formData.federal_tax_id}
-                  onChange={(e) => {
-                    const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{9})(\d{2})(\d{4})/, '$1 $2 $3');
-                    updateFormData('federal_tax_id', formatted);
-                  }}
-                  className="mt-1"
-                  placeholder="123456789 RT 0001"
-                  maxLength={15}
-                  required
-                />
-              </div>
+               <div>
+                 <Label htmlFor="federal_tax_id" className="text-sm font-medium">Federal Tax ID (Business Number) *</Label>
+                 <Input
+                   id="federal_tax_id"
+                   value={formData.federal_tax_id}
+                   onChange={(e) => {
+                     const value = e.target.value.replace(/\D/g, '');
+                     if (value.length <= 15) {
+                       const formatted = value.replace(/(\d{9})(\d{2})(\d{4})/, '$1 $2 $3');
+                       updateFormData('federal_tax_id', formatted);
+                     }
+                   }}
+                   className="mt-1"
+                   placeholder="123456789 RT 0001"
+                   maxLength={17}
+                   required
+                 />
+               </div>
               
               <div>
                 <Label htmlFor="business_start_date" className="text-sm font-medium">Business Start Date *</Label>
@@ -559,20 +570,24 @@ const CanadianApplication = () => {
                 />
               </div>
               
-              <div>
-                <Label htmlFor="landlord_or_bank_phone" className="text-sm font-medium">Landlord/Bank Phone</Label>
-                <Input
-                  id="landlord_or_bank_phone"
-                  type="tel"
-                  value={formData.landlord_or_bank_phone}
-                  onChange={(e) => {
-                    const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-                    updateFormData('landlord_or_bank_phone', formatted);
-                  }}
-                  className="mt-1"
-                  placeholder="(555) 123-4567"
-                />
-              </div>
+               <div>
+                 <Label htmlFor="landlord_or_bank_phone" className="text-sm font-medium">Landlord/Bank Phone</Label>
+                 <Input
+                   id="landlord_or_bank_phone"
+                   type="tel"
+                   value={formData.landlord_or_bank_phone}
+                   onChange={(e) => {
+                     const value = e.target.value.replace(/\D/g, '');
+                     if (value.length <= 10) {
+                       const formatted = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+                       updateFormData('landlord_or_bank_phone', formatted);
+                     }
+                   }}
+                   className="mt-1"
+                   placeholder="(555) 123-4567"
+                   maxLength={14}
+                 />
+               </div>
             </div>
           </div>
         );
@@ -718,21 +733,24 @@ const CanadianApplication = () => {
                         required
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="ssn" className="text-sm font-medium">SIN *</Label>
-                      <Input
-                        id="ssn"
-                        value={formData.ssn}
-                        onChange={(e) => {
-                          const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
-                          updateFormData('ssn', formatted);
-                        }}
-                        className="mt-1"
-                        placeholder="123 456 789"
-                        maxLength={11}
-                        required
-                      />
-                    </div>
+                     <div>
+                       <Label htmlFor="ssn" className="text-sm font-medium">SIN *</Label>
+                       <Input
+                         id="ssn"
+                         value={formData.ssn}
+                         onChange={(e) => {
+                           const value = e.target.value.replace(/\D/g, '');
+                           if (value.length <= 9) {
+                             const formatted = value.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+                             updateFormData('ssn', formatted);
+                           }
+                         }}
+                         className="mt-1"
+                         placeholder="123 456 789"
+                         maxLength={11}
+                         required
+                       />
+                     </div>
                   </div>
                   
                   <div>
@@ -769,16 +787,29 @@ const CanadianApplication = () => {
                         required
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="state_owner" className="text-sm font-medium">Province *</Label>
-                      <Input
-                        id="state_owner"
-                        value={formData.state_owner}
-                        onChange={(e) => updateFormData('state_owner', e.target.value)}
-                        className="mt-1"
-                        required
-                      />
-                    </div>
+                     <div>
+                       <Label htmlFor="state_owner" className="text-sm font-medium">Province *</Label>
+                       <Select value={formData.state_owner} onValueChange={(value) => updateFormData('state_owner', value)}>
+                         <SelectTrigger className="mt-1">
+                           <SelectValue placeholder="Select province" />
+                         </SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="AB">Alberta</SelectItem>
+                           <SelectItem value="BC">British Columbia</SelectItem>
+                           <SelectItem value="MB">Manitoba</SelectItem>
+                           <SelectItem value="NB">New Brunswick</SelectItem>
+                           <SelectItem value="NL">Newfoundland and Labrador</SelectItem>
+                           <SelectItem value="NT">Northwest Territories</SelectItem>
+                           <SelectItem value="NS">Nova Scotia</SelectItem>
+                           <SelectItem value="NU">Nunavut</SelectItem>
+                           <SelectItem value="ON">Ontario</SelectItem>
+                           <SelectItem value="PE">Prince Edward Island</SelectItem>
+                           <SelectItem value="QC">Quebec</SelectItem>
+                           <SelectItem value="SK">Saskatchewan</SelectItem>
+                           <SelectItem value="YT">Yukon</SelectItem>
+                         </SelectContent>
+                       </Select>
+                     </div>
                   </div>
                   
                   <div>
@@ -798,34 +829,42 @@ const CanadianApplication = () => {
                   </div>
                   
                   <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label htmlFor="home_phone" className="text-sm font-medium">Home Phone</Label>
-                      <Input
-                        id="home_phone"
-                        type="tel"
-                        value={formData.home_phone}
-                        onChange={(e) => {
-                          const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-                          updateFormData('home_phone', formatted);
-                        }}
-                        className="mt-1"
-                        placeholder="(555) 123-4567"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="cell_phone" className="text-sm font-medium">Cell Phone</Label>
-                      <Input
-                        id="cell_phone"
-                        type="tel"
-                        value={formData.cell_phone}
-                        onChange={(e) => {
-                          const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-                          updateFormData('cell_phone', formatted);
-                        }}
-                        className="mt-1"
-                        placeholder="(555) 123-4567"
-                      />
-                    </div>
+                     <div>
+                       <Label htmlFor="home_phone" className="text-sm font-medium">Home Phone</Label>
+                       <Input
+                         id="home_phone"
+                         type="tel"
+                         value={formData.home_phone}
+                         onChange={(e) => {
+                           const value = e.target.value.replace(/\D/g, '');
+                           if (value.length <= 10) {
+                             const formatted = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+                             updateFormData('home_phone', formatted);
+                           }
+                         }}
+                         className="mt-1"
+                         placeholder="(555) 123-4567"
+                         maxLength={14}
+                       />
+                     </div>
+                     <div>
+                       <Label htmlFor="cell_phone" className="text-sm font-medium">Cell Phone</Label>
+                       <Input
+                         id="cell_phone"
+                         type="tel"
+                         value={formData.cell_phone}
+                         onChange={(e) => {
+                           const value = e.target.value.replace(/\D/g, '');
+                           if (value.length <= 10) {
+                             const formatted = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+                             updateFormData('cell_phone', formatted);
+                           }
+                         }}
+                         className="mt-1"
+                         placeholder="(555) 123-4567"
+                         maxLength={14}
+                       />
+                     </div>
                   </div>
                   
                   <div>
@@ -843,48 +882,172 @@ const CanadianApplication = () => {
               </div>
               
               <div>
-                <h3 className="font-semibold mb-3">Secondary Owner (Optional)</h3>
-                <div className="space-y-3">
-                  <div>
-                    <Label htmlFor="principal_owner_name_2" className="text-sm font-medium">Name</Label>
-                    <Input
-                      id="principal_owner_name_2"
-                      value={formData.principal_owner_name_2}
-                      onChange={(e) => updateFormData('principal_owner_name_2', e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label htmlFor="ownership_percentage_2" className="text-sm font-medium">Ownership %</Label>
-                      <Input
-                        id="ownership_percentage_2"
-                        type="number"
-                        min="1"
-                        max="100"
-                        value={formData.ownership_percentage_2}
-                        onChange={(e) => updateFormData('ownership_percentage_2', e.target.value)}
-                        className="mt-1"
-                        placeholder="%"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="ssn_2" className="text-sm font-medium">SIN</Label>
-                      <Input
-                        id="ssn_2"
-                        value={formData.ssn_2}
-                        onChange={(e) => {
-                          const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
-                          updateFormData('ssn_2', formatted);
-                        }}
-                        className="mt-1"
-                        placeholder="123 456 789"
-                        maxLength={11}
-                      />
-                    </div>
-                  </div>
-                </div>
+                 <h3 className="font-semibold mb-3">Secondary Owner (Optional)</h3>
+                 <div className="space-y-3">
+                   <div>
+                     <Label htmlFor="principal_owner_name_2" className="text-sm font-medium">Name</Label>
+                     <Input
+                       id="principal_owner_name_2"
+                       value={formData.principal_owner_name_2}
+                       onChange={(e) => updateFormData('principal_owner_name_2', e.target.value)}
+                       className="mt-1"
+                     />
+                   </div>
+                   
+                   <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label htmlFor="ownership_percentage_2" className="text-sm font-medium">Ownership %</Label>
+                        <Input
+                          id="ownership_percentage_2"
+                          type="number"
+                          min="1"
+                          max="100"
+                          value={formData.ownership_percentage_2}
+                          onChange={(e) => updateFormData('ownership_percentage_2', e.target.value)}
+                          className="mt-1"
+                          placeholder="%"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="ssn_2" className="text-sm font-medium">SIN</Label>
+                        <Input
+                          id="ssn_2"
+                          value={formData.ssn_2}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, '');
+                            if (value.length <= 9) {
+                              const formatted = value.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+                              updateFormData('ssn_2', formatted);
+                            }
+                          }}
+                          className="mt-1"
+                          placeholder="123 456 789"
+                          maxLength={11}
+                        />
+                      </div>
+                   </div>
+                   
+                   <div>
+                     <Label htmlFor="dob_2" className="text-sm font-medium">Date of Birth</Label>
+                     <Input
+                       id="dob_2"
+                       type="date"
+                       value={formData.dob_2}
+                       onChange={(e) => updateFormData('dob_2', e.target.value)}
+                       className="mt-1"
+                     />
+                   </div>
+                   
+                   <div>
+                     <Label htmlFor="home_address_2" className="text-sm font-medium">Home Address</Label>
+                     <Input
+                       id="home_address_2"
+                       value={formData.home_address_2}
+                       onChange={(e) => updateFormData('home_address_2', e.target.value)}
+                       className="mt-1"
+                     />
+                   </div>
+                   
+                   <div className="grid grid-cols-2 gap-3">
+                     <div>
+                       <Label htmlFor="city_owner_2" className="text-sm font-medium">City</Label>
+                       <Input
+                         id="city_owner_2"
+                         value={formData.city_owner_2}
+                         onChange={(e) => updateFormData('city_owner_2', e.target.value)}
+                         className="mt-1"
+                       />
+                     </div>
+                     <div>
+                       <Label htmlFor="state_owner_2" className="text-sm font-medium">Province</Label>
+                       <Select value={formData.state_owner_2} onValueChange={(value) => updateFormData('state_owner_2', value)}>
+                         <SelectTrigger className="mt-1">
+                           <SelectValue placeholder="Select province" />
+                         </SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="AB">Alberta</SelectItem>
+                           <SelectItem value="BC">British Columbia</SelectItem>
+                           <SelectItem value="MB">Manitoba</SelectItem>
+                           <SelectItem value="NB">New Brunswick</SelectItem>
+                           <SelectItem value="NL">Newfoundland and Labrador</SelectItem>
+                           <SelectItem value="NT">Northwest Territories</SelectItem>
+                           <SelectItem value="NS">Nova Scotia</SelectItem>
+                           <SelectItem value="NU">Nunavut</SelectItem>
+                           <SelectItem value="ON">Ontario</SelectItem>
+                           <SelectItem value="PE">Prince Edward Island</SelectItem>
+                           <SelectItem value="QC">Quebec</SelectItem>
+                           <SelectItem value="SK">Saskatchewan</SelectItem>
+                           <SelectItem value="YT">Yukon</SelectItem>
+                         </SelectContent>
+                       </Select>
+                     </div>
+                   </div>
+                   
+                   <div>
+                     <Label htmlFor="zip_owner_2" className="text-sm font-medium">Postal Code</Label>
+                     <Input
+                       id="zip_owner_2"
+                       value={formData.zip_owner_2}
+                       onChange={(e) => {
+                         const formatted = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/(\w{3})(\w{3})/, '$1 $2');
+                         updateFormData('zip_owner_2', formatted);
+                       }}
+                       className="mt-1"
+                       placeholder="A1A 1A1"
+                       maxLength={7}
+                     />
+                   </div>
+                   
+                   <div className="grid grid-cols-2 gap-3">
+                     <div>
+                       <Label htmlFor="home_phone_2" className="text-sm font-medium">Home Phone</Label>
+                       <Input
+                         id="home_phone_2"
+                         type="tel"
+                         value={formData.home_phone_2}
+                         onChange={(e) => {
+                           const value = e.target.value.replace(/\D/g, '');
+                           if (value.length <= 10) {
+                             const formatted = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+                             updateFormData('home_phone_2', formatted);
+                           }
+                         }}
+                         className="mt-1"
+                         placeholder="(555) 123-4567"
+                         maxLength={14}
+                       />
+                     </div>
+                     <div>
+                       <Label htmlFor="cell_phone_2" className="text-sm font-medium">Cell Phone</Label>
+                       <Input
+                         id="cell_phone_2"
+                         type="tel"
+                         value={formData.cell_phone_2}
+                         onChange={(e) => {
+                           const value = e.target.value.replace(/\D/g, '');
+                           if (value.length <= 10) {
+                             const formatted = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+                             updateFormData('cell_phone_2', formatted);
+                           }
+                         }}
+                         className="mt-1"
+                         placeholder="(555) 123-4567"
+                         maxLength={14}
+                       />
+                     </div>
+                   </div>
+                   
+                   <div>
+                     <Label htmlFor="email_address_2" className="text-sm font-medium">Email Address</Label>
+                     <Input
+                       id="email_address_2"
+                       type="email"
+                       value={formData.email_address_2}
+                       onChange={(e) => updateFormData('email_address_2', e.target.value)}
+                       className="mt-1"
+                     />
+                   </div>
+                 </div>
               </div>
             </div>
           </div>
