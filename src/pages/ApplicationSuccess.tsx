@@ -80,14 +80,10 @@ const ApplicationSuccess = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-center gap-6">
-                <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-primary" />
-                  <span className="text-sm">(888) 123-4567</span>
-                </div>
+              <div className="flex items-center justify-center">
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-primary" />
-                  <span className="text-sm">support@truenorthbusinessloan.ca</span>
+                  <span className="text-sm">info@truenorthbusinessloan.ca</span>
                 </div>
               </div>
             </CardContent>
