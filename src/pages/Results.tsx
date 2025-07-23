@@ -216,7 +216,7 @@ const Results = () => {
       });
       
       console.log('Navigating to Canadian application with params:', applicationParams.toString());
-      navigate(`/canadian-application?${applicationParams.toString()}`);
+      navigate(`/application-canadian?${applicationParams.toString()}`);
       
     } catch (error) {
       console.error('Error in handleStartApplication:', error);
