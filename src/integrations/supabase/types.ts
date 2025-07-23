@@ -162,177 +162,6 @@ export type Database = {
           },
         ]
       }
-      business_applications: {
-        Row: {
-          accept_cards: string[]
-          admin_notes: string | null
-          average_monthly_deposits: number
-          average_ticket: number | null
-          bank_account_number: string
-          bank_account_type: string
-          bank_name: string
-          bank_routing_number: string
-          business_description: string
-          business_type: string
-          city: string
-          created_at: string
-          current_processor: string | null
-          date_incorporated: string | null
-          dba_name: string | null
-          document_files: Json | null
-          email_address: string
-          entity_type: string
-          fax_number: string | null
-          federal_tax_id: string
-          high_ticket: number | null
-          id: string
-          legal_corporation_name: string
-          loan_amount_requested: number
-          mid_number: string | null
-          monthly_processing_volume: number | null
-          monthly_rent_mortgage: number
-          months_in_business: number
-          months_with_bank: number
-          number_of_employees: number
-          physical_address: string
-          principal_cell_phone: string | null
-          principal_city: string
-          principal_date_of_birth: string
-          principal_email: string
-          principal_home_address: string
-          principal_home_phone: string | null
-          principal_name: string
-          principal_ownership_percentage: number
-          principal_ssn: string
-          principal_state: string
-          principal_title: string
-          principal_zip: string
-          state: string
-          state_of_incorporation: string | null
-          state_tax_id: string | null
-          status: string
-          submitted_at: string
-          telephone_number: string
-          updated_at: string
-          use_of_funds: string
-          website: string | null
-          years_in_business: number
-          zip: string
-        }
-        Insert: {
-          accept_cards?: string[]
-          admin_notes?: string | null
-          average_monthly_deposits: number
-          average_ticket?: number | null
-          bank_account_number: string
-          bank_account_type: string
-          bank_name: string
-          bank_routing_number: string
-          business_description: string
-          business_type: string
-          city: string
-          created_at?: string
-          current_processor?: string | null
-          date_incorporated?: string | null
-          dba_name?: string | null
-          document_files?: Json | null
-          email_address: string
-          entity_type: string
-          fax_number?: string | null
-          federal_tax_id: string
-          high_ticket?: number | null
-          id?: string
-          legal_corporation_name: string
-          loan_amount_requested: number
-          mid_number?: string | null
-          monthly_processing_volume?: number | null
-          monthly_rent_mortgage: number
-          months_in_business: number
-          months_with_bank: number
-          number_of_employees: number
-          physical_address: string
-          principal_cell_phone?: string | null
-          principal_city: string
-          principal_date_of_birth: string
-          principal_email: string
-          principal_home_address: string
-          principal_home_phone?: string | null
-          principal_name: string
-          principal_ownership_percentage: number
-          principal_ssn: string
-          principal_state: string
-          principal_title: string
-          principal_zip: string
-          state: string
-          state_of_incorporation?: string | null
-          state_tax_id?: string | null
-          status?: string
-          submitted_at?: string
-          telephone_number: string
-          updated_at?: string
-          use_of_funds: string
-          website?: string | null
-          years_in_business: number
-          zip: string
-        }
-        Update: {
-          accept_cards?: string[]
-          admin_notes?: string | null
-          average_monthly_deposits?: number
-          average_ticket?: number | null
-          bank_account_number?: string
-          bank_account_type?: string
-          bank_name?: string
-          bank_routing_number?: string
-          business_description?: string
-          business_type?: string
-          city?: string
-          created_at?: string
-          current_processor?: string | null
-          date_incorporated?: string | null
-          dba_name?: string | null
-          document_files?: Json | null
-          email_address?: string
-          entity_type?: string
-          fax_number?: string | null
-          federal_tax_id?: string
-          high_ticket?: number | null
-          id?: string
-          legal_corporation_name?: string
-          loan_amount_requested?: number
-          mid_number?: string | null
-          monthly_processing_volume?: number | null
-          monthly_rent_mortgage?: number
-          months_in_business?: number
-          months_with_bank?: number
-          number_of_employees?: number
-          physical_address?: string
-          principal_cell_phone?: string | null
-          principal_city?: string
-          principal_date_of_birth?: string
-          principal_email?: string
-          principal_home_address?: string
-          principal_home_phone?: string | null
-          principal_name?: string
-          principal_ownership_percentage?: number
-          principal_ssn?: string
-          principal_state?: string
-          principal_title?: string
-          principal_zip?: string
-          state?: string
-          state_of_incorporation?: string | null
-          state_tax_id?: string | null
-          status?: string
-          submitted_at?: string
-          telephone_number?: string
-          updated_at?: string
-          use_of_funds?: string
-          website?: string | null
-          years_in_business?: number
-          zip?: string
-        }
-        Relationships: []
-      }
       call_bookings: {
         Row: {
           booking_status: string
@@ -405,6 +234,7 @@ export type Database = {
           amount_requested: number
           annual_credit_card_sales: number | null
           annual_gross_sales: number
+          application_reference_number: string | null
           average_monthly_cc_volume: number | null
           business_fax: string | null
           business_phone: string
@@ -415,6 +245,7 @@ export type Database = {
           city: string
           city_owner: string
           city_owner_2: string | null
+          conversion_stage: string | null
           created_at: string
           current_credit_card_processor: string | null
           dba_name: string | null
@@ -433,6 +264,7 @@ export type Database = {
           if_so_with_who: string | null
           landlord_or_bank_company_name: string | null
           landlord_or_bank_phone: string | null
+          lead_source: string | null
           legal_business_name: string
           mailing_address: string | null
           monthly_rent_or_mortgage: number | null
@@ -444,6 +276,7 @@ export type Database = {
           principal_owner_name: string
           principal_owner_name_2: string | null
           processing_statements: Json | null
+          quiz_response_id: string | null
           ssn: string
           ssn_2: string | null
           state: string
@@ -453,6 +286,7 @@ export type Database = {
           type_of_entity: string
           updated_at: string
           use_of_funds: string
+          user_id: string | null
           zip: string
           zip_owner: string
           zip_owner_2: string | null
@@ -462,6 +296,7 @@ export type Database = {
           amount_requested: number
           annual_credit_card_sales?: number | null
           annual_gross_sales: number
+          application_reference_number?: string | null
           average_monthly_cc_volume?: number | null
           business_fax?: string | null
           business_phone: string
@@ -472,6 +307,7 @@ export type Database = {
           city: string
           city_owner: string
           city_owner_2?: string | null
+          conversion_stage?: string | null
           created_at?: string
           current_credit_card_processor?: string | null
           dba_name?: string | null
@@ -490,6 +326,7 @@ export type Database = {
           if_so_with_who?: string | null
           landlord_or_bank_company_name?: string | null
           landlord_or_bank_phone?: string | null
+          lead_source?: string | null
           legal_business_name: string
           mailing_address?: string | null
           monthly_rent_or_mortgage?: number | null
@@ -501,6 +338,7 @@ export type Database = {
           principal_owner_name: string
           principal_owner_name_2?: string | null
           processing_statements?: Json | null
+          quiz_response_id?: string | null
           ssn: string
           ssn_2?: string | null
           state: string
@@ -510,6 +348,7 @@ export type Database = {
           type_of_entity: string
           updated_at?: string
           use_of_funds: string
+          user_id?: string | null
           zip: string
           zip_owner: string
           zip_owner_2?: string | null
@@ -519,6 +358,7 @@ export type Database = {
           amount_requested?: number
           annual_credit_card_sales?: number | null
           annual_gross_sales?: number
+          application_reference_number?: string | null
           average_monthly_cc_volume?: number | null
           business_fax?: string | null
           business_phone?: string
@@ -529,6 +369,7 @@ export type Database = {
           city?: string
           city_owner?: string
           city_owner_2?: string | null
+          conversion_stage?: string | null
           created_at?: string
           current_credit_card_processor?: string | null
           dba_name?: string | null
@@ -547,6 +388,7 @@ export type Database = {
           if_so_with_who?: string | null
           landlord_or_bank_company_name?: string | null
           landlord_or_bank_phone?: string | null
+          lead_source?: string | null
           legal_business_name?: string
           mailing_address?: string | null
           monthly_rent_or_mortgage?: number | null
@@ -558,6 +400,7 @@ export type Database = {
           principal_owner_name?: string
           principal_owner_name_2?: string | null
           processing_statements?: Json | null
+          quiz_response_id?: string | null
           ssn?: string
           ssn_2?: string | null
           state?: string
@@ -567,11 +410,27 @@ export type Database = {
           type_of_entity?: string
           updated_at?: string
           use_of_funds?: string
+          user_id?: string | null
           zip?: string
           zip_owner?: string
           zip_owner_2?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_canadian_applications_quiz_response"
+            columns: ["quiz_response_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_responses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_canadian_applications_user"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       chat_contact_submissions: {
         Row: {
@@ -1206,11 +1065,216 @@ export type Database = {
         }
         Relationships: []
       }
+      usa_applications: {
+        Row: {
+          accept_cards: string[]
+          admin_notes: string | null
+          application_reference_number: string | null
+          average_monthly_deposits: number
+          average_ticket: number | null
+          bank_account_number: string
+          bank_account_type: string
+          bank_name: string
+          bank_routing_number: string
+          business_description: string
+          business_type: string
+          city: string
+          conversion_stage: string | null
+          created_at: string
+          current_processor: string | null
+          date_incorporated: string | null
+          dba_name: string | null
+          document_files: Json | null
+          email_address: string
+          entity_type: string
+          fax_number: string | null
+          federal_tax_id: string
+          high_ticket: number | null
+          id: string
+          lead_source: string | null
+          legal_corporation_name: string
+          loan_amount_requested: number
+          mid_number: string | null
+          monthly_processing_volume: number | null
+          monthly_rent_mortgage: number
+          months_in_business: number
+          months_with_bank: number
+          number_of_employees: number
+          physical_address: string
+          principal_cell_phone: string | null
+          principal_city: string
+          principal_date_of_birth: string
+          principal_email: string
+          principal_home_address: string
+          principal_home_phone: string | null
+          principal_name: string
+          principal_ownership_percentage: number
+          principal_ssn: string
+          principal_state: string
+          principal_title: string
+          principal_zip: string
+          quiz_response_id: string | null
+          state: string
+          state_of_incorporation: string | null
+          state_tax_id: string | null
+          status: string
+          submitted_at: string
+          telephone_number: string
+          updated_at: string
+          use_of_funds: string
+          user_id: string | null
+          website: string | null
+          years_in_business: number
+          zip: string
+        }
+        Insert: {
+          accept_cards?: string[]
+          admin_notes?: string | null
+          application_reference_number?: string | null
+          average_monthly_deposits: number
+          average_ticket?: number | null
+          bank_account_number: string
+          bank_account_type: string
+          bank_name: string
+          bank_routing_number: string
+          business_description: string
+          business_type: string
+          city: string
+          conversion_stage?: string | null
+          created_at?: string
+          current_processor?: string | null
+          date_incorporated?: string | null
+          dba_name?: string | null
+          document_files?: Json | null
+          email_address: string
+          entity_type: string
+          fax_number?: string | null
+          federal_tax_id: string
+          high_ticket?: number | null
+          id?: string
+          lead_source?: string | null
+          legal_corporation_name: string
+          loan_amount_requested: number
+          mid_number?: string | null
+          monthly_processing_volume?: number | null
+          monthly_rent_mortgage: number
+          months_in_business: number
+          months_with_bank: number
+          number_of_employees: number
+          physical_address: string
+          principal_cell_phone?: string | null
+          principal_city: string
+          principal_date_of_birth: string
+          principal_email: string
+          principal_home_address: string
+          principal_home_phone?: string | null
+          principal_name: string
+          principal_ownership_percentage: number
+          principal_ssn: string
+          principal_state: string
+          principal_title: string
+          principal_zip: string
+          quiz_response_id?: string | null
+          state: string
+          state_of_incorporation?: string | null
+          state_tax_id?: string | null
+          status?: string
+          submitted_at?: string
+          telephone_number: string
+          updated_at?: string
+          use_of_funds: string
+          user_id?: string | null
+          website?: string | null
+          years_in_business: number
+          zip: string
+        }
+        Update: {
+          accept_cards?: string[]
+          admin_notes?: string | null
+          application_reference_number?: string | null
+          average_monthly_deposits?: number
+          average_ticket?: number | null
+          bank_account_number?: string
+          bank_account_type?: string
+          bank_name?: string
+          bank_routing_number?: string
+          business_description?: string
+          business_type?: string
+          city?: string
+          conversion_stage?: string | null
+          created_at?: string
+          current_processor?: string | null
+          date_incorporated?: string | null
+          dba_name?: string | null
+          document_files?: Json | null
+          email_address?: string
+          entity_type?: string
+          fax_number?: string | null
+          federal_tax_id?: string
+          high_ticket?: number | null
+          id?: string
+          lead_source?: string | null
+          legal_corporation_name?: string
+          loan_amount_requested?: number
+          mid_number?: string | null
+          monthly_processing_volume?: number | null
+          monthly_rent_mortgage?: number
+          months_in_business?: number
+          months_with_bank?: number
+          number_of_employees?: number
+          physical_address?: string
+          principal_cell_phone?: string | null
+          principal_city?: string
+          principal_date_of_birth?: string
+          principal_email?: string
+          principal_home_address?: string
+          principal_home_phone?: string | null
+          principal_name?: string
+          principal_ownership_percentage?: number
+          principal_ssn?: string
+          principal_state?: string
+          principal_title?: string
+          principal_zip?: string
+          quiz_response_id?: string | null
+          state?: string
+          state_of_incorporation?: string | null
+          state_tax_id?: string | null
+          status?: string
+          submitted_at?: string
+          telephone_number?: string
+          updated_at?: string
+          use_of_funds?: string
+          user_id?: string | null
+          website?: string | null
+          years_in_business?: number
+          zip?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_usa_applications_quiz_response"
+            columns: ["quiz_response_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_responses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_usa_applications_user"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      generate_application_reference: {
+        Args: { app_type: string }
+        Returns: string
+      }
       has_management_access: {
         Args: { user_id_param: string }
         Returns: boolean
