@@ -140,54 +140,59 @@ const CanadianApplication = () => {
     }));
   };
 
-  const validateStep = (step: number): boolean => {
+  const getStepRequiredFields = (step: number): string[] => {
     switch (step) {
       case 1:
-        return !!(
-          formData.legal_business_name &&
-          formData.physical_address &&
-          formData.city &&
-          formData.state &&
-          formData.zip &&
-          formData.business_phone
-        );
+        const step1Fields = [];
+        if (!formData.legal_business_name) step1Fields.push("Legal Business Name");
+        if (!formData.physical_address) step1Fields.push("Physical Address");
+        if (!formData.city) step1Fields.push("City");
+        if (!formData.state) step1Fields.push("Province");
+        if (!formData.zip) step1Fields.push("Postal Code");
+        if (!formData.business_phone) step1Fields.push("Business Phone");
+        return step1Fields;
       case 2:
-        return !!(
-          formData.type_of_entity &&
-          formData.federal_tax_id &&
-          formData.business_start_date &&
-          formData.number_of_locations &&
-          formData.business_property_type &&
-          formData.annual_gross_sales &&
-          formData.amount_requested &&
-          formData.use_of_funds
-        );
+        const step2Fields = [];
+        if (!formData.type_of_entity) step2Fields.push("Type of Entity");
+        if (!formData.federal_tax_id) step2Fields.push("Federal Tax ID");
+        if (!formData.business_start_date) step2Fields.push("Business Start Date");
+        if (!formData.number_of_locations) step2Fields.push("Number of Locations");
+        if (!formData.business_property_type) step2Fields.push("Business Property Type");
+        return step2Fields;
       case 3:
-        return !!(
-          formData.principal_owner_name &&
-          formData.ownership_percentage &&
-          formData.ssn &&
-          formData.dob &&
-          formData.home_address &&
-          formData.city_owner &&
-          formData.state_owner &&
-          formData.zip_owner &&
-          formData.email_address
-        );
+        const step3Fields = [];
+        if (!formData.annual_gross_sales) step3Fields.push("Annual Gross Sales");
+        if (!formData.amount_requested) step3Fields.push("Amount Requested");
+        if (!formData.use_of_funds) step3Fields.push("Use of Funds");
+        return step3Fields;
       case 4:
-        // Credit card processing step - no required fields
-        return true;
+        const step4Fields = [];
+        if (!formData.principal_owner_name) step4Fields.push("Principal Owner Name");
+        if (!formData.ownership_percentage) step4Fields.push("Ownership Percentage");
+        if (!formData.ssn) step4Fields.push("SIN");
+        if (!formData.dob) step4Fields.push("Date of Birth");
+        if (!formData.home_address) step4Fields.push("Home Address");
+        if (!formData.city_owner) step4Fields.push("City");
+        if (!formData.state_owner) step4Fields.push("Province");
+        if (!formData.zip_owner) step4Fields.push("Postal Code");
+        if (!formData.email_address) step4Fields.push("Email Address");
+        return step4Fields;
       case 5:
-        // Documents step - no required fields
-        return true;
+        // Processing & Documents step - no required fields
+        return [];
       default:
-        return true;
+        return [];
     }
   };
 
+  const validateStep = (step: number): boolean => {
+    return getStepRequiredFields(step).length === 0;
+  };
+
   const nextStep = () => {
-    if (!validateStep(currentStep)) {
-      toast.error("Please fill in all required fields before proceeding.");
+    const missingFields = getStepRequiredFields(currentStep);
+    if (missingFields.length > 0) {
+      toast.error(`Please fill in the following required fields: ${missingFields.join(", ")}`);
       return;
     }
     
