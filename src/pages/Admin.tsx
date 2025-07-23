@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import jsPDF from 'jspdf';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
@@ -13,7 +14,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, MessageCircle, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign, Settings as SettingsIcon } from 'lucide-react';
+import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, MessageCircle, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign, Settings as SettingsIcon, ExternalLink } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import Header from '@/components/Header';
@@ -23,6 +24,7 @@ import EmailSequenceManagement from '@/components/admin/EmailSequenceManagement'
 import AvailableTimesManagement from '@/components/admin/AvailableTimesManagement';
 import { ChatWidgetManagement } from '@/components/admin/ChatWidgetManagement';
 import { ApplicationsManagement } from '@/components/admin/ApplicationsManagement';
+import USAApplicationsManagement from '@/components/admin/USAApplicationsManagement';
 import SocialProofManagement from '@/components/admin/SocialProofManagement';
 import SettingsManagement from '@/components/admin/SettingsManagement';
 import Footer from '@/components/Footer';
@@ -42,6 +44,11 @@ interface QuizResponse {
   status: string;
   admin_notes: string;
   created_at: string;
+  // Add application tracking
+  has_usa_application?: boolean;
+  has_canadian_application?: boolean;
+  usa_application_reference?: string;
+  canadian_application_reference?: string;
 }
 
 const Admin = () => {
@@ -140,10 +147,47 @@ const Admin = () => {
         ascending: false
       });
       if (error) throw error;
-      setLeads(data || []);
+
+      // Fetch application status for each lead
+      const enrichedLeads = await Promise.all((data || []).map(async (lead) => {
+        try {
+          // Check for USA applications
+          const { data: usaApps } = await supabase
+            .from('usa_applications')
+            .select('application_reference_number')
+            .eq('quiz_response_id', lead.id)
+            .limit(1);
+
+          // Check for Canadian applications  
+          const { data: canadianApps } = await supabase
+            .from('canadian_applications')
+            .select('application_reference_number')
+            .eq('quiz_response_id', lead.id)
+            .limit(1);
+
+          return {
+            ...lead,
+            has_usa_application: (usaApps && usaApps.length > 0),
+            has_canadian_application: (canadianApps && canadianApps.length > 0),
+            usa_application_reference: usaApps?.[0]?.application_reference_number || null,
+            canadian_application_reference: canadianApps?.[0]?.application_reference_number || null,
+          };
+        } catch (err) {
+          console.error('Error enriching lead:', err);
+          return {
+            ...lead,
+            has_usa_application: false,
+            has_canadian_application: false,
+            usa_application_reference: null,
+            canadian_application_reference: null,
+          };
+        }
+      }));
+
+      setLeads(enrichedLeads);
 
       // Fetch email enrollments for all leads
-      await fetchEmailEnrollments(data || []);
+      await fetchEmailEnrollments(enrichedLeads);
     } catch (error) {
       console.error('Error fetching leads:', error);
       toast({
@@ -734,6 +778,101 @@ const Admin = () => {
     }
   };
 
+  // PDF Download Function
+  const downloadApplicationPDF = async (lead: QuizResponse) => {
+    try {
+      let applicationData = null;
+      let referenceNumber = '';
+      let applicationType = '';
+
+      // Determine which application to download
+      if (lead.has_usa_application && lead.usa_application_reference) {
+        const { data } = await supabase
+          .from('usa_applications')
+          .select('*')
+          .eq('quiz_response_id', lead.id)
+          .single();
+        applicationData = data;
+        referenceNumber = lead.usa_application_reference;
+        applicationType = 'USA Application';
+      } else if (lead.has_canadian_application && lead.canadian_application_reference) {
+        const { data } = await supabase
+          .from('canadian_applications')
+          .select('*')
+          .eq('quiz_response_id', lead.id)
+          .single();
+        applicationData = data;
+        referenceNumber = lead.canadian_application_reference;
+        applicationType = 'Canadian Application';
+      }
+
+      if (!applicationData) {
+        toast({
+          title: "Error",
+          description: "No application found for this lead",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Create PDF using jsPDF
+      const doc = new jsPDF();
+      
+      // Title
+      doc.setFontSize(20);
+      doc.text(applicationType, 20, 30);
+      
+      // Reference number
+      doc.setFontSize(14);
+      doc.text(`Reference: ${referenceNumber}`, 20, 45);
+      
+      // Lead Information Section
+      doc.setFontSize(16);
+      doc.text('Lead Information:', 20, 65);
+      doc.setFontSize(12);
+      doc.text(`Name: ${lead.name}`, 20, 80);
+      doc.text(`Email: ${lead.email}`, 20, 90);
+      doc.text(`Phone: ${lead.phone}`, 20, 100);
+      doc.text(`Monthly Revenue: $${lead.monthly_revenue.toLocaleString()}`, 20, 110);
+      doc.text(`Loan Amount: $${lead.loan_amount.toLocaleString()}`, 20, 120);
+      doc.text(`Credit Score: ${lead.credit_score}`, 20, 130);
+      doc.text(`Time in Business: ${lead.time_in_business}`, 20, 140);
+      doc.text(`Use of Funds: ${lead.use_of_funds}`, 20, 150);
+      
+      // Application Details Section
+      doc.setFontSize(16);
+      doc.text('Application Details:', 20, 170);
+      doc.setFontSize(12);
+      doc.text(`Status: ${applicationData.status || applicationData.conversion_stage}`, 20, 185);
+      doc.text(`Submitted: ${new Date(applicationData.created_at).toLocaleDateString()}`, 20, 195);
+      doc.text(`Updated: ${new Date(applicationData.updated_at).toLocaleDateString()}`, 20, 205);
+      
+      // Business Information Section
+      doc.setFontSize(16);
+      doc.text('Business Information:', 20, 225);
+      doc.setFontSize(12);
+      doc.text(`Company: ${applicationData.legal_corporation_name || applicationData.legal_business_name}`, 20, 240);
+      doc.text(`Address: ${applicationData.physical_address}`, 20, 250);
+      doc.text(`Phone: ${applicationData.telephone_number || applicationData.business_phone}`, 20, 260);
+      doc.text(`Email: ${applicationData.email_address}`, 20, 270);
+      
+      // Save the PDF
+      doc.save(`application-${referenceNumber}.pdf`);
+
+      toast({
+        title: "Success",
+        description: "Application PDF downloaded successfully",
+      });
+    } catch (error) {
+      console.error('Error downloading application:', error);
+      toast({
+        title: "Error",
+        description: "Failed to download application PDF",
+        variant: "destructive"
+      });
+    }
+  };
+
   if (authLoading || loading) {
     return <div className="min-h-screen bg-background">
         <Header />
@@ -758,10 +897,14 @@ const Admin = () => {
     icon: Clock,
     count: bookingsCount
   }, {
-    title: "Applications",
+    title: "Partner Applications",
     value: "applications",
     icon: UserCheck,
     count: applicationsCount
+  }, {
+    title: "USA Applications",
+    value: "usa-applications", 
+    icon: FileText
   }, ...(isSuperAdmin ? [{
     title: "Email Sequence",
     value: "email-sequence",
@@ -893,6 +1036,7 @@ const Admin = () => {
                         <TableHead>Loan Details</TableHead>
                         <TableHead>Score</TableHead>
                         <TableHead>Status</TableHead>
+                        <TableHead>Application Status</TableHead>
                         <TableHead>Created</TableHead>
                         <TableHead>Email Sequences</TableHead>
                         <TableHead>Call Now</TableHead>
@@ -958,6 +1102,56 @@ const Admin = () => {
                                 {lead.status.toUpperCase()}
                               </div>
                             </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {lead.has_usa_application || lead.has_canadian_application ? (
+                              <div className="space-y-1">
+                                {lead.has_usa_application && (
+                                  <div className="flex items-center gap-2">
+                                    <Badge variant="default" className="bg-green-100 text-green-800 hover:bg-green-100">
+                                      <FileText className="h-3 w-3 mr-1" />
+                                      USA App
+                                    </Badge>
+                                    <span className="text-xs font-mono text-muted-foreground">
+                                      {lead.usa_application_reference}
+                                    </span>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => downloadApplicationPDF(lead)}
+                                      className="h-6 w-6 p-0"
+                                      title="Download Application"
+                                    >
+                                      <Download className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                )}
+                                {lead.has_canadian_application && (
+                                  <div className="flex items-center gap-2">
+                                    <Badge variant="default" className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+                                      <FileText className="h-3 w-3 mr-1" />
+                                      CAN App
+                                    </Badge>
+                                    <span className="text-xs font-mono text-muted-foreground">
+                                      {lead.canadian_application_reference}
+                                    </span>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => downloadApplicationPDF(lead)}
+                                      className="h-6 w-6 p-0"
+                                      title="Download Application"
+                                    >
+                                      <Download className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <Badge variant="outline" className="text-muted-foreground">
+                                No Application
+                              </Badge>
+                            )}
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
                             {format(new Date(lead.created_at), 'MMM dd, yyyy')}
@@ -1052,6 +1246,8 @@ const Admin = () => {
         return <AvailableTimesManagement />;
       case 'applications':
         return <ApplicationsManagement />;
+      case 'usa-applications':
+        return <USAApplicationsManagement />;
       case 'email-sequence':
         return <EmailSequenceManagement />;
       case 'chat-widget':
