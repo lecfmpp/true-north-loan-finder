@@ -53,15 +53,26 @@ export function ChatWidget() {
     fetchConfig();
     fetchQA();
     
-    // Poll for config changes every 10 seconds to detect enable/disable changes
-    const configInterval = setInterval(() => {
-      fetchConfig();
-    }, 10000);
+    // Only poll if widget is enabled - reduce frequency and add condition
+    let configInterval: NodeJS.Timeout | null = null;
+    
+    const startPolling = () => {
+      if (config?.is_enabled) {
+        configInterval = setInterval(() => {
+          fetchConfig();
+        }, 30000); // Reduced to every 30 seconds
+      }
+    };
+    
+    // Start polling after initial fetch
+    setTimeout(startPolling, 1000);
     
     return () => {
-      clearInterval(configInterval);
+      if (configInterval) {
+        clearInterval(configInterval);
+      }
     };
-  }, []);
+  }, [config?.is_enabled]); // Add dependency to restart polling when enabled state changes
 
   useEffect(() => {
     scrollToBottom();
