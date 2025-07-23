@@ -159,12 +159,6 @@ const CanadianApplication = () => {
         use_of_funds: useOfFunds || prev.use_of_funds,
       }));
 
-      // Show toast to indicate pre-filling
-      if (name || email) {
-        toast.success("Your information from the quiz has been pre-filled!", {
-          description: "Please review and complete the remaining fields."
-        });
-      }
     }
   }, [searchParams]);
 
