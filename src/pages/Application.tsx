@@ -246,6 +246,10 @@ const Application = () => {
     setIsSubmitting(true);
     
     try {
+      // Get quiz response ID from URL params or localStorage
+      const urlParams = new URLSearchParams(window.location.search);
+      const quizResponseId = urlParams.get('quiz_id') || localStorage.getItem('quiz_response_id');
+      
       // Upload documents first
       let uploadedFileNames: string[] = [];
       if (formData.document_files.length > 0) {
@@ -302,13 +306,24 @@ const Application = () => {
         use_of_funds: formData.use_of_funds,
         document_files: uploadedFileNames,
         status: 'applicant',
+        // Add tracking fields
+        quiz_response_id: quizResponseId || null,
+        lead_source: quizResponseId ? 'quiz' : 'direct',
+        conversion_stage: 'application',
       };
 
-      const { error } = await supabase
-        .from('business_applications')
-        .insert([applicationData]);
+      const { data, error } = await supabase
+        .from('usa_applications')
+        .insert([applicationData])
+        .select('application_reference_number')
+        .single();
 
       if (error) throw error;
+
+      // Store reference number for success page
+      if (data?.application_reference_number) {
+        localStorage.setItem('application_reference_number', data.application_reference_number);
+      }
 
       // Track conversion
       if (typeof window !== 'undefined' && (window as any).gtag) {

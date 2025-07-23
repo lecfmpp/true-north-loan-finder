@@ -1,10 +1,22 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, Clock, Mail, Phone } from "lucide-react";
+import { CheckCircle, Clock, Mail, Phone, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 const ApplicationSuccess = () => {
   const navigate = useNavigate();
+  const [referenceNumber, setReferenceNumber] = useState<string>("");
+
+  useEffect(() => {
+    // Get reference number from localStorage
+    const storedRef = localStorage.getItem('application_reference_number');
+    if (storedRef) {
+      setReferenceNumber(storedRef);
+      // Clear it from localStorage after displaying
+      localStorage.removeItem('application_reference_number');
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20 py-12">
@@ -20,6 +32,24 @@ const ApplicationSuccess = () => {
               Thank you for your business loan application. We've received your information and will review it promptly.
             </p>
           </div>
+
+          {/* Reference Number Card */}
+          {referenceNumber && (
+            <Card className="mb-8 border-primary/20 bg-primary/5">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-center gap-3">
+                  <FileText className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Your Application Reference Number</p>
+                    <p className="text-xl font-bold font-mono text-primary">{referenceNumber}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Please save this number for future reference
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Next Steps */}
           <Card className="mb-8">
@@ -97,9 +127,6 @@ const ApplicationSuccess = () => {
             >
               Return to Home
             </Button>
-            <div className="text-sm text-muted-foreground">
-              Application Reference: #{Math.random().toString(36).substring(2, 15).toUpperCase()}
-            </div>
           </div>
         </div>
       </div>

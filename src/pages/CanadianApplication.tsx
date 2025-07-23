@@ -233,6 +233,10 @@ const CanadianApplication = () => {
     setIsSubmitting(true);
     
     try {
+      // Get quiz response ID from URL params or localStorage
+      const urlParams = new URLSearchParams(window.location.search);
+      const quizResponseId = urlParams.get('quiz_id') || localStorage.getItem('quiz_response_id');
+      
       // Upload documents first
       let uploadedFileNames: string[] = [];
       if (formData.document_files.length > 0) {
@@ -289,13 +293,24 @@ const CanadianApplication = () => {
         annual_credit_card_sales: formData.annual_credit_card_sales ? parseInt(formData.annual_credit_card_sales) : null,
         average_monthly_cc_volume: formData.average_monthly_cc_volume ? parseInt(formData.average_monthly_cc_volume) : null,
         document_files: uploadedFileNames,
+        // Add tracking fields
+        quiz_response_id: quizResponseId || null,
+        lead_source: quizResponseId ? 'quiz' : 'direct',
+        conversion_stage: 'application',
       };
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('canadian_applications')
-        .insert([applicationData]);
+        .insert([applicationData])
+        .select('application_reference_number')
+        .single();
 
       if (error) throw error;
+
+      // Store reference number for success page
+      if (data?.application_reference_number) {
+        localStorage.setItem('application_reference_number', data.application_reference_number);
+      }
 
       // Track conversion
       if (typeof window !== 'undefined' && (window as any).gtag) {
