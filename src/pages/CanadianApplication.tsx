@@ -75,7 +75,7 @@ interface CanadianApplicationData {
   document_files: File[];
   
   // Tracking fields
-  quiz_response_id: string;
+  quiz_response_id: string | null;
 }
 
 const CanadianApplication = () => {
@@ -135,7 +135,7 @@ const CanadianApplication = () => {
     annual_credit_card_sales: "",
     average_monthly_cc_volume: "",
     document_files: [],
-    quiz_response_id: "",
+    quiz_response_id: null,
   });
 
   // Auto-fill form from URL parameters when coming from quiz results
@@ -148,8 +148,9 @@ const CanadianApplication = () => {
     const useOfFunds = searchParams.get('useOfFunds');
     const quizResponseId = searchParams.get('quizResponseId');
 
-    if (name || email || phone || loanAmount) {
-      console.log('Pre-filling Canadian application with quiz data:', {
+    // Pre-fill form if quiz data is available, but don't require it
+    if (name || email || phone || loanAmount || quizResponseId) {
+      console.log('Pre-filling Canadian application with available data:', {
         name, email, phone, loanAmount, monthlyRevenue, useOfFunds, quizResponseId
       });
 
@@ -163,7 +164,6 @@ const CanadianApplication = () => {
         use_of_funds: useOfFunds || prev.use_of_funds,
         quiz_response_id: quizResponseId || prev.quiz_response_id,
       }));
-
     }
   }, [searchParams]);
 
@@ -326,8 +326,8 @@ const CanadianApplication = () => {
         annual_credit_card_sales: formData.annual_credit_card_sales ? parseInt(formData.annual_credit_card_sales) : null,
         average_monthly_cc_volume: formData.average_monthly_cc_volume ? parseInt(formData.average_monthly_cc_volume) : null,
         document_files: uploadedFileNames,
-        // Add tracking fields
-        quiz_response_id: quizResponseId || null,
+        // Add tracking fields - quiz_response_id can be null for direct applications
+        quiz_response_id: quizResponseId,
         lead_source: quizResponseId ? 'quiz' : 'direct',
         conversion_stage: 'application',
       };
