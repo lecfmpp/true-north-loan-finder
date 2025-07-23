@@ -80,6 +80,9 @@ const Header = () => {
                 {isAdmin && <Button asChild variant="outline" size="sm">
                     <Link to="/admin">Admin</Link>
                   </Button>}
+                {!isAdmin && <Button asChild variant="outline" size="sm" className="bg-white text-primary border-white hover:bg-white/90">
+                    <Link to="/application-status">My Applications</Link>
+                  </Button>}
                 <Button variant="yellow" size="sm">
                   <User className="w-4 h-4 mr-2" />
                   {user.email}
@@ -148,6 +151,11 @@ const Header = () => {
                     {isAdmin && <Button asChild variant="outline" size="lg" className="w-full">
                         <Link to="/admin" onClick={() => setIsMenuOpen(false)}>
                           Admin Dashboard
+                        </Link>
+                      </Button>}
+                    {!isAdmin && <Button asChild variant="outline" size="lg" className="w-full">
+                        <Link to="/application-status" onClick={() => setIsMenuOpen(false)}>
+                          My Applications
                         </Link>
                       </Button>}
                     <div className="text-sm text-primary-foreground/70 text-center">

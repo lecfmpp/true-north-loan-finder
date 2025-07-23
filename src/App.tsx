@@ -27,6 +27,7 @@ import Results from "./pages/Results";
 import Compare from "./pages/Compare";
 import Application from "./pages/Application";
 import ApplicationSuccess from "./pages/ApplicationSuccess";
+import ApplicationStatus from "./pages/ApplicationStatus";
 import CanadianApplication from "./pages/CanadianApplication";
 import NotFound from "./pages/NotFound";
 
@@ -66,6 +67,7 @@ const App = () => (
             <Route path="/application" element={<Application />} />
             <Route path="/application-canadian" element={<CanadianApplication />} />
             <Route path="/application-success" element={<ApplicationSuccess />} />
+            <Route path="/application-status" element={<ApplicationStatus />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin" element={<Admin />} />
             

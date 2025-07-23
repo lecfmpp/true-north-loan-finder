@@ -340,6 +340,8 @@ const CanadianApplication = () => {
         quiz_response_id: quizResponseId,
         lead_source: quizResponseId ? 'quiz' : 'direct',
         conversion_stage: 'application',
+        // Associate with authenticated user
+        user_id: user?.id,
       };
 
       const { data, error } = await supabase
