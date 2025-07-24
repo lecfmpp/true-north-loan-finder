@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, ArrowRight, Building2, User, CreditCard, FileText, CheckCircle, Upload, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -840,11 +841,22 @@ const Application = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="business_type">Business Type *</Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="business_type">Business Type *</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs">The category that best describes your business (e.g., Restaurant, Retail Store, Construction, Healthcare, etc.)</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <Input
                   id="business_type"
                   value={formData.business_type}
                   onChange={(e) => updateFormData('business_type', e.target.value)}
+                  placeholder="e.g., Restaurant, Retail, Construction"
                   required
                 />
               </div>
@@ -861,7 +873,17 @@ const Application = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="average_monthly_deposits">Average Monthly Deposits *</Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="average_monthly_deposits">Average Monthly Deposits *</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs">The average amount of money deposited into your business bank account each month. Check your bank statements for the past 3-6 months and calculate the average.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <Input
                   id="average_monthly_deposits"
                   type="number"
@@ -989,20 +1011,42 @@ const Application = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="current_processor">Current Processor</Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="current_processor">Current Processor</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs">The company that processes your credit card payments (e.g., Square, Stripe, PayPal, First Data, etc.). Check your credit card processing statements or contact your payment provider.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <Input
                   id="current_processor"
                   value={formData.current_processor}
                   onChange={(e) => updateFormData('current_processor', e.target.value)}
+                  placeholder="e.g., Square, Stripe, PayPal"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="mid_number">MID Number</Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="mid_number">MID Number</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs">Merchant ID Number - a unique identifier for your business with your credit card processor. Find this on your processing statements or contact your payment processor.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <Input
                   id="mid_number"
                   value={formData.mid_number}
                   onChange={(e) => updateFormData('mid_number', e.target.value)}
+                  placeholder="Usually 10-15 digits"
                 />
               </div>
               
@@ -1020,7 +1064,17 @@ const Application = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="average_ticket">Average Ticket</Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="average_ticket">Average Ticket</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs">The average dollar amount of a single sale or transaction. Calculate by dividing total monthly sales by number of transactions.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <Input
                   id="average_ticket"
                   type="number"
@@ -1033,7 +1087,17 @@ const Application = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="high_ticket">High Ticket</Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="high_ticket">High Ticket</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs">The highest dollar amount of a single sale or transaction your business typically processes. This helps lenders understand your business model.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <Input
                   id="high_ticket"
                   type="number"
@@ -1211,6 +1275,7 @@ const Application = () => {
   }
 
   return (
+    <TooltipProvider>
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
       <Header />
       <div className="container mx-auto px-4 py-4 md:py-8">
@@ -1279,6 +1344,7 @@ const Application = () => {
       </div>
       <Footer />
     </div>
+    </TooltipProvider>
   );
 };
 
