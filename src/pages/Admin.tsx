@@ -14,15 +14,13 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, MessageCircle, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign, Settings as SettingsIcon, ExternalLink } from 'lucide-react';
+import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign, Settings as SettingsIcon, ExternalLink } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import Header from '@/components/Header';
 import BlogManagement from '@/components/admin/BlogManagement';
 import BlogPostCreator from '@/components/admin/BlogPostCreator';
 import EmailSequenceManagement from '@/components/admin/EmailSequenceManagement';
-import AvailableTimesManagement from '@/components/admin/AvailableTimesManagement';
-import { ChatWidgetManagement } from '@/components/admin/ChatWidgetManagement';
 import { ApplicationsManagement } from '@/components/admin/ApplicationsManagement';
 import USAApplicationsManagement from '@/components/admin/USAApplicationsManagement';
 import CanadianApplicationsManagement from '@/components/admin/CanadianApplicationsManagement';
@@ -61,7 +59,6 @@ const Admin = () => {
     email: string;
   }>>([]);
   const [applicationsCount, setApplicationsCount] = useState(0);
-  const [bookingsCount, setBookingsCount] = useState(0);
   const [usaApplicationsCount, setUsaApplicationsCount] = useState(0);
   const [canadianApplicationsCount, setCanadianApplicationsCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -130,7 +127,6 @@ const Admin = () => {
     if (user && isAdmin) {
       fetchLeads();
       fetchApplicationsCount();
-      fetchBookingsCount();
       fetchUsaApplicationsCount();
       fetchCanadianApplicationsCount();
       if (isSuperAdmin) {
@@ -266,21 +262,6 @@ const Admin = () => {
     }
   };
 
-  const fetchBookingsCount = async () => {
-    try {
-      const {
-        count,
-        error
-      } = await supabase.from('call_bookings').select('*', {
-        count: 'exact',
-        head: true
-      }).neq('booking_status', 'cancelled');
-      if (error) throw error;
-      setBookingsCount(count || 0);
-    } catch (error) {
-      console.error('Error fetching bookings count:', error);
-    }
-  };
 
   const fetchUsaApplicationsCount = async () => {
     try {
@@ -929,11 +910,6 @@ const Admin = () => {
     icon: Users,
     count: leads.length
   }, {
-    title: "Bookings",
-    value: "available-times",
-    icon: Clock,
-    count: bookingsCount
-  }, {
     title: "Partner Applications",
     value: "applications",
     icon: UserCheck,
@@ -952,10 +928,6 @@ const Admin = () => {
     title: "Email Sequence",
     value: "email-sequence",
     icon: Mail
-  }, {
-    title: "Chat Widget",
-    value: "chat-widget",
-    icon: MessageCircle
   }, {
     title: "Blog Management",
     value: "blog",
@@ -1285,8 +1257,6 @@ const Admin = () => {
                 No leads found matching your criteria.
               </div>}
           </div>;
-      case 'available-times':
-        return <AvailableTimesManagement />;
       case 'applications':
         return <ApplicationsManagement />;
       case 'usa-applications':
@@ -1295,8 +1265,6 @@ const Admin = () => {
         return <CanadianApplicationsManagement />;
       case 'email-sequence':
         return <EmailSequenceManagement />;
-      case 'chat-widget':
-        return <ChatWidgetManagement />;
       case 'blog-creator':
         return <BlogPostCreator onBlogCreated={() => setActiveTab('blog')} />;
       case 'blog':
@@ -1378,18 +1346,6 @@ const Admin = () => {
               </DialogTitle>
               <DialogDescription>
                 This action cannot be undone. This will permanently delete the {bulkDelete ? `${selectedLeads.length} selected leads` : 'lead'} and all associated data.
-                {leadBookings.length > 0 && <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                    <div className="flex items-center gap-2 text-yellow-800">
-                      <Clock className="h-4 w-4" />
-                      <strong>Warning:</strong>
-                    </div>
-                    <p className="text-yellow-700 mt-1">
-                      {bulkDelete 
-                        ? `These leads have ${leadBookings.length} associated call booking(s) that will also be cancelled and removed permanently.`
-                        : `This lead has ${leadBookings.length} associated call booking(s) that will also be cancelled and removed permanently.`
-                      }
-                    </p>
-                  </div>}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
