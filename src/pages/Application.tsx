@@ -16,6 +16,7 @@ import { ApplicationAuth } from "@/components/ApplicationAuth";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/hooks/use-auth";
+import { useApplicationDraft } from "@/hooks/use-application-draft";
 
 interface ApplicationData {
   // Company Information
@@ -103,6 +104,9 @@ const Application = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const { user, loading } = useAuth();
+  const { saveDraft, loadDraft, deleteDraft, checkQuizCompletion } = useApplicationDraft();
+  const [isDraftLoaded, setIsDraftLoaded] = useState(false);
+  const [showResumePrompt, setShowResumePrompt] = useState(false);
   const totalSteps = 7; // Updated to include auth step
   
   const [formData, setFormData] = useState<ApplicationData>({
@@ -190,6 +194,76 @@ const Application = () => {
     }
   }, [user, formData.email_address]);
 
+  // Load draft and quiz data when user is authenticated
+  useEffect(() => {
+    const initializeFormData = async () => {
+      if (!user || isDraftLoaded) return;
+      
+      try {
+        // First check if there's quiz data from URL params
+        const hasQuizData = searchParams.get('name') || searchParams.get('email') || searchParams.get('loanAmount');
+        
+        if (!hasQuizData) {
+          // Try to load existing draft
+          const draft = await loadDraft();
+          if (draft) {
+            // Show resume prompt to user
+            setShowResumePrompt(true);
+            return;
+          }
+          
+          // No draft found, check if user has completed quiz
+          const quizId = await checkQuizCompletion();
+          if (!quizId) {
+            // No quiz completion found, redirect to quiz
+            const confirmRedirect = window.confirm(
+              "To get the best loan recommendations, we recommend starting with our quick 2-minute loan estimator. Would you like to take it now?"
+            );
+            if (confirmRedirect) {
+              navigate('/loan-estimator');
+              return;
+            }
+          }
+        }
+        
+        setIsDraftLoaded(true);
+      } catch (error) {
+        console.error('Error initializing form data:', error);
+        setIsDraftLoaded(true);
+      }
+    };
+
+    initializeFormData();
+  }, [user, isDraftLoaded, searchParams, loadDraft, checkQuizCompletion, navigate]);
+
+  // Auto-save draft periodically and on step changes
+  useEffect(() => {
+    if (!user || !isDraftLoaded || currentStep === 1) return;
+    
+    const saveTimer = setTimeout(() => {
+      const quizId = searchParams.get('quiz_id') || localStorage.getItem('quiz_response_id');
+      saveDraft(formData, currentStep, quizId || undefined);
+    }, 2000); // Save after 2 seconds of inactivity
+
+    return () => clearTimeout(saveTimer);
+  }, [formData, currentStep, user, isDraftLoaded, saveDraft, searchParams]);
+
+  const handleResumeDraft = async () => {
+    const draft = await loadDraft();
+    if (draft) {
+      setFormData(draft.form_data);
+      setCurrentStep(draft.current_step);
+      toast.success("Resuming from where you left off!");
+    }
+    setShowResumePrompt(false);
+    setIsDraftLoaded(true);
+  };
+
+  const handleStartFresh = () => {
+    setShowResumePrompt(false);
+    setIsDraftLoaded(true);
+  };
+
   const updateFormData = (field: keyof ApplicationData, value: any) => {
     setFormData(prev => ({
       ...prev,
@@ -262,6 +336,11 @@ const Application = () => {
     
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
+      // Save progress when moving to next step
+      if (user) {
+        const quizId = searchParams.get('quiz_id') || localStorage.getItem('quiz_response_id');
+        saveDraft(formData, currentStep + 1, quizId || undefined);
+      }
       window.scrollTo(0, 0);
     }
   };
@@ -404,6 +483,9 @@ const Application = () => {
           'send_to': 'AW-16458367327/ads_conversion_SUBMIT_APPLICATION_1'
         });
       }
+
+      // Delete draft after successful submission
+      await deleteDraft();
 
       toast.success("Application submitted successfully!");
       navigate("/application-success");
@@ -1236,6 +1318,44 @@ const Application = () => {
         return null;
     }
   };
+
+  // Show resume prompt if user has existing draft
+  if (showResumePrompt) {
+    return (
+      <TooltipProvider>
+        <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
+          <Header />
+          
+          <div className="container mx-auto px-4 py-4 md:py-8">
+            <div className="max-w-2xl mx-auto">
+              <Card className="shadow-xl border-0 md:border">
+                <CardContent className="p-4 md:p-8 text-center">
+                  <div className="mx-auto mb-4 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                    <FileText className="h-6 w-6 text-primary" />
+                  </div>
+                  <h2 className="text-xl md:text-2xl font-bold mb-4">Welcome Back!</h2>
+                  <p className="text-muted-foreground mb-6">
+                    We found a saved application in progress. Would you like to continue where you left off or start fresh?
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Button onClick={handleResumeDraft} className="flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      Resume Application
+                    </Button>
+                    <Button variant="outline" onClick={handleStartFresh}>
+                      Start Fresh
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+          
+          <Footer />
+        </div>
+      </TooltipProvider>
+    );
+  }
 
   // Show authentication form if user is not authenticated and showAuth is true
   if (showAuth || (!user && !loading)) {

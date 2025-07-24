@@ -1095,6 +1095,36 @@ export type Database = {
         }
         Relationships: []
       }
+      usa_application_drafts: {
+        Row: {
+          created_at: string
+          current_step: number
+          form_data: Json
+          id: string
+          last_updated: string
+          quiz_response_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_step?: number
+          form_data?: Json
+          id?: string
+          last_updated?: string
+          quiz_response_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_step?: number
+          form_data?: Json
+          id?: string
+          last_updated?: string
+          quiz_response_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       usa_applications: {
         Row: {
           accept_cards: string[]
