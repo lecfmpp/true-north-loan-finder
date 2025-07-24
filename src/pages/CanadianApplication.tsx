@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { ArrowLeft, ArrowRight, Building2, User, CreditCard, FileText, CheckCircle, Upload, Info, MapPin, DollarSign } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -15,6 +16,7 @@ import { ApplicationAuth } from "@/components/ApplicationAuth";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/hooks/use-auth";
+import { useCanadianApplicationDraft } from "@/hooks/use-canadian-application-draft";
 
 interface CanadianApplicationData {
   // Business Information
@@ -86,7 +88,10 @@ const CanadianApplication = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
+  const [showResumeDialog, setShowResumeDialog] = useState(false);
+  const [savedDraft, setSavedDraft] = useState<any>(null);
   const { user, loading } = useAuth();
+  const { saveDraft, loadDraft, deleteDraft, checkQuizCompletion } = useCanadianApplicationDraft();
   const totalSteps = 5; // Updated to 5 steps, step 5 is final with submit
   
   const [formData, setFormData] = useState<CanadianApplicationData>({
@@ -142,34 +147,65 @@ const CanadianApplication = () => {
     quiz_response_id: null,
   });
 
-  // Auto-fill form from URL parameters when coming from quiz results
+  // Check for existing draft or quiz data on component mount
   useEffect(() => {
-    const name = searchParams.get('name');
-    const email = searchParams.get('email');
-    const phone = searchParams.get('phone');
-    const loanAmount = searchParams.get('loanAmount');
-    const monthlyRevenue = searchParams.get('monthlyRevenue');
-    const useOfFunds = searchParams.get('useOfFunds');
-    const quizResponseId = searchParams.get('quizResponseId');
+    const initializeApplication = async () => {
+      if (!user || loading) return;
 
-    // Pre-fill form if quiz data is available, but don't require it
-    if (name || email || phone || loanAmount || quizResponseId) {
-      console.log('Pre-filling Canadian application with available data:', {
-        name, email, phone, loanAmount, monthlyRevenue, useOfFunds, quizResponseId
-      });
+      try {
+        // First, check URL parameters for quiz data
+        const name = searchParams.get('name');
+        const email = searchParams.get('email');
+        const phone = searchParams.get('phone');
+        const loanAmount = searchParams.get('loanAmount');
+        const monthlyRevenue = searchParams.get('monthlyRevenue');
+        const useOfFunds = searchParams.get('useOfFunds');
+        const quizResponseId = searchParams.get('quizResponseId');
 
-      setFormData(prev => ({
-        ...prev,
-        principal_owner_name: name || prev.principal_owner_name,
-        email_address: email || prev.email_address,
-        cell_phone: phone || prev.cell_phone,
-        amount_requested: loanAmount || prev.amount_requested,
-        annual_gross_sales: monthlyRevenue ? (parseInt(monthlyRevenue) * 12).toString() : prev.annual_gross_sales,
-        use_of_funds: useOfFunds || prev.use_of_funds,
-        quiz_response_id: quizResponseId || prev.quiz_response_id,
-      }));
-    }
-  }, [searchParams]);
+        // Check for existing draft
+        const draft = await loadDraft();
+        
+        if (draft && !quizResponseId) {
+          // User has a saved draft and didn't come from quiz
+          setSavedDraft(draft);
+          setShowResumeDialog(true);
+          return;
+        }
+
+        // Pre-fill form if quiz data is available from URL
+        if (name || email || phone || loanAmount || quizResponseId) {
+          console.log('Pre-filling Canadian application with quiz data:', {
+            name, email, phone, loanAmount, monthlyRevenue, useOfFunds, quizResponseId
+          });
+
+          setFormData(prev => ({
+            ...prev,
+            principal_owner_name: name || prev.principal_owner_name,
+            email_address: email || user.email || prev.email_address,
+            cell_phone: phone || prev.cell_phone,
+            amount_requested: loanAmount || prev.amount_requested,
+            annual_gross_sales: monthlyRevenue ? (parseInt(monthlyRevenue) * 12).toString() : prev.annual_gross_sales,
+            use_of_funds: useOfFunds || prev.use_of_funds,
+            quiz_response_id: quizResponseId || prev.quiz_response_id,
+          }));
+        } else if (draft) {
+          // Load draft data if no quiz data in URL
+          setFormData(draft.form_data);
+          setCurrentStep(draft.current_step);
+        } else {
+          // No quiz data and no draft - just pre-fill email from auth
+          setFormData(prev => ({
+            ...prev,
+            email_address: user.email || prev.email_address,
+          }));
+        }
+      } catch (error) {
+        console.error('Error initializing application:', error);
+      }
+    };
+
+    initializeApplication();
+  }, [user, loading, searchParams, loadDraft]);
 
   const updateFormData = (field: keyof CanadianApplicationData, value: any) => {
     setFormData(prev => ({
@@ -177,6 +213,23 @@ const CanadianApplication = () => {
       [field]: value
     }));
   };
+
+  // Auto-save draft when form data changes (debounced)
+  useEffect(() => {
+    if (!user || currentStep === 1) return; // Don't auto-save on first step or if not logged in
+    
+    const timeoutId = setTimeout(() => {
+      saveDraft(formData, currentStep, formData.quiz_response_id || undefined);
+    }, 2000); // Save after 2 seconds of inactivity
+
+    return () => clearTimeout(timeoutId);
+  }, [formData, currentStep, user, saveDraft]);
+
+  // Save draft when step changes
+  useEffect(() => {
+    if (!user || currentStep === 1) return;
+    saveDraft(formData, currentStep, formData.quiz_response_id || undefined);
+  }, [currentStep, user, saveDraft, formData]);
 
   const getStepRequiredFields = (step: number): string[] => {
     switch (step) {
@@ -371,6 +424,14 @@ const CanadianApplication = () => {
         // Don't fail the whole submission if admin notification fails
       }
 
+      // Delete draft upon successful submission
+      try {
+        await deleteDraft();
+      } catch (error) {
+        console.error('Error deleting draft:', error);
+        // Don't fail submission if draft deletion fails
+      }
+
       // Track conversion
       if (typeof window !== 'undefined' && (window as any).gtag) {
         (window as any).gtag('event', 'conversion', {
@@ -386,6 +447,23 @@ const CanadianApplication = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleResumeDraft = () => {
+    if (savedDraft) {
+      setFormData(savedDraft.form_data);
+      setCurrentStep(savedDraft.current_step);
+      setShowResumeDialog(false);
+      toast.success('Resumed from your saved application');
+    }
+  };
+
+  const handleStartFresh = () => {
+    setShowResumeDialog(false);
+    if (savedDraft) {
+      deleteDraft();
+    }
+    toast.success('Starting fresh application');
   };
 
   const renderStep = () => {
@@ -1399,6 +1477,22 @@ const CanadianApplication = () => {
       </main>
       
       <Footer />
+
+      {/* Resume Draft Dialog */}
+      <AlertDialog open={showResumeDialog} onOpenChange={setShowResumeDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Resume Your Application?</AlertDialogTitle>
+            <AlertDialogDescription>
+              We found a saved application from your previous session. Would you like to continue where you left off or start fresh?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleStartFresh}>Start Fresh</AlertDialogCancel>
+            <AlertDialogAction onClick={handleResumeDraft}>Resume Application</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -87,7 +87,7 @@ export const ApplicationAuth = ({ email = "", name = "", onAuthSuccess }: Applic
           });
 
           if (signInError) {
-            toast.error("Account exists but password is incorrect. Please use the correct password or contact support.");
+            setErrors({ password: "Account exists but password is incorrect. Please use the correct password or contact support." });
             return;
           } else {
             toast.success("Successfully signed in!");

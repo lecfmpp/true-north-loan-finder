@@ -215,14 +215,12 @@ const Application = () => {
           // No draft found, check if user has completed quiz
           const quizId = await checkQuizCompletion();
           if (!quizId) {
-            // No quiz completion found, redirect to quiz
-            const confirmRedirect = window.confirm(
-              "To get the best loan recommendations, we recommend starting with our quick 2-minute loan estimator. Would you like to take it now?"
-            );
-            if (confirmRedirect) {
-              navigate('/loan-estimator');
-              return;
-            }
+            // No quiz completion found, but allow direct application
+            // Just pre-fill with user email if available
+            setFormData(prev => ({
+              ...prev,
+              email_address: user?.email || prev.email_address,
+            }));
           }
         }
         
