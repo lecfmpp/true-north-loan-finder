@@ -62,6 +62,8 @@ const Admin = () => {
   }>>([]);
   const [applicationsCount, setApplicationsCount] = useState(0);
   const [bookingsCount, setBookingsCount] = useState(0);
+  const [usaApplicationsCount, setUsaApplicationsCount] = useState(0);
+  const [canadianApplicationsCount, setCanadianApplicationsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -129,6 +131,8 @@ const Admin = () => {
       fetchLeads();
       fetchApplicationsCount();
       fetchBookingsCount();
+      fetchUsaApplicationsCount();
+      fetchCanadianApplicationsCount();
       if (isSuperAdmin) {
         fetchApprovedPartners();
       }
@@ -275,6 +279,38 @@ const Admin = () => {
       setBookingsCount(count || 0);
     } catch (error) {
       console.error('Error fetching bookings count:', error);
+    }
+  };
+
+  const fetchUsaApplicationsCount = async () => {
+    try {
+      const {
+        count,
+        error
+      } = await supabase.from('usa_applications').select('*', {
+        count: 'exact',
+        head: true
+      });
+      if (error) throw error;
+      setUsaApplicationsCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching USA applications count:', error);
+    }
+  };
+
+  const fetchCanadianApplicationsCount = async () => {
+    try {
+      const {
+        count,
+        error
+      } = await supabase.from('canadian_applications').select('*', {
+        count: 'exact',
+        head: true
+      });
+      if (error) throw error;
+      setCanadianApplicationsCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching Canadian applications count:', error);
     }
   };
 
@@ -905,11 +941,13 @@ const Admin = () => {
   }, {
     title: "USA Applications",
     value: "usa-applications", 
-    icon: FileText
+    icon: FileText,
+    count: usaApplicationsCount
   }, {
     title: "Canadian Applications",
     value: "canadian-applications",
-    icon: FileText
+    icon: FileText,
+    count: canadianApplicationsCount
   }, ...(isSuperAdmin ? [{
     title: "Email Sequence",
     value: "email-sequence",
