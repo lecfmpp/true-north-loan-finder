@@ -14,7 +14,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Clock, Trash2, Phone, ChevronDown, ChevronRight, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign, Settings as SettingsIcon, ExternalLink } from 'lucide-react';
+import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Trash2, Phone, ChevronDown, ChevronRight, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign, Settings as SettingsIcon, ExternalLink } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import Header from '@/components/Header';
@@ -1110,7 +1110,7 @@ const Admin = () => {
                           <TableCell>
                             <Badge className={getStatusColor(lead.status)}>
                               <div className="flex items-center gap-1">
-                                {lead.status === 'new' && <Clock className="h-3 w-3" />}
+                                {lead.status === 'new' && <UserCheck className="h-3 w-3" />}
                                 {lead.status === 'contacted' && <Phone className="h-3 w-3" />}
                                 {lead.status === 'qualified' && <Check className="h-3 w-3" />}
                                 {lead.status === 'closed' && <DollarSign className="h-3 w-3" />}
