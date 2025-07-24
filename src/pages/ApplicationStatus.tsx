@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   FileText, 
   Clock, 
@@ -16,7 +18,9 @@ import {
   MapPin,
   Phone,
   Mail,
-  RefreshCw
+  RefreshCw,
+  Eye,
+  Download
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,6 +52,9 @@ const ApplicationStatus = () => {
   const [applications, setApplications] = useState<Application[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasQuizHistory, setHasQuizHistory] = useState<boolean>(false);
+  const [selectedApplication, setSelectedApplication] = useState<any | null>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -158,6 +165,29 @@ const ApplicationStatus = () => {
     } else {
       // User hasn't done the wizard, send them to the estimator first
       navigate('/loan-estimator');
+    }
+  };
+
+  const fetchFullApplicationDetails = async (application: Application) => {
+    setIsLoadingDetails(true);
+    try {
+      const tableName = application.type === 'canadian' ? 'canadian_applications' : 'usa_applications';
+      
+      const { data, error } = await supabase
+        .from(tableName)
+        .select('*')
+        .eq('id', application.id)
+        .single();
+
+      if (error) throw error;
+
+      setSelectedApplication({ ...data, type: application.type });
+      setIsViewModalOpen(true);
+    } catch (error) {
+      console.error('Error fetching application details:', error);
+      toast.error('Failed to load application details');
+    } finally {
+      setIsLoadingDetails(false);
     }
   };
 
@@ -362,6 +392,20 @@ const ApplicationStatus = () => {
                         </div>
                       </div>
 
+                      {/* Action Buttons */}
+                      <Separator className="my-4" />
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => fetchFullApplicationDetails(application)}
+                          disabled={isLoadingDetails}
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          View Full Application
+                        </Button>
+                      </div>
+
                       {/* Admin Notes */}
                       {application.admin_notes && (
                         <>
@@ -416,6 +460,251 @@ const ApplicationStatus = () => {
           </div>
         </div>
       </main>
+      
+      {/* Full Application Details Modal */}
+      <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Complete Application Details
+            </DialogTitle>
+            <DialogDescription>
+              {selectedApplication && `Application #${selectedApplication.application_reference_number}`}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <ScrollArea className="max-h-[70vh] pr-6">
+            {selectedApplication && (
+              <div className="space-y-6">
+                {/* Business Information */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                    <Building2 className="h-5 w-5" />
+                    Business Information
+                  </h3>
+                  <div className="grid md:grid-cols-2 gap-4 bg-muted/50 p-4 rounded-lg">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Legal Business Name</label>
+                      <p className="text-sm mt-1">{selectedApplication.legal_business_name || selectedApplication.legal_corporation_name}</p>
+                    </div>
+                    {selectedApplication.dba_name && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">DBA Name</label>
+                        <p className="text-sm mt-1">{selectedApplication.dba_name}</p>
+                      </div>
+                    )}
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Business Address</label>
+                      <p className="text-sm mt-1">{selectedApplication.physical_address}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">City, State/Province</label>
+                      <p className="text-sm mt-1">{selectedApplication.city}, {selectedApplication.state}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Postal/Zip Code</label>
+                      <p className="text-sm mt-1">{selectedApplication.zip}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Business Phone</label>
+                      <p className="text-sm mt-1">{selectedApplication.business_phone || selectedApplication.telephone_number}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Email Address</label>
+                      <p className="text-sm mt-1">{selectedApplication.email_address}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Entity Type</label>
+                      <p className="text-sm mt-1">{selectedApplication.type_of_entity || selectedApplication.entity_type}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Federal Tax ID</label>
+                      <p className="text-sm mt-1">{selectedApplication.federal_tax_id}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Financial Information */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                    <DollarSign className="h-5 w-5" />
+                    Financial Information
+                  </h3>
+                  <div className="grid md:grid-cols-2 gap-4 bg-muted/50 p-4 rounded-lg">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Amount Requested</label>
+                      <p className="text-sm mt-1 font-semibold">
+                        {formatCurrency(selectedApplication.amount_requested || selectedApplication.loan_amount_requested)}
+                      </p>
+                    </div>
+                    {selectedApplication.annual_gross_sales && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Annual Gross Sales</label>
+                        <p className="text-sm mt-1">{formatCurrency(selectedApplication.annual_gross_sales)}</p>
+                      </div>
+                    )}
+                    {selectedApplication.average_monthly_deposits && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Average Monthly Deposits</label>
+                        <p className="text-sm mt-1">{formatCurrency(selectedApplication.average_monthly_deposits)}</p>
+                      </div>
+                    )}
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Use of Funds</label>
+                      <p className="text-sm mt-1">{selectedApplication.use_of_funds}</p>
+                    </div>
+                    {selectedApplication.business_start_date && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Business Start Date</label>
+                        <p className="text-sm mt-1">{formatDate(selectedApplication.business_start_date)}</p>
+                      </div>
+                    )}
+                    {selectedApplication.years_in_business !== undefined && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Time in Business</label>
+                        <p className="text-sm mt-1">
+                          {selectedApplication.years_in_business} years, {selectedApplication.months_in_business || 0} months
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Principal Owner Information */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                    <User className="h-5 w-5" />
+                    Principal Owner Information
+                  </h3>
+                  <div className="grid md:grid-cols-2 gap-4 bg-muted/50 p-4 rounded-lg">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Principal Owner Name</label>
+                      <p className="text-sm mt-1">{selectedApplication.principal_owner_name || selectedApplication.principal_name}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Home Address</label>
+                      <p className="text-sm mt-1">{selectedApplication.home_address || selectedApplication.principal_home_address}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">City, State/Province</label>
+                      <p className="text-sm mt-1">
+                        {selectedApplication.city_owner || selectedApplication.principal_city}, {selectedApplication.state_owner || selectedApplication.principal_state}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Postal/Zip Code</label>
+                      <p className="text-sm mt-1">{selectedApplication.zip_owner || selectedApplication.principal_zip}</p>
+                    </div>
+                    {selectedApplication.cell_phone && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Cell Phone</label>
+                        <p className="text-sm mt-1">{selectedApplication.cell_phone}</p>
+                      </div>
+                    )}
+                    {selectedApplication.principal_cell_phone && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Cell Phone</label>
+                        <p className="text-sm mt-1">{selectedApplication.principal_cell_phone}</p>
+                      </div>
+                    )}
+                    {selectedApplication.ownership_percentage && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Ownership Percentage</label>
+                        <p className="text-sm mt-1">{selectedApplication.ownership_percentage}%</p>
+                      </div>
+                    )}
+                    {selectedApplication.principal_ownership_percentage && (
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Ownership Percentage</label>
+                        <p className="text-sm mt-1">{selectedApplication.principal_ownership_percentage}%</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Processing Information (Canadian Only) */}
+                {selectedApplication.type === 'canadian' && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                      <FileText className="h-5 w-5" />
+                      Processing Information
+                    </h3>
+                    <div className="grid md:grid-cols-2 gap-4 bg-muted/50 p-4 rounded-lg">
+                      {selectedApplication.current_credit_card_processor && (
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Current Credit Card Processor</label>
+                          <p className="text-sm mt-1">{selectedApplication.current_credit_card_processor}</p>
+                        </div>
+                      )}
+                      {selectedApplication.annual_credit_card_sales && (
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Annual Credit Card Sales</label>
+                          <p className="text-sm mt-1">{formatCurrency(selectedApplication.annual_credit_card_sales)}</p>
+                        </div>
+                      )}
+                      {selectedApplication.average_monthly_cc_volume && (
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Average Monthly CC Volume</label>
+                          <p className="text-sm mt-1">{formatCurrency(selectedApplication.average_monthly_cc_volume)}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Application Status */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                    <Clock className="h-5 w-5" />
+                    Application Status
+                  </h3>
+                  <div className="bg-muted/50 p-4 rounded-lg">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Current Status</label>
+                        <div className="mt-1">
+                          <Badge className={`${getStatusColor(selectedApplication.status)} text-white`}>
+                            {selectedApplication.status.replace('_', ' ').toUpperCase()}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Submitted Date</label>
+                        <p className="text-sm mt-1">{formatDate(selectedApplication.created_at)}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Last Updated</label>
+                        <p className="text-sm mt-1">{formatDate(selectedApplication.updated_at)}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Progress</label>
+                        <div className="mt-1">
+                          <Progress value={getProgressPercentage(selectedApplication.status)} className="h-2" />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {getProgressPercentage(selectedApplication.status)}% Complete
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {selectedApplication.admin_notes && (
+                      <div className="mt-4 pt-4 border-t">
+                        <label className="text-sm font-medium text-muted-foreground">Notes from Funding Specialist</label>
+                        <div className="mt-2 bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg">
+                          <p className="text-sm text-blue-800 dark:text-blue-200">
+                            {selectedApplication.admin_notes}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
       
       <Footer />
     </div>
