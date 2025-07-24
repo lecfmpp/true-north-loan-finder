@@ -126,54 +126,233 @@ const handler = async (req: Request): Promise<Response> => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>New Qualified Lead - ${lead.name}</title>
         <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 0; background-color: #f4f4f4; }
-            .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
-            .header { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 30px; text-align: center; position: relative; }
-            .logo { width: 120px; height: auto; margin-bottom: 15px; }
-            .header h1 { margin: 0; font-size: 28px; font-weight: 600; color: #ffffff; }
-            .header p { margin: 10px 0 0 0; font-size: 16px; opacity: 0.9; }
-            .content { padding: 30px; }
-            .lead-card { background: linear-gradient(135deg, #f8faff 0%, #e0edff 100%); border-left: 4px solid #3b82f6; padding: 20px; margin: 20px 0; border-radius: 0 8px 8px 0; }
-            .lead-info { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
-            .info-item { background: white; padding: 15px; border-radius: 8px; border: 1px solid #e1e5e9; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-            .info-label { font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600; margin-bottom: 5px; }
-            .info-value { font-size: 16px; color: #333; font-weight: 500; }
-            .highlight { background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-color: #10b981; }
-            .highlight .info-value { color: #059669; font-weight: 600; }
-            .cta-section { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 25px; margin: 25px 0; border-radius: 10px; text-align: center; }
-            .cta-button { display: inline-block; background: #10b981; color: white; padding: 15px 35px; border-radius: 25px; text-decoration: none; font-weight: 600; margin: 10px; transition: all 0.2s; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
-            .cta-button:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4); }
-            .urgency { background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%); border: 1px solid #f59e0b; padding: 15px; border-radius: 8px; margin: 20px 0; }
-            .urgency strong { color: #d97706; }
-            .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 14px; }
-            .brand-colors { color: #1e3a8a; }
-            .accent-text { color: #3b82f6; }
+            body { 
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+                line-height: 1.6; 
+                margin: 0; 
+                padding: 0; 
+                background-color: #f8fafc; 
+            }
+            .container { 
+                max-width: 600px; 
+                margin: 20px auto; 
+                background: #ffffff; 
+                border-radius: 8px; 
+                overflow: hidden; 
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+            }
+            .header { 
+                background: #1e3a8a; 
+                color: #ffffff; 
+                padding: 40px 30px; 
+                text-align: center; 
+            }
+            .logo { 
+                width: 150px; 
+                height: auto; 
+                margin-bottom: 20px; 
+                display: block; 
+                margin-left: auto; 
+                margin-right: auto;
+            }
+            .header h1 { 
+                margin: 0; 
+                font-size: 28px; 
+                font-weight: 600; 
+                color: #ffffff; 
+            }
+            .header p { 
+                margin: 10px 0 0 0; 
+                font-size: 16px; 
+                color: #ffffff; 
+                opacity: 0.9; 
+            }
+            .content { 
+                padding: 30px; 
+                background: #ffffff; 
+            }
+            .urgency { 
+                background: #ffffff; 
+                border: 2px solid #10b981; 
+                padding: 20px; 
+                border-radius: 8px; 
+                margin: 20px 0; 
+                text-align: center;
+            }
+            .urgency strong { 
+                color: #1e3a8a; 
+                font-size: 18px;
+            }
+            .urgency p {
+                color: #1e3a8a;
+                margin: 8px 0 0 0;
+            }
+            .lead-card { 
+                background: #ffffff; 
+                border: 2px solid #1e3a8a; 
+                padding: 25px; 
+                margin: 25px 0; 
+                border-radius: 8px; 
+            }
+            .lead-card h2 {
+                margin: 0 0 15px 0; 
+                color: #1e3a8a; 
+                font-size: 20px;
+            }
+            .lead-card h3 { 
+                margin: 0; 
+                color: #1e3a8a; 
+                font-size: 24px; 
+                font-weight: 600;
+            }
+            .lead-card p { 
+                margin: 5px 0 0 0; 
+                color: #1e3a8a; 
+                font-size: 16px; 
+            }
+            .lead-info { 
+                display: grid; 
+                grid-template-columns: 1fr 1fr; 
+                gap: 15px; 
+                margin: 25px 0; 
+            }
+            .info-item { 
+                background: #ffffff; 
+                padding: 20px; 
+                border-radius: 8px; 
+                border: 1px solid #e5e7eb; 
+            }
+            .info-label { 
+                font-size: 12px; 
+                color: #1e3a8a; 
+                text-transform: uppercase; 
+                font-weight: 600; 
+                margin-bottom: 8px; 
+            }
+            .info-value { 
+                font-size: 16px; 
+                color: #1e3a8a; 
+                font-weight: 500; 
+            }
+            .highlight { 
+                background: #ffffff; 
+                border: 2px solid #10b981; 
+            }
+            .highlight .info-value { 
+                color: #1e3a8a; 
+                font-weight: 600; 
+                font-size: 18px;
+            }
+            .cta-section { 
+                background: #1e3a8a; 
+                color: #ffffff; 
+                padding: 30px; 
+                margin: 30px 0; 
+                border-radius: 8px; 
+                text-align: center; 
+            }
+            .cta-section h2 {
+                margin: 0 0 15px 0;
+                color: #ffffff;
+                font-size: 24px;
+            }
+            .cta-section p {
+                margin: 0 0 25px 0;
+                color: #ffffff;
+                font-size: 16px;
+            }
+            .cta-button { 
+                display: inline-block; 
+                background: #10b981; 
+                color: #ffffff; 
+                padding: 15px 35px; 
+                border-radius: 8px; 
+                text-decoration: none; 
+                font-weight: 600; 
+                font-size: 16px;
+                margin: 10px; 
+            }
+            .next-steps {
+                background: #ffffff;
+                border: 1px solid #e5e7eb;
+                padding: 25px;
+                border-radius: 8px;
+                margin: 25px 0;
+            }
+            .next-steps h3 {
+                margin: 0 0 15px 0;
+                color: #1e3a8a;
+                font-size: 18px;
+            }
+            .next-steps ol {
+                margin: 0;
+                padding-left: 20px;
+                color: #1e3a8a;
+            }
+            .next-steps li {
+                margin-bottom: 8px;
+                color: #1e3a8a;
+            }
+            .next-steps strong {
+                color: #1e3a8a;
+            }
+            .footer { 
+                background: #f8fafc; 
+                padding: 25px; 
+                text-align: center; 
+                color: #1e3a8a; 
+                font-size: 14px; 
+                border-top: 1px solid #e5e7eb;
+            }
+            .footer p {
+                margin: 5px 0;
+                color: #1e3a8a;
+            }
+            .footer strong {
+                color: #1e3a8a;
+            }
+            .website-link {
+                color: #10b981;
+                text-decoration: none;
+                font-weight: 500;
+            }
+            .created-date {
+                color: #1e3a8a;
+                font-style: italic;
+                text-align: center;
+                margin-top: 25px;
+                font-size: 14px;
+            }
             @media (max-width: 600px) {
                 .lead-info { grid-template-columns: 1fr; }
                 .container { margin: 10px; }
                 .header, .content { padding: 20px; }
-                .logo { width: 100px; }
+                .logo { width: 120px; }
             }
         </style>
     </head>
     <body>
         <div class="container">
             <div class="header">
-                <img src="https://i.imgur.com/YourLogoHere.png" alt="True North Business Loan" class="logo" />
+                <svg class="logo" viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="200" height="60" fill="#ffffff" rx="4"/>
+                    <text x="100" y="25" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#1e3a8a">TRUE NORTH</text>
+                    <text x="100" y="42" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#10b981">BUSINESS LOAN</text>
+                </svg>
                 <h1>🚀 New Qualified Lead!</h1>
                 <p>We found the perfect business looking for funding</p>
             </div>
             
             <div class="content">
                 <div class="urgency">
-                    <strong>⏰ Time Sensitive:</strong> This lead is ready to sign papers and move forward immediately. 
-                    They've completed our qualification process and are actively seeking funding.
+                    <strong>⏰ Time Sensitive Opportunity</strong>
+                    <p>This lead is ready to sign papers and move forward immediately. They've completed our qualification process and are actively seeking funding.</p>
                 </div>
 
                 <div class="lead-card">
-                    <h2 style="margin: 0 0 15px 0; color: #333;">Lead Information</h2>
-                    <h3 style="margin: 0; color: #667eea; font-size: 24px;">${lead.name}</h3>
-                    <p style="margin: 5px 0 0 0; color: #666; font-size: 16px;">${lead.email}</p>
+                    <h2>Lead Information</h2>
+                    <h3>${lead.name}</h3>
+                    <p>${lead.email}</p>
                 </div>
 
                 <div class="lead-info">
@@ -204,21 +383,21 @@ const handler = async (req: Request): Promise<Response> => {
                 </div>
 
                 ${lead.website ? `
-                <div class="info-item" style="margin: 15px 0;">
+                <div class="info-item" style="margin: 20px 0;">
                     <div class="info-label">🌐 Website</div>
-                    <div class="info-value"><a href="${lead.website}" target="_blank" style="color: #667eea;">${lead.website}</a></div>
+                    <div class="info-value"><a href="${lead.website}" target="_blank" class="website-link">${lead.website}</a></div>
                 </div>
                 ` : ''}
 
                 <div class="cta-section">
-                    <h2 style="margin: 0 0 15px 0;">📞 Ready to Close This Deal?</h2>
-                    <p style="margin: 0 0 20px 0; opacity: 0.9;">This lead is qualified and ready to move forward. Call them ASAP to secure this opportunity!</p>
-                    <a href="tel:${lead.phone}" class="cta-button">📱 Call Now</a>
+                    <h2>📞 Ready to Close This Deal?</h2>
+                    <p>This lead is qualified and ready to move forward. Call them now to secure this opportunity!</p>
+                    <a href="tel:${lead.phone}" class="cta-button">📱 Call Lead Now</a>
                 </div>
 
-                <div style="background: #f8f9ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                    <h3 style="margin: 0 0 10px 0; color: #333;">📋 Next Steps:</h3>
-                    <ol style="margin: 0; padding-left: 20px; color: #666;">
+                <div class="next-steps">
+                    <h3>📋 Next Steps:</h3>
+                    <ol>
                         <li><strong>Call immediately</strong> - Strike while the iron is hot</li>
                         <li><strong>Confirm funding needs</strong> - Verify the ${formatAmount(lead.loan_amount)} requirement</li>
                         <li><strong>Review qualifications</strong> - They've already been pre-screened</li>
@@ -227,7 +406,7 @@ const handler = async (req: Request): Promise<Response> => {
                     </ol>
                 </div>
 
-                <p style="color: #666; font-style: italic; text-align: center; margin-top: 30px;">
+                <p class="created-date">
                     This lead was generated on ${new Date(lead.created_at).toLocaleDateString('en-CA', { 
                         year: 'numeric', 
                         month: 'long', 
