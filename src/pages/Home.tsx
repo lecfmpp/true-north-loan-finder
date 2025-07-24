@@ -198,12 +198,9 @@ const Home = () => {
             {steps.map((step, index) => (
               <Card key={index} className="text-center border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                 <CardContent className="p-8">
-                  <div className="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                    {step.icon}
-                  </div>
-                  <div className="w-8 h-8 bg-accent text-accent-foreground rounded-full flex items-center justify-center mx-auto mb-4 font-bold">
-                    {step.number}
-                  </div>
+                   <div className="w-[90px] h-[90px] bg-accent text-accent-foreground rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-2xl">
+                     {step.number}
+                   </div>
                   <h3 className="text-xl font-semibold font-sans text-primary mb-3">
                     {step.title}
                   </h3>
