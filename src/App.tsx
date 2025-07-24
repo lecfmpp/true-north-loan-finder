@@ -41,46 +41,46 @@ const queryClient = new QueryClient({
 });
 
 const App = () => (
-  <BrowserRouter>
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <ChatWidget />
-          
+  <QueryClientProvider client={queryClient}>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <ChatWidget />
+        
+        <BrowserRouter>
           <ScrollToTop />
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/loan-estimator" element={<Quiz />} />
-              <Route path="/results/:responseId" element={<Results />} />
-              <Route path="/how-it-works" element={<HowItWorks />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/partners" element={<Partners />} />
-              <Route path="/industries-we-serve" element={<IndustriesWeServe />} />
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/blog/:slug" element={<BlogPost />} />
-              <Route path="/equipment-financing" element={<EquipmentFinancing />} />
-              <Route path="/small-business-loans" element={<SmallBusinessLoans />} />
-              <Route path="/merchant-cash-advance" element={<MerchantCashAdvance />} />
-              <Route path="/invoice-factoring" element={<InvoiceFactoring />} />
-              <Route path="/compare" element={<Compare />} />
-              <Route path="/application" element={<Application />} />
-              <Route path="/application-canadian" element={<CanadianApplication />} />
-              <Route path="/application-success" element={<ApplicationSuccess />} />
-              <Route path="/application-status" element={<ApplicationStatus />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/admin" element={<Admin />} />
-              
-              <Route path="/privacy" element={<PrivacyPolicy />} />
-              <Route path="/terms" element={<TermsOfService />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-        </TooltipProvider>
-      </AuthProvider>
-    </QueryClientProvider>
-  </BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/loan-estimator" element={<Quiz />} />
+            <Route path="/results/:responseId" element={<Results />} />
+            <Route path="/how-it-works" element={<HowItWorks />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/partners" element={<Partners />} />
+            <Route path="/industries-we-serve" element={<IndustriesWeServe />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/equipment-financing" element={<EquipmentFinancing />} />
+            <Route path="/small-business-loans" element={<SmallBusinessLoans />} />
+            <Route path="/merchant-cash-advance" element={<MerchantCashAdvance />} />
+            <Route path="/invoice-factoring" element={<InvoiceFactoring />} />
+            <Route path="/compare" element={<Compare />} />
+            <Route path="/application" element={<Application />} />
+            <Route path="/application-canadian" element={<CanadianApplication />} />
+            <Route path="/application-success" element={<ApplicationSuccess />} />
+            <Route path="/application-status" element={<ApplicationStatus />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/admin" element={<Admin />} />
+            
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
+  </QueryClientProvider>
 );
 
 export default App;
