@@ -1132,7 +1132,6 @@ const Application = () => {
                   onChange={(e) => updateFormData('loan_amount_requested', e.target.value)}
                   placeholder="$1,000"
                   required
-                  onClick={(e) => e.stopPropagation()}
                 />
                 <p className="text-xs text-muted-foreground mt-1">Amount in USD</p>
               </div>
@@ -1146,7 +1145,6 @@ const Application = () => {
                   rows={4}
                   placeholder="Please describe how you plan to use the loan funds..."
                   required
-                  onClick={(e) => e.stopPropagation()}
                 />
               </div>
             </div>
@@ -1187,7 +1185,10 @@ const Application = () => {
                     <li><strong>Additional:</strong> Any other supporting financial documents</li>
                   </ul>
                   
-                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
+                  <div 
+                    className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-primary/50 transition-colors relative cursor-pointer"
+                    onClick={() => document.getElementById('document_upload')?.click()}
+                  >
                     <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                     <div className="space-y-2">
                       <p className="text-base font-medium">Upload Your Documents</p>
@@ -1199,15 +1200,16 @@ const Application = () => {
                       </p>
                     </div>
                     <Input
+                      id="document_upload"
                       type="file"
                       multiple
                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                       onChange={(e) => {
-                        e.stopPropagation();
                         const files = Array.from(e.target.files || []);
                         updateFormData('document_files', files);
                       }}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      style={{ pointerEvents: 'auto' }}
                     />
                   </div>
                   
