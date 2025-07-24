@@ -507,6 +507,30 @@ const Quiz = () => {
       // Submit to external tracking system
       await EXTERNAL_TRACKER.submitLead(data, score);
 
+      // Send admin notification
+      try {
+        await supabase.functions.invoke('send-admin-notification', {
+          body: {
+            type: 'quiz',
+            data: {
+              name: data.name,
+              email: data.email,
+              phone: data.phone,
+              loan_amount: data.loanAmount[0],
+              monthly_revenue: data.monthlyRevenue[0],
+              credit_score: data.creditScore,
+              use_of_funds: data.useOfFunds,
+              time_in_business: data.timeInBusiness,
+              score: score
+            },
+            submissionId: savedResponse.id
+          }
+        });
+      } catch (adminNotificationError) {
+        console.error('Failed to send admin notification:', adminNotificationError);
+        // Don't fail the whole submission if admin notification fails
+      }
+
       // Start follow-up email sequence (15-minute delay)
       setTimeout(async () => {
         try {

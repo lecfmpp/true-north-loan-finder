@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_notification_settings: {
+        Row: {
+          application_notification_email: string
+          created_at: string
+          id: string
+          is_application_notifications_enabled: boolean
+          is_quiz_notifications_enabled: boolean
+          quiz_notification_email: string
+          updated_at: string
+        }
+        Insert: {
+          application_notification_email?: string
+          created_at?: string
+          id?: string
+          is_application_notifications_enabled?: boolean
+          is_quiz_notifications_enabled?: boolean
+          quiz_notification_email?: string
+          updated_at?: string
+        }
+        Update: {
+          application_notification_email?: string
+          created_at?: string
+          id?: string
+          is_application_notifications_enabled?: boolean
+          is_quiz_notifications_enabled?: boolean
+          quiz_notification_email?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       analytics_events: {
         Row: {
           created_at: string

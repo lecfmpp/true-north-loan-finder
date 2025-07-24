@@ -361,6 +361,20 @@ const Application = () => {
         localStorage.setItem('application_reference_number', data.application_reference_number);
       }
 
+      // Send admin notification
+      try {
+        await supabase.functions.invoke('send-admin-notification', {
+          body: {
+            type: 'application',
+            data: applicationData,
+            submissionId: data.application_reference_number
+          }
+        });
+      } catch (adminNotificationError) {
+        console.error('Failed to send admin notification:', adminNotificationError);
+        // Don't fail the whole submission if admin notification fails
+      }
+
       // Track conversion
       if (typeof window !== 'undefined' && (window as any).gtag) {
         (window as any).gtag('event', 'conversion', {

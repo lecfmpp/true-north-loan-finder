@@ -23,6 +23,7 @@ import {
   HelpCircle
 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import NotificationEmailSettings from './NotificationEmailSettings';
 
 interface GoogleSettings {
   serviceAccountKey: string;
@@ -388,22 +389,7 @@ const SettingsManagement = () => {
         </TabsContent>
 
         <TabsContent value="email" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Email Configuration</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Manage email settings and templates
-              </p>
-            </CardHeader>
-            <CardContent>
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Email settings are managed through the Email Sequence Management section in the Admin panel.
-                </AlertDescription>
-              </Alert>
-            </CardContent>
-          </Card>
+          <NotificationEmailSettings />
         </TabsContent>
 
         <TabsContent value="security" className="space-y-6">
