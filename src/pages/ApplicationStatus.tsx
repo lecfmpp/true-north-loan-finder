@@ -47,6 +47,7 @@ const ApplicationStatus = () => {
   const navigate = useNavigate();
   const [applications, setApplications] = useState<Application[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasQuizHistory, setHasQuizHistory] = useState<boolean>(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -64,6 +65,17 @@ const ApplicationStatus = () => {
 
     setIsLoading(true);
     try {
+      // Check if user has any quiz history by looking for quiz responses with their email
+      const { data: quizHistory, error: quizError } = await supabase
+        .from('quiz_responses')
+        .select('id')
+        .eq('email', user.email)
+        .limit(1);
+
+      if (!quizError && quizHistory && quizHistory.length > 0) {
+        setHasQuizHistory(true);
+      }
+
       // Fetch Canadian applications
       const { data: canadianApps, error: canadianError } = await supabase
         .from('canadian_applications')
@@ -136,6 +148,16 @@ const ApplicationStatus = () => {
       toast.error('Failed to load applications');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleStartApplication = () => {
+    if (hasQuizHistory) {
+      // User has completed the wizard before, go directly to application
+      navigate('/application-canadian');
+    } else {
+      // User hasn't done the wizard, send them to the estimator first
+      navigate('/loan-estimator');
     }
   };
 
@@ -255,7 +277,7 @@ const ApplicationStatus = () => {
                   <p className="text-muted-foreground mb-4">
                     You haven't submitted any applications yet.
                   </p>
-                  <Button onClick={() => navigate('/loan-estimator')}>
+                  <Button onClick={handleStartApplication}>
                     Start Your Application
                   </Button>
                 </CardContent>
