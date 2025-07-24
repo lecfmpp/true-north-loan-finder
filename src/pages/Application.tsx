@@ -431,6 +431,7 @@ const Application = () => {
                   id="legal_corporation_name"
                   value={formData.legal_corporation_name}
                   onChange={(e) => updateFormData('legal_corporation_name', e.target.value)}
+                  maxLength={100}
                   required
                 />
               </div>
@@ -441,6 +442,7 @@ const Application = () => {
                   id="dba_name"
                   value={formData.dba_name}
                   onChange={(e) => updateFormData('dba_name', e.target.value)}
+                  maxLength={100}
                 />
               </div>
               
@@ -450,6 +452,7 @@ const Application = () => {
                   id="physical_address"
                   value={formData.physical_address}
                   onChange={(e) => updateFormData('physical_address', e.target.value)}
+                  maxLength={150}
                   required
                 />
               </div>
@@ -460,6 +463,7 @@ const Application = () => {
                   id="city"
                   value={formData.city}
                   onChange={(e) => updateFormData('city', e.target.value)}
+                  maxLength={50}
                   required
                 />
               </div>
@@ -516,9 +520,10 @@ const Application = () => {
                   value={formData.telephone_number}
                   onChange={(e) => {
                     const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-                    updateFormData('telephone_number', formatted);
+                    updateFormData('telephone_number', formatted.slice(0, 14));
                   }}
                   placeholder="(555) 123-4567"
+                  maxLength={14}
                   required
                 />
               </div>
@@ -531,9 +536,10 @@ const Application = () => {
                   value={formData.fax_number}
                   onChange={(e) => {
                     const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-                    updateFormData('fax_number', formatted);
+                    updateFormData('fax_number', formatted.slice(0, 14));
                   }}
                   placeholder="(555) 123-4567"
+                  maxLength={14}
                 />
               </div>
               
@@ -545,6 +551,7 @@ const Application = () => {
                   value={formData.email_address}
                   onChange={(e) => updateFormData('email_address', e.target.value)}
                   placeholder="example@domain.com"
+                  maxLength={100}
                   required
                 />
               </div>
@@ -556,6 +563,7 @@ const Application = () => {
                   type="url"
                   value={formData.website}
                   onChange={(e) => updateFormData('website', e.target.value)}
+                  maxLength={100}
                 />
               </div>
             </div>
