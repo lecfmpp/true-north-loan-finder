@@ -5,9 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ExternalLink, Eye, Search, Filter, FileText, User, Building2, Phone, Mail } from "lucide-react";
+import { ExternalLink, Eye, Search, Filter, FileText, User, Building2, Phone, Mail, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/use-auth";
 
 interface USAApplication {
   id: string;
@@ -38,6 +39,7 @@ interface QuizResponse {
 }
 
 const USAApplicationsManagement = () => {
+  const { isSuperAdmin } = useAuth();
   const [applications, setApplications] = useState<USAApplication[]>([]);
   const [filteredApplications, setFilteredApplications] = useState<USAApplication[]>([]);
   const [quizResponses, setQuizResponses] = useState<Record<string, QuizResponse>>({});
@@ -140,6 +142,32 @@ const USAApplicationsManagement = () => {
     } catch (error) {
       console.error('Error updating application:', error);
       toast.error("Failed to update application status");
+    }
+  };
+
+  const deleteApplication = async (id: string, refNumber: string) => {
+    if (!confirm(`Are you sure you want to permanently delete application ${refNumber}? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('usa_applications')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast.success("Application deleted successfully");
+      fetchApplications();
+      // Close modal if the deleted application was being viewed
+      if (selectedApplication?.id === id) {
+        setSelectedApplication(null);
+        setNotes("");
+      }
+    } catch (error) {
+      console.error('Error deleting application:', error);
+      toast.error("Failed to delete application");
     }
   };
 
@@ -367,6 +395,18 @@ const USAApplicationsManagement = () => {
                         Reject
                       </Button>
                     </div>
+
+                    {isSuperAdmin && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-red-600 border-red-600 hover:bg-red-50"
+                        onClick={() => deleteApplication(application.id, application.application_reference_number)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </Button>
+                    )}
                   </div>
                 </div>
 
