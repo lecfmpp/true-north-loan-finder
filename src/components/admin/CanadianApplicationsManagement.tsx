@@ -790,22 +790,34 @@ const CanadianApplicationsManagement = () => {
                       <div>
                         <h4 className="font-medium text-muted-foreground mb-2">Processing Statements:</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                          {selectedApplication.processing_statements.map((file: any, index: number) => (
-                            <div key={index} className="flex items-center gap-2 p-3 border rounded-lg bg-muted/30">
-                              <FileText className="h-4 w-4 text-primary" />
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium truncate">{file.name || `Processing Statement ${index + 1}`}</p>
-                                <p className="text-xs text-muted-foreground">{file.size ? `${(file.size / 1024).toFixed(1)} KB` : 'Unknown size'}</p>
+                          {selectedApplication.processing_statements.map((file: any, index: number) => {
+                            const hasValidPath = file.path || file.url;
+                            return (
+                              <div key={index} className="flex items-center gap-2 p-3 border rounded-lg bg-muted/30">
+                                <FileText className="h-4 w-4 text-primary" />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium truncate">{file.name || `Processing Statement ${index + 1}`}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {file.size ? `${(file.size / 1024).toFixed(1)} KB` : 'Unknown size'}
+                                    {!hasValidPath && ' - No file path'}
+                                  </p>
+                                </div>
+                                {hasValidPath ? (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => downloadFileFromStorage(file.path || file.url, file.name || `processing-statement-${index + 1}`)}
+                                  >
+                                    <Download className="h-3 w-3" />
+                                  </Button>
+                                ) : (
+                                  <Button size="sm" variant="outline" disabled>
+                                    No File
+                                  </Button>
+                                )}
                               </div>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => downloadFileFromStorage(file.path || file.url, file.name || `processing-statement-${index + 1}`)}
-                              >
-                                <Download className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     )}
@@ -814,22 +826,34 @@ const CanadianApplicationsManagement = () => {
                       <div>
                         <h4 className="font-medium text-muted-foreground mb-2">Supporting Documents:</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                          {selectedApplication.document_files.map((file: any, index: number) => (
-                            <div key={index} className="flex items-center gap-2 p-3 border rounded-lg bg-muted/30">
-                              <FileText className="h-4 w-4 text-primary" />
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium truncate">{file.name || `Document ${index + 1}`}</p>
-                                <p className="text-xs text-muted-foreground">{file.size ? `${(file.size / 1024).toFixed(1)} KB` : 'Unknown size'}</p>
+                          {selectedApplication.document_files.map((file: any, index: number) => {
+                            const hasValidPath = file.path || file.url;
+                            return (
+                              <div key={index} className="flex items-center gap-2 p-3 border rounded-lg bg-muted/30">
+                                <FileText className="h-4 w-4 text-primary" />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium truncate">{file.name || `Document ${index + 1}`}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {file.size ? `${(file.size / 1024).toFixed(1)} KB` : 'Unknown size'}
+                                    {!hasValidPath && ' - No file path'}
+                                  </p>
+                                </div>
+                                {hasValidPath ? (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => downloadFileFromStorage(file.path || file.url, file.name || `document-${index + 1}`)}
+                                  >
+                                    <Download className="h-3 w-3" />
+                                  </Button>
+                                ) : (
+                                  <Button size="sm" variant="outline" disabled>
+                                    No File
+                                  </Button>
+                                )}
                               </div>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => downloadFileFromStorage(file.path || file.url, file.name || `document-${index + 1}`)}
-                              >
-                                <Download className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     )}
