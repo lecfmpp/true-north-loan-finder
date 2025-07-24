@@ -86,7 +86,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Fetch lead information
     const { data: lead, error: leadError } = await supabase
       .from('quiz_responses')
-      .select('id, name, email, phone, loan_amount, monthly_revenue, time_in_business, credit_score, use_of_funds, website, created_at')
+      .select('id, name, email, phone, loan_amount, monthly_revenue, time_in_business, credit_score, use_of_funds, website, created_at, score')
       .eq('id', leadId)
       .single();
 
@@ -375,6 +375,10 @@ const handler = async (req: Request): Promise<Response> => {
                     <div class="info-item">
                         <div class="info-label">💳 Credit Score</div>
                         <div class="info-value">${lead.credit_score}</div>
+                    </div>
+                    <div class="info-item highlight">
+                        <div class="info-label">⭐ Qualification Score</div>
+                        <div class="info-value">${lead.score}/100 (${lead.score >= 85 ? "Excellent" : lead.score >= 70 ? "Great" : lead.score >= 55 ? "Good" : "Fair"})</div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">🎯 Use of Funds</div>

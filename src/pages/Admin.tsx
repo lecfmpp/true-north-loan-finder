@@ -1185,7 +1185,14 @@ const Admin = () => {
                             </Collapsible>
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline">{lead.score}/100</Badge>
+                            <div className="flex flex-col items-center">
+                              <Badge variant="outline" className="mb-1">{lead.score}/100</Badge>
+                              <span className="text-xs text-muted-foreground">
+                                {lead.score >= 85 ? "Excellent" : 
+                                 lead.score >= 70 ? "Great" : 
+                                 lead.score >= 55 ? "Good" : "Fair"}
+                              </span>
+                            </div>
                           </TableCell>
                           <TableCell>
                             <Badge className={getStatusColor(lead.status)}>
