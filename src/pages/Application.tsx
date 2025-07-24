@@ -1041,6 +1041,7 @@ const Application = () => {
                   value={formData.high_ticket}
                   onChange={(e) => updateFormData('high_ticket', e.target.value)}
                   placeholder="$0"
+                  maxLength={15}
                 />
                 <p className="text-xs text-muted-foreground mt-1">Amount in USD</p>
               </div>
