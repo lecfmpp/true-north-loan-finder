@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,11 +8,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, ArrowRight, Building2, User, CreditCard, FileText, CheckCircle, Upload, Info } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { ApplicationAuth } from "@/components/ApplicationAuth";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { useAuth } from "@/hooks/use-auth";
 
 interface ApplicationData {
   // Company Information
@@ -84,9 +86,12 @@ interface ApplicationData {
 
 const Application = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const totalSteps = 6;
+  const [showAuth, setShowAuth] = useState(false);
+  const { user, loading } = useAuth();
+  const totalSteps = 7; // Updated to include auth step
   
   const [formData, setFormData] = useState<ApplicationData>({
     legal_corporation_name: "",
@@ -138,6 +143,29 @@ const Application = () => {
     use_of_funds: "",
     document_files: [],
   });
+
+  // Auto-fill form from URL parameters when coming from quiz results
+  useEffect(() => {
+    const name = searchParams.get('name');
+    const email = searchParams.get('email');
+    const phone = searchParams.get('phone');
+    const loanAmount = searchParams.get('loanAmount');
+    const monthlyRevenue = searchParams.get('monthlyRevenue');
+    const useOfFunds = searchParams.get('useOfFunds');
+
+    // Pre-fill form if quiz data is available
+    if (name || email || phone || loanAmount) {
+      setFormData(prev => ({
+        ...prev,
+        principal_name: name || prev.principal_name,
+        principal_email: email || prev.principal_email,
+        email_address: email || prev.email_address,
+        principal_cell_phone: phone || prev.principal_cell_phone,
+        loan_amount_requested: loanAmount || prev.loan_amount_requested,
+        use_of_funds: useOfFunds || prev.use_of_funds,
+      }));
+    }
+  }, [searchParams]);
 
   const updateFormData = (field: keyof ApplicationData, value: any) => {
     setFormData(prev => ({
@@ -243,6 +271,12 @@ const Application = () => {
   };
 
   const handleSubmit = async () => {
+    // Check if user is authenticated first
+    if (!user) {
+      setShowAuth(true);
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
@@ -310,6 +344,8 @@ const Application = () => {
         quiz_response_id: quizResponseId || null,
         lead_source: quizResponseId ? 'quiz' : 'direct',
         conversion_stage: 'application',
+        // Associate with authenticated user
+        user_id: user?.id,
       };
 
       const { data, error } = await supabase
@@ -1070,6 +1106,45 @@ const Application = () => {
         return null;
     }
   };
+
+  // Show authentication form if user is not authenticated and showAuth is true
+  if (showAuth || (!user && !loading)) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
+        <Header />
+        
+        <div className="container mx-auto px-4 py-4 md:py-8">
+          <div className="max-w-2xl mx-auto">
+            {/* Header */}
+            <div className="text-center mb-6">
+              <h1 className="text-2xl md:text-3xl font-bold text-primary mb-2">Business Loan Application</h1>
+              <p className="text-sm md:text-base text-muted-foreground mb-6">
+                Step 1 of {totalSteps}: Create Your Secure Account
+              </p>
+              {/* Progress */}
+              <div className="max-w-md mx-auto mb-6">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs md:text-sm font-medium">Step 1 of {totalSteps}</span>
+                  <span className="text-xs md:text-sm text-muted-foreground">
+                    {Math.round((1 / totalSteps) * 100)}% Complete
+                  </span>
+                </div>
+                <Progress value={(1 / totalSteps) * 100} className="h-2" />
+              </div>
+            </div>
+            
+            <ApplicationAuth
+              email={searchParams.get('email') || formData.email_address}
+              name={searchParams.get('name') || formData.principal_name}
+              onAuthSuccess={() => setShowAuth(false)}
+            />
+          </div>
+        </div>
+        
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20">

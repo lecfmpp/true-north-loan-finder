@@ -116,9 +116,9 @@ export const ApplicationAuth = ({ email = "", name = "", onAuthSuccess }: Applic
         <div className="mx-auto mb-4 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
           <Shield className="h-6 w-6 text-primary" />
         </div>
-        <CardTitle className="text-xl">Secure Your Application</CardTitle>
+        <CardTitle className="text-xl">Create Your Secure Account</CardTitle>
         <CardDescription>
-          Create an account to securely submit and track your application status
+          This secure account will allow you to complete your application and track its progress
         </CardDescription>
       </CardHeader>
       <CardContent>

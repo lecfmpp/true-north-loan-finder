@@ -87,7 +87,7 @@ const CanadianApplication = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const { user, loading } = useAuth();
-  const totalSteps = 5;
+  const totalSteps = 6; // Updated to include auth step
   
   const [formData, setFormData] = useState<CanadianApplicationData>({
     legal_business_name: "",
@@ -1252,13 +1252,23 @@ const CanadianApplication = () => {
                   <h1 className="text-2xl md:text-3xl font-bold">Canadian Business Application</h1>
                 </div>
                 <p className="text-sm md:text-base text-muted-foreground mb-6">
-                  Secure your application data and track your progress
+                  Step 1 of {totalSteps}: Create Your Secure Account
                 </p>
+                {/* Progress */}
+                <div className="mb-6">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs md:text-sm font-medium">Step 1 of {totalSteps}</span>
+                    <span className="text-xs md:text-sm text-muted-foreground">
+                      {Math.round((1 / totalSteps) * 100)}% Complete
+                    </span>
+                  </div>
+                  <Progress value={(1 / totalSteps) * 100} className="h-2" />
+                </div>
               </div>
               
               <ApplicationAuth
-                email={formData.email_address}
-                name={formData.principal_owner_name}
+                email={searchParams.get('email') || formData.email_address}
+                name={searchParams.get('name') || formData.principal_owner_name}
                 onAuthSuccess={() => setShowAuth(false)}
               />
             </div>
