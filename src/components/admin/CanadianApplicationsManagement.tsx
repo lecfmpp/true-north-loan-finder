@@ -5,17 +5,64 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ExternalLink, Eye, Search, Filter, FileText, User, Building2, Phone, Mail } from "lucide-react";
+import { ExternalLink, Eye, Search, Filter, FileText, User, Building2, Phone, Mail, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import jsPDF from 'jspdf';
 
 interface CanadianApplication {
   id: string;
   application_reference_number: string;
   legal_business_name: string;
+  dba_name?: string;
   email_address: string;
   business_phone: string;
+  business_fax?: string;
+  physical_address: string;
+  mailing_address?: string;
+  city: string;
+  state: string;
+  zip: string;
+  type_of_entity: string;
+  federal_tax_id: string;
+  business_start_date: string;
+  number_of_locations: number;
+  business_property_type: string;
+  landlord_or_bank_company_name?: string;
+  landlord_or_bank_phone?: string;
+  monthly_rent_or_mortgage?: number;
+  annual_gross_sales: number;
+  annual_credit_card_sales?: number;
+  average_monthly_cc_volume?: number;
+  current_credit_card_processor?: string;
   amount_requested: number;
+  use_of_funds: string;
+  existing_advance: boolean;
+  outstanding_balance?: number;
+  if_so_with_who?: string;
+  principal_owner_name: string;
+  principal_owner_name_2?: string;
+  home_address: string;
+  city_owner: string;
+  state_owner: string;
+  zip_owner: string;
+  home_phone?: string;
+  cell_phone?: string;
+  home_address_2?: string;
+  city_owner_2?: string;
+  state_owner_2?: string;
+  zip_owner_2?: string;
+  home_phone_2?: string;
+  cell_phone_2?: string;
+  email_address_2?: string;
+  dob: string;
+  dob_2?: string;
+  ssn: string;
+  ssn_2?: string;
+  ownership_percentage: number;
+  ownership_percentage_2?: number;
+  processing_statements?: any;
+  document_files?: any;
   status: string;
   conversion_stage: string;
   lead_source: string;
@@ -176,6 +223,122 @@ const CanadianApplicationsManagement = () => {
     ) : (
       <Badge variant="outline">Direct</Badge>
     );
+  };
+
+  const downloadApplicationPDF = (application: any) => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.width;
+    const margin = 20;
+    let y = margin;
+
+    // Header
+    doc.setFontSize(18);
+    doc.text('Canadian Business Loan Application', pageWidth / 2, y, { align: 'center' });
+    y += 20;
+
+    doc.setFontSize(12);
+    doc.text(`Reference: ${application.application_reference_number}`, margin, y);
+    y += 10;
+    doc.text(`Status: ${application.status}`, margin, y);
+    y += 10;
+    doc.text(`Applied: ${new Date(application.created_at).toLocaleDateString()}`, margin, y);
+    y += 20;
+
+    // Business Information
+    doc.setFontSize(14);
+    doc.text('Business Information', margin, y);
+    y += 10;
+    doc.setFontSize(10);
+    
+    const businessInfo = [
+      ['Legal Business Name:', application.legal_business_name || 'N/A'],
+      ['DBA Name:', application.dba_name || 'N/A'],
+      ['Business Phone:', application.business_phone || 'N/A'],
+      ['Email Address:', application.email_address || 'N/A'],
+      ['Physical Address:', application.physical_address || 'N/A'],
+      ['City:', application.city || 'N/A'],
+      ['State/Province:', application.state || 'N/A'],
+      ['ZIP/Postal Code:', application.zip || 'N/A'],
+      ['Type of Entity:', application.type_of_entity || 'N/A'],
+      ['Federal Tax ID:', application.federal_tax_id || 'N/A'],
+      ['Business Start Date:', application.business_start_date || 'N/A'],
+      ['Number of Locations:', application.number_of_locations || 'N/A'],
+      ['Annual Gross Sales:', application.annual_gross_sales ? `$${application.annual_gross_sales.toLocaleString()}` : 'N/A'],
+      ['Monthly Rent/Mortgage:', application.monthly_rent_or_mortgage ? `$${application.monthly_rent_or_mortgage.toLocaleString()}` : 'N/A']
+    ];
+
+    businessInfo.forEach(([label, value]) => {
+      doc.text(`${label} ${value}`, margin, y);
+      y += 8;
+      if (y > 250) {
+        doc.addPage();
+        y = margin;
+      }
+    });
+
+    y += 10;
+
+    // Principal Owner Information
+    doc.setFontSize(14);
+    doc.text('Principal Owner Information', margin, y);
+    y += 10;
+    doc.setFontSize(10);
+
+    const ownerInfo = [
+      ['Name:', application.principal_owner_name || 'N/A'],
+      ['Home Address:', application.home_address || 'N/A'],
+      ['City:', application.city_owner || 'N/A'],
+      ['State:', application.state_owner || 'N/A'],
+      ['ZIP:', application.zip_owner || 'N/A'],
+      ['Home Phone:', application.home_phone || 'N/A'],
+      ['Cell Phone:', application.cell_phone || 'N/A'],
+      ['Date of Birth:', application.dob || 'N/A'],
+      ['SSN:', application.ssn ? '***-**-****' : 'N/A'],
+      ['Ownership %:', application.ownership_percentage || 'N/A']
+    ];
+
+    ownerInfo.forEach(([label, value]) => {
+      doc.text(`${label} ${value}`, margin, y);
+      y += 8;
+      if (y > 250) {
+        doc.addPage();
+        y = margin;
+      }
+    });
+
+    y += 10;
+
+    // Loan Information
+    doc.setFontSize(14);
+    doc.text('Loan Information', margin, y);
+    y += 10;
+    doc.setFontSize(10);
+
+    const loanInfo = [
+      ['Amount Requested:', application.amount_requested ? `$${application.amount_requested.toLocaleString()}` : 'N/A'],
+      ['Use of Funds:', application.use_of_funds || 'N/A'],
+      ['Existing Advance:', application.existing_advance ? 'Yes' : 'No'],
+      ['Outstanding Balance:', application.outstanding_balance ? `$${application.outstanding_balance.toLocaleString()}` : 'N/A'],
+      ['Current Processor:', application.current_credit_card_processor || 'N/A']
+    ];
+
+    loanInfo.forEach(([label, value]) => {
+      doc.text(`${label} ${value}`, margin, y);
+      y += 8;
+    });
+
+    if (application.admin_notes) {
+      y += 10;
+      doc.setFontSize(14);
+      doc.text('Admin Notes', margin, y);
+      y += 10;
+      doc.setFontSize(10);
+      const splitNotes = doc.splitTextToSize(application.admin_notes, pageWidth - 2 * margin);
+      doc.text(splitNotes, margin, y);
+    }
+
+    doc.save(`Canadian_Application_${application.application_reference_number}.pdf`);
+    toast.success("PDF downloaded successfully");
   };
 
   if (loading) {
@@ -385,62 +548,268 @@ const CanadianApplicationsManagement = () => {
       {/* Application Details Modal */}
       {selectedApplication && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-            <CardHeader>
-              <CardTitle>Application Details</CardTitle>
+          <Card className="max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Complete Application Details
+              </CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => downloadApplicationPDF(selectedApplication)}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download PDF
+              </Button>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
+            <CardContent className="space-y-6">
+              {/* Application Overview */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-lg">
                 <div>
-                  <span className="font-medium">Reference:</span>
-                  <p className="font-mono">{selectedApplication.application_reference_number}</p>
+                  <span className="text-sm font-medium text-muted-foreground">Reference Number</span>
+                  <p className="font-mono font-bold text-primary">{selectedApplication.application_reference_number}</p>
                 </div>
                 <div>
-                  <span className="font-medium">Company:</span>
-                  <p>{selectedApplication.legal_business_name}</p>
+                  <span className="text-sm font-medium text-muted-foreground">Status</span>
+                  <div className="mt-1">{getStatusBadge(selectedApplication.status)}</div>
                 </div>
                 <div>
-                  <span className="font-medium">Email:</span>
-                  <p>{selectedApplication.email_address}</p>
-                </div>
-                <div>
-                  <span className="font-medium">Phone:</span>
-                  <p>{selectedApplication.business_phone}</p>
+                  <span className="text-sm font-medium text-muted-foreground">Application Date</span>
+                  <p className="font-medium">{new Date(selectedApplication.created_at).toLocaleDateString()}</p>
                 </div>
               </div>
 
+              {/* Business Information */}
               <div>
-                <span className="text-sm font-medium">Add Admin Notes:</span>
-                <Textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Enter notes about this application..."
-                  className="mt-1"
-                />
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Building2 className="h-4 w-4" />
+                  Business Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium text-muted-foreground">Legal Business Name:</span>
+                    <p className="mt-1">{selectedApplication.legal_business_name || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">DBA Name:</span>
+                    <p className="mt-1">{selectedApplication.dba_name || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">Business Phone:</span>
+                    <p className="mt-1">{selectedApplication.business_phone || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">Email Address:</span>
+                    <p className="mt-1">{selectedApplication.email_address || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">Physical Address:</span>
+                    <p className="mt-1">{selectedApplication.physical_address || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">City:</span>
+                    <p className="mt-1">{selectedApplication.city || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">State/Province:</span>
+                    <p className="mt-1">{selectedApplication.state || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">ZIP/Postal Code:</span>
+                    <p className="mt-1">{selectedApplication.zip || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">Type of Entity:</span>
+                    <p className="mt-1">{selectedApplication.type_of_entity || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">Federal Tax ID:</span>
+                    <p className="mt-1">{selectedApplication.federal_tax_id || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">Business Start Date:</span>
+                    <p className="mt-1">{selectedApplication.business_start_date ? new Date(selectedApplication.business_start_date).toLocaleDateString() : 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">Number of Locations:</span>
+                    <p className="mt-1">{selectedApplication.number_of_locations || 'N/A'}</p>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => updateApplicationStatus(selectedApplication.id, 'approved', notes)}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  Approve with Notes
-                </Button>
-                <Button
-                  onClick={() => updateApplicationStatus(selectedApplication.id, 'rejected', notes)}
-                  variant="destructive"
-                >
-                  Reject with Notes
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setSelectedApplication(null);
-                    setNotes("");
-                  }}
-                >
-                  Close
-                </Button>
+              {/* Financial Information */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Financial Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium text-muted-foreground">Annual Gross Sales:</span>
+                    <p className="mt-1 text-green-600 font-semibold">
+                      {selectedApplication.annual_gross_sales ? `$${selectedApplication.annual_gross_sales.toLocaleString()}` : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">Monthly Rent/Mortgage:</span>
+                    <p className="mt-1">
+                      {selectedApplication.monthly_rent_or_mortgage ? `$${selectedApplication.monthly_rent_or_mortgage.toLocaleString()}` : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">Amount Requested:</span>
+                    <p className="mt-1 text-primary font-bold text-lg">
+                      {selectedApplication.amount_requested ? `$${selectedApplication.amount_requested.toLocaleString()}` : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">Annual Credit Card Sales:</span>
+                    <p className="mt-1">
+                      {selectedApplication.annual_credit_card_sales ? `$${selectedApplication.annual_credit_card_sales.toLocaleString()}` : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">Avg Monthly CC Volume:</span>
+                    <p className="mt-1">
+                      {selectedApplication.average_monthly_cc_volume ? `$${selectedApplication.average_monthly_cc_volume.toLocaleString()}` : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">Current Processor:</span>
+                    <p className="mt-1">{selectedApplication.current_credit_card_processor || 'N/A'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Principal Owner Information */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Principal Owner Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium text-muted-foreground">Name:</span>
+                    <p className="mt-1">{selectedApplication.principal_owner_name || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">Home Address:</span>
+                    <p className="mt-1">{selectedApplication.home_address || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">City:</span>
+                    <p className="mt-1">{selectedApplication.city_owner || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">State:</span>
+                    <p className="mt-1">{selectedApplication.state_owner || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">ZIP:</span>
+                    <p className="mt-1">{selectedApplication.zip_owner || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">Date of Birth:</span>
+                    <p className="mt-1">{selectedApplication.dob ? new Date(selectedApplication.dob).toLocaleDateString() : 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">Home Phone:</span>
+                    <p className="mt-1">{selectedApplication.home_phone || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">Cell Phone:</span>
+                    <p className="mt-1">{selectedApplication.cell_phone || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">Ownership Percentage:</span>
+                    <p className="mt-1">{selectedApplication.ownership_percentage ? `${selectedApplication.ownership_percentage}%` : 'N/A'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Loan Details */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Loan Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium text-muted-foreground">Use of Funds:</span>
+                    <p className="mt-1">{selectedApplication.use_of_funds || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-muted-foreground">Existing Advance:</span>
+                    <p className="mt-1">{selectedApplication.existing_advance ? 'Yes' : 'No'}</p>
+                  </div>
+                  {selectedApplication.existing_advance && (
+                    <div>
+                      <span className="font-medium text-muted-foreground">Outstanding Balance:</span>
+                      <p className="mt-1">
+                        {selectedApplication.outstanding_balance ? `$${selectedApplication.outstanding_balance.toLocaleString()}` : 'N/A'}
+                      </p>
+                    </div>
+                  )}
+                  <div>
+                    <span className="font-medium text-muted-foreground">With Who:</span>
+                    <p className="mt-1">{selectedApplication.if_so_with_who || 'N/A'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Admin Section */}
+              <div className="border-t pt-4">
+                <h3 className="text-lg font-semibold mb-4">Admin Section</h3>
+                
+                {selectedApplication.admin_notes && (
+                  <div className="mb-4 p-3 bg-yellow-50 rounded-lg">
+                    <span className="text-sm font-medium">Existing Admin Notes:</span>
+                    <p className="text-sm mt-1">{selectedApplication.admin_notes}</p>
+                  </div>
+                )}
+
+                <div className="mb-4">
+                  <span className="text-sm font-medium">Add/Update Admin Notes:</span>
+                  <Textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Enter notes about this application..."
+                    className="mt-1"
+                    rows={3}
+                  />
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    onClick={() => updateApplicationStatus(selectedApplication.id, 'approved', notes)}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    Approve Application
+                  </Button>
+                  <Button
+                    onClick={() => updateApplicationStatus(selectedApplication.id, 'rejected', notes)}
+                    variant="destructive"
+                  >
+                    Reject Application
+                  </Button>
+                  <Button
+                    onClick={() => updateApplicationStatus(selectedApplication.id, 'in_review', notes)}
+                    variant="outline"
+                  >
+                    Mark In Review
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => downloadApplicationPDF(selectedApplication)}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Download PDF
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedApplication(null);
+                      setNotes("");
+                    }}
+                  >
+                    Close
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
