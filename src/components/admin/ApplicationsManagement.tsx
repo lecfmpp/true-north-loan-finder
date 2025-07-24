@@ -12,8 +12,42 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { Check, X, User, Building, Phone, Mail, Globe, FileText, Calendar, Trash2, Search, ChevronDown } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
-type Application = Tables<"lender_broker_applications">;
-export const ApplicationsManagement = () => {
+
+interface Application {
+  id: string;
+  application_type: string;
+  applicant_name: string;
+  applicant_email: string;
+  applicant_phone: string | null;
+  company_name: string;
+  company_website: string | null;
+  status: string;
+  created_at: string;
+  reviewed_at: string | null;
+  license_number: string | null;
+  years_of_experience: number | null;
+  business_types: string[] | null;
+  preferred_industries: string[] | null;
+  min_monthly_revenue: string | null;
+  max_monthly_revenue: string | null;
+  min_time_in_business: string | null;
+  min_credit_score: string | null;
+  min_loan_amount: string | null;
+  max_loan_amount: string | null;
+  funding_purposes: string[] | null;
+  geographic_areas: string[] | null;
+  business_description: string | null;
+  additional_requirements: string | null;
+  rejection_reason: string | null;
+  admin_notes: string | null;
+  reviewed_by: string | null;
+}
+
+interface ApplicationsManagementProps {
+  onCountUpdate?: () => void;
+}
+
+export const ApplicationsManagement: React.FC<ApplicationsManagementProps> = ({ onCountUpdate }) => {
   const [applications, setApplications] = useState<Application[]>([]);
   const [filteredApplications, setFilteredApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
@@ -132,6 +166,7 @@ export const ApplicationsManagement = () => {
         description: "Application deleted successfully"
       });
       fetchApplications();
+      onCountUpdate?.();
       closeDeleteModal();
     } catch (error) {
       console.error("Error deleting application:", error);

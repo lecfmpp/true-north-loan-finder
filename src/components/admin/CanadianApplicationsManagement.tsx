@@ -85,8 +85,11 @@ interface QuizResponse {
   status: string;
   created_at: string;
 }
+interface CanadianApplicationsManagementProps {
+  onCountUpdate?: () => void;
+}
 
-const CanadianApplicationsManagement = () => {
+const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementProps> = ({ onCountUpdate }) => {
   const { isSuperAdmin } = useAuth();
   const [applications, setApplications] = useState<CanadianApplication[]>([]);
   const [filteredApplications, setFilteredApplications] = useState<CanadianApplication[]>([]);
@@ -226,6 +229,7 @@ const CanadianApplicationsManagement = () => {
 
       toast.success("Application deleted successfully");
       fetchApplications();
+      onCountUpdate?.();
       // Close modal if the deleted application was being viewed
       if (selectedApplication?.id === applicationToDelete.id) {
         setSelectedApplication(null);

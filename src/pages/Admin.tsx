@@ -1258,11 +1258,11 @@ const Admin = () => {
               </div>}
           </div>;
       case 'applications':
-        return <ApplicationsManagement />;
+        return <ApplicationsManagement onCountUpdate={fetchApplicationsCount} />;
       case 'usa-applications':
-        return <USAApplicationsManagement />;
+        return <USAApplicationsManagement onCountUpdate={fetchUsaApplicationsCount} />;
       case 'canadian-applications':
-        return <CanadianApplicationsManagement />;
+        return <CanadianApplicationsManagement onCountUpdate={fetchCanadianApplicationsCount} />;
       case 'email-sequence':
         return <EmailSequenceManagement />;
       case 'blog-creator':
