@@ -14,6 +14,17 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+
+// Helper function to get credit score number from classification
+const getCreditScoreNumber = (creditScore: string) => {
+  switch (creditScore) {
+    case "excellent": return "750+";
+    case "good": return "700-749"; 
+    case "fair": return "650-699";
+    case "poor": return "Below 650";
+    default: return creditScore;
+  }
+};
 import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Trash2, Phone, ChevronDown, ChevronRight, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign, Settings as SettingsIcon, ExternalLink } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
@@ -1172,7 +1183,7 @@ const Admin = () => {
                               <CollapsibleContent className="mt-2 p-3 border rounded-md bg-muted/50">
                                 <div className="space-y-2 text-sm">
                                   <div>
-                                    <span className="font-medium">Credit Score:</span> {lead.credit_score}
+                                    <span className="font-medium">Credit Score:</span> {getCreditScoreNumber(lead.credit_score)} ({lead.credit_score})
                                   </div>
                                   <div>
                                     <span className="font-medium">Time in Business:</span> {lead.time_in_business}

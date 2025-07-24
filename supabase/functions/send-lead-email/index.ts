@@ -98,6 +98,17 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Helper function to get credit score number from classification
+    const getCreditScoreNumber = (creditScore: string) => {
+      switch (creditScore) {
+        case "excellent": return "750+";
+        case "good": return "700-749";
+        case "fair": return "650-699";
+        case "poor": return "Below 650";
+        default: return creditScore;
+      }
+    };
+
     // Format the amount and revenue for display
     const formatAmount = (amount: number) => {
       return new Intl.NumberFormat('en-CA', {
@@ -374,7 +385,7 @@ const handler = async (req: Request): Promise<Response> => {
                     </div>
                     <div class="info-item">
                         <div class="info-label">💳 Credit Score</div>
-                        <div class="info-value">${lead.credit_score}</div>
+                        <div class="info-value">${getCreditScoreNumber(lead.credit_score)} (${lead.credit_score})</div>
                     </div>
                     <div class="info-item highlight">
                         <div class="info-label">⭐ Qualification Score</div>
