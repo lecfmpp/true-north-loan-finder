@@ -87,7 +87,7 @@ const CanadianApplication = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const { user, loading } = useAuth();
-  const totalSteps = 6; // Updated to include auth step
+  const totalSteps = 5; // Updated to 5 steps, step 5 is final with submit
   
   const [formData, setFormData] = useState<CanadianApplicationData>({
     legal_business_name: "",
