@@ -84,6 +84,17 @@ interface ApplicationData {
   document_files: File[];
 }
 
+// US States for dropdown
+const US_STATES = [
+  'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware',
+  'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky',
+  'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi',
+  'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico',
+  'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania',
+  'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont',
+  'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'
+];
+
 const Application = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -166,6 +177,17 @@ const Application = () => {
       }));
     }
   }, [searchParams]);
+
+  // Pre-fill email from authenticated user
+  useEffect(() => {
+    if (user?.email && !formData.email_address) {
+      setFormData(prev => ({
+        ...prev,
+        email_address: user.email || '',
+        principal_email: user.email || '',
+      }));
+    }
+  }, [user, formData.email_address]);
 
   const updateFormData = (field: keyof ApplicationData, value: any) => {
     setFormData(prev => ({
@@ -444,12 +466,16 @@ const Application = () => {
               
               <div className="space-y-2">
                 <Label htmlFor="state">State *</Label>
-                <Input
-                  id="state"
-                  value={formData.state}
-                  onChange={(e) => updateFormData('state', e.target.value)}
-                  required
-                />
+                <Select value={formData.state} onValueChange={(value) => updateFormData('state', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select state" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {US_STATES.map((state) => (
+                      <SelectItem key={state} value={state}>{state}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               
               <div className="space-y-2">
@@ -571,11 +597,16 @@ const Application = () => {
               
               <div className="space-y-2">
                 <Label htmlFor="state_of_incorporation">State of Incorporation</Label>
-                <Input
-                  id="state_of_incorporation"
-                  value={formData.state_of_incorporation}
-                  onChange={(e) => updateFormData('state_of_incorporation', e.target.value)}
-                />
+                <Select value={formData.state_of_incorporation} onValueChange={(value) => updateFormData('state_of_incorporation', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select state" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {US_STATES.map((state) => (
+                      <SelectItem key={state} value={state}>{state}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               
               <div className="space-y-2">
@@ -668,12 +699,16 @@ const Application = () => {
               
               <div className="space-y-2">
                 <Label htmlFor="principal_state">State *</Label>
-                <Input
-                  id="principal_state"
-                  value={formData.principal_state}
-                  onChange={(e) => updateFormData('principal_state', e.target.value)}
-                  required
-                />
+                <Select value={formData.principal_state} onValueChange={(value) => updateFormData('principal_state', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select state" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {US_STATES.map((state) => (
+                      <SelectItem key={state} value={state}>{state}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               
               <div className="space-y-2">
@@ -699,9 +734,10 @@ const Application = () => {
                   value={formData.principal_home_phone}
                   onChange={(e) => {
                     const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-                    updateFormData('principal_home_phone', formatted);
+                    updateFormData('principal_home_phone', formatted.slice(0, 14));
                   }}
                   placeholder="(555) 123-4567"
+                  maxLength={14}
                 />
               </div>
               
@@ -713,9 +749,10 @@ const Application = () => {
                   value={formData.principal_cell_phone}
                   onChange={(e) => {
                     const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-                    updateFormData('principal_cell_phone', formatted);
+                    updateFormData('principal_cell_phone', formatted.slice(0, 14));
                   }}
                   placeholder="(555) 123-4567"
+                  maxLength={14}
                 />
               </div>
               
@@ -900,10 +937,11 @@ const Application = () => {
                   id="bank_account_number"
                   value={formData.bank_account_number}
                   onChange={(e) => {
-                    const formatted = e.target.value.replace(/\s/g, '');
+                    const formatted = e.target.value.replace(/\D/g, '').slice(0, 17);
                     updateFormData('bank_account_number', formatted);
                   }}
-                  placeholder="Account number"
+                  placeholder="Account number (up to 17 digits)"
+                  maxLength={17}
                   required
                 />
               </div>
@@ -1021,6 +1059,7 @@ const Application = () => {
                   onChange={(e) => updateFormData('loan_amount_requested', e.target.value)}
                   placeholder="$1,000"
                   required
+                  onClick={(e) => e.stopPropagation()}
                 />
                 <p className="text-xs text-muted-foreground mt-1">Amount in USD</p>
               </div>
@@ -1034,6 +1073,7 @@ const Application = () => {
                   rows={4}
                   placeholder="Please describe how you plan to use the loan funds..."
                   required
+                  onClick={(e) => e.stopPropagation()}
                 />
               </div>
             </div>
@@ -1090,6 +1130,7 @@ const Application = () => {
                       multiple
                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                       onChange={(e) => {
+                        e.stopPropagation();
                         const files = Array.from(e.target.files || []);
                         updateFormData('document_files', files);
                       }}

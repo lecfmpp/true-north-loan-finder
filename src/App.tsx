@@ -65,7 +65,7 @@ const App = () => (
             <Route path="/merchant-cash-advance" element={<MerchantCashAdvance />} />
             <Route path="/invoice-factoring" element={<InvoiceFactoring />} />
             <Route path="/compare" element={<Compare />} />
-            <Route path="/application" element={<Application />} />
+            <Route path="/application-usa" element={<Application />} />
             <Route path="/application-canadian" element={<CanadianApplication />} />
             <Route path="/application-success" element={<ApplicationSuccess />} />
             <Route path="/application-status" element={<ApplicationStatus />} />
