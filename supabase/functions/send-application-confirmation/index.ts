@@ -22,7 +22,40 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { applicantName, applicantEmail, companyName, applicationType }: ConfirmationEmailRequest = await req.json();
+    const requestBody = await req.json();
+    
+    // Input validation and sanitization
+    if (!requestBody || typeof requestBody !== 'object') {
+      throw new Error('Invalid request body');
+    }
+    
+    const { applicantName, applicantEmail, companyName, applicationType }: ConfirmationEmailRequest = requestBody;
+    
+    // Validate required fields
+    if (!applicantName || typeof applicantName !== 'string' || !applicantName.trim()) {
+      throw new Error('Valid applicant name is required');
+    }
+    
+    // Validate email format
+    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+    if (!applicantEmail || !emailRegex.test(applicantEmail)) {
+      throw new Error('Valid applicant email is required');
+    }
+    
+    // Validate company name
+    if (!companyName || typeof companyName !== 'string' || !companyName.trim()) {
+      throw new Error('Valid company name is required');
+    }
+    
+    // Validate application type
+    if (!applicationType || !['lender', 'broker'].includes(applicationType.toLowerCase())) {
+      throw new Error('Valid application type (lender or broker) is required');
+    }
+    
+    // Sanitize inputs
+    const sanitizedName = applicantName.trim().substring(0, 100);
+    const sanitizedCompany = companyName.trim().substring(0, 200);
+    const sanitizedType = applicationType.toLowerCase() === 'lender' ? 'Lender' : 'Broker';
 
     // Create the confirmation email HTML template
     const emailHtml = `
@@ -73,26 +106,26 @@ const handler = async (req: Request): Promise<Response> => {
             
             <div class="content">
                 <div class="success-badge">
-                    <h2>🎉 Your ${applicationType} application has been successfully submitted!</h2>
+                    <h2>🎉 Your ${sanitizedType} application has been successfully submitted!</h2>
                 </div>
 
-                <p>Dear <strong>${applicantName}</strong>,</p>
+                <p>Dear <strong>${sanitizedName}</strong>,</p>
                 
-                <p>Thank you for submitting your ${applicationType.toLowerCase()} application to True North Business Loan. We're excited about the potential of partnering with <strong>${companyName}</strong> to help Canadian businesses access the funding they need to grow and thrive.</p>
+                <p>Thank you for submitting your ${sanitizedType.toLowerCase()} application to True North Business Loan. We're excited about the potential of partnering with <strong>${sanitizedCompany}</strong> to help Canadian businesses access the funding they need to grow and thrive.</p>
 
                 <div class="application-details">
                     <h3 style="margin: 0 0 15px 0; color: #334155;">📋 Application Summary</h3>
                     <div class="detail-row">
                         <span class="detail-label">Applicant Name:</span>
-                        <span class="detail-value">${applicantName}</span>
+                        <span class="detail-value">${sanitizedName}</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Company:</span>
-                        <span class="detail-value">${companyName}</span>
+                        <span class="detail-value">${sanitizedCompany}</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Application Type:</span>
-                        <span class="detail-value">${applicationType}</span>
+                        <span class="detail-value">${sanitizedType}</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Email:</span>
@@ -129,7 +162,7 @@ const handler = async (req: Request): Promise<Response> => {
 
                 <p style="margin-top: 30px; padding: 20px; background: #F0FDF4; border-radius: 8px; border-left: 4px solid #10B981;">
                     <strong style="color: #166534;">🚀 Why Partner With Us?</strong><br>
-                    Join our network of successful ${applicationType.toLowerCase()}s who are connecting Canadian businesses with the funding they need. We provide pre-qualified leads, competitive commission structures, and ongoing support to help you grow your business.
+                    Join our network of successful ${sanitizedType.toLowerCase()}s who are connecting Canadian businesses with the funding they need. We provide pre-qualified leads, competitive commission structures, and ongoing support to help you grow your business.
                 </p>
 
                 <p style="color: #666; font-style: italic; text-align: center; margin-top: 40px;">
@@ -153,7 +186,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: "True North Business Loan <info@email.truenorthbusinessloan.ca>",
       to: [applicantEmail],
-      subject: `✅ ${applicationType} Application Received - True North Business Loan`,
+      subject: `✅ ${sanitizedType} Application Received - True North Business Loan`,
       html: emailHtml,
     });
 
@@ -162,7 +195,7 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(JSON.stringify({ 
       success: true, 
       emailId: emailResponse.data?.id,
-      applicantName,
+      applicantName: sanitizedName,
       applicantEmail 
     }), {
       status: 200,

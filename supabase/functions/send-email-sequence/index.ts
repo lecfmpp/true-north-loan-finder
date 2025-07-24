@@ -35,6 +35,29 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const requestBody = await req.json();
+    
+    // Input validation and sanitization
+    if (!requestBody || typeof requestBody !== 'object') {
+      throw new Error('Invalid request body');
+    }
+    
+    // Validate email format if provided
+    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+    if (requestBody.userEmail && !emailRegex.test(requestBody.userEmail)) {
+      throw new Error('Invalid email format');
+    }
+    if (requestBody.email && !emailRegex.test(requestBody.email)) {
+      throw new Error('Invalid email format');
+    }
+    
+    // Sanitize string inputs
+    if (requestBody.userName && typeof requestBody.userName === 'string') {
+      requestBody.userName = requestBody.userName.trim().substring(0, 100);
+    }
+    if (requestBody.name && typeof requestBody.name === 'string') {
+      requestBody.name = requestBody.name.trim().substring(0, 100);
+    }
+    
     console.log('Received email sequence request:', JSON.stringify(requestBody, null, 2));
 
     // Normalize parameters to handle different parameter names
@@ -77,7 +100,7 @@ const handler = async (req: Request): Promise<Response> => {
       
       const { data: template, error: templateError } = await supabase
         .from('email_templates')
-        .select('*')
+        .select('id, sequence_id, subject_line, email_content, purpose')
         .eq('id', templateId)
         .single();
 
@@ -124,7 +147,7 @@ const handler = async (req: Request): Promise<Response> => {
     
     const { data: sequence, error: sequenceError } = await supabase
       .from('email_sequences')
-      .select('*')
+      .select('id, name, sequence_type, is_active')
       .eq('sequence_type', type)
       .eq('is_active', true)
       .single();
@@ -139,7 +162,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Get templates for this sequence
     const { data: templates, error: templatesError } = await supabase
       .from('email_templates')
-      .select('*')
+      .select('id, sequence_id, subject_line, email_content, delay_hours, email_order, purpose')
       .eq('sequence_id', sequence.id)
       .eq('is_active', true)
       .order('email_order');

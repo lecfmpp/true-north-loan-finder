@@ -77,6 +77,45 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          new_values: Json | null
+          old_values: Json | null
+          record_id: string | null
+          table_name: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string | null
+          table_name?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string | null
+          table_name?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       available_time_slots: {
         Row: {
           created_at: string
@@ -1125,6 +1164,33 @@ export type Database = {
         }
         Relationships: []
       }
+      submission_rate_limits: {
+        Row: {
+          created_at: string | null
+          id: string
+          ip_address: unknown
+          last_submission_at: string | null
+          submission_count: number | null
+          submission_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          ip_address: unknown
+          last_submission_at?: string | null
+          submission_count?: number | null
+          submission_type: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown
+          last_submission_at?: string | null
+          submission_count?: number | null
+          submission_type?: string
+        }
+        Relationships: []
+      }
       usa_application_drafts: {
         Row: {
           created_at: string
@@ -1371,6 +1437,14 @@ export type Database = {
       }
       is_superadmin: {
         Args: { user_id_param: string }
+        Returns: boolean
+      }
+      validate_email: {
+        Args: { email_address: string }
+        Returns: boolean
+      }
+      validate_phone: {
+        Args: { phone_number: string }
         Returns: boolean
       }
     }

@@ -22,7 +22,30 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { leadId, recipientEmail, recipientName }: SendLeadEmailRequest = await req.json();
+    const requestBody = await req.json();
+    
+    // Input validation and sanitization
+    if (!requestBody || typeof requestBody !== 'object') {
+      throw new Error('Invalid request body');
+    }
+    
+    const { leadId, recipientEmail, recipientName }: SendLeadEmailRequest = requestBody;
+    
+    // Validate required fields
+    if (!leadId || typeof leadId !== 'string' || !leadId.trim()) {
+      throw new Error('Valid leadId is required');
+    }
+    
+    // Validate email format
+    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+    if (!recipientEmail || !emailRegex.test(recipientEmail)) {
+      throw new Error('Valid recipient email is required');
+    }
+    
+    // Sanitize recipient name
+    if (!recipientName || typeof recipientName !== 'string' || !recipientName.trim()) {
+      throw new Error('Valid recipient name is required');
+    }
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -60,7 +83,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Fetch lead information
     const { data: lead, error: leadError } = await supabase
       .from('quiz_responses')
-      .select('*')
+      .select('id, name, email, phone, loan_amount, monthly_revenue, time_in_business, credit_score, use_of_funds, website, created_at')
       .eq('id', leadId)
       .single();
 
