@@ -331,13 +331,25 @@ const Admin = () => {
     }
   }, [isSuperAdmin]);
 
-  const sendCustomLeadEmail = async (leadId: string, recipientEmail: string) => {
-    // Validate email format
+  const sendCustomLeadEmail = async (leadId: string, recipientEmails: string) => {
+    // Parse and validate multiple email addresses
+    const emailList = recipientEmails.split(',').map(email => email.trim()).filter(email => email);
     const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-    if (!emailRegex.test(recipientEmail)) {
+    
+    const invalidEmails = emailList.filter(email => !emailRegex.test(email));
+    if (invalidEmails.length > 0) {
       toast({
         title: "Error",
-        description: "Please enter a valid email address.",
+        description: `Invalid email addresses: ${invalidEmails.join(', ')}`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (emailList.length === 0) {
+      toast({
+        title: "Error",
+        description: "Please enter at least one valid email address.",
         variant: "destructive"
       });
       return;
@@ -349,33 +361,43 @@ const Admin = () => {
     }));
 
     try {
-      const { data, error } = await supabase.functions.invoke('send-lead-email', {
-        body: {
-          leadId,
-          recipientEmail,
-          recipientName: recipientEmail.split('@')[0] // Use email prefix as name
-        }
-      });
+      // Send to multiple recipients
+      const results = await Promise.allSettled(
+        emailList.map(recipientEmail => 
+          supabase.functions.invoke('send-lead-email', {
+            body: {
+              leadId,
+              recipientEmail,
+              recipientName: recipientEmail.split('@')[0] // Use email prefix as name
+            }
+          })
+        )
+      );
 
-      if (error) throw error;
+      const successful = results.filter(result => result.status === 'fulfilled').length;
+      const failed = results.filter(result => result.status === 'rejected').length;
 
-      toast({
-        title: "🎉 Email Sent!",
-        description: `Lead information sent to ${recipientEmail} successfully!`,
-        variant: "success" as any
-      });
+      if (successful > 0) {
+        toast({
+          title: "🎉 Emails Sent!",
+          description: `Lead information sent to ${successful} recipient${successful > 1 ? 's' : ''} successfully!${failed > 0 ? ` (${failed} failed)` : ''}`,
+          variant: "success" as any
+        });
 
-      // Clear the email input after successful send
-      setCustomEmails(prev => ({
-        ...prev,
-        [leadId]: ""
-      }));
+        // Clear the email input after successful send
+        setCustomEmails(prev => ({
+          ...prev,
+          [leadId]: ""
+        }));
+      } else {
+        throw new Error("All email sends failed");
+      }
 
     } catch (error: any) {
-      console.error('Error sending custom lead email:', error);
+      console.error('Error sending custom lead emails:', error);
       toast({
         title: "Error",
-        description: "Failed to send lead email. Please try again.",
+        description: "Failed to send lead emails. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -1295,15 +1317,15 @@ const Admin = () => {
                           {isSuperAdmin && <TableCell>
                               <div className="flex items-center gap-2">
                                 <Input
-                                  type="email"
-                                  placeholder="Enter email address"
+                                  type="text"
+                                  placeholder="email1@example.com, email2@example.com"
                                   value={customEmails[lead.id] || ""}
                                   onChange={(e) => setCustomEmails(prev => ({
                                     ...prev,
                                     [lead.id]: e.target.value
                                   }))}
                                   disabled={sendingCustomEmails[lead.id]}
-                                  className="w-48"
+                                  className="w-64"
                                 />
                                 <Button 
                                   size="sm" 
