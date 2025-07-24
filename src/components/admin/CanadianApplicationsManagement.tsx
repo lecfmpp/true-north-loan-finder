@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ExternalLink, Eye, Search, Filter, FileText, User, Building2, Phone, Mail, Download } from "lucide-react";
+import { ExternalLink, Eye, Search, Filter, FileText, User, Building2, Phone, Mail, Download, Paperclip } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import jsPDF from 'jspdf';
@@ -339,6 +339,31 @@ const CanadianApplicationsManagement = () => {
 
     doc.save(`Canadian_Application_${application.application_reference_number}.pdf`);
     toast.success("PDF downloaded successfully");
+  };
+
+  const downloadFileFromStorage = async (filePath: string, fileName: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('application-documents')
+        .download(filePath);
+
+      if (error) throw error;
+
+      // Create a download link
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast.success("File downloaded successfully");
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      toast.error("Failed to download file");
+    }
   };
 
   if (loading) {
@@ -751,6 +776,66 @@ const CanadianApplicationsManagement = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Uploaded Documents */}
+              {((selectedApplication.processing_statements && Array.isArray(selectedApplication.processing_statements) && selectedApplication.processing_statements.length > 0) ||
+                (selectedApplication.document_files && Array.isArray(selectedApplication.document_files) && selectedApplication.document_files.length > 0)) && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Paperclip className="h-4 w-4" />
+                    Uploaded Documents
+                  </h3>
+                  <div className="space-y-4">
+                    {selectedApplication.processing_statements && Array.isArray(selectedApplication.processing_statements) && selectedApplication.processing_statements.length > 0 && (
+                      <div>
+                        <h4 className="font-medium text-muted-foreground mb-2">Processing Statements:</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {selectedApplication.processing_statements.map((file: any, index: number) => (
+                            <div key={index} className="flex items-center gap-2 p-3 border rounded-lg bg-muted/30">
+                              <FileText className="h-4 w-4 text-primary" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">{file.name || `Processing Statement ${index + 1}`}</p>
+                                <p className="text-xs text-muted-foreground">{file.size ? `${(file.size / 1024).toFixed(1)} KB` : 'Unknown size'}</p>
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => downloadFileFromStorage(file.path || file.url, file.name || `processing-statement-${index + 1}`)}
+                              >
+                                <Download className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedApplication.document_files && Array.isArray(selectedApplication.document_files) && selectedApplication.document_files.length > 0 && (
+                      <div>
+                        <h4 className="font-medium text-muted-foreground mb-2">Supporting Documents:</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {selectedApplication.document_files.map((file: any, index: number) => (
+                            <div key={index} className="flex items-center gap-2 p-3 border rounded-lg bg-muted/30">
+                              <FileText className="h-4 w-4 text-primary" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">{file.name || `Document ${index + 1}`}</p>
+                                <p className="text-xs text-muted-foreground">{file.size ? `${(file.size / 1024).toFixed(1)} KB` : 'Unknown size'}</p>
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => downloadFileFromStorage(file.path || file.url, file.name || `document-${index + 1}`)}
+                              >
+                                <Download className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Admin Section */}
               <div className="border-t pt-4">
