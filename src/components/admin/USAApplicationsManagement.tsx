@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ExternalLink, Eye, Search, Filter, FileText, User, Building2, Phone, Mail, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -145,26 +146,45 @@ const USAApplicationsManagement = () => {
     }
   };
 
-  const deleteApplication = async (id: string, refNumber: string) => {
-    if (!confirm(`Are you sure you want to permanently delete application ${refNumber}? This action cannot be undone.`)) {
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [applicationToDelete, setApplicationToDelete] = useState<{id: string, refNumber: string} | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+
+  const openDeleteModal = (id: string, refNumber: string) => {
+    setApplicationToDelete({id, refNumber});
+    setDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModalOpen(false);
+    setApplicationToDelete(null);
+    setDeleteConfirmText('');
+  };
+
+  const confirmDelete = async () => {
+    if (deleteConfirmText !== 'DELETE APPLICATION') {
+      toast.error("Please type exactly 'DELETE APPLICATION' to confirm deletion");
       return;
     }
+
+    if (!applicationToDelete) return;
 
     try {
       const { error } = await supabase
         .from('usa_applications')
         .delete()
-        .eq('id', id);
+        .eq('id', applicationToDelete.id);
 
       if (error) throw error;
 
       toast.success("Application deleted successfully");
       fetchApplications();
       // Close modal if the deleted application was being viewed
-      if (selectedApplication?.id === id) {
+      if (selectedApplication?.id === applicationToDelete.id) {
         setSelectedApplication(null);
         setNotes("");
       }
+      closeDeleteModal();
     } catch (error) {
       console.error('Error deleting application:', error);
       toast.error("Failed to delete application");
@@ -401,7 +421,7 @@ const USAApplicationsManagement = () => {
                         size="sm"
                         variant="outline"
                         className="text-red-600 border-red-600 hover:bg-red-50"
-                        onClick={() => deleteApplication(application.id, application.application_reference_number)}
+                        onClick={() => openDeleteModal(application.id, application.application_reference_number)}
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
                         Delete
@@ -486,6 +506,43 @@ const USAApplicationsManagement = () => {
           </Card>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-destructive">Delete Application</DialogTitle>
+            <DialogDescription>
+              This action cannot be undone. This will permanently delete application {applicationToDelete?.refNumber} and all associated data.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <p className="text-sm font-medium">
+                To confirm deletion, please type <span className="font-mono bg-muted px-1 rounded">DELETE APPLICATION</span> below:
+              </p>
+              <Input 
+                value={deleteConfirmText} 
+                onChange={(e) => setDeleteConfirmText(e.target.value)} 
+                placeholder="Type DELETE APPLICATION to confirm" 
+                className="font-mono" 
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={closeDeleteModal}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={confirmDelete} 
+              disabled={deleteConfirmText !== 'DELETE APPLICATION'}
+            >
+              Delete Application
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
