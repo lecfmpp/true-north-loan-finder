@@ -52,11 +52,12 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Check if this is an admin notification (bypass partner verification)
+    // Check if this is an admin notification or custom email (bypass partner verification)
     const isAdminNotification = recipientEmail === 'lecfmpp@gmail.com';
+    const isCustomEmail = recipientName === recipientEmail.split('@')[0]; // Custom emails use email prefix as name
     
-    if (!isAdminNotification) {
-      // Only verify partner status for non-admin recipients
+    if (!isAdminNotification && !isCustomEmail) {
+      // Only verify partner status for approved partner recipients
       const { data: recipient, error: recipientError } = await supabase
         .from('lender_broker_applications')
         .select('id, applicant_name, applicant_email, status')
@@ -76,6 +77,8 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       console.log(`Email recipient verified as approved partner: ${recipient.applicant_name}`);
+    } else if (isCustomEmail) {
+      console.log(`Sending custom lead email to: ${recipientEmail}`);
     } else {
       console.log(`Sending admin notification to: ${recipientEmail}`);
     }
@@ -125,34 +128,39 @@ const handler = async (req: Request): Promise<Response> => {
         <style>
             body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 0; background-color: #f4f4f4; }
             .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
-            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
-            .header h1 { margin: 0; font-size: 28px; font-weight: 600; }
+            .header { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 30px; text-align: center; position: relative; }
+            .logo { width: 120px; height: auto; margin-bottom: 15px; }
+            .header h1 { margin: 0; font-size: 28px; font-weight: 600; color: #ffffff; }
             .header p { margin: 10px 0 0 0; font-size: 16px; opacity: 0.9; }
             .content { padding: 30px; }
-            .lead-card { background: #f8f9ff; border-left: 4px solid #667eea; padding: 20px; margin: 20px 0; border-radius: 0 8px 8px 0; }
+            .lead-card { background: linear-gradient(135deg, #f8faff 0%, #e0edff 100%); border-left: 4px solid #3b82f6; padding: 20px; margin: 20px 0; border-radius: 0 8px 8px 0; }
             .lead-info { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
-            .info-item { background: white; padding: 15px; border-radius: 8px; border: 1px solid #e1e5e9; }
+            .info-item { background: white; padding: 15px; border-radius: 8px; border: 1px solid #e1e5e9; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
             .info-label { font-size: 12px; color: #666; text-transform: uppercase; font-weight: 600; margin-bottom: 5px; }
             .info-value { font-size: 16px; color: #333; font-weight: 500; }
-            .highlight { background: #e8f5e8; border-color: #4caf50; }
-            .highlight .info-value { color: #2e7d32; font-weight: 600; }
-            .cta-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; margin: 25px 0; border-radius: 10px; text-align: center; }
-            .cta-button { display: inline-block; background: #4caf50; color: #1a237e; padding: 12px 30px; border-radius: 25px; text-decoration: none; font-weight: 600; margin: 10px; transition: transform 0.2s; }
-            .cta-button:hover { transform: translateY(-2px); }
-            .urgency { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin: 20px 0; }
-            .urgency strong { color: #856404; }
+            .highlight { background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-color: #10b981; }
+            .highlight .info-value { color: #059669; font-weight: 600; }
+            .cta-section { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 25px; margin: 25px 0; border-radius: 10px; text-align: center; }
+            .cta-button { display: inline-block; background: #10b981; color: white; padding: 15px 35px; border-radius: 25px; text-decoration: none; font-weight: 600; margin: 10px; transition: all 0.2s; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
+            .cta-button:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4); }
+            .urgency { background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%); border: 1px solid #f59e0b; padding: 15px; border-radius: 8px; margin: 20px 0; }
+            .urgency strong { color: #d97706; }
             .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 14px; }
+            .brand-colors { color: #1e3a8a; }
+            .accent-text { color: #3b82f6; }
             @media (max-width: 600px) {
                 .lead-info { grid-template-columns: 1fr; }
                 .container { margin: 10px; }
                 .header, .content { padding: 20px; }
+                .logo { width: 100px; }
             }
         </style>
     </head>
     <body>
         <div class="container">
             <div class="header">
-                <h1>New Qualified Lead!</h1>
+                <img src="https://i.imgur.com/YourLogoHere.png" alt="True North Business Loan" class="logo" />
+                <h1>🚀 New Qualified Lead!</h1>
                 <p>We found the perfect business looking for funding</p>
             </div>
             

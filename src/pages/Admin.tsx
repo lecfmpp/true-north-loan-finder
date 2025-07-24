@@ -80,6 +80,8 @@ const Admin = () => {
   const [selectedRecipients, setSelectedRecipients] = useState<{
     [key: string]: string;
   }>({});
+  const [customEmails, setCustomEmails] = useState<Record<string, string>>({});
+  const [sendingCustomEmails, setSendingCustomEmails] = useState<Record<string, boolean>>({});
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [leadToDelete, setLeadToDelete] = useState<string | null>(null);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
@@ -328,6 +330,61 @@ const Admin = () => {
       };
     }
   }, [isSuperAdmin]);
+
+  const sendCustomLeadEmail = async (leadId: string, recipientEmail: string) => {
+    // Validate email format
+    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+    if (!emailRegex.test(recipientEmail)) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid email address.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setSendingCustomEmails(prev => ({
+      ...prev,
+      [leadId]: true
+    }));
+
+    try {
+      const { data, error } = await supabase.functions.invoke('send-lead-email', {
+        body: {
+          leadId,
+          recipientEmail,
+          recipientName: recipientEmail.split('@')[0] // Use email prefix as name
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "🎉 Email Sent!",
+        description: `Lead information sent to ${recipientEmail} successfully!`,
+        variant: "success" as any
+      });
+
+      // Clear the email input after successful send
+      setCustomEmails(prev => ({
+        ...prev,
+        [leadId]: ""
+      }));
+
+    } catch (error: any) {
+      console.error('Error sending custom lead email:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send lead email. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setSendingCustomEmails(prev => ({
+        ...prev,
+        [leadId]: false
+      }));
+    }
+  };
 
   const sendLeadEmail = async (leadId: string, recipientId: string) => {
     const recipient = approvedPartners.find(p => p.id === recipientId);
@@ -1055,7 +1112,8 @@ const Admin = () => {
                         <TableHead>Created</TableHead>
                         <TableHead>Email Sequences</TableHead>
                         <TableHead>Call Now</TableHead>
-                        {isSuperAdmin && approvedPartners.length > 0 && <TableHead>Send Lead To</TableHead>}
+                        {isSuperAdmin && <TableHead>Send Lead To Partner</TableHead>}
+                        {isSuperAdmin && <TableHead>Send to Custom Email</TableHead>}
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -1197,35 +1255,74 @@ const Admin = () => {
                               Call Now
                             </Button>
                           </TableCell>
-                          {isSuperAdmin && approvedPartners.length > 0 && <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Select disabled={sendingEmails[lead.id]} value={selectedRecipients[lead.id] || ""} onValueChange={value => setSelectedRecipients(prev => ({
-                            ...prev,
-                            [lead.id]: value
-                          }))}>
-                                  <SelectTrigger className="w-48">
-                                    <SelectValue placeholder={sendingEmails[lead.id] ? "Sending..." : "Select recipient"} />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {approvedPartners.map(partner => <SelectItem key={partner.id} value={partner.id}>
-                                        <div className="flex items-center gap-2">
-                                          <Send className="w-4 h-4" />
-                                          {partner.name}
-                                        </div>
-                                      </SelectItem>)}
-                                  </SelectContent>
-                                </Select>
-                                {selectedRecipients[lead.id] && <Button size="sm" onClick={() => {
-                            sendLeadEmail(lead.id, selectedRecipients[lead.id]);
-                            // Clear selection after sending
-                            setSelectedRecipients(prev => ({
+                          {isSuperAdmin && <TableCell>
+                              {approvedPartners.length > 0 ? (
+                                <div className="flex items-center gap-2">
+                                  <Select disabled={sendingEmails[lead.id]} value={selectedRecipients[lead.id] || ""} onValueChange={value => setSelectedRecipients(prev => ({
                               ...prev,
-                              [lead.id]: ""
-                            }));
-                          }} disabled={sendingEmails[lead.id]} className="bg-blue-600 hover:bg-blue-700 text-white">
-                                    <Send className="w-4 h-4 mr-2" />
-                                    Send Lead
-                                  </Button>}
+                              [lead.id]: value
+                            }))}>
+                                    <SelectTrigger className="w-48">
+                                      <SelectValue placeholder={sendingEmails[lead.id] ? "Sending..." : "Select partner"} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {approvedPartners.map(partner => <SelectItem key={partner.id} value={partner.id}>
+                                          <div className="flex items-center gap-2">
+                                            <Send className="w-4 h-4" />
+                                            {partner.name}
+                                          </div>
+                                        </SelectItem>)}
+                                    </SelectContent>
+                                  </Select>
+                                  {selectedRecipients[lead.id] && <Button size="sm" onClick={() => {
+                              sendLeadEmail(lead.id, selectedRecipients[lead.id]);
+                              // Clear selection after sending
+                              setSelectedRecipients(prev => ({
+                                ...prev,
+                                [lead.id]: ""
+                              }));
+                            }} disabled={sendingEmails[lead.id]} className="bg-blue-600 hover:bg-blue-700 text-white">
+                                      <Send className="w-4 h-4 mr-2" />
+                                      Send Lead
+                                    </Button>}
+                                </div>
+                              ) : (
+                                <div className="text-sm text-muted-foreground">
+                                  No approved partners
+                                </div>
+                              )}
+                            </TableCell>}
+                          {isSuperAdmin && <TableCell>
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  type="email"
+                                  placeholder="Enter email address"
+                                  value={customEmails[lead.id] || ""}
+                                  onChange={(e) => setCustomEmails(prev => ({
+                                    ...prev,
+                                    [lead.id]: e.target.value
+                                  }))}
+                                  disabled={sendingCustomEmails[lead.id]}
+                                  className="w-48"
+                                />
+                                <Button 
+                                  size="sm" 
+                                  onClick={() => sendCustomLeadEmail(lead.id, customEmails[lead.id] || "")}
+                                  disabled={sendingCustomEmails[lead.id] || !customEmails[lead.id]?.trim()}
+                                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                                >
+                                  {sendingCustomEmails[lead.id] ? (
+                                    <>
+                                      <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                                      Sending
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Send className="w-4 h-4 mr-2" />
+                                      Send Lead
+                                    </>
+                                  )}
+                                </Button>
                               </div>
                             </TableCell>}
                           <TableCell>
