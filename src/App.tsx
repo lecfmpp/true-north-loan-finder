@@ -5,32 +5,44 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route, BrowserRouter } from "react-router-dom";
 import { ChatWidget } from "@/components/ChatWidget";
 import ConsentBanner from "@/components/ConsentBanner";
+import { lazy, Suspense } from "react";
 
 import ScrollToTop from "@/components/ScrollToTop";
 import { AuthProvider } from "@/hooks/use-auth";
+
+// Critical pages loaded immediately for better UX
 import Home from "./pages/Home";
 import Quiz from "./pages/Quiz";
-import HowItWorks from "./pages/HowItWorks";
-import About from "./pages/About";
-import Partners from "./pages/Partners";
-import IndustriesWeServe from "./pages/IndustriesWeServe";
-import Blog from "./pages/Blog";
-import BlogPost from "./pages/BlogPost";
-import EquipmentFinancing from "./pages/EquipmentFinancing";
-import SmallBusinessLoans from "./pages/SmallBusinessLoans";
-import MerchantCashAdvance from "./pages/MerchantCashAdvance";
-import InvoiceFactoring from "./pages/InvoiceFactoring";
-import Auth from "./pages/Auth";
-import Admin from "./pages/Admin";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsOfService from "./pages/TermsOfService";
 import Results from "./pages/Results";
-import Compare from "./pages/Compare";
-import Application from "./pages/Application";
-import ApplicationSuccess from "./pages/ApplicationSuccess";
-import ApplicationStatus from "./pages/ApplicationStatus";
-import CanadianApplication from "./pages/CanadianApplication";
-import NotFound from "./pages/NotFound";
+
+// Lazy load non-critical pages for better performance
+const HowItWorks = lazy(() => import("./pages/HowItWorks"));
+const About = lazy(() => import("./pages/About"));
+const Partners = lazy(() => import("./pages/Partners"));
+const IndustriesWeServe = lazy(() => import("./pages/IndustriesWeServe"));
+const Blog = lazy(() => import("./pages/Blog"));
+const BlogPost = lazy(() => import("./pages/BlogPost"));
+const EquipmentFinancing = lazy(() => import("./pages/EquipmentFinancing"));
+const SmallBusinessLoans = lazy(() => import("./pages/SmallBusinessLoans"));
+const MerchantCashAdvance = lazy(() => import("./pages/MerchantCashAdvance"));
+const InvoiceFactoring = lazy(() => import("./pages/InvoiceFactoring"));
+const Auth = lazy(() => import("./pages/Auth"));
+const Admin = lazy(() => import("./pages/Admin"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const Compare = lazy(() => import("./pages/Compare"));
+const Application = lazy(() => import("./pages/Application"));
+const ApplicationSuccess = lazy(() => import("./pages/ApplicationSuccess"));
+const ApplicationStatus = lazy(() => import("./pages/ApplicationStatus"));
+const CanadianApplication = lazy(() => import("./pages/CanadianApplication"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+// Loading component for lazy routes
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+  </div>
+);
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -56,28 +68,108 @@ const App = () => (
             <Route path="/" element={<Home />} />
             <Route path="/loan-estimator" element={<Quiz />} />
             <Route path="/results/:responseId" element={<Results />} />
-            <Route path="/how-it-works" element={<HowItWorks />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/partners" element={<Partners />} />
-            <Route path="/industries-we-serve" element={<IndustriesWeServe />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/blog/:slug" element={<BlogPost />} />
-            <Route path="/equipment-financing" element={<EquipmentFinancing />} />
-            <Route path="/small-business-loans" element={<SmallBusinessLoans />} />
-            <Route path="/merchant-cash-advance" element={<MerchantCashAdvance />} />
-            <Route path="/invoice-factoring" element={<InvoiceFactoring />} />
-            <Route path="/compare" element={<Compare />} />
-            <Route path="/application-usa" element={<Application />} />
-            <Route path="/application-canadian" element={<CanadianApplication />} />
-            <Route path="/application-success" element={<ApplicationSuccess />} />
-            <Route path="/application-status" element={<ApplicationStatus />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/admin" element={<Admin />} />
+            <Route path="/how-it-works" element={
+              <Suspense fallback={<PageLoader />}>
+                <HowItWorks />
+              </Suspense>
+            } />
+            <Route path="/about" element={
+              <Suspense fallback={<PageLoader />}>
+                <About />
+              </Suspense>
+            } />
+            <Route path="/partners" element={
+              <Suspense fallback={<PageLoader />}>
+                <Partners />
+              </Suspense>
+            } />
+            <Route path="/industries-we-serve" element={
+              <Suspense fallback={<PageLoader />}>
+                <IndustriesWeServe />
+              </Suspense>
+            } />
+            <Route path="/blog" element={
+              <Suspense fallback={<PageLoader />}>
+                <Blog />
+              </Suspense>
+            } />
+            <Route path="/blog/:slug" element={
+              <Suspense fallback={<PageLoader />}>
+                <BlogPost />
+              </Suspense>
+            } />
+            <Route path="/equipment-financing" element={
+              <Suspense fallback={<PageLoader />}>
+                <EquipmentFinancing />
+              </Suspense>
+            } />
+            <Route path="/small-business-loans" element={
+              <Suspense fallback={<PageLoader />}>
+                <SmallBusinessLoans />
+              </Suspense>
+            } />
+            <Route path="/merchant-cash-advance" element={
+              <Suspense fallback={<PageLoader />}>
+                <MerchantCashAdvance />
+              </Suspense>
+            } />
+            <Route path="/invoice-factoring" element={
+              <Suspense fallback={<PageLoader />}>
+                <InvoiceFactoring />
+              </Suspense>
+            } />
+            <Route path="/compare" element={
+              <Suspense fallback={<PageLoader />}>
+                <Compare />
+              </Suspense>
+            } />
+            <Route path="/application-usa" element={
+              <Suspense fallback={<PageLoader />}>
+                <Application />
+              </Suspense>
+            } />
+            <Route path="/application-canadian" element={
+              <Suspense fallback={<PageLoader />}>
+                <CanadianApplication />
+              </Suspense>
+            } />
+            <Route path="/application-success" element={
+              <Suspense fallback={<PageLoader />}>
+                <ApplicationSuccess />
+              </Suspense>
+            } />
+            <Route path="/application-status" element={
+              <Suspense fallback={<PageLoader />}>
+                <ApplicationStatus />
+              </Suspense>
+            } />
+            <Route path="/auth" element={
+              <Suspense fallback={<PageLoader />}>
+                <Auth />
+              </Suspense>
+            } />
+            <Route path="/admin" element={
+              <Suspense fallback={<PageLoader />}>
+                <Admin />
+              </Suspense>
+            } />
             
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/privacy" element={
+              <Suspense fallback={<PageLoader />}>
+                <PrivacyPolicy />
+              </Suspense>
+            } />
+            <Route path="/terms" element={
+              <Suspense fallback={<PageLoader />}>
+                <TermsOfService />
+              </Suspense>
+            } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
+            <Route path="*" element={
+              <Suspense fallback={<PageLoader />}>
+                <NotFound />
+              </Suspense>
+            } />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
