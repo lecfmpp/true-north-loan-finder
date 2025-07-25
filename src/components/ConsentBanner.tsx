@@ -98,74 +98,49 @@ const ConsentBanner = () => {
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 z-50 p-4">
-        <Card className="mx-auto max-w-4xl bg-background/95 backdrop-blur-sm border shadow-lg">
-          <div className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0">
-                <Shield className="h-6 w-6 text-primary" />
-              </div>
-              
-              <div className="flex-1 space-y-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
-                    We respect your privacy
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    We use cookies to enhance your browsing experience, serve personalized content, 
-                    and analyze our traffic. By clicking "Accept All", you consent to our use of cookies. 
-                    You can manage your preferences or learn more in our{' '}
-                    <a href="/privacy" className="text-primary hover:underline">
-                      Privacy Policy
-                    </a>.
-                  </p>
-                </div>
-                
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="secondary" className="text-xs">
-                    <Shield className="h-3 w-3 mr-1" />
-                    GDPR Compliant
-                  </Badge>
-                  <Badge variant="secondary" className="text-xs">
-                    <BarChart3 className="h-3 w-3 mr-1" />
-                    Analytics
-                  </Badge>
-                  <Badge variant="secondary" className="text-xs">
-                    <Target className="h-3 w-3 mr-1" />
-                    Marketing
-                  </Badge>
-                </div>
-              </div>
-
-              <div className="flex-shrink-0 flex flex-col gap-2 sm:flex-row">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowSettings(true)}
-                  className="text-xs"
-                >
-                  <Settings className="h-3 w-3 mr-1" />
-                  Customize
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={acceptNecessary}
-                  className="text-xs"
-                >
-                  Necessary Only
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={acceptAll}
-                  className="text-xs"
-                >
-                  Accept All
-                </Button>
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t shadow-lg">
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between gap-4 max-w-6xl mx-auto">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <Shield className="h-4 w-4 text-primary flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm text-foreground">
+                  We use cookies to improve your experience.{' '}
+                  <a href="/privacy" className="text-primary hover:underline">
+                    Privacy Policy
+                  </a>
+                </p>
               </div>
             </div>
+
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowSettings(true)}
+                className="text-xs h-8 px-2"
+              >
+                <Settings className="h-3 w-3 mr-1" />
+                Settings
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={acceptNecessary}
+                className="text-xs h-8 px-3"
+              >
+                Necessary
+              </Button>
+              <Button
+                size="sm"
+                onClick={acceptAll}
+                className="text-xs h-8 px-3"
+              >
+                Accept All
+              </Button>
+            </div>
           </div>
-        </Card>
+        </div>
       </div>
 
       <Dialog open={showSettings} onOpenChange={setShowSettings}>
