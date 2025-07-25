@@ -20,8 +20,7 @@ import SEOHead from "@/components/SEOHead";
 
 const Home = () => {
   const trustIndicators = [
-    { icon: "🍁", text: "Proudly Canadian" },
-    { icon: "🔒", text: "Secure Application" },
+    { icon: "🔒", text: "Secure" },
     { icon: "⚡", text: "Fast Funding" }
   ];
 
@@ -150,17 +149,17 @@ const Home = () => {
                 Stop chasing paperwork and waiting weeks for an answer. Get the capital you need to cover payroll, buy inventory, or seize your next big opportunity. Apply in minutes, get a decision today.
               </p>
               
-              <div className="mb-12">
+              <div className="mb-6">
                 <Button asChild variant="cta" size="xl" className="text-lg px-8 bg-accent hover:bg-accent/90 text-accent-foreground">
                   <Link to="/loan-estimator">Start My Application</Link>
                 </Button>
               </div>
               
-              {/* Trust Bar */}
-              <div className="flex flex-wrap gap-8 text-sm text-muted-foreground">
+              {/* Trust Indicators */}
+              <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground mb-12">
                 {trustIndicators.map((item, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <span className="text-lg">{item.icon}</span>
+                  <div key={index} className="flex items-center gap-1.5">
+                    <span className="text-base">{item.icon}</span>
                     <span className="font-medium">{item.text}</span>
                   </div>
                 ))}
