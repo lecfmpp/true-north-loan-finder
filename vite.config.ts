@@ -44,12 +44,9 @@ export default defineConfig(({ mode }) => ({
     // Optimize assets
     assetsInlineLimit: 4096, // Inline small assets < 4kb
     // Enable compression
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: mode === 'production',
-        drop_debugger: mode === 'production',
-      },
+    minify: 'esbuild',
+    esbuild: {
+      drop: mode === 'production' ? ['console', 'debugger'] : [],
     },
   },
   // Optimize CSS processing
