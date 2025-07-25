@@ -156,7 +156,7 @@ const Home = () => {
               </div>
               
               {/* Trust Indicators */}
-              <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground mb-12">
+              <div className="flex items-center justify-start gap-6 text-sm text-muted-foreground mb-12">
                 {trustIndicators.map((item, index) => (
                   <div key={index} className="flex items-center gap-1.5">
                     <span className="text-base">{item.icon}</span>
