@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Save, Eye, Upload, X, FileText } from 'lucide-react';
+import { ArrowLeft, Save, Eye, Upload, X, FileText, Link } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import ReactQuill from 'react-quill';
@@ -59,6 +59,10 @@ const BlogEditor = ({ post, onSave, onCancel }: BlogEditorProps) => {
   const [tagInput, setTagInput] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<BlogTemplate | null>(null);
   const [showTemplateSelector, setShowTemplateSelector] = useState(!post?.id && !formData.content);
+  const [availablePages, setAvailablePages] = useState<Array<{ title: string; url: string }>>([]);
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [selectedText, setSelectedText] = useState('');
+  const [quillRef, setQuillRef] = useState<any>(null);
   const { toast } = useToast();
   const contentRef = useRef<HTMLTextAreaElement>(null);
 
@@ -93,6 +97,78 @@ const BlogEditor = ({ post, onSave, onCancel }: BlogEditorProps) => {
       reading_time: readingTime
     }));
   };
+
+  // Fetch available pages for internal linking
+  const fetchAvailablePages = async () => {
+    try {
+      const { data: blogPosts, error } = await supabase
+        .from('blog_posts')
+        .select('title, slug')
+        .eq('status', 'published')
+        .neq('slug', formData.slug);
+
+      if (error) throw error;
+
+      const pages = [
+        // Static pages
+        { title: 'Home', url: '/' },
+        { title: 'About Us', url: '/about' },
+        { title: 'How It Works', url: '/how-it-works' },
+        { title: 'Quiz', url: '/quiz' },
+        { title: 'Small Business Loans', url: '/small-business-loans' },
+        { title: 'Equipment Financing', url: '/equipment-financing' },
+        { title: 'Merchant Cash Advance', url: '/merchant-cash-advance' },
+        { title: 'Invoice Factoring', url: '/invoice-factoring' },
+        { title: 'Industries We Serve', url: '/industries-we-serve' },
+        { title: 'Partners', url: '/partners' },
+        { title: 'Compare Options', url: '/compare' },
+        // Blog posts
+        ...(blogPosts?.map(post => ({
+          title: post.title,
+          url: `/blog/${post.slug}`
+        })) || [])
+      ];
+
+      setAvailablePages(pages);
+    } catch (error) {
+      console.error('Error fetching pages:', error);
+    }
+  };
+
+  // Custom link handler for ReactQuill
+  const handleLinkClick = () => {
+    const quill = quillRef;
+    if (!quill) return;
+
+    const range = quill.getSelection();
+    if (range && range.length > 0) {
+      setSelectedText(quill.getText(range.index, range.length));
+      setShowLinkModal(true);
+    } else {
+      toast({
+        title: "No text selected",
+        description: "Please select text before adding a link",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Insert link into content
+  const insertLink = (url: string) => {
+    const quill = quillRef;
+    if (!quill) return;
+
+    const range = quill.getSelection();
+    if (range) {
+      quill.format('link', url);
+      setShowLinkModal(false);
+      setSelectedText('');
+    }
+  };
+
+  useEffect(() => {
+    fetchAvailablePages();
+  }, [formData.slug]);
 
   const addTag = () => {
     if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
@@ -166,13 +242,18 @@ const BlogEditor = ({ post, onSave, onCancel }: BlogEditorProps) => {
 
   // ReactQuill modules and formats
   const quillModules = {
-    toolbar: [
-      [{ 'header': [2, 3, false] }],
-      ['bold', 'italic', 'underline'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      ['link', 'image'],
-      ['clean']
-    ],
+    toolbar: {
+      container: [
+        [{ 'header': [2, 3, false] }],
+        ['bold', 'italic', 'underline'],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        ['link', 'image'],
+        ['clean']
+      ],
+      handlers: {
+        'link': handleLinkClick
+      }
+    },
   };
 
   const quillFormats = [
@@ -194,6 +275,53 @@ const BlogEditor = ({ post, onSave, onCancel }: BlogEditorProps) => {
 
   return (
     <div className="flex gap-6 min-h-screen">
+      {/* Link Selection Modal */}
+      {showLinkModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <Card className="w-full max-w-md mx-4">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Link className="w-5 h-5" />
+                Add Internal Link
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Selected text: "{selectedText}"
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3 max-h-64 overflow-y-auto">
+                {availablePages.map((page) => (
+                  <button
+                    key={page.url}
+                    onClick={() => insertLink(page.url)}
+                    className="w-full text-left p-3 rounded-lg border hover:bg-muted transition-colors"
+                  >
+                    <div className="font-medium">{page.title}</div>
+                    <div className="text-sm text-muted-foreground">{page.url}</div>
+                  </button>
+                ))}
+              </div>
+              <div className="flex justify-between mt-4">
+                <Button variant="outline" onClick={() => setShowLinkModal(false)}>
+                  Cancel
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    const customUrl = prompt('Enter custom URL:');
+                    if (customUrl) {
+                      insertLink(customUrl);
+                    }
+                  }}
+                >
+                  Custom URL
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Template Selector Modal */}
       {showTemplateSelector && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -351,6 +479,7 @@ const BlogEditor = ({ post, onSave, onCancel }: BlogEditorProps) => {
           <CardContent>
             <div className="min-h-[500px]">
               <ReactQuill
+                ref={setQuillRef}
                 theme="snow"
                 value={formData.content}
                 onChange={handleContentChange}
