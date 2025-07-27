@@ -45,6 +45,8 @@ interface QuizData {
   email: string;
   phone: string;
   website: string;
+  country: string;
+  cityProvince: string;
 }
 
 // Phone number formatting function
@@ -115,7 +117,9 @@ const Quiz = () => {
     name: "",
     email: "",
     phone: "",
-    website: ""
+    website: "",
+    country: "",
+    cityProvince: ""
   });
   const [showResults, setShowResults] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -596,7 +600,7 @@ const Quiz = () => {
       case 3: return quizData.timeInBusiness !== "";
       case 4: return quizData.monthlyRevenue[0] > 0;
       case 5: return quizData.creditScore !== "";
-      case 6: return quizData.name && quizData.email && quizData.phone;
+      case 6: return quizData.name && quizData.email && quizData.phone && quizData.country && quizData.cityProvince;
       default: return true;
     }
   };
@@ -1087,6 +1091,33 @@ const Quiz = () => {
                         placeholder="Enter your email address"
                         className="mt-1 md:mt-2 text-base md:text-lg py-2 md:py-3"
                       />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="country" className="text-base md:text-lg font-medium">Country</Label>
+                        <select
+                          id="country"
+                          value={quizData.country}
+                          onChange={(e) => setQuizData({...quizData, country: e.target.value, cityProvince: ""})}
+                          className="mt-1 md:mt-2 text-base md:text-lg py-2 md:py-3 w-full rounded-md border border-input bg-background px-3 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          <option value="">Select Country</option>
+                          <option value="US">United States</option>
+                          <option value="CA">Canada</option>
+                        </select>
+                      </div>
+                      <div>
+                        <Label htmlFor="cityProvince" className="text-base md:text-lg font-medium">
+                          {quizData.country === "CA" ? "Province" : "City"}
+                        </Label>
+                        <Input
+                          id="cityProvince"
+                          value={quizData.cityProvince}
+                          onChange={(e) => setQuizData({...quizData, cityProvince: e.target.value})}
+                          placeholder={quizData.country === "CA" ? "Enter your province" : "Enter your city"}
+                          className="mt-1 md:mt-2 text-base md:text-lg py-2 md:py-3"
+                        />
+                      </div>
                     </div>
                     <div>
                       <Label htmlFor="phone" className="text-base md:text-lg font-medium">Phone Number (US/Canada)</Label>
