@@ -136,7 +136,7 @@ const MerchantCashAdvance = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm font-medium">
-              🍁 Fast Business Funding for Canadian Merchants
+              Fast Business Funding for Your Business
             </Badge>
             
             <h1 className="text-4xl lg:text-6xl font-bold font-sans text-primary mb-6 leading-tight">

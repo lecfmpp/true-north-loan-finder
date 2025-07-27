@@ -138,7 +138,7 @@ const Home = () => {
             {/* Left Column - Text Content (60% width) */}
             <div className="lg:col-span-3 text-left lg:pl-8 lg:pr-12">
               <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm font-medium bg-yellow-400 text-black">
-                🍁 Canada's Trusted Business Loan Provider
+                Your Trusted Business Loan Provider
               </Badge>
               
               <h1 className="text-4xl lg:text-6xl font-bold font-sans text-primary mb-6 leading-tight">
