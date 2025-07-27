@@ -902,7 +902,7 @@ const Admin = () => {
           .single();
         applicationData = data;
         referenceNumber = lead.usa_application_reference;
-        applicationType = 'USA Application';
+        applicationType = 'USA Business Loan Application';
       } else if (lead.has_canadian_application && lead.canadian_application_reference) {
         const { data } = await supabase
           .from('canadian_applications')
@@ -911,7 +911,7 @@ const Admin = () => {
           .single();
         applicationData = data;
         referenceNumber = lead.canadian_application_reference;
-        applicationType = 'Canadian Application';
+        applicationType = 'Canadian Business Loan Application';
       }
 
       if (!applicationData) {
@@ -923,53 +923,205 @@ const Admin = () => {
         return;
       }
 
-      // Create PDF using jsPDF
+      // Create comprehensive PDF using jsPDF
       const doc = new jsPDF();
-      
-      // Title
-      doc.setFontSize(20);
-      doc.text(applicationType, 20, 30);
-      
-      // Reference number
-      doc.setFontSize(14);
-      doc.text(`Reference: ${referenceNumber}`, 20, 45);
-      
+      const pageWidth = doc.internal.pageSize.width;
+      const margin = 20;
+      let y = margin;
+
+      // Header
+      doc.setFontSize(18);
+      doc.text(applicationType, pageWidth / 2, y, { align: 'center' });
+      y += 20;
+
+      doc.setFontSize(12);
+      doc.text(`Reference: ${referenceNumber}`, margin, y);
+      y += 10;
+      doc.text(`Status: ${applicationData.status}`, margin, y);
+      y += 10;
+      doc.text(`Applied: ${new Date(applicationData.created_at).toLocaleDateString()}`, margin, y);
+      y += 20;
+
       // Lead Information Section
       doc.setFontSize(16);
-      doc.text('Lead Information:', 20, 65);
-      doc.setFontSize(12);
-      doc.text(`Name: ${lead.name}`, 20, 80);
-      doc.text(`Email: ${lead.email}`, 20, 90);
-      doc.text(`Phone: ${lead.phone}`, 20, 100);
-      doc.text(`Monthly Revenue: $${lead.monthly_revenue.toLocaleString()}`, 20, 110);
-      doc.text(`Loan Amount: $${lead.loan_amount.toLocaleString()}`, 20, 120);
-      doc.text(`Credit Score: ${lead.credit_score}`, 20, 130);
-      doc.text(`Time in Business: ${lead.time_in_business}`, 20, 140);
-      doc.text(`Use of Funds: ${lead.use_of_funds}`, 20, 150);
+      doc.text('Quiz Lead Information:', margin, y);
+      y += 10;
+      doc.setFontSize(10);
       
-      // Application Details Section
-      doc.setFontSize(16);
-      doc.text('Application Details:', 20, 170);
-      doc.setFontSize(12);
-      doc.text(`Status: ${applicationData.status || applicationData.conversion_stage}`, 20, 185);
-      doc.text(`Submitted: ${new Date(applicationData.created_at).toLocaleDateString()}`, 20, 195);
-      doc.text(`Updated: ${new Date(applicationData.updated_at).toLocaleDateString()}`, 20, 205);
+      const leadInfo = [
+        ['Name:', lead.name],
+        ['Email:', lead.email],
+        ['Phone:', lead.phone],
+        ['Monthly Revenue:', `$${lead.monthly_revenue.toLocaleString()}`],
+        ['Loan Amount:', `$${lead.loan_amount.toLocaleString()}`],
+        ['Credit Score:', lead.credit_score],
+        ['Time in Business:', lead.time_in_business],
+        ['Use of Funds:', lead.use_of_funds],
+        ['Quiz Score:', lead.score.toString()]
+      ];
+
+      leadInfo.forEach(([label, value]) => {
+        doc.text(`${label} ${value}`, margin, y);
+        y += 8;
+        if (y > 250) {
+          doc.addPage();
+          y = margin;
+        }
+      });
+
+      y += 10;
+
+      // Business Information
+      doc.setFontSize(14);
+      doc.text('Business Information', margin, y);
+      y += 10;
+      doc.setFontSize(10);
       
-      // Business Information Section
-      doc.setFontSize(16);
-      doc.text('Business Information:', 20, 225);
-      doc.setFontSize(12);
-      doc.text(`Company: ${applicationData.legal_corporation_name || applicationData.legal_business_name}`, 20, 240);
-      doc.text(`Address: ${applicationData.physical_address}`, 20, 250);
-      doc.text(`Phone: ${applicationData.telephone_number || applicationData.business_phone}`, 20, 260);
-      doc.text(`Email: ${applicationData.email_address}`, 20, 270);
+      let businessInfo = [];
       
-      // Save the PDF
-      doc.save(`application-${referenceNumber}.pdf`);
+      if (applicationType.includes('USA')) {
+        businessInfo = [
+          ['Legal Corporation Name:', applicationData.legal_corporation_name || 'N/A'],
+          ['DBA Name:', applicationData.dba_name || 'N/A'],
+          ['Business Phone:', applicationData.telephone_number || 'N/A'],
+          ['Email Address:', applicationData.email_address || 'N/A'],
+          ['Physical Address:', applicationData.physical_address || 'N/A'],
+          ['City:', applicationData.city || 'N/A'],
+          ['State:', applicationData.state || 'N/A'],
+          ['ZIP Code:', applicationData.zip || 'N/A'],
+          ['Entity Type:', applicationData.entity_type || 'N/A'],
+          ['Federal Tax ID:', applicationData.federal_tax_id || 'N/A'],
+          ['Years in Business:', `${applicationData.years_in_business} years, ${applicationData.months_in_business} months` || 'N/A'],
+          ['Number of Employees:', applicationData.number_of_employees || 'N/A'],
+          ['Monthly Rent/Mortgage:', applicationData.monthly_rent_mortgage ? `$${applicationData.monthly_rent_mortgage.toLocaleString()}` : 'N/A'],
+          ['Average Monthly Deposits:', applicationData.average_monthly_deposits ? `$${applicationData.average_monthly_deposits.toLocaleString()}` : 'N/A']
+        ];
+      } else {
+        businessInfo = [
+          ['Legal Business Name:', applicationData.legal_business_name || 'N/A'],
+          ['DBA Name:', applicationData.dba_name || 'N/A'],
+          ['Business Phone:', applicationData.business_phone || 'N/A'],
+          ['Email Address:', applicationData.email_address || 'N/A'],
+          ['Physical Address:', applicationData.physical_address || 'N/A'],
+          ['City:', applicationData.city || 'N/A'],
+          ['State/Province:', applicationData.state || 'N/A'],
+          ['ZIP/Postal Code:', applicationData.zip || 'N/A'],
+          ['Type of Entity:', applicationData.type_of_entity || 'N/A'],
+          ['Federal Tax ID:', applicationData.federal_tax_id || 'N/A'],
+          ['Business Start Date:', applicationData.business_start_date || 'N/A'],
+          ['Number of Locations:', applicationData.number_of_locations || 'N/A'],
+          ['Annual Gross Sales:', applicationData.annual_gross_sales ? `$${applicationData.annual_gross_sales.toLocaleString()}` : 'N/A'],
+          ['Monthly Rent/Mortgage:', applicationData.monthly_rent_or_mortgage ? `$${applicationData.monthly_rent_or_mortgage.toLocaleString()}` : 'N/A']
+        ];
+      }
+
+      businessInfo.forEach(([label, value]) => {
+        doc.text(`${label} ${value}`, margin, y);
+        y += 8;
+        if (y > 250) {
+          doc.addPage();
+          y = margin;
+        }
+      });
+
+      y += 10;
+
+      // Principal Owner Information
+      doc.setFontSize(14);
+      doc.text('Principal Owner Information', margin, y);
+      y += 10;
+      doc.setFontSize(10);
+
+      let ownerInfo = [];
+      
+      if (applicationType.includes('USA')) {
+        ownerInfo = [
+          ['Name:', applicationData.principal_name || 'N/A'],
+          ['Title:', applicationData.principal_title || 'N/A'],
+          ['Email:', applicationData.principal_email || 'N/A'],
+          ['Home Address:', applicationData.principal_home_address || 'N/A'],
+          ['City:', applicationData.principal_city || 'N/A'],
+          ['State:', applicationData.principal_state || 'N/A'],
+          ['ZIP:', applicationData.principal_zip || 'N/A'],
+          ['Home Phone:', applicationData.principal_home_phone || 'N/A'],
+          ['Cell Phone:', applicationData.principal_cell_phone || 'N/A'],
+          ['Date of Birth:', applicationData.principal_date_of_birth ? new Date(applicationData.principal_date_of_birth).toLocaleDateString() : 'N/A'],
+          ['SSN:', applicationData.principal_ssn ? '***-**-****' : 'N/A'],
+          ['Ownership %:', applicationData.principal_ownership_percentage ? `${applicationData.principal_ownership_percentage}%` : 'N/A']
+        ];
+      } else {
+        ownerInfo = [
+          ['Name:', applicationData.principal_owner_name || 'N/A'],
+          ['Home Address:', applicationData.home_address || 'N/A'],
+          ['City:', applicationData.city_owner || 'N/A'],
+          ['State:', applicationData.state_owner || 'N/A'],
+          ['ZIP:', applicationData.zip_owner || 'N/A'],
+          ['Home Phone:', applicationData.home_phone || 'N/A'],
+          ['Cell Phone:', applicationData.cell_phone || 'N/A'],
+          ['Date of Birth:', applicationData.dob ? new Date(applicationData.dob).toLocaleDateString() : 'N/A'],
+          ['SSN:', applicationData.ssn ? '***-**-****' : 'N/A'],
+          ['Ownership %:', applicationData.ownership_percentage ? `${applicationData.ownership_percentage}%` : 'N/A']
+        ];
+      }
+
+      ownerInfo.forEach(([label, value]) => {
+        doc.text(`${label} ${value}`, margin, y);
+        y += 8;
+        if (y > 250) {
+          doc.addPage();
+          y = margin;
+        }
+      });
+
+      y += 10;
+
+      // Loan Information
+      doc.setFontSize(14);
+      doc.text('Loan Information', margin, y);
+      y += 10;
+      doc.setFontSize(10);
+
+      let loanInfo = [];
+      
+      if (applicationType.includes('USA')) {
+        loanInfo = [
+          ['Amount Requested:', applicationData.loan_amount_requested ? `$${applicationData.loan_amount_requested.toLocaleString()}` : 'N/A'],
+          ['Use of Funds:', applicationData.use_of_funds || 'N/A'],
+          ['Current Processor:', applicationData.current_processor || 'N/A'],
+          ['Monthly Processing Volume:', applicationData.monthly_processing_volume ? `$${applicationData.monthly_processing_volume.toLocaleString()}` : 'N/A'],
+          ['Average Ticket:', applicationData.average_ticket ? `$${applicationData.average_ticket.toLocaleString()}` : 'N/A'],
+          ['High Ticket:', applicationData.high_ticket ? `$${applicationData.high_ticket.toLocaleString()}` : 'N/A']
+        ];
+      } else {
+        loanInfo = [
+          ['Amount Requested:', applicationData.amount_requested ? `$${applicationData.amount_requested.toLocaleString()}` : 'N/A'],
+          ['Use of Funds:', applicationData.use_of_funds || 'N/A'],
+          ['Existing Advance:', applicationData.existing_advance ? 'Yes' : 'No'],
+          ['Outstanding Balance:', applicationData.outstanding_balance ? `$${applicationData.outstanding_balance.toLocaleString()}` : 'N/A'],
+          ['Current Processor:', applicationData.current_credit_card_processor || 'N/A']
+        ];
+      }
+
+      loanInfo.forEach(([label, value]) => {
+        doc.text(`${label} ${value}`, margin, y);
+        y += 8;
+      });
+
+      if (applicationData.admin_notes) {
+        y += 10;
+        doc.setFontSize(14);
+        doc.text('Admin Notes', margin, y);
+        y += 10;
+        doc.setFontSize(10);
+        const splitNotes = doc.splitTextToSize(applicationData.admin_notes, pageWidth - 2 * margin);
+        doc.text(splitNotes, margin, y);
+      }
+
+      doc.save(`Complete_Application_${referenceNumber}.pdf`);
 
       toast({
         title: "Success",
-        description: "Application PDF downloaded successfully",
+        description: "Complete application PDF downloaded successfully",
       });
     } catch (error) {
       console.error('Error downloading application:', error);
