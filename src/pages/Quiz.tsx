@@ -543,17 +543,17 @@ const Quiz = () => {
 
       // Dynamic routing based on country selection
       if (data.country === "US") {
-        // Redirect US users to the application page
-        const applicationUrl = new URLSearchParams({
+        // Redirect US users to results page (matching Canadian flow)
+        const resultsUrl = new URLSearchParams({
           amount: data.loanAmount[0].toString(),
           name: data.name,
           email: data.email,
           phone: data.phone,
           score: score.toString(),
-          quiz_id: savedResponse.id  // Changed from responseId to quiz_id to match application logic
+          responseId: savedResponse.id
         });
         
-        window.location.href = `/application-usa?${applicationUrl.toString()}`;
+        window.location.href = `/results/${savedResponse.id}?${resultsUrl.toString()}`;
       } else {
         // Redirect Canadian users to results page
         const resultsUrl = new URLSearchParams({
