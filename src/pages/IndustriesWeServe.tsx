@@ -43,8 +43,8 @@ const IndustriesWeServe = () => {
       image: constructionImage,
       icon: <Hammer className="h-6 w-6 text-secondary" />,
       challenge: {
-        headline: "Business Loans for Construction in Canada",
-        description: "Securing a **small business loan in Canada** is often the key to bidding on bigger construction projects. We provide the capital needed to purchase equipment and manage cash flow with confidence."
+        headline: "Business Loans for Construction in Canada & US",
+        description: "Securing a **small business loan in Canada or the US** is often the key to bidding on bigger construction projects. We provide the capital needed to purchase equipment and manage cash flow with confidence."
       },
       solutions: [
         { title: "Equipment Financing", description: "The ideal business loan for new or used machinery." },
@@ -59,8 +59,8 @@ const IndustriesWeServe = () => {
       image: restaurantImage,
       icon: <ChefHat className="h-6 w-6 text-secondary" />,
       challenge: {
-        headline: "Business Loans for Restaurants in Canada",
-        description: "The restaurant industry faces unique cash flow challenges. Our **Canadian business loan** solutions help you manage seasonal fluctuations, upgrade equipment, and expand your operations."
+        headline: "Business Loans for Restaurants in Canada & US",
+        description: "The restaurant industry faces unique cash flow challenges. Our **business loan** solutions help you manage seasonal fluctuations, upgrade equipment, and expand your operations in Canada and the United States."
       },
       solutions: [
         { title: "Equipment Financing", description: "Fund kitchen equipment, POS systems, and renovations." },
@@ -75,8 +75,8 @@ const IndustriesWeServe = () => {
       image: retailImage,
       icon: <ShoppingCart className="h-6 w-6 text-secondary" />,
       challenge: {
-        headline: "Business Loans for Retail in Canada",
-        description: "Whether you're expanding inventory or launching online, **business financing in Canada** for retail businesses helps you stay competitive and grow your customer base."
+        headline: "Business Loans for Retail in Canada & US",
+        description: "Whether you're expanding inventory or launching online, **business financing in Canada and the US** for retail businesses helps you stay competitive and grow your customer base."
       },
       solutions: [
         { title: "Inventory Financing", description: "Stock up for peak seasons and new product lines." },
@@ -91,8 +91,8 @@ const IndustriesWeServe = () => {
       image: medicalImage,
       icon: <Stethoscope className="h-6 w-6 text-secondary" />,
       challenge: {
-        headline: "Business Loans for Medical Practices in Canada",
-        description: "Medical practices require specialized equipment and often face long payment cycles. Our **small business loan in Canada** options are designed for healthcare professionals' unique needs."
+        headline: "Business Loans for Medical Practices in Canada & US",
+        description: "Medical practices require specialized equipment and often face long payment cycles. Our **small business loan** options are designed for healthcare professionals' unique needs in both Canada and the United States."
       },
       solutions: [
         { title: "Equipment Financing", description: "Fund medical equipment and technology upgrades." },
@@ -107,8 +107,8 @@ const IndustriesWeServe = () => {
       image: b2bServicesImage,
       icon: <Users className="h-6 w-6 text-secondary" />,
       challenge: {
-        headline: "Business Loans for B2B Services in Canada",
-        description: "Service businesses like staffing agencies and consulting firms need capital to scale operations and manage client payment delays. Our **Canadian business loan** solutions provide the flexibility you need."
+        headline: "Business Loans for B2B Services in Canada & US",
+        description: "Service businesses like staffing agencies and consulting firms need capital to scale operations and manage client payment delays. Our **business loan** solutions provide the flexibility you need in Canada and the United States."
       },
       solutions: [
         { title: "Working Capital Loans", description: "Cover payroll and operating expenses during growth." },
@@ -123,12 +123,12 @@ const IndustriesWeServe = () => {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    "name": "Industries We Serve - Small Business Loans in Canada",
-    "description": "Specialized business financing in Canada for construction, restaurants, retail, medical practices, and B2B services. Get a Canadian business loan tailored for your industry.",
+    "name": "Industries We Serve - Small Business Loans in Canada & US",
+    "description": "Specialized business financing in Canada and the United States for construction, restaurants, retail, medical practices, and B2B services. Get a business loan tailored for your industry.",
     "url": "https://truenorthbusinessloan.ca/industries-we-serve",
     "mainEntity": {
       "@type": "Service",
-      "name": "Small Business Loans in Canada",
+      "name": "Small Business Loans in Canada & US",
       "provider": {
         "@type": "Organization",
         "name": "True North Business Loan"
@@ -139,9 +139,9 @@ const IndustriesWeServe = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Industries We Serve - Small Business Loans in Canada | True North Business Loan"
-        description="Specialized business financing in Canada for construction, restaurants, retail, medical practices, and B2B services. Get a Canadian business loan tailored for your industry."
-        keywords={["small business loans canada", "canadian business loan", "business financing canada", "construction loans", "restaurant financing", "retail loans", "medical practice loans"]}
+        title="Industries We Serve - Small Business Loans in Canada & US | True North Business Loan"
+        description="Specialized business financing in Canada and the United States for construction, restaurants, retail, medical practices, and B2B services. Get a business loan tailored for your industry."
+        keywords={["small business loans canada", "small business loans usa", "business financing canada", "business financing usa", "construction loans", "restaurant financing", "retail loans", "medical practice loans"]}
         canonicalUrl="https://truenorthbusinessloan.ca/industries-we-serve"
         structuredData={structuredData}
       />
@@ -155,10 +155,10 @@ const IndustriesWeServe = () => {
               Industries We Serve
             </h1>
             <h2 className="text-2xl lg:text-3xl font-bold font-sans text-secondary mb-6">
-              Small Business Loans in Canada, Tailored for Your Industry
+              Small Business Loans in Canada & US, Tailored for Your Industry
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto font-serif mb-8">
-              We provide specialized <strong>business financing in Canada</strong> to help entrepreneurs overcome their unique challenges. From a <strong>Canadian business loan</strong> for expansion to equipment financing, we have the right funding for your company.
+              We provide specialized <strong>business financing in Canada and the United States</strong> to help entrepreneurs overcome their unique challenges. From a <strong>business loan for expansion</strong> to equipment financing, we have the right funding for your company.
             </p>
             <Button asChild size="lg" variant="cta">
               <Link to="/loan-estimator">
@@ -230,7 +230,7 @@ const IndustriesWeServe = () => {
                     {/* Cash Flow Impact */}
                     <div className="mb-6 md:mb-8">
                       <h4 className="text-lg lg:text-xl font-bold font-sans text-primary mb-4 break-words leading-tight">
-                        How a Canadian Business Loan Transforms Your Cash Flow
+                        How a Business Loan Transforms Your Cash Flow
                       </h4>
                       <div className="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-lg p-6 w-full">
                         <div className="flex items-end justify-between h-32 space-x-2">
@@ -279,7 +279,7 @@ const IndustriesWeServe = () => {
                         Get Your {industry.title.split(' &')[0]} Loan Estimate
                       </h4>
                       <p className="text-muted-foreground mb-4 font-serif text-base break-words leading-relaxed">
-                        Use our free <strong className="text-primary">business loan estimator</strong> to see how much funding your {industry.title.toLowerCase()} can get. This simple tool helps you understand your options for a <strong className="text-primary">small business loan in Canada</strong>.
+                        Use our free <strong className="text-primary">business loan estimator</strong> to see how much funding your {industry.title.toLowerCase()} can get. This simple tool helps you understand your options for a <strong className="text-primary">small business loan in Canada or the US</strong>.
                       </p>
                       <Button asChild className="w-full lg:w-auto bg-accent hover:bg-accent/90 text-accent-foreground font-bold text-base">
                         <Link to="/loan-estimator">
