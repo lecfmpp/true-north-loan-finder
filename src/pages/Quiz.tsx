@@ -503,6 +503,8 @@ const Quiz = () => {
         email: data.email,
         phone: data.phone,
         website: data.website,
+        country: data.country,
+        city_province: data.cityProvince,
         score: score
       }).select().single();
 
