@@ -273,8 +273,12 @@ const CanadianApplication = () => {
     }
   };
 
+  const [showValidationErrors, setShowValidationErrors] = useState(false);
+
   const getFieldValidationClass = (fieldName: keyof CanadianApplicationData, step: number): string => {
-    // Check if field is required for current step and is empty
+    // Only show validation errors when user tries to proceed and there are errors
+    if (!showValidationErrors) return "";
+    
     const requiredFields = getRequiredFieldsForStep(step);
     const isRequired = requiredFields.includes(fieldName);
     const isEmpty = !formData[fieldName] || (Array.isArray(formData[fieldName]) && (formData[fieldName] as any[]).length === 0);
@@ -304,9 +308,12 @@ const CanadianApplication = () => {
   const nextStep = () => {
     const missingFields = getStepRequiredFields(currentStep);
     if (missingFields.length > 0) {
+      setShowValidationErrors(true);
       toast.error(`Please fill in the following required fields: ${missingFields.join(", ")}`);
       return;
     }
+    
+    setShowValidationErrors(false); // Reset validation errors when moving forward
     
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);

@@ -537,26 +537,9 @@ const Quiz = () => {
         // Don't fail the whole submission if admin notification fails
       }
 
-      // Start follow-up email sequence (15-minute delay)
-      setTimeout(async () => {
-        try {
-          const response = await supabase.functions.invoke('send-email-sequence', {
-            body: {
-              type: 'follow_up',
-              userEmail: data.email,
-              userName: data.name.split(' ')[0] // Use first name
-            }
-          });
-          
-          if (response.error) {
-            console.error('Error starting email sequence:', response.error);
-          } else {
-            console.log('Follow-up email sequence started successfully');
-          }
-        } catch (error) {
-          console.error('Error starting email sequence:', error);
-        }
-      }, 15 * 60 * 1000); // 15 minutes delay
+      // Email sequence is disabled by default for all quiz submissions
+      // This can be enabled later manually by admins if needed
+      console.log('Email sequence disabled by default for quiz submissions');
 
       // Dynamic routing based on country selection
       if (data.country === "US") {
@@ -567,7 +550,7 @@ const Quiz = () => {
           email: data.email,
           phone: data.phone,
           score: score.toString(),
-          responseId: savedResponse.id
+          quiz_id: savedResponse.id  // Changed from responseId to quiz_id to match application logic
         });
         
         window.location.href = `/application-usa?${applicationUrl.toString()}`;

@@ -269,8 +269,12 @@ const Application = () => {
     }));
   };
 
+  const [showValidationErrors, setShowValidationErrors] = useState(false);
+
   const getFieldValidationClass = (fieldName: keyof ApplicationData, step: number): string => {
-    // Check if field is required for current step and is empty
+    // Only show validation errors when user tries to proceed and there are errors
+    if (!showValidationErrors) return "";
+    
     const requiredFields = getRequiredFieldsForStep(step);
     const isRequired = requiredFields.includes(fieldName);
     const isEmpty = !formData[fieldName] || (Array.isArray(formData[fieldName]) && (formData[fieldName] as any[]).length === 0);
@@ -356,9 +360,12 @@ const Application = () => {
 
   const nextStep = () => {
     if (!validateStep(currentStep)) {
+      setShowValidationErrors(true);
       toast.error("Please fill in all required fields before proceeding.");
       return;
     }
+    
+    setShowValidationErrors(false); // Reset validation errors when moving forward
     
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
@@ -1320,7 +1327,9 @@ const Application = () => {
                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                       onChange={(e) => {
                         const files = Array.from(e.target.files || []);
-                        updateFormData('document_files', files);
+                        if (files.length > 0) {
+                          updateFormData('document_files', [...formData.document_files, ...files]);
+                        }
                       }}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                       style={{ pointerEvents: 'auto' }}
@@ -1330,11 +1339,26 @@ const Application = () => {
                   {formData.document_files.length > 0 && (
                     <div className="mt-3">
                       <p className="text-sm font-medium mb-2">Selected Files:</p>
-                      <ul className="text-sm text-muted-foreground space-y-1">
+                      <ul className="text-sm space-y-1">
                         {formData.document_files.map((file, index) => (
-                          <li key={index} className="flex items-center gap-2">
-                            <FileText className="h-4 w-4" />
-                            {file.name} ({Math.round(file.size / 1024)}KB)
+                          <li key={index} className="flex items-center justify-between gap-2 p-2 bg-muted rounded">
+                            <div className="flex items-center gap-2">
+                              <FileText className="h-4 w-4 text-primary" />
+                              <span className="truncate">{file.name}</span>
+                              <span className="text-xs text-muted-foreground">({Math.round(file.size / 1024)}KB)</span>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                const newFiles = formData.document_files.filter((_, i) => i !== index);
+                                updateFormData('document_files', newFiles);
+                              }}
+                              className="h-6 w-6 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                            >
+                              ×
+                            </Button>
                           </li>
                         ))}
                       </ul>

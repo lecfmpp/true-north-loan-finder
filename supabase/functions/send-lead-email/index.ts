@@ -98,6 +98,37 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Check for associated applications
+    let applicationInfo = '';
+    
+    // Check for USA application
+    const { data: usaApp } = await supabase
+      .from('usa_applications')
+      .select('application_reference_number, status, created_at')
+      .eq('quiz_response_id', leadId)
+      .single();
+      
+    // Check for Canadian application  
+    const { data: canApp } = await supabase
+      .from('canadian_applications')
+      .select('application_reference_number, status, created_at')
+      .eq('quiz_response_id', leadId)
+      .single();
+
+    if (usaApp) {
+      applicationInfo = `
+      <div class="info-item highlight">
+        <div class="info-label">📄 USA Application Status</div>
+        <div class="info-value">Reference: ${usaApp.application_reference_number}<br>Status: ${usaApp.status}<br>Submitted: ${new Date(usaApp.created_at).toLocaleDateString()}</div>
+      </div>`;
+    } else if (canApp) {
+      applicationInfo = `
+      <div class="info-item highlight">
+        <div class="info-label">📄 Canadian Application Status</div>
+        <div class="info-value">Reference: ${canApp.application_reference_number}<br>Status: ${canApp.status}<br>Submitted: ${new Date(canApp.created_at).toLocaleDateString()}</div>
+      </div>`;
+    }
+
     // Helper function to get credit score number from classification
     const getCreditScoreNumber = (creditScore: string) => {
       switch (creditScore) {
@@ -395,6 +426,7 @@ const handler = async (req: Request): Promise<Response> => {
                         <div class="info-label">🎯 Use of Funds</div>
                         <div class="info-value">${lead.use_of_funds}</div>
                     </div>
+                    ${applicationInfo}
                 </div>
 
                 ${lead.website ? `
