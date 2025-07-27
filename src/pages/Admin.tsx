@@ -1267,7 +1267,7 @@ const Admin = () => {
                             )}
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
-                            {format(new Date(lead.created_at), 'MMM dd, yyyy')}
+                            {format(new Date(lead.created_at), 'MMM dd, yyyy HH:mm')}
                           </TableCell>
                           <TableCell>
                             <div className="space-y-2">
