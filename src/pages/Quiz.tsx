@@ -558,17 +558,32 @@ const Quiz = () => {
         }
       }, 15 * 60 * 1000); // 15 minutes delay
 
-      // Redirect to results page with data
-      const resultsUrl = new URLSearchParams({
-        amount: data.loanAmount[0].toString(),
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        score: score.toString(),
-        responseId: savedResponse.id
-      });
-      
-      window.location.href = `/results/${savedResponse.id}?${resultsUrl.toString()}`;
+      // Dynamic routing based on country selection
+      if (data.country === "US") {
+        // Redirect US users to the application page
+        const applicationUrl = new URLSearchParams({
+          amount: data.loanAmount[0].toString(),
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          score: score.toString(),
+          responseId: savedResponse.id
+        });
+        
+        window.location.href = `/application-usa?${applicationUrl.toString()}`;
+      } else {
+        // Redirect Canadian users to results page
+        const resultsUrl = new URLSearchParams({
+          amount: data.loanAmount[0].toString(),
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          score: score.toString(),
+          responseId: savedResponse.id
+        });
+        
+        window.location.href = `/results/${savedResponse.id}?${resultsUrl.toString()}`;
+      }
       
     } catch (error) {
       console.error('Error saving quiz response:', error);
