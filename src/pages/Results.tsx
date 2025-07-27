@@ -127,24 +127,26 @@ const Results = () => {
     const workingScore = quizData?.score || score;
     const workingAmount = quizData?.loan_amount || loanAmount;
     
-    let rate = 8.5;
+    // Set rate ranges
+    const minRate = 4.5;
+    const maxRate = 11.0;
     let speed = "3-5 business days";
     
     if (workingScore >= 80) {
-      rate = 6.5;
       speed = "24-48 hours";
     } else if (workingScore >= 70) {
-      rate = 7.5;
       speed = "2-3 business days";
     }
 
-    const monthlyPayment = (workingAmount * (rate / 100 / 12)) / (1 - Math.pow(1 + (rate / 100 / 12), -36));
+    // Calculate payment range using the min and max rates
+    const minMonthlyPayment = (workingAmount * (minRate / 100 / 12)) / (1 - Math.pow(1 + (minRate / 100 / 12), -36));
+    const maxMonthlyPayment = (workingAmount * (maxRate / 100 / 12)) / (1 - Math.pow(1 + (maxRate / 100 / 12), -36));
 
     return {
       estimatedFunding: workingAmount,
       fundingSpeed: speed,
-      estimatedRate: `${rate}%`,
-      estimatedPayment: `$${Math.round(monthlyPayment).toLocaleString()}/mo`
+      estimatedRate: `${minRate}% - ${maxRate}%`,
+      estimatedPayment: `$${Math.round(minMonthlyPayment).toLocaleString()} - $${Math.round(maxMonthlyPayment).toLocaleString()}/mo`
     };
   };
 
