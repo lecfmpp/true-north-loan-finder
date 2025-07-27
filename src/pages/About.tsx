@@ -27,7 +27,7 @@ const About = () => {
   const stats = [{
     number: "10,000+",
     label: "Businesses Helped",
-    description: "Canadian small businesses connected with funding"
+    description: "Small businesses across Canada and US connected with funding"
   }, {
     number: "$250M+",
     label: "Funding Facilitated",
@@ -35,7 +35,7 @@ const About = () => {
   }, {
     number: "50+",
     label: "Lender Partners",
-    description: "Vetted, reputable lenders across Canada"
+    description: "Vetted, reputable lenders across Canada and US"
   }, {
     number: "4.9/5",
     label: "Customer Rating",
@@ -69,12 +69,12 @@ const About = () => {
             </h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto font-serif">
               We're a Canadian company dedicated to simplifying business financing and 
-              empowering small businesses across the True North to achieve their growth goals.
+              empowering small businesses across Canada and the United States to achieve their growth goals.
             </p>
             <div className="flex items-center justify-center gap-2 text-2xl mb-8">
               <span>🍁</span>
-              <span className="text-primary font-semibold">Proudly Canadian</span>
-              <span>🍁</span>
+              <span className="text-primary font-semibold">Proudly Canadian, Serving North America</span>
+              <span>🇺🇸</span>
             </div>
           </div>
         </div>
@@ -90,14 +90,14 @@ const About = () => {
                   Our Mission
                 </h2>
                 <p className="text-lg text-muted-foreground mb-6 font-serif">
-                  To empower Canadian small businesses by providing simple, transparent access to financing. 
+                  To empower small businesses by providing simple, transparent access to financing. 
                   We believe that every business owner should have the opportunity to grow their company without 
                   the frustration and complexity of traditional lending.
                 </p>
                 <p className="text-lg text-muted-foreground mb-8 font-serif">
-                  Founded in Kitchener, Ontario, we understand the unique challenges facing Canadian entrepreneurs. 
+                  Founded in Kitchener, Ontario, we understand the unique challenges facing entrepreneurs in both Canada and the United States. 
                   That's why we've built a platform that puts business owners in control, connecting them directly 
-                  with lenders who want to help them succeed.
+                  with lenders who want to help them succeed across North America.
                 </p>
                 <Button asChild variant="cta" size="lg">
                   <Link to="/loan-estimator">Use the Loan Estimator</Link>
@@ -196,7 +196,7 @@ const About = () => {
                     <p className="text-lg text-muted-foreground mb-6 font-serif">
                       Based in the heart of Canada's technology corridor, we're proud to call 
                       Kitchener, Ontario our home. This vibrant community of entrepreneurs and 
-                      innovators inspires us every day.
+                      innovators inspires us every day as we serve businesses across Canada and the United States.
                     </p>
                     <div className="space-y-3 text-muted-foreground">
                       <div className="flex items-center">
@@ -225,7 +225,7 @@ const About = () => {
       <section className="py-20 bg-gradient-to-r from-primary to-secondary text-primary-foreground">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl lg:text-4xl font-bold font-sans mb-4">
-            Ready to Join Thousands of Successful Canadian Businesses?
+            Ready to Join Thousands of Successful North American Businesses?
           </h2>
           <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto font-serif">
             Start your journey to better business financing today
