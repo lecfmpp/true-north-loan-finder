@@ -478,16 +478,22 @@ const BlogEditor = ({ post, onSave, onCancel }: BlogEditorProps) => {
           </CardHeader>
           <CardContent>
             <div className="min-h-[500px]">
-              <ReactQuill
-                ref={setQuillRef}
-                theme="snow"
-                value={formData.content}
-                onChange={handleContentChange}
-                modules={quillModules}
-                formats={quillFormats}
-                placeholder="Write your blog post content here. Use the heading tools to create H2 and H3 sections..."
-                style={{ height: '400px' }}
-              />
+              {!ReactQuill ? (
+                <div className="flex items-center justify-center h-[400px] border rounded-md">
+                  <p className="text-muted-foreground">Loading editor...</p>
+                </div>
+              ) : (
+                <ReactQuill
+                  ref={setQuillRef}
+                  theme="snow"
+                  value={formData.content || ''}
+                  onChange={handleContentChange}
+                  modules={quillModules}
+                  formats={quillFormats}
+                  placeholder="Write your blog post content here. Use the heading tools to create H2 and H3 sections..."
+                  style={{ height: '400px', marginBottom: '50px' }}
+                />
+              )}
             </div>
             <div className="flex justify-between text-sm text-muted-foreground mt-12 pt-4 border-t">
               <p>Estimated reading time: {formData.reading_time} minute{formData.reading_time !== 1 ? 's' : ''}</p>
