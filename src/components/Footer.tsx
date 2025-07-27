@@ -13,8 +13,7 @@ const Footer = () => {
               Empowering Canadian small businesses with simple, transparent access to financing.
             </p>
             <div className="flex items-center space-x-2 text-sm">
-              <span className="text-2xl">🍁</span>
-              <span>Proudly Canadian</span>
+              <span>Helping Business to Grow</span>
             </div>
           </div>
 
