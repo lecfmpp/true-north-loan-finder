@@ -1112,13 +1112,43 @@ const Quiz = () => {
                         <Label htmlFor="cityProvince" className="text-base md:text-lg font-medium">
                           {quizData.country === "CA" ? "Province" : "City"}
                         </Label>
-                        <Input
+                        <select
                           id="cityProvince"
                           value={quizData.cityProvince}
                           onChange={(e) => setQuizData({...quizData, cityProvince: e.target.value})}
-                          placeholder={quizData.country === "CA" ? "Enter your province" : "Enter your city"}
-                          className="mt-1 md:mt-2 text-base md:text-lg py-2 md:py-3"
-                        />
+                          className="mt-1 md:mt-2 text-base md:text-lg py-2 md:py-3 w-full rounded-md border border-input bg-background px-3 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                          disabled={!quizData.country}
+                        >
+                          <option value="">
+                            {quizData.country === "CA" ? "Select Province" : quizData.country === "US" ? "Select City" : "Select Country First"}
+                          </option>
+                          {quizData.country === "CA" && [
+                            "Alberta", "British Columbia", "Manitoba", "New Brunswick", "Newfoundland and Labrador",
+                            "Northwest Territories", "Nova Scotia", "Nunavut", "Ontario", "Prince Edward Island",
+                            "Quebec", "Saskatchewan", "Yukon"
+                          ].map(province => (
+                            <option key={province} value={province}>{province}</option>
+                          ))}
+                          {quizData.country === "US" && [
+                            "New York", "Los Angeles", "Chicago", "Houston", "Phoenix", "Philadelphia", "San Antonio",
+                            "San Diego", "Dallas", "San Jose", "Austin", "Jacksonville", "Fort Worth", "Columbus",
+                            "Charlotte", "San Francisco", "Indianapolis", "Seattle", "Denver", "Washington",
+                            "Boston", "El Paso", "Nashville", "Detroit", "Oklahoma City", "Portland", "Las Vegas",
+                            "Memphis", "Louisville", "Baltimore", "Milwaukee", "Albuquerque", "Tucson", "Fresno",
+                            "Sacramento", "Mesa", "Kansas City", "Atlanta", "Long Beach", "Colorado Springs",
+                            "Raleigh", "Miami", "Virginia Beach", "Omaha", "Oakland", "Minneapolis", "Tulsa",
+                            "Arlington", "Tampa", "New Orleans", "Wichita", "Cleveland", "Bakersfield", "Aurora",
+                            "Anaheim", "Honolulu", "Santa Ana", "Riverside", "Corpus Christi", "Lexington", "Henderson",
+                            "Stockton", "Saint Paul", "Cincinnati", "St. Louis", "Pittsburgh", "Greensboro",
+                            "Lincoln", "Anchorage", "Plano", "Orlando", "Irvine", "Newark", "Durham", "Chula Vista",
+                            "Toledo", "Fort Wayne", "St. Petersburg", "Laredo", "Jersey City", "Chandler",
+                            "Madison", "Lubbock", "Norfolk", "Baton Rouge", "Burnsville", "Buffalo", "North Las Vegas",
+                            "Gilbert", "Reno", "Winston-Salem", "Glendale", "Hialeah", "Garland", "Scottsdale",
+                            "Irving", "Chesapeake", "Fremont", "Boise"
+                          ].map(city => (
+                            <option key={city} value={city}>{city}</option>
+                          ))}
+                        </select>
                       </div>
                     </div>
                     <div>
