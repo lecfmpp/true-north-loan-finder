@@ -291,7 +291,7 @@ const Application = () => {
       case 3:
         return ['principal_name', 'principal_title', 'principal_ssn', 'principal_date_of_birth', 'principal_home_address', 'principal_city', 'principal_state', 'principal_zip', 'principal_email', 'principal_ownership_percentage'];
       case 4:
-        return ['years_in_business', 'months_in_business', 'number_of_employees', 'business_type', 'business_description'];
+        return ['years_in_business', 'number_of_employees', 'business_type', 'business_description'];
       case 5:
         return ['bank_name', 'bank_account_type', 'bank_routing_number', 'bank_account_number', 'months_with_bank', 'average_monthly_deposits', 'monthly_rent_mortgage', 'accept_cards'];
       case 6:
@@ -332,7 +332,6 @@ const Application = () => {
       case 4:
         return !!(
           formData.years_in_business &&
-          formData.months_in_business &&
           formData.number_of_employees &&
           formData.business_type &&
           formData.business_description
@@ -713,6 +712,7 @@ const Application = () => {
                   placeholder="12-3456789"
                   maxLength={10}
                   required
+                  className={getFieldValidationClass('federal_tax_id', currentStep)}
                 />
               </div>
               
@@ -768,6 +768,7 @@ const Application = () => {
                   value={formData.principal_name}
                   onChange={(e) => updateFormData('principal_name', e.target.value)}
                   required
+                  className={getFieldValidationClass('principal_name', currentStep)}
                 />
               </div>
               
@@ -778,6 +779,7 @@ const Application = () => {
                   value={formData.principal_title}
                   onChange={(e) => updateFormData('principal_title', e.target.value)}
                   required
+                  className={getFieldValidationClass('principal_title', currentStep)}
                 />
               </div>
               
@@ -793,6 +795,7 @@ const Application = () => {
                   placeholder="123-45-6789"
                   maxLength={11}
                   required
+                  className={getFieldValidationClass('principal_ssn', currentStep)}
                 />
               </div>
               
@@ -804,6 +807,7 @@ const Application = () => {
                   value={formData.principal_date_of_birth}
                   onChange={(e) => updateFormData('principal_date_of_birth', e.target.value)}
                   required
+                  className={getFieldValidationClass('principal_date_of_birth', currentStep)}
                 />
               </div>
               
@@ -814,7 +818,29 @@ const Application = () => {
                   value={formData.principal_home_address}
                   onChange={(e) => updateFormData('principal_home_address', e.target.value)}
                   required
+                  className={getFieldValidationClass('principal_home_address', currentStep)}
                 />
+              </div>
+              
+              <div className="space-y-2 md:col-span-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="same_as_company_address"
+                    checked={formData.principal_home_address === formData.physical_address && 
+                             formData.principal_city === formData.city && 
+                             formData.principal_state === formData.state && 
+                             formData.principal_zip === formData.zip}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        updateFormData('principal_home_address', formData.physical_address);
+                        updateFormData('principal_city', formData.city);
+                        updateFormData('principal_state', formData.state);
+                        updateFormData('principal_zip', formData.zip);
+                      }
+                    }}
+                  />
+                  <Label htmlFor="same_as_company_address" className="text-sm font-medium">Same as Company Address</Label>
+                </div>
               </div>
               
               <div className="space-y-2">
@@ -824,13 +850,14 @@ const Application = () => {
                   value={formData.principal_city}
                   onChange={(e) => updateFormData('principal_city', e.target.value)}
                   required
+                  className={getFieldValidationClass('principal_city', currentStep)}
                 />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="principal_state">State *</Label>
                 <Select value={formData.principal_state} onValueChange={(value) => updateFormData('principal_state', value)}>
-                  <SelectTrigger>
+                  <SelectTrigger className={getFieldValidationClass('principal_state', currentStep)}>
                     <SelectValue placeholder="Select state" />
                   </SelectTrigger>
                   <SelectContent>
@@ -853,6 +880,7 @@ const Application = () => {
                   placeholder="12345 or 12345-6789"
                   maxLength={10}
                   required
+                  className={getFieldValidationClass('principal_zip', currentStep)}
                 />
               </div>
               
@@ -895,6 +923,7 @@ const Application = () => {
                   onChange={(e) => updateFormData('principal_email', e.target.value)}
                   placeholder="example@domain.com"
                   required
+                  className={getFieldValidationClass('principal_email', currentStep)}
                 />
               </div>
               
@@ -909,6 +938,7 @@ const Application = () => {
                   onChange={(e) => updateFormData('principal_ownership_percentage', e.target.value)}
                   placeholder="%"
                   required
+                  className={getFieldValidationClass('principal_ownership_percentage', currentStep)}
                 />
               </div>
             </div>
@@ -933,19 +963,7 @@ const Application = () => {
                   value={formData.years_in_business}
                   onChange={(e) => updateFormData('years_in_business', e.target.value)}
                   required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="months_in_business">Additional Months *</Label>
-                <Input
-                  id="months_in_business"
-                  type="number"
-                  min="0"
-                  max="11"
-                  value={formData.months_in_business}
-                  onChange={(e) => updateFormData('months_in_business', e.target.value)}
-                  required
+                  className={getFieldValidationClass('years_in_business', currentStep)}
                 />
               </div>
               
@@ -958,6 +976,7 @@ const Application = () => {
                   value={formData.number_of_employees}
                   onChange={(e) => updateFormData('number_of_employees', e.target.value)}
                   required
+                  className={getFieldValidationClass('number_of_employees', currentStep)}
                 />
               </div>
               
@@ -979,6 +998,7 @@ const Application = () => {
                   onChange={(e) => updateFormData('business_type', e.target.value)}
                   placeholder="e.g., Restaurant, Retail, Construction"
                   required
+                  className={getFieldValidationClass('business_type', currentStep)}
                 />
               </div>
               
@@ -990,6 +1010,7 @@ const Application = () => {
                   onChange={(e) => updateFormData('business_description', e.target.value)}
                   rows={3}
                   required
+                  className={getFieldValidationClass('business_description', currentStep)}
                 />
               </div>
               
@@ -1013,6 +1034,7 @@ const Application = () => {
                   onChange={(e) => updateFormData('average_monthly_deposits', e.target.value)}
                   placeholder="$0"
                   required
+                  className={getFieldValidationClass('average_monthly_deposits', currentStep)}
                 />
                 <p className="text-xs text-muted-foreground mt-1">Amount in USD</p>
               </div>
@@ -1027,6 +1049,7 @@ const Application = () => {
                   onChange={(e) => updateFormData('monthly_rent_mortgage', e.target.value)}
                   placeholder="$0"
                   required
+                  className={getFieldValidationClass('monthly_rent_mortgage', currentStep)}
                 />
                 <p className="text-xs text-muted-foreground mt-1">Amount in USD</p>
               </div>
@@ -1050,13 +1073,14 @@ const Application = () => {
                   value={formData.bank_name}
                   onChange={(e) => updateFormData('bank_name', e.target.value)}
                   required
+                  className={getFieldValidationClass('bank_name', currentStep)}
                 />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="bank_account_type">Account Type *</Label>
                 <Select value={formData.bank_account_type} onValueChange={(value) => updateFormData('bank_account_type', value)}>
-                  <SelectTrigger>
+                  <SelectTrigger className={getFieldValidationClass('bank_account_type', currentStep)}>
                     <SelectValue placeholder="Select account type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1079,6 +1103,7 @@ const Application = () => {
                   placeholder="123456789"
                   maxLength={9}
                   required
+                  className={getFieldValidationClass('bank_routing_number', currentStep)}
                 />
               </div>
               
@@ -1094,6 +1119,7 @@ const Application = () => {
                   placeholder="Account number (up to 17 digits)"
                   maxLength={17}
                   required
+                  className={getFieldValidationClass('bank_account_number', currentStep)}
                 />
               </div>
               
@@ -1106,6 +1132,7 @@ const Application = () => {
                   value={formData.months_with_bank}
                   onChange={(e) => updateFormData('months_with_bank', e.target.value)}
                   required
+                  className={getFieldValidationClass('months_with_bank', currentStep)}
                 />
               </div>
               
@@ -1253,6 +1280,7 @@ const Application = () => {
                   onChange={(e) => updateFormData('loan_amount_requested', e.target.value)}
                   placeholder="$1,000"
                   required
+                  className={getFieldValidationClass('loan_amount_requested', currentStep)}
                 />
                 <p className="text-xs text-muted-foreground mt-1">Amount in USD</p>
               </div>
@@ -1266,6 +1294,7 @@ const Application = () => {
                   rows={4}
                   placeholder="Please describe how you plan to use the loan funds..."
                   required
+                  className={getFieldValidationClass('use_of_funds', currentStep)}
                 />
               </div>
             </div>
@@ -1324,12 +1353,14 @@ const Application = () => {
                       id="document_upload"
                       type="file"
                       multiple
-                      accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                       onChange={(e) => {
                         const files = Array.from(e.target.files || []);
                         if (files.length > 0) {
                           updateFormData('document_files', [...formData.document_files, ...files]);
                         }
+                        // Reset the input value to allow re-selecting the same file
+                        e.target.value = '';
                       }}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                       style={{ pointerEvents: 'auto' }}

@@ -654,7 +654,7 @@ const CanadianApplication = () => {
               <div>
                 <Label htmlFor="type_of_entity" className="text-sm font-medium">Type of Entity *</Label>
                 <Select value={formData.type_of_entity} onValueChange={(value) => updateFormData('type_of_entity', value)}>
-                  <SelectTrigger className="mt-1">
+                  <SelectTrigger className={`mt-1 ${getFieldValidationClass('type_of_entity', currentStep)}`}>
                     <SelectValue placeholder="Select entity type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -669,21 +669,21 @@ const CanadianApplication = () => {
               
                <div>
                  <Label htmlFor="federal_tax_id" className="text-sm font-medium">Federal Tax ID (Business Number) *</Label>
-                 <Input
-                   id="federal_tax_id"
-                   value={formData.federal_tax_id}
-                   onChange={(e) => {
-                     const value = e.target.value.replace(/\D/g, '');
-                     if (value.length <= 15) {
-                       const formatted = value.replace(/(\d{9})(\d{2})(\d{4})/, '$1 $2 $3');
-                       updateFormData('federal_tax_id', formatted);
-                     }
-                   }}
-                   className="mt-1"
-                   placeholder="123456789 RT 0001"
-                   maxLength={17}
-                   required
-                 />
+                  <Input
+                    id="federal_tax_id"
+                    value={formData.federal_tax_id}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      if (value.length <= 15) {
+                        const formatted = value.replace(/(\d{9})(\d{2})(\d{4})/, '$1 $2 $3');
+                        updateFormData('federal_tax_id', formatted);
+                      }
+                    }}
+                    className={`mt-1 ${getFieldValidationClass('federal_tax_id', currentStep)}`}
+                    placeholder="123456789 RT 0001"
+                    maxLength={17}
+                    required
+                  />
                </div>
               
               <div>
@@ -693,7 +693,7 @@ const CanadianApplication = () => {
                   type="date"
                   value={formData.business_start_date}
                   onChange={(e) => updateFormData('business_start_date', e.target.value)}
-                  className="mt-1"
+                  className={`mt-1 ${getFieldValidationClass('business_start_date', currentStep)}`}
                   required
                 />
               </div>
@@ -706,7 +706,7 @@ const CanadianApplication = () => {
                   min="1"
                   value={formData.number_of_locations}
                   onChange={(e) => updateFormData('number_of_locations', e.target.value)}
-                  className="mt-1"
+                  className={`mt-1 ${getFieldValidationClass('number_of_locations', currentStep)}`}
                   required
                 />
               </div>
@@ -793,7 +793,7 @@ const CanadianApplication = () => {
                   type="number"
                   value={formData.annual_gross_sales}
                   onChange={(e) => updateFormData('annual_gross_sales', e.target.value)}
-                  className="mt-1"
+                  className={`mt-1 ${getFieldValidationClass('annual_gross_sales', currentStep)}`}
                   placeholder="0"
                   min="0"
                   required
@@ -808,7 +808,7 @@ const CanadianApplication = () => {
                   type="number"
                   value={formData.amount_requested}
                   onChange={(e) => updateFormData('amount_requested', e.target.value)}
-                  className="mt-1"
+                  className={`mt-1 ${getFieldValidationClass('amount_requested', currentStep)}`}
                   placeholder="0"
                   min="0"
                   required
@@ -822,7 +822,7 @@ const CanadianApplication = () => {
                   id="use_of_funds"
                   value={formData.use_of_funds}
                   onChange={(e) => updateFormData('use_of_funds', e.target.value)}
-                  className="mt-1"
+                  className={`mt-1 ${getFieldValidationClass('use_of_funds', currentStep)}`}
                   rows={3}
                   required
                 />
@@ -898,7 +898,7 @@ const CanadianApplication = () => {
                       id="principal_owner_name"
                       value={formData.principal_owner_name}
                       onChange={(e) => updateFormData('principal_owner_name', e.target.value)}
-                      className="mt-1"
+                      className={`mt-1 ${getFieldValidationClass('principal_owner_name', currentStep)}`}
                       required
                     />
                   </div>
@@ -906,78 +906,97 @@ const CanadianApplication = () => {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Label htmlFor="ownership_percentage" className="text-sm font-medium">Ownership % *</Label>
-                      <Input
-                        id="ownership_percentage"
-                        type="number"
-                        min="1"
-                        max="100"
-                        value={formData.ownership_percentage}
-                        onChange={(e) => updateFormData('ownership_percentage', e.target.value)}
-                        className="mt-1"
-                        placeholder="%"
-                        required
-                      />
+                         <Input
+                           id="ownership_percentage"
+                           type="number"
+                           min="1"
+                           max="100"
+                           value={formData.ownership_percentage}
+                           onChange={(e) => updateFormData('ownership_percentage', e.target.value)}
+                           className={`mt-1 ${getFieldValidationClass('ownership_percentage', currentStep)}`}
+                           placeholder="%"
+                           required
+                         />
                     </div>
                      <div>
                        <Label htmlFor="ssn" className="text-sm font-medium">SIN *</Label>
                        <Input
                          id="ssn"
-                         value={formData.ssn}
-                         onChange={(e) => {
-                           const value = e.target.value.replace(/\D/g, '');
-                           if (value.length <= 9) {
-                             const formatted = value.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
-                             updateFormData('ssn', formatted);
-                           }
-                         }}
-                         className="mt-1"
-                         placeholder="123 456 789"
-                         maxLength={11}
-                         required
+                           value={formData.ssn}
+                           onChange={(e) => {
+                             const value = e.target.value.replace(/\D/g, '');
+                             if (value.length <= 9) {
+                               const formatted = value.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+                               updateFormData('ssn', formatted);
+                             }
+                           }}
+                           className={`mt-1 ${getFieldValidationClass('ssn', currentStep)}`}
+                           placeholder="123 456 789"
+                           maxLength={11}
+                           required
                        />
                      </div>
                   </div>
                   
                   <div>
                     <Label htmlFor="dob" className="text-sm font-medium">Date of Birth *</Label>
-                    <Input
-                      id="dob"
-                      type="date"
-                      value={formData.dob}
-                      onChange={(e) => updateFormData('dob', e.target.value)}
-                      className="mt-1"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="home_address" className="text-sm font-medium">Home Address *</Label>
-                    <Input
-                      id="home_address"
-                      value={formData.home_address}
-                      onChange={(e) => updateFormData('home_address', e.target.value)}
-                      className="mt-1"
-                      required
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label htmlFor="city_owner" className="text-sm font-medium">City *</Label>
                       <Input
-                        id="city_owner"
-                        value={formData.city_owner}
-                        onChange={(e) => updateFormData('city_owner', e.target.value)}
-                        className="mt-1"
+                        id="dob"
+                        type="date"
+                        value={formData.dob}
+                        onChange={(e) => updateFormData('dob', e.target.value)}
+                        className={`mt-1 ${getFieldValidationClass('dob', currentStep)}`}
+                        required
+                      />
+                  </div>
+                  
+                    <div>
+                      <Label htmlFor="home_address" className="text-sm font-medium">Home Address *</Label>
+                      <Input
+                        id="home_address"
+                        value={formData.home_address}
+                        onChange={(e) => updateFormData('home_address', e.target.value)}
+                        className={`mt-1 ${getFieldValidationClass('home_address', currentStep)}`}
                         required
                       />
                     </div>
-                     <div>
-                       <Label htmlFor="state_owner" className="text-sm font-medium">Province *</Label>
-                       <Select value={formData.state_owner} onValueChange={(value) => updateFormData('state_owner', value)}>
-                         <SelectTrigger className="mt-1">
-                           <SelectValue placeholder="Select province" />
-                         </SelectTrigger>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="same_as_business_address"
+                        checked={formData.home_address === formData.physical_address && 
+                                 formData.city_owner === formData.city && 
+                                 formData.state_owner === formData.state && 
+                                 formData.zip_owner === formData.zip}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            updateFormData('home_address', formData.physical_address);
+                            updateFormData('city_owner', formData.city);
+                            updateFormData('state_owner', formData.state);
+                            updateFormData('zip_owner', formData.zip);
+                          }
+                        }}
+                      />
+                      <Label htmlFor="same_as_business_address" className="text-sm font-medium">Same as Business Address</Label>
+                    </div>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label htmlFor="city_owner" className="text-sm font-medium">City *</Label>
+                        <Input
+                          id="city_owner"
+                          value={formData.city_owner}
+                          onChange={(e) => updateFormData('city_owner', e.target.value)}
+                          className={`mt-1 ${getFieldValidationClass('city_owner', currentStep)}`}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="state_owner" className="text-sm font-medium">Province *</Label>
+                        <Select value={formData.state_owner} onValueChange={(value) => updateFormData('state_owner', value)}>
+                          <SelectTrigger className={`mt-1 ${getFieldValidationClass('state_owner', currentStep)}`}>
+                            <SelectValue placeholder="Select province" />
+                          </SelectTrigger>
                          <SelectContent>
                            <SelectItem value="AB">Alberta</SelectItem>
                            <SelectItem value="BC">British Columbia</SelectItem>
@@ -997,21 +1016,21 @@ const CanadianApplication = () => {
                      </div>
                   </div>
                   
-                  <div>
-                    <Label htmlFor="zip_owner" className="text-sm font-medium">Postal Code *</Label>
-                    <Input
-                      id="zip_owner"
-                      value={formData.zip_owner}
-                      onChange={(e) => {
-                        const formatted = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/(\w{3})(\w{3})/, '$1 $2');
-                        updateFormData('zip_owner', formatted);
-                      }}
-                      className="mt-1"
-                      placeholder="A1A 1A1"
-                      maxLength={7}
-                      required
-                    />
-                  </div>
+                    <div>
+                      <Label htmlFor="zip_owner" className="text-sm font-medium">Postal Code *</Label>
+                      <Input
+                        id="zip_owner"
+                        value={formData.zip_owner}
+                        onChange={(e) => {
+                          const formatted = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/(\w{3})(\w{3})/, '$1 $2');
+                          updateFormData('zip_owner', formatted);
+                        }}
+                        className={`mt-1 ${getFieldValidationClass('zip_owner', currentStep)}`}
+                        placeholder="A1A 1A1"
+                        maxLength={7}
+                        required
+                      />
+                    </div>
                   
                   <div className="grid grid-cols-2 gap-3">
                      <div>
@@ -1054,14 +1073,14 @@ const CanadianApplication = () => {
                   
                   <div>
                     <Label htmlFor="email_address" className="text-sm font-medium">Email Address *</Label>
-                    <Input
-                      id="email_address"
-                      type="email"
-                      value={formData.email_address}
-                      onChange={(e) => updateFormData('email_address', e.target.value)}
-                      className="mt-1"
-                      required
-                    />
+                     <Input
+                       id="email_address"
+                       type="email"
+                       value={formData.email_address}
+                       onChange={(e) => updateFormData('email_address', e.target.value)}
+                       className={`mt-1 ${getFieldValidationClass('email_address', currentStep)}`}
+                       required
+                     />
                   </div>
                 </div>
               </div>
@@ -1319,28 +1338,47 @@ const CanadianApplication = () => {
                          <Input
                            type="file"
                            multiple
-                           accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                           onChange={(e) => {
-                             const files = Array.from(e.target.files || []);
-                             updateFormData('document_files', files);
-                           }}
+                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                            onChange={(e) => {
+                              const files = Array.from(e.target.files || []);
+                              if (files.length > 0) {
+                                updateFormData('document_files', [...formData.document_files, ...files]);
+                              }
+                              // Reset the input value to allow re-selecting the same file
+                              e.target.value = '';
+                            }}
                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                          />
                        </div>
                        
-                       {formData.document_files.length > 0 && (
-                         <div className="mt-3">
-                           <p className="text-sm font-medium mb-2">Selected Files:</p>
-                           <ul className="text-xs text-muted-foreground space-y-1">
-                             {formData.document_files.map((file, index) => (
-                               <li key={index} className="flex items-center gap-2">
-                                 <FileText className="h-3 w-3" />
-                                 {file.name} ({Math.round(file.size / 1024)}KB)
-                               </li>
-                             ))}
-                           </ul>
-                         </div>
-                       )}
+                        {formData.document_files.length > 0 && (
+                          <div className="mt-3">
+                            <p className="text-sm font-medium mb-2">Selected Files:</p>
+                            <ul className="text-xs space-y-1">
+                              {formData.document_files.map((file, index) => (
+                                <li key={index} className="flex items-center justify-between gap-2 p-2 bg-muted rounded">
+                                  <div className="flex items-center gap-2">
+                                    <FileText className="h-3 w-3 text-primary" />
+                                    <span className="truncate">{file.name}</span>
+                                    <span className="text-xs text-muted-foreground">({Math.round(file.size / 1024)}KB)</span>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      const newFiles = formData.document_files.filter((_, i) => i !== index);
+                                      updateFormData('document_files', newFiles);
+                                    }}
+                                    className="h-6 w-6 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                                  >
+                                    ×
+                                  </Button>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                      </div>
                    </div>
                  </div>
