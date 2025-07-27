@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye, Copy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -177,6 +177,45 @@ const BlogManagement = () => {
     }
   };
 
+  const duplicatePost = async (post: BlogPost) => {
+    try {
+      const duplicatedPost = {
+        title: `${post.title} (Copy)`,
+        slug: `${post.slug}-copy-${Date.now()}`,
+        excerpt: post.excerpt,
+        content: post.content,
+        author: post.author,
+        status: 'draft',
+        tags: post.tags,
+        featured_image_url: post.featured_image_url,
+        meta_title: post.meta_title ? `${post.meta_title} (Copy)` : null,
+        meta_description: post.meta_description,
+        meta_keywords: post.meta_keywords,
+        reading_time: post.reading_time
+      };
+
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .insert([duplicatedPost])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setPosts([data, ...posts]);
+      toast({
+        title: "Success",
+        description: "Blog post duplicated successfully"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to duplicate blog post",
+        variant: "destructive"
+      });
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'draft': return 'bg-muted text-muted-foreground';
@@ -335,36 +374,43 @@ const BlogManagement = () => {
                     <TableCell className="text-sm text-muted-foreground">
                       {format(new Date(post.created_at), 'MMM dd, yyyy')}
                     </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setEditingPost(post);
-                            setShowEditor(true);
-                          }}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => deletePost(post.id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                        {post.status === 'published' && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => window.open(`/blog/${post.slug}`, '_blank')}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
+                     <TableCell>
+                       <div className="flex gap-2">
+                         <Button
+                           size="sm"
+                           variant="outline"
+                           onClick={() => {
+                             setEditingPost(post);
+                             setShowEditor(true);
+                           }}
+                         >
+                           <Edit className="w-4 h-4" />
+                         </Button>
+                         <Button
+                           size="sm"
+                           variant="outline"
+                           onClick={() => duplicatePost(post)}
+                         >
+                           <Copy className="w-4 h-4" />
+                         </Button>
+                         <Button
+                           size="sm"
+                           variant="outline"
+                           onClick={() => deletePost(post.id)}
+                         >
+                           <Trash2 className="w-4 h-4" />
+                         </Button>
+                         {post.status === 'published' && (
+                           <Button
+                             size="sm"
+                             variant="outline"
+                             onClick={() => window.open(`/blog/${post.slug}`, '_blank')}
+                           >
+                             <Eye className="w-4 h-4" />
+                           </Button>
+                         )}
+                       </div>
+                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
