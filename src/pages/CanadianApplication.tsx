@@ -276,6 +276,32 @@ const CanadianApplication = () => {
     }
   };
 
+  const getFieldValidationClass = (fieldName: keyof CanadianApplicationData, step: number): string => {
+    // Check if field is required for current step and is empty
+    const requiredFields = getRequiredFieldsForStep(step);
+    const isRequired = requiredFields.includes(fieldName);
+    const isEmpty = !formData[fieldName] || (Array.isArray(formData[fieldName]) && (formData[fieldName] as any[]).length === 0);
+    
+    return isRequired && isEmpty ? "border-red-500 focus:border-red-500" : "";
+  };
+
+  const getRequiredFieldsForStep = (step: number): (keyof CanadianApplicationData)[] => {
+    switch (step) {
+      case 1:
+        return ['legal_business_name', 'physical_address', 'city', 'state', 'zip', 'business_phone'];
+      case 2:
+        return ['type_of_entity', 'federal_tax_id', 'business_start_date', 'number_of_locations', 'business_property_type'];
+      case 3:
+        return ['annual_gross_sales', 'amount_requested', 'use_of_funds'];
+      case 4:
+        return ['principal_owner_name', 'ownership_percentage', 'ssn', 'dob', 'home_address', 'city_owner', 'state_owner', 'zip_owner', 'email_address'];
+      case 5:
+        return []; // No required fields in step 5
+      default:
+        return [];
+    }
+  };
+
   const validateStep = (step: number): boolean => {
     return getStepRequiredFields(step).length === 0;
   };
@@ -483,7 +509,7 @@ const CanadianApplication = () => {
                   id="legal_business_name"
                   value={formData.legal_business_name}
                   onChange={(e) => updateFormData('legal_business_name', e.target.value)}
-                  className="mt-1"
+                  className={`mt-1 ${getFieldValidationClass('legal_business_name', currentStep)}`}
                   required
                 />
               </div>
@@ -504,7 +530,7 @@ const CanadianApplication = () => {
                   id="physical_address"
                   value={formData.physical_address}
                   onChange={(e) => updateFormData('physical_address', e.target.value)}
-                  className="mt-1"
+                  className={`mt-1 ${getFieldValidationClass('physical_address', currentStep)}`}
                   required
                 />
               </div>
@@ -526,14 +552,14 @@ const CanadianApplication = () => {
                     id="city"
                     value={formData.city}
                     onChange={(e) => updateFormData('city', e.target.value)}
-                    className="mt-1"
+                    className={`mt-1 ${getFieldValidationClass('city', currentStep)}`}
                     required
                   />
                 </div>
                 <div>
                   <Label htmlFor="state" className="text-sm font-medium">Province *</Label>
                   <Select value={formData.state} onValueChange={(value) => updateFormData('state', value)}>
-                    <SelectTrigger className="mt-1">
+                    <SelectTrigger className={`mt-1 ${getFieldValidationClass('state', currentStep)}`}>
                       <SelectValue placeholder="Select province" />
                     </SelectTrigger>
                     <SelectContent>
@@ -564,7 +590,7 @@ const CanadianApplication = () => {
                     const formatted = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/(\w{3})(\w{3})/, '$1 $2');
                     updateFormData('zip', formatted);
                   }}
-                  className="mt-1"
+                  className={`mt-1 ${getFieldValidationClass('zip', currentStep)}`}
                   placeholder="A1A 1A1"
                   maxLength={7}
                   required
@@ -574,22 +600,22 @@ const CanadianApplication = () => {
               <div className="grid grid-cols-2 gap-3">
                  <div>
                    <Label htmlFor="business_phone" className="text-sm font-medium">Business Phone *</Label>
-                   <Input
-                     id="business_phone"
-                     type="tel"
-                     value={formData.business_phone}
-                     onChange={(e) => {
-                       const value = e.target.value.replace(/\D/g, '');
-                       if (value.length <= 10) {
-                         const formatted = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-                         updateFormData('business_phone', formatted);
-                       }
-                     }}
-                     className="mt-1"
-                     placeholder="(555) 123-4567"
-                     maxLength={14}
-                     required
-                   />
+                    <Input
+                      id="business_phone"
+                      type="tel"
+                      value={formData.business_phone}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '');
+                        if (value.length <= 10) {
+                          const formatted = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+                          updateFormData('business_phone', formatted);
+                        }
+                      }}
+                      className={`mt-1 ${getFieldValidationClass('business_phone', currentStep)}`}
+                      placeholder="(555) 123-4567"
+                      maxLength={14}
+                      required
+                    />
                  </div>
                  <div>
                    <Label htmlFor="business_fax" className="text-sm font-medium">Business Fax</Label>

@@ -269,6 +269,34 @@ const Application = () => {
     }));
   };
 
+  const getFieldValidationClass = (fieldName: keyof ApplicationData, step: number): string => {
+    // Check if field is required for current step and is empty
+    const requiredFields = getRequiredFieldsForStep(step);
+    const isRequired = requiredFields.includes(fieldName);
+    const isEmpty = !formData[fieldName] || (Array.isArray(formData[fieldName]) && (formData[fieldName] as any[]).length === 0);
+    
+    return isRequired && isEmpty ? "border-red-500 focus:border-red-500" : "";
+  };
+
+  const getRequiredFieldsForStep = (step: number): (keyof ApplicationData)[] => {
+    switch (step) {
+      case 1:
+        return ['legal_corporation_name', 'physical_address', 'city', 'state', 'zip', 'entity_type', 'telephone_number', 'email_address'];
+      case 2:
+        return ['federal_tax_id'];
+      case 3:
+        return ['principal_name', 'principal_title', 'principal_ssn', 'principal_date_of_birth', 'principal_home_address', 'principal_city', 'principal_state', 'principal_zip', 'principal_email', 'principal_ownership_percentage'];
+      case 4:
+        return ['years_in_business', 'months_in_business', 'number_of_employees', 'business_type', 'business_description'];
+      case 5:
+        return ['bank_name', 'bank_account_type', 'bank_routing_number', 'bank_account_number', 'months_with_bank', 'average_monthly_deposits', 'monthly_rent_mortgage', 'accept_cards'];
+      case 6:
+        return ['loan_amount_requested', 'use_of_funds'];
+      default:
+        return [];
+    }
+  };
+
   const validateStep = (step: number): boolean => {
     switch (step) {
       case 1:
@@ -514,6 +542,7 @@ const Application = () => {
                   onChange={(e) => updateFormData('legal_corporation_name', e.target.value)}
                   maxLength={100}
                   required
+                  className={getFieldValidationClass('legal_corporation_name', currentStep)}
                 />
               </div>
               
@@ -535,6 +564,7 @@ const Application = () => {
                   onChange={(e) => updateFormData('physical_address', e.target.value)}
                   maxLength={150}
                   required
+                  className={getFieldValidationClass('physical_address', currentStep)}
                 />
               </div>
               
@@ -546,13 +576,14 @@ const Application = () => {
                   onChange={(e) => updateFormData('city', e.target.value)}
                   maxLength={50}
                   required
+                  className={getFieldValidationClass('city', currentStep)}
                 />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="state">State *</Label>
                 <Select value={formData.state} onValueChange={(value) => updateFormData('state', value)}>
-                  <SelectTrigger>
+                  <SelectTrigger className={getFieldValidationClass('state', currentStep)}>
                     <SelectValue placeholder="Select state" />
                   </SelectTrigger>
                   <SelectContent>
@@ -575,13 +606,14 @@ const Application = () => {
                   placeholder="12345 or 12345-6789"
                   maxLength={10}
                   required
+                  className={getFieldValidationClass('zip', currentStep)}
                 />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="entity_type">Entity Type *</Label>
                 <Select value={formData.entity_type} onValueChange={(value) => updateFormData('entity_type', value)}>
-                  <SelectTrigger>
+                  <SelectTrigger className={getFieldValidationClass('entity_type', currentStep)}>
                     <SelectValue placeholder="Select entity type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -606,6 +638,7 @@ const Application = () => {
                   placeholder="(555) 123-4567"
                   maxLength={14}
                   required
+                  className={getFieldValidationClass('telephone_number', currentStep)}
                 />
               </div>
               
@@ -634,6 +667,7 @@ const Application = () => {
                   placeholder="example@domain.com"
                   maxLength={100}
                   required
+                  className={getFieldValidationClass('email_address', currentStep)}
                 />
               </div>
               
