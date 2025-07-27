@@ -10,9 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Save, Eye, Upload, X, FileText, Link } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
-import '../../styles/quill-custom.css';
+import { useQuillEditor } from '@/hooks/useQuillEditor';
 import ImageUpload from './ImageUpload';
 import SEOAnalyzer from './SEOAnalyzer';
 import { blogTemplates, generateTemplateContent, canadianBusinessKeywords, seoOptimizationTips, type BlogTemplate } from './BlogPostTemplate';
@@ -40,6 +38,7 @@ interface BlogEditorProps {
 }
 
 const BlogEditor = ({ post, onSave, onCancel }: BlogEditorProps) => {
+  const { ReactQuill, isLoading: quillLoading } = useQuillEditor();
   const [formData, setFormData] = useState<BlogPost>({
     title: post?.title || '',
     slug: post?.slug || '',
@@ -478,16 +477,26 @@ const BlogEditor = ({ post, onSave, onCancel }: BlogEditorProps) => {
           </CardHeader>
           <CardContent>
             <div className="min-h-[500px]">
-              <ReactQuill
-                ref={setQuillRef}
-                theme="snow"
-                value={formData.content}
-                onChange={handleContentChange}
-                modules={quillModules}
-                formats={quillFormats}
-                placeholder="Write your blog post content here. Use the heading tools to create H2 and H3 sections..."
-                style={{ height: '400px' }}
-              />
+              {quillLoading ? (
+                <div className="flex items-center justify-center h-[400px] border rounded-md">
+                  <p className="text-muted-foreground">Loading editor...</p>
+                </div>
+              ) : ReactQuill ? (
+                <ReactQuill
+                  ref={setQuillRef}
+                  theme="snow"
+                  value={formData.content}
+                  onChange={handleContentChange}
+                  modules={quillModules}
+                  formats={quillFormats}
+                  placeholder="Write your blog post content here. Use the heading tools to create H2 and H3 sections..."
+                  style={{ height: '400px' }}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-[400px] border rounded-md">
+                  <p className="text-muted-foreground">Failed to load editor</p>
+                </div>
+              )}
             </div>
             <div className="flex justify-between text-sm text-muted-foreground mt-12 pt-4 border-t">
               <p>Estimated reading time: {formData.reading_time} minute{formData.reading_time !== 1 ? 's' : ''}</p>
