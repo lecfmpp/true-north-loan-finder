@@ -107,7 +107,7 @@ const Application = () => {
   const { saveDraft, loadDraft, deleteDraft, checkQuizCompletion } = useApplicationDraft();
   const [isDraftLoaded, setIsDraftLoaded] = useState(false);
   const [showResumePrompt, setShowResumePrompt] = useState(false);
-  const totalSteps = 7; // Updated to include auth step
+  const totalSteps = 6; // Updated to remove auth step
   
   const [formData, setFormData] = useState<ApplicationData>({
     legal_corporation_name: "",

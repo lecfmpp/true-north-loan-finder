@@ -92,7 +92,7 @@ const CanadianApplication = () => {
   const [savedDraft, setSavedDraft] = useState<any>(null);
   const { user, loading } = useAuth();
   const { saveDraft, loadDraft, deleteDraft, checkQuizCompletion } = useCanadianApplicationDraft();
-  const totalSteps = 5; // Updated to 5 steps, step 5 is final with submit
+  const totalSteps = 4; // Updated to move submit to step 4
   
   const [formData, setFormData] = useState<CanadianApplicationData>({
     legal_business_name: "",
@@ -268,9 +268,6 @@ const CanadianApplication = () => {
         if (!formData.zip_owner) step4Fields.push("Postal Code");
         if (!formData.email_address) step4Fields.push("Email Address");
         return step4Fields;
-      case 5:
-        // Processing & Documents step - no required fields
-        return [];
       default:
         return [];
     }
@@ -295,8 +292,6 @@ const CanadianApplication = () => {
         return ['annual_gross_sales', 'amount_requested', 'use_of_funds'];
       case 4:
         return ['principal_owner_name', 'ownership_percentage', 'ssn', 'dob', 'home_address', 'city_owner', 'state_owner', 'zip_owner', 'email_address'];
-      case 5:
-        return []; // No required fields in step 5
       default:
         return [];
     }
@@ -1230,124 +1225,122 @@ const CanadianApplication = () => {
                        className="mt-1"
                      />
                    </div>
+                  </div>
+               </div>
+
+               {/* Processing & Documents Section */}
+               <div className="border-t pt-6 mt-6">
+                 <div className="flex items-center gap-2 mb-4">
+                   <CreditCard className="h-5 w-5 text-primary" />
+                   <h3 className="text-lg font-bold">Processing & Documents</h3>
                  </div>
-              </div>
-            </div>
-          </div>
-        );
+                 
+                 <div className="space-y-4">
+                   <div>
+                     <Label htmlFor="current_credit_card_processor" className="text-sm font-medium">Current Credit Card Processor</Label>
+                     <Input
+                       id="current_credit_card_processor"
+                       value={formData.current_credit_card_processor}
+                       onChange={(e) => updateFormData('current_credit_card_processor', e.target.value)}
+                       className="mt-1"
+                     />
+                   </div>
+                   
+                   <div>
+                     <Label htmlFor="annual_credit_card_sales" className="text-sm font-medium">Annual Credit Card Sales</Label>
+                     <Input
+                       id="annual_credit_card_sales"
+                       type="number"
+                       value={formData.annual_credit_card_sales}
+                       onChange={(e) => updateFormData('annual_credit_card_sales', e.target.value)}
+                       className="mt-1"
+                       placeholder="0"
+                       min="0"
+                     />
+                     <p className="text-xs text-muted-foreground mt-1">Amount in CAD</p>
+                   </div>
+                   
+                   <div>
+                     <Label htmlFor="average_monthly_cc_volume" className="text-sm font-medium">Average Monthly Credit Card Volume</Label>
+                     <Input
+                       id="average_monthly_cc_volume"
+                       type="number"
+                       value={formData.average_monthly_cc_volume}
+                       onChange={(e) => updateFormData('average_monthly_cc_volume', e.target.value)}
+                       className="mt-1"
+                       placeholder="0"
+                       min="0"
+                     />
+                     <p className="text-xs text-muted-foreground mt-1">Amount in CAD</p>
+                   </div>
 
-      case 5:
-        return (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-4">
-              <CreditCard className="h-5 w-5 text-primary" />
-              <h2 className="text-xl md:text-2xl font-bold">Processing & Documents</h2>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="current_credit_card_processor" className="text-sm font-medium">Current Credit Card Processor</Label>
-                <Input
-                  id="current_credit_card_processor"
-                  value={formData.current_credit_card_processor}
-                  onChange={(e) => updateFormData('current_credit_card_processor', e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="annual_credit_card_sales" className="text-sm font-medium">Annual Credit Card Sales</Label>
-                <Input
-                  id="annual_credit_card_sales"
-                  type="number"
-                  value={formData.annual_credit_card_sales}
-                  onChange={(e) => updateFormData('annual_credit_card_sales', e.target.value)}
-                  className="mt-1"
-                  placeholder="0"
-                  min="0"
-                />
-                <p className="text-xs text-muted-foreground mt-1">Amount in CAD</p>
-              </div>
-              
-              <div>
-                <Label htmlFor="average_monthly_cc_volume" className="text-sm font-medium">Average Monthly Credit Card Volume</Label>
-                <Input
-                  id="average_monthly_cc_volume"
-                  type="number"
-                  value={formData.average_monthly_cc_volume}
-                  onChange={(e) => updateFormData('average_monthly_cc_volume', e.target.value)}
-                  className="mt-1"
-                  placeholder="0"
-                  min="0"
-                />
-                <p className="text-xs text-muted-foreground mt-1">Amount in CAD</p>
-              </div>
+                   {/* Document Upload Section */}
+                   <div className="border-t pt-4">
+                     <div className="flex items-center gap-2 mb-3">
+                       <Upload className="h-4 w-4 text-primary" />
+                       <h4 className="font-semibold">Required Documents</h4>
+                     </div>
+                     
+                     <div className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800 mb-4">
+                       <div className="flex items-start gap-2">
+                         <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                         <div className="text-xs">
+                           <p className="font-medium text-blue-800 dark:text-blue-200 mb-1">
+                             📱 Mobile Upload Tips:
+                           </p>
+                           <ul className="list-disc pl-3 space-y-1 text-blue-700 dark:text-blue-300">
+                             <li>Use banking app to download statements as PDFs</li>
+                             <li>Take clear photos if documents are physical</li>
+                             <li>Upload files one by one for better results</li>
+                           </ul>
+                         </div>
+                       </div>
+                     </div>
 
-              {/* Document Upload Section */}
-              <div className="border-t pt-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <Upload className="h-4 w-4 text-primary" />
-                  <h3 className="font-semibold">Required Documents</h3>
-                </div>
-                
-                <div className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800 mb-4">
-                  <div className="flex items-start gap-2">
-                    <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-                    <div className="text-xs">
-                      <p className="font-medium text-blue-800 dark:text-blue-200 mb-1">
-                        📱 Mobile Upload Tips:
-                      </p>
-                      <ul className="list-disc pl-3 space-y-1 text-blue-700 dark:text-blue-300">
-                        <li>Use banking app to download statements as PDFs</li>
-                        <li>Take clear photos if documents are physical</li>
-                        <li>Upload files one by one for better results</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="relative">
-                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 text-center hover:border-primary/50 transition-colors">
-                    <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">Upload Your Documents</p>
-                      <p className="text-xs text-muted-foreground">
-                        Click here or drag and drop your files
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Bank statements, business registration, processing statements
-                      </p>
-                    </div>
-                    <Input
-                      type="file"
-                      multiple
-                      accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                      onChange={(e) => {
-                        const files = Array.from(e.target.files || []);
-                        updateFormData('document_files', files);
-                      }}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                  </div>
-                  
-                  {formData.document_files.length > 0 && (
-                    <div className="mt-3">
-                      <p className="text-sm font-medium mb-2">Selected Files:</p>
-                      <ul className="text-xs text-muted-foreground space-y-1">
-                        {formData.document_files.map((file, index) => (
-                          <li key={index} className="flex items-center gap-2">
-                            <FileText className="h-3 w-3" />
-                            {file.name} ({Math.round(file.size / 1024)}KB)
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        );
+                     <div className="relative">
+                       <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 text-center hover:border-primary/50 transition-colors">
+                         <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+                         <div className="space-y-1">
+                           <p className="text-sm font-medium">Upload Your Documents</p>
+                           <p className="text-xs text-muted-foreground">
+                             Click here or drag and drop your files
+                           </p>
+                           <p className="text-xs text-muted-foreground">
+                             Bank statements, business registration, processing statements
+                           </p>
+                         </div>
+                         <Input
+                           type="file"
+                           multiple
+                           accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                           onChange={(e) => {
+                             const files = Array.from(e.target.files || []);
+                             updateFormData('document_files', files);
+                           }}
+                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                         />
+                       </div>
+                       
+                       {formData.document_files.length > 0 && (
+                         <div className="mt-3">
+                           <p className="text-sm font-medium mb-2">Selected Files:</p>
+                           <ul className="text-xs text-muted-foreground space-y-1">
+                             {formData.document_files.map((file, index) => (
+                               <li key={index} className="flex items-center gap-2">
+                                 <FileText className="h-3 w-3" />
+                                 {file.name} ({Math.round(file.size / 1024)}KB)
+                               </li>
+                             ))}
+                           </ul>
+                         </div>
+                       )}
+                     </div>
+                   </div>
+                 </div>
+               </div>
+             </div>
+           </div>
+         );
 
       default:
         return null;
