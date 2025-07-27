@@ -11,7 +11,8 @@ import {
   CreditCard,
   Star,
   Quote,
-  Phone
+  Phone,
+  Flag
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -65,21 +66,39 @@ const Home = () => {
   const testimonials = [
     {
       name: "Sarah Chen",
-      business: "Chen's Bakery, Toronto",
+      business: "Chen's Bakery",
+      location: "Toronto, ON",
+      country: "Canada",
       quote: "The Business Loan Estimator was so simple, and I had three lender matches within minutes. We got our equipment loan approved in just 5 days!",
-      rating: 5
+      rating: 5,
+      flag: "🇨🇦"
     },
     {
-      name: "Mike Thompson", 
-      business: "Thompson Construction, Calgary",
-      quote: "True North connected us with the perfect lender for our truck financing. The whole process was transparent and professional.",
-      rating: 5
+      name: "Mike Rodriguez", 
+      business: "Rodriguez Construction",
+      location: "Austin, TX",
+      country: "United States",
+      quote: "True North connected us with the perfect lender for our truck financing. The process was seamless and we got funded fast.",
+      rating: 5,
+      flag: "🇺🇸"
     },
     {
-      name: "Lisa Rodriguez",
-      business: "Digital Solutions Inc, Vancouver", 
+      name: "Jennifer Thompson",
+      business: "Digital Marketing Pro",
+      location: "Vancouver, BC", 
+      country: "Canada",
       quote: "As a tech startup, finding the right financing was crucial. The Business Loan Estimator matched us with lenders who understood our business model.",
-      rating: 5
+      rating: 5,
+      flag: "🇨🇦"
+    },
+    {
+      name: "David Johnson",
+      business: "Johnson's Auto Repair",
+      location: "Phoenix, AZ",
+      country: "United States", 
+      quote: "I needed equipment financing fast, and True North delivered. Got approved in 3 days with competitive rates. Highly recommend!",
+      rating: 5,
+      flag: "🇺🇸"
     }
   ];
 
@@ -90,10 +109,10 @@ const Home = () => {
     "name": "True North Business Loan",
     "url": "https://truenorthbusinessloan.ca",
     "logo": "https://truenorthbusinessloan.ca/lovable-uploads/eae8a3b3-6d86-4fe4-9e17-17b808de0d2e.png",
-    "description": "Canada's trusted business loan marketplace helping small businesses find the right financing from $5K to $800K.",
+    "description": "Trusted business loan marketplace helping small businesses in the US and Canada find the right financing from $5K to $800K.",
     "address": {
       "@type": "PostalAddress",
-      "addressCountry": "CA"
+      "addressCountry": ["US", "CA"]
     },
     "sameAs": [],
     "potentialAction": {
@@ -103,7 +122,7 @@ const Home = () => {
     },
     "offers": {
       "@type": "Offer",
-      "description": "Business loans from $5,000 to $800,000 for Canadian small businesses",
+      "description": "Business loans from $5,000 to $800,000 for small businesses in the US and Canada",
       "priceRange": "$5,000 - $800,000"
     }
   };
@@ -111,19 +130,21 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Find the Right Business Loan for Your Canadian Small Business | True North Business Loan"
-        description="Take our 60-second quiz to see your loan options from Canada's top lenders. Get $5K to $800K for your Canadian small business. Equipment financing, working capital, and more."
+        title="Find the Right Business Loan for Your Small Business | True North Business Loan"
+        description="Take our 60-second quiz to see your loan options from top lenders in the US and Canada. Get $5K to $800K for your small business. Equipment financing, working capital, and more."
         keywords={[
-          "business loans canada",
-          "canadian small business loans",
-          "equipment financing canada",
+          "business loans",
+          "small business loans",
+          "equipment financing",
           "small business financing",
-          "business loan calculator",
-          "canadian business funding",
-          "commercial loans canada",
+          "business loan calculator", 
+          "business funding",
+          "commercial loans",
           "business line of credit",
           "merchant cash advance",
-          "working capital loans"
+          "working capital loans",
+          "business loans USA",
+          "business loans Canada"
         ]}
         canonicalUrl="https://truenorthbusinessloan.ca"
         structuredData={structuredData}
@@ -171,7 +192,7 @@ const Home = () => {
               <div className="relative">
                 <img 
                   src="/lovable-uploads/e80bb666-2b36-4875-bd9f-78f3e944d749.png" 
-                  alt="Successful Canadian business owner reviewing loan options on laptop - True North Business Loan helps find the right financing" 
+                  alt="Successful business owner reviewing loan options on laptop - True North Business Loan helps find the right financing" 
                   className="w-full h-auto rounded-2xl shadow-[var(--shadow-card)] object-cover"
                   loading="eager"
                 />
@@ -264,32 +285,38 @@ const Home = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold font-sans text-primary mb-4">
-              What Canadian Business Owners Say
+              What Business Owners Say
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-serif">
-              Real stories from businesses we've helped secure funding
+              Real stories from businesses we've helped secure funding across the US and Canada
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
             {testimonials.map((testimonial, index) => (
               <Card key={index} className="border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300">
-                <CardContent className="p-8">
-                  <div className="flex mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 fill-accent text-accent" />
-                    ))}
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-accent text-accent" />
+                      ))}
+                    </div>
+                    <span className="text-2xl">{testimonial.flag}</span>
                   </div>
-                  <Quote className="h-8 w-8 text-accent mb-4" />
-                  <p className="text-muted-foreground mb-6 font-serif italic">
+                  <Quote className="h-6 w-6 text-accent mb-3" />
+                  <p className="text-muted-foreground mb-4 font-serif italic text-sm">
                     "{testimonial.quote}"
                   </p>
                   <div>
-                    <div className="font-semibold font-sans text-primary">
+                    <div className="font-semibold font-sans text-primary text-sm">
                       {testimonial.name}
                     </div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-xs text-muted-foreground">
                       {testimonial.business}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {testimonial.location}
                     </div>
                   </div>
                 </CardContent>
