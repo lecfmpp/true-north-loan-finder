@@ -99,45 +99,87 @@ const ConsentBanner = () => {
   return (
     <>
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t shadow-lg">
-        <div className="px-4 py-3">
-          <div className="flex items-center justify-between gap-4 max-w-6xl mx-auto">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <Shield className="h-4 w-4 text-primary flex-shrink-0" />
-              <div className="min-w-0 flex-1">
-                <p className="text-sm text-foreground">
+        <div className="px-3 py-2 sm:px-4 sm:py-3">
+          <div className="max-w-6xl mx-auto">
+            {/* Mobile Layout - Stacked */}
+            <div className="block sm:hidden space-y-2">
+              <div className="flex items-start gap-2">
+                <Shield className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-foreground leading-tight">
                   We use cookies to improve your experience.{' '}
                   <a href="/privacy" className="text-primary hover:underline">
                     Privacy Policy
                   </a>
                 </p>
               </div>
+              <div className="flex items-center justify-end gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowSettings(true)}
+                  className="text-xs h-7 px-2"
+                >
+                  <Settings className="h-3 w-3 mr-1" />
+                  Settings
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={acceptNecessary}
+                  className="text-xs h-7 px-2"
+                >
+                  Necessary
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={acceptAll}
+                  className="text-xs h-7 px-2"
+                >
+                  Accept All
+                </Button>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowSettings(true)}
-                className="text-xs h-8 px-2"
-              >
-                <Settings className="h-3 w-3 mr-1" />
-                Settings
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={acceptNecessary}
-                className="text-xs h-8 px-3"
-              >
-                Necessary
-              </Button>
-              <Button
-                size="sm"
-                onClick={acceptAll}
-                className="text-xs h-8 px-3"
-              >
-                Accept All
-              </Button>
+            {/* Desktop Layout - Single Row */}
+            <div className="hidden sm:flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <Shield className="h-4 w-4 text-primary flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-foreground">
+                    We use cookies to improve your experience.{' '}
+                    <a href="/privacy" className="text-primary hover:underline">
+                      Privacy Policy
+                    </a>
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowSettings(true)}
+                  className="text-xs h-8 px-2"
+                >
+                  <Settings className="h-3 w-3 mr-1" />
+                  Settings
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={acceptNecessary}
+                  className="text-xs h-8 px-3"
+                >
+                  Necessary
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={acceptAll}
+                  className="text-xs h-8 px-3"
+                >
+                  Accept All
+                </Button>
+              </div>
             </div>
           </div>
         </div>
