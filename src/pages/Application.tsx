@@ -285,11 +285,11 @@ const Application = () => {
   const getRequiredFieldsForStep = (step: number): (keyof ApplicationData)[] => {
     switch (step) {
       case 1:
-        return ['legal_corporation_name', 'physical_address', 'city', 'state', 'zip', 'entity_type', 'telephone_number', 'email_address'];
+        return ['legal_corporation_name', 'physical_address', 'state', 'zip', 'entity_type', 'telephone_number', 'email_address'];
       case 2:
         return ['federal_tax_id'];
       case 3:
-        return ['principal_name', 'principal_title', 'principal_ssn', 'principal_date_of_birth', 'principal_home_address', 'principal_city', 'principal_state', 'principal_zip', 'principal_email', 'principal_ownership_percentage'];
+        return ['principal_name', 'principal_title', 'principal_ssn', 'principal_date_of_birth', 'principal_home_address', 'principal_state', 'principal_zip', 'principal_email', 'principal_ownership_percentage'];
       case 4:
         return ['years_in_business', 'number_of_employees', 'business_type', 'business_description'];
       case 5:
@@ -307,7 +307,6 @@ const Application = () => {
         return !!(
           formData.legal_corporation_name &&
           formData.physical_address &&
-          formData.city &&
           formData.state &&
           formData.zip &&
           formData.entity_type &&
@@ -323,7 +322,6 @@ const Application = () => {
           formData.principal_ssn &&
           formData.principal_date_of_birth &&
           formData.principal_home_address &&
-          formData.principal_city &&
           formData.principal_state &&
           formData.principal_zip &&
           formData.principal_email &&
@@ -428,7 +426,7 @@ const Application = () => {
         legal_corporation_name: formData.legal_corporation_name,
         dba_name: formData.dba_name || null,
         physical_address: formData.physical_address,
-        city: formData.city,
+        city: formData.state, // Use state value for city since we removed city field
         state: formData.state,
         zip: formData.zip,
         entity_type: formData.entity_type,
@@ -445,7 +443,7 @@ const Application = () => {
         principal_ssn: formData.principal_ssn,
         principal_date_of_birth: formData.principal_date_of_birth,
         principal_home_address: formData.principal_home_address,
-        principal_city: formData.principal_city,
+        principal_city: formData.principal_state, // Use state value for city since we removed city field
         principal_state: formData.principal_state,
         principal_zip: formData.principal_zip,
         principal_home_phone: formData.principal_home_phone || null,
@@ -575,24 +573,12 @@ const Application = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="city">City *</Label>
-                <Input
-                  id="city"
-                  value={formData.city}
-                  onChange={(e) => updateFormData('city', e.target.value)}
-                  maxLength={50}
-                  required
-                  className={getFieldValidationClass('city', currentStep)}
-                />
-              </div>
-              
-              <div className="space-y-2">
                 <Label htmlFor="state">State *</Label>
                 <Select value={formData.state} onValueChange={(value) => updateFormData('state', value)}>
                   <SelectTrigger className={getFieldValidationClass('state', currentStep)}>
                     <SelectValue placeholder="Select state" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-background border border-border shadow-lg z-50 max-h-60 overflow-y-auto">
                     {US_STATES.map((state) => (
                       <SelectItem key={state} value={state}>{state}</SelectItem>
                     ))}
@@ -731,7 +717,7 @@ const Application = () => {
                   <SelectTrigger>
                     <SelectValue placeholder="Select state" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-background border border-border shadow-lg z-50 max-h-60 overflow-y-auto">
                     {US_STATES.map((state) => (
                       <SelectItem key={state} value={state}>{state}</SelectItem>
                     ))}
@@ -827,13 +813,11 @@ const Application = () => {
                   <Checkbox
                     id="same_as_company_address"
                     checked={formData.principal_home_address === formData.physical_address && 
-                             formData.principal_city === formData.city && 
                              formData.principal_state === formData.state && 
                              formData.principal_zip === formData.zip}
                     onCheckedChange={(checked) => {
                       if (checked) {
                         updateFormData('principal_home_address', formData.physical_address);
-                        updateFormData('principal_city', formData.city);
                         updateFormData('principal_state', formData.state);
                         updateFormData('principal_zip', formData.zip);
                       }
@@ -844,23 +828,12 @@ const Application = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="principal_city">City *</Label>
-                <Input
-                  id="principal_city"
-                  value={formData.principal_city}
-                  onChange={(e) => updateFormData('principal_city', e.target.value)}
-                  required
-                  className={getFieldValidationClass('principal_city', currentStep)}
-                />
-              </div>
-              
-              <div className="space-y-2">
                 <Label htmlFor="principal_state">State *</Label>
                 <Select value={formData.principal_state} onValueChange={(value) => updateFormData('principal_state', value)}>
                   <SelectTrigger className={getFieldValidationClass('principal_state', currentStep)}>
                     <SelectValue placeholder="Select state" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-background border border-border shadow-lg z-50 max-h-60 overflow-y-auto">
                     {US_STATES.map((state) => (
                       <SelectItem key={state} value={state}>{state}</SelectItem>
                     ))}
@@ -968,11 +941,23 @@ const Application = () => {
               </div>
               
               <div className="space-y-2">
+                <Label htmlFor="months_in_business">Additional Months</Label>
+                <Input
+                  id="months_in_business"
+                  type="number"
+                  min="0"
+                  max="11"
+                  value={formData.months_in_business}
+                  onChange={(e) => updateFormData('months_in_business', e.target.value)}
+                />
+              </div>
+              
+              <div className="space-y-2">
                 <Label htmlFor="number_of_employees">Number of Employees *</Label>
                 <Input
                   id="number_of_employees"
                   type="number"
-                  min="1"
+                  min="0"
                   value={formData.number_of_employees}
                   onChange={(e) => updateFormData('number_of_employees', e.target.value)}
                   required
@@ -1087,6 +1072,7 @@ const Application = () => {
                     <SelectItem value="Checking">Checking</SelectItem>
                     <SelectItem value="Savings">Savings</SelectItem>
                     <SelectItem value="Business Checking">Business Checking</SelectItem>
+                    <SelectItem value="Business Savings">Business Savings</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1097,10 +1083,9 @@ const Application = () => {
                   id="bank_routing_number"
                   value={formData.bank_routing_number}
                   onChange={(e) => {
-                    const formatted = e.target.value.replace(/\D/g, '').slice(0, 9);
-                    updateFormData('bank_routing_number', formatted);
+                    const value = e.target.value.replace(/\D/g, '');
+                    updateFormData('bank_routing_number', value.slice(0, 9));
                   }}
-                  placeholder="123456789"
                   maxLength={9}
                   required
                   className={getFieldValidationClass('bank_routing_number', currentStep)}
@@ -1112,12 +1097,7 @@ const Application = () => {
                 <Input
                   id="bank_account_number"
                   value={formData.bank_account_number}
-                  onChange={(e) => {
-                    const formatted = e.target.value.replace(/\D/g, '').slice(0, 17);
-                    updateFormData('bank_account_number', formatted);
-                  }}
-                  placeholder="Account number (up to 17 digits)"
-                  maxLength={17}
+                  onChange={(e) => updateFormData('bank_account_number', e.target.value)}
                   required
                   className={getFieldValidationClass('bank_account_number', currentStep)}
                 />
@@ -1353,7 +1333,7 @@ const Application = () => {
                       id="document_upload"
                       type="file"
                       multiple
-                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                      accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                       onChange={(e) => {
                         const files = Array.from(e.target.files || []);
                         if (files.length > 0) {
