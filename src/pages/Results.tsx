@@ -185,11 +185,12 @@ const Results = () => {
 
   const handleStartApplication = () => {
     console.log('=== START APPLICATION BUTTON CLICKED ===');
-    console.log('Navigating to Canadian application with data:', {
+    console.log('Navigating to application with data:', {
       finalName,
       finalEmail,
       finalPhone,
-      quizResponseId
+      quizResponseId,
+      country: quizData?.country
     });
     
     try {
@@ -204,7 +205,7 @@ const Results = () => {
         return;
       }
       
-      // Create URL params to pre-fill the Canadian application form
+      // Create URL params to pre-fill the application form
       const applicationParams = new URLSearchParams({
         name: finalName,
         email: finalEmail,
@@ -217,8 +218,12 @@ const Results = () => {
         useOfFunds: quizData?.use_of_funds || ''
       });
       
-      console.log('Navigating to Canadian application with params:', applicationParams.toString());
-      navigate(`/application-canadian?${applicationParams.toString()}`);
+      // Route based on country selection
+      const country = quizData?.country;
+      const applicationRoute = country === 'US' ? '/application-usa' : '/application-canadian';
+      
+      console.log(`Navigating to ${applicationRoute} with params:`, applicationParams.toString());
+      navigate(`${applicationRoute}?${applicationParams.toString()}`);
       
     } catch (error) {
       console.error('Error in handleStartApplication:', error);
