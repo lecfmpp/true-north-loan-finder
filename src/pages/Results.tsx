@@ -220,7 +220,10 @@ const Results = () => {
       
       // Route based on country selection
       const country = quizData?.country;
-      const applicationRoute = country === 'US' ? '/application-usa' : '/application-canadian';
+      console.log('Country from quizData:', country);
+      
+      // Default to US application if country is undefined or not found
+      const applicationRoute = country === 'CA' ? '/application-canadian' : '/application-usa';
       
       console.log(`Navigating to ${applicationRoute} with params:`, applicationParams.toString());
       navigate(`${applicationRoute}?${applicationParams.toString()}`);
