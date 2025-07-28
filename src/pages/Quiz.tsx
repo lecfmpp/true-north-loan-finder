@@ -27,8 +27,22 @@ import {
   Target,
   Calendar,
   CreditCard,
-  Loader2
+  Loader2,
+  ChevronDown
 } from "lucide-react";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,7 +60,7 @@ interface QuizData {
   phone: string;
   website: string;
   country: string;
-  cityProvince: string;
+  stateProvince: string;
 }
 
 // Phone number formatting function
@@ -107,6 +121,25 @@ const isValidWebsiteUrl = (url: string) => {
 
 const Quiz = () => {
   const { toast } = useToast();
+  
+  // US States list for autocomplete
+  const usStates = [
+    "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", 
+    "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", 
+    "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", 
+    "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", 
+    "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", 
+    "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", 
+    "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", 
+    "Wisconsin", "Wyoming"
+  ];
+  
+  // Canadian Provinces list for autocomplete
+  const canadianProvinces = [
+    "Alberta", "British Columbia", "Manitoba", "New Brunswick", "Newfoundland and Labrador",
+    "Northwest Territories", "Nova Scotia", "Nunavut", "Ontario", "Prince Edward Island",
+    "Quebec", "Saskatchewan", "Yukon"
+  ];
   const [currentStep, setCurrentStep] = useState(1);
   const [quizData, setQuizData] = useState<QuizData>({
     loanAmount: [50000],
@@ -119,8 +152,9 @@ const Quiz = () => {
     phone: "",
     website: "",
     country: "",
-    cityProvince: ""
+    stateProvince: ""
   });
+  const [stateOpen, setStateOpen] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -504,7 +538,7 @@ const Quiz = () => {
         phone: data.phone,
         website: data.website,
         country: data.country,
-        city_province: data.cityProvince,
+        city_province: data.stateProvince,
         score: score
       }).select().single();
 
@@ -600,7 +634,7 @@ const Quiz = () => {
       case 3: return quizData.timeInBusiness !== "";
       case 4: return quizData.monthlyRevenue[0] > 0;
       case 5: return quizData.creditScore !== "";
-      case 6: return quizData.name && quizData.email && quizData.phone && quizData.country && quizData.cityProvince;
+      case 6: return quizData.name && quizData.email && quizData.phone && quizData.country && quizData.stateProvince;
       default: return true;
     }
   };
@@ -1095,10 +1129,10 @@ const Quiz = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="country" className="text-base md:text-lg font-medium">Country</Label>
-                        <select
+                         <select
                           id="country"
                           value={quizData.country}
-                          onChange={(e) => setQuizData({...quizData, country: e.target.value, cityProvince: ""})}
+                          onChange={(e) => setQuizData({...quizData, country: e.target.value, stateProvince: ""})}
                           className="mt-1 md:mt-2 text-base md:text-lg py-2 md:py-3 w-full rounded-md border border-input bg-background px-3 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         >
                           <option value="">Select Country</option>
@@ -1107,46 +1141,74 @@ const Quiz = () => {
                         </select>
                       </div>
                       <div>
-                        <Label htmlFor="cityProvince" className="text-base md:text-lg font-medium">
-                          {quizData.country === "CA" ? "Province" : "City"}
+                        <Label htmlFor="stateProvince" className="text-base md:text-lg font-medium">
+                          {quizData.country === "CA" ? "Province" : quizData.country === "US" ? "State" : "State/Province"}
                         </Label>
-                        <select
-                          id="cityProvince"
-                          value={quizData.cityProvince}
-                          onChange={(e) => setQuizData({...quizData, cityProvince: e.target.value})}
-                          className="mt-1 md:mt-2 text-base md:text-lg py-2 md:py-3 w-full rounded-md border border-input bg-background px-3 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                          disabled={!quizData.country}
-                        >
-                          <option value="">
-                            {quizData.country === "CA" ? "Select Province" : quizData.country === "US" ? "Select City" : "Select Country First"}
-                          </option>
-                          {quizData.country === "CA" && [
-                            "Alberta", "British Columbia", "Manitoba", "New Brunswick", "Newfoundland and Labrador",
-                            "Northwest Territories", "Nova Scotia", "Nunavut", "Ontario", "Prince Edward Island",
-                            "Quebec", "Saskatchewan", "Yukon"
-                          ].map(province => (
-                            <option key={province} value={province}>{province}</option>
-                          ))}
-                          {quizData.country === "US" && [
-                            "New York", "Los Angeles", "Chicago", "Houston", "Phoenix", "Philadelphia", "San Antonio",
-                            "San Diego", "Dallas", "San Jose", "Austin", "Jacksonville", "Fort Worth", "Columbus",
-                            "Charlotte", "San Francisco", "Indianapolis", "Seattle", "Denver", "Washington",
-                            "Boston", "El Paso", "Nashville", "Detroit", "Oklahoma City", "Portland", "Las Vegas",
-                            "Memphis", "Louisville", "Baltimore", "Milwaukee", "Albuquerque", "Tucson", "Fresno",
-                            "Sacramento", "Mesa", "Kansas City", "Atlanta", "Long Beach", "Colorado Springs",
-                            "Raleigh", "Miami", "Virginia Beach", "Omaha", "Oakland", "Minneapolis", "Tulsa",
-                            "Arlington", "Tampa", "New Orleans", "Wichita", "Cleveland", "Bakersfield", "Aurora",
-                            "Anaheim", "Honolulu", "Santa Ana", "Riverside", "Corpus Christi", "Lexington", "Henderson",
-                            "Stockton", "Saint Paul", "Cincinnati", "St. Louis", "Pittsburgh", "Greensboro",
-                            "Lincoln", "Anchorage", "Plano", "Orlando", "Irvine", "Newark", "Durham", "Chula Vista",
-                            "Toledo", "Fort Wayne", "St. Petersburg", "Laredo", "Jersey City", "Chandler",
-                            "Madison", "Lubbock", "Norfolk", "Baton Rouge", "Burnsville", "Buffalo", "North Las Vegas",
-                            "Gilbert", "Reno", "Winston-Salem", "Glendale", "Hialeah", "Garland", "Scottsdale",
-                            "Irving", "Chesapeake", "Fremont", "Boise"
-                          ].map(city => (
-                            <option key={city} value={city}>{city}</option>
-                          ))}
-                        </select>
+                        <Popover open={stateOpen} onOpenChange={setStateOpen}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={stateOpen}
+                              className="mt-1 md:mt-2 text-base md:text-lg py-2 md:py-3 w-full justify-between font-normal"
+                              disabled={!quizData.country}
+                            >
+                              {quizData.stateProvince || (quizData.country === "CA" ? "Select Province" : quizData.country === "US" ? "Select State" : "Select Country First")}
+                              <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-full p-0 z-50" align="start">
+                            <Command>
+                              <CommandInput 
+                                placeholder={`Search ${quizData.country === "CA" ? "provinces" : quizData.country === "US" ? "states" : "locations"}...`} 
+                                className="h-9" 
+                              />
+                              <CommandList>
+                                <CommandEmpty>
+                                  No {quizData.country === "CA" ? "province" : quizData.country === "US" ? "state" : "location"} found.
+                                </CommandEmpty>
+                                <CommandGroup>
+                                  {quizData.country === "CA" && canadianProvinces.map((province) => (
+                                    <CommandItem
+                                      key={province}
+                                      value={province}
+                                      onSelect={(currentValue) => {
+                                        setQuizData({...quizData, stateProvince: currentValue === quizData.stateProvince ? "" : province});
+                                        setStateOpen(false);
+                                      }}
+                                    >
+                                      {province}
+                                      <Check
+                                        className={cn(
+                                          "ml-auto h-4 w-4",
+                                          quizData.stateProvince === province ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                    </CommandItem>
+                                  ))}
+                                  {quizData.country === "US" && usStates.map((state) => (
+                                    <CommandItem
+                                      key={state}
+                                      value={state}
+                                      onSelect={(currentValue) => {
+                                        setQuizData({...quizData, stateProvince: currentValue === quizData.stateProvince ? "" : state});
+                                        setStateOpen(false);
+                                      }}
+                                    >
+                                      {state}
+                                      <Check
+                                        className={cn(
+                                          "ml-auto h-4 w-4",
+                                          quizData.stateProvince === state ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     </div>
                     <div>
