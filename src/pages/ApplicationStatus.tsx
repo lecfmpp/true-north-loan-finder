@@ -158,10 +158,30 @@ const ApplicationStatus = () => {
     }
   };
 
-  const handleStartApplication = () => {
+  const handleStartApplication = async () => {
     if (hasQuizHistory) {
-      // User has completed the wizard before, go directly to application
-      navigate('/application-canadian');
+      // User has completed the wizard before, check their country preference and go to appropriate application
+      try {
+        const { data: latestQuiz, error } = await supabase
+          .from('quiz_responses')
+          .select('country')
+          .eq('email', user?.email)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+        
+        if (!error && latestQuiz) {
+          const applicationRoute = latestQuiz.country === 'CA' ? '/application-canadian' : '/application-usa';
+          navigate(applicationRoute);
+        } else {
+          // Default to US application if no country data found
+          navigate('/application-usa');
+        }
+      } catch (error) {
+        console.error('Error fetching quiz data:', error);
+        // Default to US application if there's an error
+        navigate('/application-usa');
+      }
     } else {
       // User hasn't done the wizard, send them to the estimator first
       navigate('/loan-estimator');
