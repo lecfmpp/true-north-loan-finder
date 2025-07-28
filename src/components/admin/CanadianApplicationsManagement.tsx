@@ -345,7 +345,7 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
       ['Home Phone:', application.home_phone || 'N/A'],
       ['Cell Phone:', application.cell_phone || 'N/A'],
       ['Date of Birth:', application.dob || 'N/A'],
-      ['SSN:', application.ssn ? '***-**-****' : 'N/A'],
+      ['SSN:', application.ssn || 'N/A'],
       ['Ownership %:', application.ownership_percentage || 'N/A']
     ];
 

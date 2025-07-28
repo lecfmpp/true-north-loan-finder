@@ -346,7 +346,7 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
       ['Home Phone:', application.principal_home_phone || 'N/A'],
       ['Cell Phone:', application.principal_cell_phone || 'N/A'],
       ['Date of Birth:', application.principal_date_of_birth ? new Date(application.principal_date_of_birth).toLocaleDateString() : 'N/A'],
-      ['SSN:', application.principal_ssn ? '***-**-****' : 'N/A'],
+      ['SSN:', application.principal_ssn || 'N/A'],
       ['Ownership %:', application.principal_ownership_percentage ? `${application.principal_ownership_percentage}%` : 'N/A']
     ];
 
