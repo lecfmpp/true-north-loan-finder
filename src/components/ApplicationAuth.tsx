@@ -72,7 +72,7 @@ export const ApplicationAuth = ({ email = "", name = "", onAuthSuccess }: Applic
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: window.location.href,
           data: {
             display_name: formData.name,
             subscribe_to_updates: formData.subscribeToUpdates
