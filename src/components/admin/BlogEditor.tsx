@@ -477,15 +477,21 @@ const BlogEditor = ({ post, onSave, onCancel }: BlogEditorProps) => {
           </CardHeader>
           <CardContent>
             <div className="min-h-[500px]">
-              {isLoading || !ReactQuill ? (
-                <div className="flex items-center justify-center h-[400px] border rounded-md">
-                  <p className="text-muted-foreground">Loading editor...</p>
+              {isLoading ? (
+                <div className="flex items-center justify-center h-[400px] border rounded-md bg-background">
+                  <div className="animate-pulse flex space-x-4">
+                    <div className="rounded-full bg-muted h-10 w-10"></div>
+                    <div className="flex-1 space-y-2 py-1">
+                      <div className="h-4 bg-muted rounded w-3/4"></div>
+                      <div className="h-4 bg-muted rounded w-1/2"></div>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <ReactQuill
                   ref={setQuillRef}
                   theme="snow"
-                  value={formData.content || ''}
+                  value={formData.content}
                   onChange={handleContentChange}
                   modules={quillModules}
                   formats={quillFormats}
