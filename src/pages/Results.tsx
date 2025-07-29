@@ -49,7 +49,7 @@ const Results = () => {
   // Fetch quiz data if we have responseId but missing other data
   useEffect(() => {
     const fetchQuizData = async () => {
-      if (quizResponseId && (!name || !email)) {
+      if (quizResponseId) {
         try {
           const { data, error } = await supabase
             .from('quiz_responses')
@@ -61,6 +61,7 @@ const Results = () => {
           
           if (data) {
             setQuizData(data);
+            console.log('Quiz data fetched:', data);
           }
         } catch (error) {
           console.error('Error fetching quiz data:', error);
@@ -71,7 +72,7 @@ const Results = () => {
     };
 
     fetchQuizData();
-  }, [quizResponseId, name, email, navigate]);
+  }, [quizResponseId, navigate]);
 
   // Redirect if missing essential data and can't fetch it
   useEffect(() => {
