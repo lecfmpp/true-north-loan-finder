@@ -1392,8 +1392,12 @@ const CanadianApplication = () => {
     }
   };
 
-  // Show authentication form if user is not authenticated and showAuth is true
-  if (showAuth || (!user && !loading)) {
+  // Show authentication form if user is not authenticated (unless we explicitly don't want to show auth)
+  if (!showAuth && (!user && !loading)) {
+    setShowAuth(true);
+  }
+  
+  if (showAuth) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
@@ -1425,7 +1429,10 @@ const CanadianApplication = () => {
               <ApplicationAuth
                 email={searchParams.get('email') || formData.email_address}
                 name={searchParams.get('name') || formData.principal_owner_name}
-                onAuthSuccess={() => setShowAuth(false)}
+                onAuthSuccess={() => {
+                  // Add a small delay to ensure auth state propagates
+                  setTimeout(() => setShowAuth(false), 100);
+                }}
               />
             </div>
           </div>
