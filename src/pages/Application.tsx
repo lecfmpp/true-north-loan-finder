@@ -1454,7 +1454,7 @@ const Application = () => {
           <div className="max-w-2xl mx-auto">
             {/* Header */}
             <div className="text-center mb-6">
-              <h1 className="text-2xl md:text-3xl font-bold text-primary mb-2">Business Loan Application</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-primary mb-2">US Business Application</h1>
               <p className="text-sm md:text-base text-muted-foreground mb-6">
                 Step 1 of {totalSteps}: Create Your Secure Account
               </p>
@@ -1490,7 +1490,7 @@ const Application = () => {
       <div className="container mx-auto px-4 py-4 md:py-8">
         {/* Mobile-optimized header */}
         <div className="text-center mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-primary mb-2">Business Loan Application</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-primary mb-2">US Business Application</h1>
           <p className="text-sm md:text-base text-muted-foreground mb-4">
             Complete your secure application in {totalSteps} steps
           </p>
