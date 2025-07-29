@@ -90,7 +90,10 @@ const Header = () => {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  onClick={signOut}
+                  onClick={async () => {
+                    console.log('Logout button clicked');
+                    await signOut();
+                  }}
                   className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10"
                 >
                   <LogOut className="w-4 h-4" />
@@ -165,8 +168,9 @@ const Header = () => {
                       variant="ghost" 
                       size="lg" 
                       className="w-full text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10"
-                      onClick={() => {
-                        signOut();
+                      onClick={async () => {
+                        console.log('Mobile logout button clicked');
+                        await signOut();
                         setIsMenuOpen(false);
                       }}
                     >
