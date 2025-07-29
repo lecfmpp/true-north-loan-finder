@@ -15,7 +15,15 @@ export const useQuillEditor = () => {
           import('../styles/quill-custom.css')
         ]);
         
-        setReactQuill(quillModule.default);
+        // Handle different export patterns
+        const QuillComponent = quillModule.default || quillModule;
+        console.log('Loaded Quill component:', QuillComponent);
+        
+        if (QuillComponent && typeof QuillComponent === 'function') {
+          setReactQuill(() => QuillComponent);
+        } else {
+          console.error('Invalid Quill component loaded:', QuillComponent);
+        }
       } catch (error) {
         console.error('Failed to load Quill editor:', error);
       } finally {
