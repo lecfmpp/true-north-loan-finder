@@ -328,18 +328,48 @@ const CanadianApplication = () => {
     }
   };
 
+  const validateFile = (file: File): string | null => {
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    const allowedTypes = [
+      'application/pdf',
+      'image/jpeg',
+      'image/jpg', 
+      'image/png',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+    
+    if (file.size > maxSize) {
+      return `File "${file.name}" is too large. Maximum size is 10MB.`;
+    }
+    
+    if (!allowedTypes.includes(file.type)) {
+      return `File "${file.name}" is not a supported format. Please use PDF, JPG, PNG, DOC, or DOCX files.`;
+    }
+    
+    return null;
+  };
+
   const handleFileUpload = async (files: File[]): Promise<string[]> => {
     const uploadedFiles: string[] = [];
     
     for (const file of files) {
-      const fileName = `canadian_${Date.now()}_${file.name}`;
+      const validationError = validateFile(file);
+      if (validationError) {
+        throw new Error(validationError);
+      }
+      
+      const fileName = `${user?.id || 'anonymous'}/canadian_${Date.now()}-${file.name}`;
       const { error } = await supabase.storage
         .from('application-documents')
         .upload(fileName, file);
       
       if (error) {
         console.error('Error uploading file:', error);
-        throw new Error(`Failed to upload ${file.name}`);
+        if (error.message.includes('duplicate')) {
+          throw new Error(`File "${file.name}" already exists. Please rename it and try again.`);
+        }
+        throw new Error(`Failed to upload "${file.name}": ${error.message}`);
       }
       
       uploadedFiles.push(fileName);
@@ -1338,15 +1368,34 @@ const CanadianApplication = () => {
                          <Input
                            type="file"
                            multiple
-                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                            onChange={(e) => {
-                              const files = Array.from(e.target.files || []);
-                              if (files.length > 0) {
-                                updateFormData('document_files', [...formData.document_files, ...files]);
-                              }
-                              // Reset the input value to allow re-selecting the same file
-                              e.target.value = '';
-                            }}
+                             accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,application/pdf,image/jpeg,image/png,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                             onChange={(e) => {
+                               const files = Array.from(e.target.files || []);
+                               if (files.length > 0) {
+                                 // Validate files before adding
+                                 const validFiles: File[] = [];
+                                 const errors: string[] = [];
+                                 
+                                 files.forEach(file => {
+                                   const validationError = validateFile(file);
+                                   if (validationError) {
+                                     errors.push(validationError);
+                                   } else {
+                                     validFiles.push(file);
+                                   }
+                                 });
+                                 
+                                 if (errors.length > 0) {
+                                   toast.error(errors.join('\n'));
+                                 }
+                                 
+                                 if (validFiles.length > 0) {
+                                   updateFormData('document_files', [...formData.document_files, ...validFiles]);
+                                 }
+                               }
+                               // Reset the input value to allow re-selecting the same file
+                               e.target.value = '';
+                             }}
                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                          />
                        </div>
