@@ -77,6 +77,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchUserData = async (userId: string) => {
     try {
+      console.log('Fetching user data for userId:', userId);
+      
       // Fetch profile data
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
@@ -86,11 +88,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (profileError) {
         console.error('Error fetching profile:', profileError);
+      } else {
+        console.log('Profile data:', profileData);
       }
       
       setProfile(profileData);
 
       // Fetch user roles from new user_roles table
+      console.log('Fetching user roles...');
       const { data: rolesData, error: rolesError } = await supabase
         .from('user_roles')
         .select('role')
@@ -98,14 +103,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (rolesError) {
         console.error('Error fetching user roles:', rolesError);
+        console.error('Roles error details:', rolesError);
         setUserRoles([]);
       } else {
+        console.log('Roles data:', rolesData);
         setUserRoles(rolesData?.map(r => r.role) || []);
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
       setUserRoles([]);
     } finally {
+      console.log('Setting loading to false');
       setLoading(false);
     }
   };
