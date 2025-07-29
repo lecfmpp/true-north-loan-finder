@@ -7,6 +7,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   profile: any | null;
+  userRoles: string[];
   loading: boolean;
   signUp: (email: string, password: string, displayName?: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
@@ -22,6 +23,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
+  const [userRoles, setUserRoles] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -35,7 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setSession(session);
           setUser(session?.user ?? null);
           if (session?.user) {
-            fetchProfile(session.user.id);
+            await fetchUserData(session.user.id);
           } else {
             setLoading(false);
           }
@@ -55,9 +57,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(session?.user ?? null);
           
           if (session?.user) {
-            fetchProfile(session.user.id);
+            await fetchUserData(session.user.id);
           } else {
             setProfile(null);
+            setUserRoles([]);
             setLoading(false);
           }
         }
@@ -72,21 +75,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchUserData = async (userId: string) => {
     try {
-      const { data, error } = await supabase
+      // Fetch profile data
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
         .maybeSingle();
 
-      if (error) {
-        console.error('Error fetching profile:', error);
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
       }
       
-      setProfile(data);
+      setProfile(profileData);
+
+      // Fetch user roles from new user_roles table
+      const { data: rolesData, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId);
+
+      if (rolesError) {
+        console.error('Error fetching user roles:', rolesError);
+        setUserRoles([]);
+      } else {
+        setUserRoles(rolesData?.map(r => r.role) || []);
+      }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('Error fetching user data:', error);
+      setUserRoles([]);
     } finally {
       setLoading(false);
     }
@@ -151,6 +169,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await supabase.auth.signOut();
       setProfile(null);
+      setUserRoles([]);
       toast({
         title: "Signed out",
         description: "You have been successfully signed out"
@@ -160,16 +179,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Keep backward compatibility with isAdmin (checks for any management role)
-  const isAdmin = profile?.role === 'superadmin' || profile?.role === 'lender' || profile?.role === 'broker';
-  const isSuperAdmin = profile?.role === 'superadmin';
-  const isManagementUser = profile?.role === 'superadmin' || profile?.role === 'lender' || profile?.role === 'broker';
+  // Use new role system for authorization checks
+  const isAdmin = userRoles.includes('superadmin') || userRoles.includes('lender') || userRoles.includes('broker');
+  const isSuperAdmin = userRoles.includes('superadmin');
+  const isManagementUser = userRoles.includes('superadmin') || userRoles.includes('lender') || userRoles.includes('broker');
 
   return (
     <AuthContext.Provider value={{
       user,
       session,
       profile,
+      userRoles,
       loading,
       signUp,
       signIn,

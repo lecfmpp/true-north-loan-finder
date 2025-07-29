@@ -1089,6 +1089,36 @@ export type Database = {
           },
         ]
       }
+      role_change_audit: {
+        Row: {
+          change_reason: string | null
+          changed_by: string
+          created_at: string
+          id: string
+          new_role: Database["public"]["Enums"]["app_role"] | null
+          old_role: Database["public"]["Enums"]["app_role"] | null
+          user_id: string
+        }
+        Insert: {
+          change_reason?: string | null
+          changed_by: string
+          created_at?: string
+          id?: string
+          new_role?: Database["public"]["Enums"]["app_role"] | null
+          old_role?: Database["public"]["Enums"]["app_role"] | null
+          user_id: string
+        }
+        Update: {
+          change_reason?: string | null
+          changed_by?: string
+          created_at?: string
+          id?: string
+          new_role?: Database["public"]["Enums"]["app_role"] | null
+          old_role?: Database["public"]["Enums"]["app_role"] | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       social_proof_notifications: {
         Row: {
           amount_funded: number
@@ -1428,6 +1458,36 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -1437,12 +1497,27 @@ export type Database = {
         Args: { app_type: string }
         Returns: string
       }
+      has_any_management_role: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       has_management_access: {
         Args: { user_id_param: string }
         Returns: boolean
       }
+      has_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
       is_superadmin: {
         Args: { user_id_param: string }
+        Returns: boolean
+      }
+      is_user_superadmin: {
+        Args: { _user_id: string }
         Returns: boolean
       }
       validate_email: {
@@ -1455,6 +1530,7 @@ export type Database = {
       }
     }
     Enums: {
+      app_role: "superadmin" | "lender" | "broker" | "user"
       user_role: "superadmin" | "lender" | "broker" | "user"
     }
     CompositeTypes: {
@@ -1583,6 +1659,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["superadmin", "lender", "broker", "user"],
       user_role: ["superadmin", "lender", "broker", "user"],
     },
   },
