@@ -222,8 +222,17 @@ const Results = () => {
       const country = quizData?.country;
       console.log('Country from quizData:', country);
       
-      // Route to Canadian application for CA, US application for US or undefined
-      const applicationRoute = country === 'CA' ? '/canadian-application' : '/application-usa';
+      // Route based on country selection - check both quiz data and URL params
+      const countryFromParams = searchParams.get('country');
+      const finalCountry = country || countryFromParams;
+      
+      console.log('Country routing debug:', { 
+        countryFromQuizData: country, 
+        countryFromParams, 
+        finalCountry 
+      });
+      
+      const applicationRoute = finalCountry === 'CA' ? '/canadian-application' : '/application-usa';
       
       console.log(`Navigating to ${applicationRoute} with params:`, applicationParams.toString());
       navigate(`${applicationRoute}?${applicationParams.toString()}`);
