@@ -10,9 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Save, Eye, Upload, X, FileText, Link } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
-import '../../styles/quill-custom.css';
+import { useQuillEditor } from '@/hooks/useQuillEditor';
 import ImageUpload from './ImageUpload';
 import SEOAnalyzer from './SEOAnalyzer';
 import { blogTemplates, generateTemplateContent, canadianBusinessKeywords, seoOptimizationTips, type BlogTemplate } from './BlogPostTemplate';
@@ -40,6 +38,7 @@ interface BlogEditorProps {
 }
 
 const BlogEditor = ({ post, onSave, onCancel }: BlogEditorProps) => {
+  const { ReactQuill, isLoading } = useQuillEditor();
   const [formData, setFormData] = useState<BlogPost>({
     title: post?.title || '',
     slug: post?.slug || '',
@@ -478,7 +477,7 @@ const BlogEditor = ({ post, onSave, onCancel }: BlogEditorProps) => {
           </CardHeader>
           <CardContent>
             <div className="min-h-[500px]">
-              {!ReactQuill ? (
+              {isLoading || !ReactQuill ? (
                 <div className="flex items-center justify-center h-[400px] border rounded-md">
                   <p className="text-muted-foreground">Loading editor...</p>
                 </div>
