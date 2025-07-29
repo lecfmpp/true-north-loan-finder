@@ -233,7 +233,7 @@ const Results = () => {
         finalCountry 
       });
       
-      const applicationRoute = finalCountry === 'CA' ? '/canadian-application' : '/application-usa';
+      const applicationRoute = finalCountry === 'CA' ? '/application-canadian' : '/application-usa';
       
       console.log(`Navigating to ${applicationRoute} with params:`, applicationParams.toString());
       navigate(`${applicationRoute}?${applicationParams.toString()}`);
