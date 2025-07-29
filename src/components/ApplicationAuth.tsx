@@ -37,8 +37,10 @@ export const ApplicationAuth = ({ email = "", name = "", onAuthSuccess }: Applic
 
     if (!formData.password) {
       newErrors.password = "Password is required";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+    } else if (formData.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
+      newErrors.password = "Password must contain at least one uppercase letter, one lowercase letter, and one number";
     }
 
     if (formData.password !== formData.confirmPassword) {
@@ -95,6 +97,23 @@ export const ApplicationAuth = ({ email = "", name = "", onAuthSuccess }: Applic
             return;
           }
         }
+        
+        // Handle specific Supabase auth errors
+        if (authError.message.includes("Password should be at least")) {
+          setErrors({ password: "Password must be at least 8 characters with uppercase, lowercase, and number" });
+          return;
+        }
+        
+        if (authError.message.includes("weak")) {
+          setErrors({ password: "Please choose a stronger password with mixed case letters, numbers, and special characters" });
+          return;
+        }
+        
+        if (authError.message.includes("Invalid email")) {
+          setErrors({ email: "Please enter a valid email address" });
+          return;
+        }
+        
         throw authError;
       }
 
@@ -102,9 +121,19 @@ export const ApplicationAuth = ({ email = "", name = "", onAuthSuccess }: Applic
         toast.success("Account created successfully! You can now submit your application.");
         onAuthSuccess();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Authentication error:", error);
-      toast.error("Failed to create account. Please try again.");
+      
+      // Provide specific error messages
+      const errorMessage = error?.message || "Failed to create account. Please try again.";
+      
+      if (errorMessage.includes("email")) {
+        setErrors({ email: errorMessage });
+      } else if (errorMessage.includes("password")) {
+        setErrors({ password: errorMessage });
+      } else {
+        toast.error(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -162,6 +191,9 @@ export const ApplicationAuth = ({ email = "", name = "", onAuthSuccess }: Applic
               placeholder="Create a secure password"
               className={errors.password ? "border-destructive" : ""}
             />
+            <p className="text-xs text-muted-foreground mt-1">
+              Must be at least 8 characters with uppercase, lowercase, and number
+            </p>
             {errors.password && (
               <p className="text-sm text-destructive mt-1">{errors.password}</p>
             )}
