@@ -1,7 +1,7 @@
 import React from 'react';
+import { cn } from '@/lib/utils';
 import { useImageOptimization } from '@/hooks/use-image-optimization';
 import { generateResponsiveSrcSet, generateSizesAttribute } from '@/utils/image-utils';
-import { cn } from '@/lib/utils';
 
 interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
