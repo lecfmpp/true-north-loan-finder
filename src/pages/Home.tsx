@@ -191,10 +191,12 @@ const Home = () => {
             <div className="lg:col-span-2">
               <div className="relative">
                 <img 
-                  src="/lovable-uploads/e80bb666-2b36-4875-bd9f-78f3e944d749.png" 
-                  alt="Successful business owner reviewing loan options on laptop - True North Business Loan helps find the right financing" 
+                  src="/lovable-uploads/b490bc99-b9b3-432b-aac9-6a6af67fd9fc.png" 
+                  alt="Professional business owner working on laptop - True North Business Loan helps small businesses get funding fast" 
                   className="w-full h-auto rounded-2xl shadow-[var(--shadow-card)] object-cover"
                   loading="eager"
+                  width="600"
+                  height="400"
                 />
               </div>
             </div>
