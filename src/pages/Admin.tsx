@@ -54,6 +54,8 @@ interface QuizResponse {
   status: string;
   admin_notes: string;
   created_at: string;
+  country: string;
+  city_province: string;
   // Add application tracking
   has_usa_application?: boolean;
   has_canadian_application?: boolean;
@@ -791,8 +793,8 @@ const Admin = () => {
 
   const exportSelectedToCSV = () => {
     const leadsToExport = selectedLeads.length > 0 ? leads.filter(lead => selectedLeads.includes(lead.id)) : filteredLeads;
-    const headers = ['Name', 'Email', 'Phone', 'Monthly Revenue', 'Loan Amount', 'Credit Score', 'Time in Business', 'Use of Funds', 'Score', 'Status', 'Created At'];
-    const csvContent = [headers.join(','), ...leadsToExport.map(lead => [lead.name, lead.email, lead.phone, lead.monthly_revenue, lead.loan_amount, lead.credit_score, lead.time_in_business, lead.use_of_funds, lead.score, lead.status, format(new Date(lead.created_at), 'yyyy-MM-dd HH:mm:ss')].join(','))].join('\n');
+    const headers = ['Name', 'Email', 'Phone', 'Country', 'State/Province', 'Monthly Revenue', 'Loan Amount', 'Credit Score', 'Time in Business', 'Use of Funds', 'Score', 'Status', 'Created At'];
+    const csvContent = [headers.join(','), ...leadsToExport.map(lead => [lead.name, lead.email, lead.phone, lead.country || '', lead.city_province || '', lead.monthly_revenue, lead.loan_amount, lead.credit_score, lead.time_in_business, lead.use_of_funds, lead.score, lead.status, format(new Date(lead.created_at), 'yyyy-MM-dd HH:mm:ss')].join(','))].join('\n');
     const blob = new Blob([csvContent], {
       type: 'text/csv'
     });
@@ -858,8 +860,8 @@ const Admin = () => {
   };
 
   const exportToCSV = () => {
-    const headers = ['Name', 'Email', 'Phone', 'Monthly Revenue', 'Loan Amount', 'Credit Score', 'Time in Business', 'Use of Funds', 'Score', 'Status', 'Created At'];
-    const csvContent = [headers.join(','), ...filteredLeads.map(lead => [lead.name, lead.email, lead.phone, lead.monthly_revenue, lead.loan_amount, lead.credit_score, lead.time_in_business, lead.use_of_funds, lead.score, lead.status, format(new Date(lead.created_at), 'yyyy-MM-dd HH:mm:ss')].join(','))].join('\n');
+    const headers = ['Name', 'Email', 'Phone', 'Country', 'State/Province', 'Monthly Revenue', 'Loan Amount', 'Credit Score', 'Time in Business', 'Use of Funds', 'Score', 'Status', 'Created At'];
+    const csvContent = [headers.join(','), ...filteredLeads.map(lead => [lead.name, lead.email, lead.phone, lead.country || '', lead.city_province || '', lead.monthly_revenue, lead.loan_amount, lead.credit_score, lead.time_in_business, lead.use_of_funds, lead.score, lead.status, format(new Date(lead.created_at), 'yyyy-MM-dd HH:mm:ss')].join(','))].join('\n');
     const blob = new Blob([csvContent], {
       type: 'text/csv'
     });
@@ -1290,6 +1292,7 @@ const Admin = () => {
                         </TableHead>
                         <TableHead>Name</TableHead>
                         <TableHead>Contact</TableHead>
+                        <TableHead>Location</TableHead>
                         <TableHead>Loan Details</TableHead>
                         <TableHead>Score</TableHead>
                         <TableHead>Status</TableHead>
@@ -1317,6 +1320,12 @@ const Admin = () => {
                                     {lead.website.replace(/^https?:\/\//, '')}
                                   </a>
                                 </div>}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm">
+                              {lead.country && <div className="font-medium">{lead.country}</div>}
+                              {lead.city_province && <div className="text-muted-foreground">{lead.city_province}</div>}
                             </div>
                           </TableCell>
                           <TableCell>
