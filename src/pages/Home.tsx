@@ -17,6 +17,7 @@ import {
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
+import OptimizedImage from "@/components/OptimizedImage";
 
 
 const Home = () => {
@@ -190,13 +191,15 @@ const Home = () => {
             {/* Right Column - Image (40% width) */}
             <div className="lg:col-span-2">
               <div className="relative">
-                <img 
-                  src="/lovable-uploads/b490bc99-b9b3-432b-aac9-6a6af67fd9fc.png" 
-                  alt="Professional business owner working on laptop - True North Business Loan helps small businesses get funding fast" 
-                  className="w-full h-auto rounded-2xl shadow-[var(--shadow-card)] object-cover"
-                  loading="eager"
-                  width="600"
-                  height="400"
+                <OptimizedImage
+                  src="/lovable-uploads/b490bc99-b9b3-432b-aac9-6a6af67fd9fc.png"
+                  alt="Professional business owner working on laptop - True North Business Loan helps small businesses get funding fast"
+                  width={600}
+                  height={400}
+                  priority={true}
+                  className="w-full h-auto rounded-2xl shadow-[var(--shadow-card)]"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 40vw"
+                  responsive={true}
                 />
               </div>
             </div>
