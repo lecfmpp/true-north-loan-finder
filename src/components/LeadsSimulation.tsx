@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Clock, Phone, Mail, Building2, DollarSign, AlertTriangle } from "lucide-react";
+import { Clock, Phone, Mail, Building2, DollarSign, AlertTriangle, CheckCircle, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -16,8 +16,10 @@ interface Lead {
   phone: string;
   loanAmount: string;
   timeArrived: string;
-  urgency: "HIGH" | "MEDIUM";
+  creditScore: number;
   industry: string;
+  loanType: string;
+  phoneVerified: boolean;
 }
 
 const mockLeads: Lead[] = [
@@ -29,8 +31,10 @@ const mockLeads: Lead[] = [
     phone: "(555) ***-****",
     loanAmount: "$85,000",
     timeArrived: "2 minutes ago",
-    urgency: "HIGH",
-    industry: "Restaurant"
+    creditScore: 720,
+    industry: "Restaurant",
+    loanType: "Working Capital",
+    phoneVerified: true
   },
   {
     id: "2", 
@@ -40,8 +44,10 @@ const mockLeads: Lead[] = [
     phone: "(555) ***-****",
     loanAmount: "$150,000",
     timeArrived: "5 minutes ago",
-    urgency: "HIGH",
-    industry: "Construction"
+    creditScore: 680,
+    industry: "Construction", 
+    loanType: "Equipment Financing",
+    phoneVerified: true
   },
   {
     id: "3",
@@ -51,8 +57,23 @@ const mockLeads: Lead[] = [
     phone: "(555) ***-****",
     loanAmount: "$45,000",
     timeArrived: "8 minutes ago",
-    urgency: "MEDIUM",
-    industry: "Automotive"
+    creditScore: 650,
+    industry: "Automotive",
+    loanType: "Business Loan",
+    phoneVerified: true
+  },
+  {
+    id: "4",
+    businessName: "******* Medical",
+    contactName: "S*** K****",
+    email: "s****@******.com",
+    phone: "(555) ***-****", 
+    loanAmount: "$200,000",
+    timeArrived: "12 minutes ago",
+    creditScore: 740,
+    industry: "Healthcare",
+    loanType: "Practice Expansion",
+    phoneVerified: true
   }
 ];
 
@@ -121,60 +142,63 @@ export const LeadsSimulation = () => {
           <p className="text-muted-foreground font-serif">See real leads waiting for your response right now</p>
         </div>
 
-        <div className="space-y-4">
+        <div className="grid md:grid-cols-2 gap-4">
           {mockLeads.map((lead) => (
-            <Card key={lead.id} className="border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+            <Card key={lead.id} className="border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 relative overflow-hidden aspect-square">
               <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/95 backdrop-blur-sm z-10"></div>
               
-              <CardHeader className="relative z-20">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <Badge variant={lead.urgency === "HIGH" ? "destructive" : "secondary"} className="flex items-center space-x-1">
-                      <AlertTriangle className="h-3 w-3" />
-                      <span>{lead.urgency} PRIORITY</span>
-                    </Badge>
-                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                      <Clock className="h-4 w-4" />
-                      <span>{lead.timeArrived}</span>
-                    </div>
+              <CardHeader className="relative z-20 pb-3">
+                <div className="flex items-center justify-between mb-2">
+                  <Badge variant="outline" className="bg-secondary text-secondary-foreground">
+                    Credit Score: {lead.creditScore}
+                  </Badge>
+                  <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    <span>{lead.timeArrived}</span>
                   </div>
-                  <Badge variant="outline">{lead.industry}</Badge>
                 </div>
                 
-                <CardTitle className="text-lg font-sans text-primary">{lead.businessName}</CardTitle>
+                <div className="flex items-center justify-between mb-2">
+                  {lead.phoneVerified && (
+                    <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
+                      <Shield className="h-3 w-3 mr-1" />
+                      Phone Verified
+                    </Badge>
+                  )}
+                  <Badge variant="outline" className="text-xs">{lead.industry}</Badge>
+                </div>
+                
+                <CardTitle className="text-lg font-sans text-primary leading-tight">{lead.businessName}</CardTitle>
+                <div className="text-sm text-accent font-medium">{lead.loanType}</div>
               </CardHeader>
               
-              <CardContent className="relative z-20">
-                <div className="grid md:grid-cols-2 gap-4 mb-6">
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <Building2 className="h-4 w-4 text-secondary" />
-                      <span className="text-muted-foreground">Contact: {lead.contactName}</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <Mail className="h-4 w-4 text-secondary" />
-                      <span className="text-muted-foreground">{lead.email}</span>
-                    </div>
+              <CardContent className="relative z-20 pt-0">
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center space-x-2">
+                    <Building2 className="h-3 w-3 text-secondary" />
+                    <span className="text-sm text-muted-foreground">{lead.contactName}</span>
                   </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <Phone className="h-4 w-4 text-secondary" />
-                      <span className="text-muted-foreground">{lead.phone}</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <DollarSign className="h-4 w-4 text-secondary" />
-                      <span className="text-muted-foreground font-semibold">{lead.loanAmount} requested</span>
-                    </div>
+                  <div className="flex items-center space-x-2">
+                    <Mail className="h-3 w-3 text-secondary" />
+                    <span className="text-sm text-muted-foreground">{lead.email}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Phone className="h-3 w-3 text-secondary" />
+                    <span className="text-sm text-muted-foreground">{lead.phone}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <DollarSign className="h-3 w-3 text-secondary" />
+                    <span className="text-sm text-muted-foreground font-semibold">{lead.loanAmount}</span>
                   </div>
                 </div>
                 
                 <Button 
                   onClick={() => handleUnlockClick(lead)}
                   variant="cta" 
-                  size="lg" 
-                  className="w-full text-lg bg-accent hover:bg-accent/90"
+                  size="sm" 
+                  className="w-full text-sm bg-accent hover:bg-accent/90"
                 >
-                  🔓 Unlock Lead & Contact Now
+                  🔓 Unlock Lead
                 </Button>
               </CardContent>
             </Card>

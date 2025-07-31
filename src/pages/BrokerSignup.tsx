@@ -37,9 +37,9 @@ const BrokerSignup = () => {
               Join our exclusive broker network and receive pre-qualified business loan leads directly to your inbox. We focus on quality over quantity - delivering genuine opportunities that convert into funded deals.
             </p>
             
-            <Button variant="cta" size="xl" className="text-lg px-8 bg-accent hover:bg-accent/90 text-accent-foreground">
-              Start Receiving Leads Today
-            </Button>
+            <div className="mt-8">
+              <LeadsSimulation />
+            </div>
           </div>
         </div>
       </section>
@@ -342,47 +342,6 @@ const BrokerSignup = () => {
         </div>
       </section>
 
-      {/* Leads Simulation */}
-      <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl lg:text-4xl font-bold font-sans text-primary mb-4">
-                Try Before You Buy
-              </h2>
-              <h3 className="text-2xl font-semibold text-secondary mb-8">See Live Leads Right Now</h3>
-              <p className="text-xl text-muted-foreground font-serif">
-                These are real leads in our system waiting for immediate response. Unlock them now to start converting today.
-              </p>
-            </div>
-
-            <LeadsSimulation />
-
-            {/* What Happens Next */}
-            <div className="mt-16 text-center">
-              <h3 className="text-2xl font-semibold mb-8 font-sans text-primary">What Happens After Purchase?</h3>
-              <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-                <div className="flex items-start space-x-3">
-                  <div className="w-[40px] h-[40px] bg-accent text-accent-foreground rounded-full flex items-center justify-center font-bold text-sm">1</div>
-                  <p className="text-muted-foreground font-serif">Instant access to all 10 lead contacts</p>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-[40px] h-[40px] bg-accent text-accent-foreground rounded-full flex items-center justify-center font-bold text-sm">2</div>
-                  <p className="text-muted-foreground font-serif">Start calling and closing deals immediately</p>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-[40px] h-[40px] bg-accent text-accent-foreground rounded-full flex items-center justify-center font-bold text-sm">3</div>
-                  <p className="text-muted-foreground font-serif">Dashboard access for lead management</p>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-[40px] h-[40px] bg-accent text-accent-foreground rounded-full flex items-center justify-center font-bold text-sm">4</div>
-                  <p className="text-muted-foreground font-serif">Upgrade to full partnership program</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Final CTA */}
       <section className="py-20 bg-gradient-to-r from-primary to-secondary text-primary-foreground">
