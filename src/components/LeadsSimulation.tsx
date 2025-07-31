@@ -119,6 +119,40 @@ const LiveTimer = ({ submittedAt }: { submittedAt: Date }) => {
   );
 };
 
+// Dynamic countdown for urgency in modal
+const UrgencyCountdown = ({ lastSubmissionTime }: { lastSubmissionTime: Date | null }) => {
+  const [countdown, setCountdown] = useState("");
+
+  useEffect(() => {
+    if (!lastSubmissionTime) return;
+
+    const updateCountdown = () => {
+      const now = new Date();
+      const timeSinceSubmission = Math.floor((now.getTime() - lastSubmissionTime.getTime()) / 1000 / 60); // minutes
+      
+      // Calculate remaining time (assuming 60 minutes expiry from submission)
+      const remainingMinutes = Math.max(0, 60 - timeSinceSubmission);
+      
+      if (remainingMinutes > 0) {
+        setCountdown(`${remainingMinutes} minutes`);
+      } else {
+        setCountdown("0 minutes");
+      }
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, [lastSubmissionTime]);
+
+  if (!lastSubmissionTime) {
+    return <span className="font-semibold text-destructive">URGENT: Lead expires soon</span>;
+  }
+
+  return <span className="font-semibold text-destructive">URGENT: Lead expires in {countdown}</span>;
+};
+
 export const LeadsSimulation = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -126,6 +160,7 @@ export const LeadsSimulation = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCountry, setSelectedCountry] = useState<'US' | 'Canada'>('US');
+  const [lastSubmissionTime, setLastSubmissionTime] = useState<Date | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -174,8 +209,11 @@ export const LeadsSimulation = () => {
           });
           
           setLeads(transformedLeads);
+          // Set the most recent submission time for the urgency countdown
+          setLastSubmissionTime(new Date(quizResponses[0].created_at));
         } else {
           setLeads([]);
+          setLastSubmissionTime(null);
         }
       } catch (error) {
         console.error('Error fetching leads:', error);
@@ -362,10 +400,10 @@ export const LeadsSimulation = () => {
           <div className="space-y-6">
             <div className="text-center">
               <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 mb-4">
-                <div className="flex items-center justify-center space-x-2 mb-2">
-                  <Clock className="h-5 w-5 text-destructive" />
-                  <span className="font-semibold text-destructive">URGENT: Lead expires in 23 minutes</span>
-                </div>
+                 <div className="flex items-center justify-center space-x-2 mb-2">
+                   <Clock className="h-5 w-5 text-destructive" />
+                   <UrgencyCountdown lastSubmissionTime={lastSubmissionTime} />
+                 </div>
                 <p className="text-sm text-muted-foreground">
                   This lead submitted their application and needs immediate response
                 </p>
