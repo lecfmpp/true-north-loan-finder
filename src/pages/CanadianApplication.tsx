@@ -501,7 +501,21 @@ const CanadianApplication = () => {
       navigate("/application-success");
     } catch (error) {
       console.error('Error submitting application:', error);
-      toast.error("Failed to submit application. Please try again.");
+      console.error('Form data that failed:', formData);
+      
+      // More specific error messages based on the error type
+      let errorMessage = "Failed to submit application. Please try again.";
+      if (error instanceof Error) {
+        if (error.message.includes('violates not-null constraint')) {
+          errorMessage = "Please fill in all required fields before submitting.";
+        } else if (error.message.includes('invalid input')) {
+          errorMessage = "Please check your input values and try again.";
+        } else if (error.message.includes('duplicate')) {
+          errorMessage = "This application has already been submitted.";
+        }
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
