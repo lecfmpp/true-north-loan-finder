@@ -1,71 +1,14 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, TrendingUp, Users, DollarSign, Clock, Phone } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { LeadsSimulation } from "@/components/LeadsSimulation";
 import SEOHead from "@/components/SEOHead";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import adminDashboardPreview from "@/assets/admin-dashboard-preview.jpg";
 
 const BrokerSignup = () => {
-  const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    applicant_name: "",
-    applicant_email: "",
-    applicant_phone: "",
-    company_name: "",
-    company_website: "",
-    years_of_experience: "",
-    business_description: "",
-  });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      const { error } = await supabase
-        .from('lender_broker_applications')
-        .insert({
-          ...formData,
-          application_type: 'broker',
-          years_of_experience: parseInt(formData.years_of_experience) || null
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Application Submitted!",
-        description: "Thank you for your interest. We'll contact you within 24 hours to discuss your partnership.",
-      });
-
-      // Reset form
-      setFormData({
-        applicant_name: "",
-        applicant_email: "",
-        applicant_phone: "",
-        company_name: "",
-        company_website: "",
-        years_of_experience: "",
-        business_description: "",
-      });
-    } catch (error) {
-      console.error('Error submitting application:', error);
-      toast({
-        title: "Error",
-        description: "Failed to submit application. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -399,121 +342,41 @@ const BrokerSignup = () => {
         </div>
       </section>
 
-      {/* Application Form */}
+      {/* Leads Simulation */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl lg:text-4xl font-bold font-sans text-primary mb-4">
-                Apply Now
+                Try Before You Buy
               </h2>
-              <h3 className="text-2xl font-semibold text-secondary mb-8">Become an Approved Partner Today</h3>
+              <h3 className="text-2xl font-semibold text-secondary mb-8">See Live Leads Right Now</h3>
               <p className="text-xl text-muted-foreground font-serif">
-                Submit your application below. Our team will review and approve qualified brokers within 24 hours. Once approved, you'll receive onboarding materials and start receiving leads immediately.
+                These are real leads in our system waiting for immediate response. Unlock them now to start converting today.
               </p>
             </div>
 
-            <Card className="max-w-2xl mx-auto border-0 shadow-[var(--shadow-card)]">
-              <CardContent className="p-8">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-primary mb-2 font-sans">Contact Name *</label>
-                    <Input
-                      placeholder="Your full name"
-                      value={formData.applicant_name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, applicant_name: e.target.value }))}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-primary mb-2 font-sans">Email Address *</label>
-                    <Input
-                      type="email"
-                      placeholder="your@email.com"
-                      value={formData.applicant_email}
-                      onChange={(e) => setFormData(prev => ({ ...prev, applicant_email: e.target.value }))}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-primary mb-2 font-sans">Phone Number</label>
-                    <Input
-                      type="tel"
-                      placeholder="(555) 123-4567"
-                      value={formData.applicant_phone}
-                      onChange={(e) => setFormData(prev => ({ ...prev, applicant_phone: e.target.value }))}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-primary mb-2 font-sans">Company Name *</label>
-                    <Input
-                      placeholder="Your brokerage name"
-                      value={formData.company_name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-primary mb-2 font-sans">Website</label>
-                    <Input
-                      placeholder="www.yourcompany.com"
-                      value={formData.company_website}
-                      onChange={(e) => setFormData(prev => ({ ...prev, company_website: e.target.value }))}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-primary mb-2 font-sans">Years in Business</label>
-                    <Select value={formData.years_of_experience} onValueChange={(value) => setFormData(prev => ({ ...prev, years_of_experience: value }))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Number of years" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">1 year</SelectItem>
-                        <SelectItem value="2">2 years</SelectItem>
-                        <SelectItem value="3">3-5 years</SelectItem>
-                        <SelectItem value="6">6-10 years</SelectItem>
-                        <SelectItem value="10">10+ years</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <Button 
-                    type="submit" 
-                    variant="cta"
-                    size="xl"
-                    className="w-full text-lg" 
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? "Submitting..." : "Submit Partner Application"}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+            <LeadsSimulation />
 
             {/* What Happens Next */}
             <div className="mt-16 text-center">
-              <h3 className="text-2xl font-semibold mb-8 font-sans text-primary">What Happens Next?</h3>
+              <h3 className="text-2xl font-semibold mb-8 font-sans text-primary">What Happens After Purchase?</h3>
               <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
                 <div className="flex items-start space-x-3">
                   <div className="w-[40px] h-[40px] bg-accent text-accent-foreground rounded-full flex items-center justify-center font-bold text-sm">1</div>
-                  <p className="text-muted-foreground font-serif">Our team reviews your application within 24 hours</p>
+                  <p className="text-muted-foreground font-serif">Instant access to all 10 lead contacts</p>
                 </div>
                 <div className="flex items-start space-x-3">
                   <div className="w-[40px] h-[40px] bg-accent text-accent-foreground rounded-full flex items-center justify-center font-bold text-sm">2</div>
-                  <p className="text-muted-foreground font-serif">Approved brokers receive welcome packet and agreement</p>
+                  <p className="text-muted-foreground font-serif">Start calling and closing deals immediately</p>
                 </div>
                 <div className="flex items-start space-x-3">
                   <div className="w-[40px] h-[40px] bg-accent text-accent-foreground rounded-full flex items-center justify-center font-bold text-sm">3</div>
-                  <p className="text-muted-foreground font-serif">Dashboard access and training materials provided</p>
+                  <p className="text-muted-foreground font-serif">Dashboard access for lead management</p>
                 </div>
                 <div className="flex items-start space-x-3">
                   <div className="w-[40px] h-[40px] bg-accent text-accent-foreground rounded-full flex items-center justify-center font-bold text-sm">4</div>
-                  <p className="text-muted-foreground font-serif">Start receiving high-quality leads immediately</p>
+                  <p className="text-muted-foreground font-serif">Upgrade to full partnership program</p>
                 </div>
               </div>
             </div>
