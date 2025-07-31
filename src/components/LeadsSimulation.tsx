@@ -144,7 +144,7 @@ export const LeadsSimulation = () => {
 
         <div className="grid md:grid-cols-2 gap-4">
           {mockLeads.map((lead) => (
-            <Card key={lead.id} className="border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 relative overflow-hidden aspect-square">
+            <Card key={lead.id} className="border-2 border-green-500 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 relative overflow-hidden aspect-square hover:border-green-600">
               <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/95 backdrop-blur-sm z-10"></div>
               
               <CardHeader className="relative z-20 pb-3">
