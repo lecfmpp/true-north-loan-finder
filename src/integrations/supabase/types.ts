@@ -1038,6 +1038,7 @@ export type Database = {
           admin_notes: string | null
           assigned_to: string | null
           city_province: string | null
+          company_name: string | null
           country: string | null
           created_at: string
           credit_score: string
@@ -1058,6 +1059,7 @@ export type Database = {
           admin_notes?: string | null
           assigned_to?: string | null
           city_province?: string | null
+          company_name?: string | null
           country?: string | null
           created_at?: string
           credit_score: string
@@ -1078,6 +1080,7 @@ export type Database = {
           admin_notes?: string | null
           assigned_to?: string | null
           city_province?: string | null
+          company_name?: string | null
           country?: string | null
           created_at?: string
           credit_score?: string

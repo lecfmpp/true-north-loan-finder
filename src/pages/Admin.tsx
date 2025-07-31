@@ -49,6 +49,7 @@ interface QuizResponse {
   email: string;
   phone: string;
   website: string;
+  company_name: string;
   monthly_revenue: number;
   loan_amount: number;
   credit_score: string;
@@ -1420,6 +1421,7 @@ const Admin = () => {
                               
                               <Collapsible open={expandedLeads[lead.id]}>
                                 <CollapsibleContent className="mt-2 p-2 bg-muted rounded text-xs space-y-1">
+                                  <div><strong>Company:</strong> {lead.company_name || 'Not provided'}</div>
                                   <div><strong>Website:</strong> {lead.website || 'Not provided'}</div>
                                   <div><strong>Use of Funds:</strong> {lead.use_of_funds}</div>
                                 </CollapsibleContent>

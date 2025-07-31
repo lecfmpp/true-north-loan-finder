@@ -538,6 +538,7 @@ const Quiz = () => {
         name: data.name,
         email: data.email,
         phone: data.phone,
+        company_name: data.companyName,
         website: data.website,
         country: data.country,
         city_province: data.stateProvince,
