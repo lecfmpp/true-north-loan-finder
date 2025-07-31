@@ -319,7 +319,7 @@ export const LeadsSimulation = () => {
       <div className="space-y-6">
         <div className="text-center mb-8">
           <h3 className="font-sans text-primary mb-4 text-lg font-medium">Check out the latest leads and call them right now</h3>
-          <p className="text-muted-foreground font-serif">See real leads waiting for your response right now</p>
+          
         </div>
 
         {/* Country Toggle Switch */}
