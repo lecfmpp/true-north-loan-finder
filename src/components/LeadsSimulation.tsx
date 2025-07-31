@@ -121,36 +121,34 @@ const LiveTimer = ({ submittedAt }: { submittedAt: Date }) => {
 
 // Dynamic countdown for urgency in modal
 const UrgencyCountdown = ({ lastSubmissionTime }: { lastSubmissionTime: Date | null }) => {
-  const [countdown, setCountdown] = useState("");
+  const [timeSinceSubmission, setTimeSinceSubmission] = useState("");
 
   useEffect(() => {
     if (!lastSubmissionTime) return;
 
-    const updateCountdown = () => {
+    const updateTime = () => {
       const now = new Date();
-      const timeSinceSubmission = Math.floor((now.getTime() - lastSubmissionTime.getTime()) / 1000 / 60); // minutes
+      const minutesSince = Math.floor((now.getTime() - lastSubmissionTime.getTime()) / 1000 / 60);
       
-      // Calculate remaining time (assuming 60 minutes expiry from submission)
-      const remainingMinutes = Math.max(0, 60 - timeSinceSubmission);
-      
-      if (remainingMinutes > 0) {
-        setCountdown(`${remainingMinutes} minutes`);
+      if (minutesSince < 60) {
+        setTimeSinceSubmission(`${minutesSince} minutes ago`);
       } else {
-        setCountdown("0 minutes");
+        const hoursSince = Math.floor(minutesSince / 60);
+        setTimeSinceSubmission(`${hoursSince} hour${hoursSince > 1 ? 's' : ''} ago`);
       }
     };
 
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 60000); // Update every minute
+    updateTime();
+    const interval = setInterval(updateTime, 60000); // Update every minute
 
     return () => clearInterval(interval);
   }, [lastSubmissionTime]);
 
   if (!lastSubmissionTime) {
-    return <span className="font-semibold text-destructive">URGENT: Lead expires soon</span>;
+    return <span className="font-semibold text-destructive">URGENT: Lead waiting for immediate response</span>;
   }
 
-  return <span className="font-semibold text-destructive">URGENT: Lead expires in {countdown}</span>;
+  return <span className="font-semibold text-destructive">URGENT: Lead submitted {timeSinceSubmission} - Waiting for response</span>;
 };
 
 export const LeadsSimulation = () => {
