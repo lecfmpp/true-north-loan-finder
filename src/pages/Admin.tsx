@@ -38,6 +38,9 @@ import CanadianApplicationsManagement from '@/components/admin/CanadianApplicati
 import SocialProofManagement from '@/components/admin/SocialProofManagement';
 import SettingsManagement from '@/components/admin/SettingsManagement';
 import PartnerManagement from '@/components/admin/PartnerManagement';
+import PartnerLeads from '@/components/admin/PartnerLeads';
+import PartnerApplications from '@/components/admin/PartnerApplications';
+import PartnerPayments from '@/components/admin/PartnerPayments';
 import Footer from '@/components/Footer';
 
 interface QuizResponse {
@@ -108,6 +111,7 @@ const Admin = () => {
     user,
     isAdmin,
     isSuperAdmin,
+    userRoles,
     signOut,
     loading: authLoading
   } = useAuth();
@@ -141,15 +145,21 @@ const Admin = () => {
 
   useEffect(() => {
     if (user && isAdmin) {
-      fetchLeads();
-      fetchApplicationsCount();
-      fetchUsaApplicationsCount();
-      fetchCanadianApplicationsCount();
+      // Set default tab based on user role
+      const isPartner = userRoles.includes('lender') || userRoles.includes('broker');
+      if (isPartner && !isSuperAdmin) {
+        setActiveTab('partner-leads');
+      }
+      
       if (isSuperAdmin) {
+        fetchLeads();
+        fetchApplicationsCount();
         fetchApprovedPartners();
       }
+      fetchUsaApplicationsCount();
+      fetchCanadianApplicationsCount();
     }
-  }, [user, isAdmin, isSuperAdmin]);
+  }, [user, isAdmin, isSuperAdmin, userRoles]);
 
   useEffect(() => {
     filterLeads();
@@ -1149,43 +1159,97 @@ const Admin = () => {
     return null;
   }
 
-  const menuItems = [{
-    title: "Leads",
-    value: "leads",
-    icon: Users,
-    count: leads.length
-  }, {
-    title: "Partner Applications",
-    value: "applications",
-    icon: UserCheck,
-    count: applicationsCount
-  }, {
-    title: "USA Applications",
-    value: "usa-applications", 
-    icon: FileText,
-    count: usaApplicationsCount
-  }, {
-    title: "Canadian Applications",
-    value: "canadian-applications",
-    icon: FileText,
-    count: canadianApplicationsCount
-  }, ...(isSuperAdmin ? [{
-    title: "Email Sequence",
-    value: "email-sequence",
-    icon: Mail
-  }, {
-    title: "Blog Management",
-    value: "blog",
-    icon: FileText
-  }, {
-    title: "Social Proof",
-    value: "social-proof",
-    icon: Megaphone
-  }, {
-    title: "Settings",
-    value: "settings",
-    icon: SettingsIcon
-  }] : [])];
+  // Role-based menu items
+  const getMenuItems = () => {
+    const isPartner = userRoles.includes('lender') || userRoles.includes('broker');
+    
+    if (isSuperAdmin) {
+      // Superadmin sees everything
+      return [
+        {
+          title: "Leads",
+          value: "leads",
+          icon: Users,
+          count: leads.length
+        },
+        {
+          title: "Partner Applications",
+          value: "applications",
+          icon: UserCheck,
+          count: applicationsCount
+        },
+        {
+          title: "USA Applications",
+          value: "usa-applications", 
+          icon: FileText,
+          count: usaApplicationsCount
+        },
+        {
+          title: "Canadian Applications",
+          value: "canadian-applications",
+          icon: FileText,
+          count: canadianApplicationsCount
+        },
+        {
+          title: "Email Sequence",
+          value: "email-sequence",
+          icon: Mail
+        },
+        {
+          title: "Blog Management",
+          value: "blog",
+          icon: FileText
+        },
+        {
+          title: "Social Proof",
+          value: "social-proof",
+          icon: Megaphone
+        },
+        {
+          title: "Settings",
+          value: "settings",
+          icon: SettingsIcon
+        }
+      ];
+    } else if (isPartner) {
+      // Partners see limited tabs
+      return [
+        {
+          title: "My Leads",
+          value: "partner-leads",
+          icon: Users
+        },
+        {
+          title: "My Applications",
+          value: "partner-applications",
+          icon: FileText
+        },
+        {
+          title: "Payment & Access",
+          value: "partner-payments",
+          icon: DollarSign
+        }
+      ];
+    } else {
+      // Regular users see basic tabs
+      return [
+        {
+          title: "USA Applications",
+          value: "usa-applications", 
+          icon: FileText,
+          count: usaApplicationsCount
+        },
+        {
+          title: "Canadian Applications",
+          value: "canadian-applications",
+          icon: FileText,
+          count: canadianApplicationsCount
+        }
+      ];
+    }
+  };
+
+  const menuItems = getMenuItems();
 
   const handleMenuItemClick = (value: string) => {
     setActiveTab(value);
@@ -1223,163 +1287,188 @@ const Admin = () => {
               </Card>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Avg Score</CardTitle>
+                  <CardTitle className="text-sm font-medium">Closed</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
-                    {leads.length > 0 ? Math.round(leads.reduce((sum, l) => sum + l.score, 0) / leads.length) : 0}
-                  </div>
+                  <div className="text-2xl font-bold">{leads.filter(l => l.status === 'closed').length}</div>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Filters */}
+            {/* Controls */}
             <Card>
               <CardContent className="pt-6">
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="flex-1">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input placeholder="Search by name, email, or phone..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10" />
+                <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between mb-6">
+                  <div className="flex flex-col sm:flex-row gap-2 flex-1">
+                    <div className="relative flex-1 max-w-md">
+                      <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input placeholder="Search by name, email, or phone..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-8" />
                     </div>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="w-full sm:w-40">
+                        <SelectValue placeholder="Filter by status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Status</SelectItem>
+                        <SelectItem value="new">New</SelectItem>
+                        <SelectItem value="contacted">Contacted</SelectItem>
+                        <SelectItem value="qualified">Qualified</SelectItem>
+                        <SelectItem value="closed">Closed</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-full md:w-48">
-                      <SelectValue placeholder="Filter by status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="new">New</SelectItem>
-                      <SelectItem value="contacted">Contacted</SelectItem>
-                      <SelectItem value="qualified">Qualified</SelectItem>
-                      <SelectItem value="closed">Closed</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  
                   <div className="flex gap-2">
-                    {selectedLeads.length > 0 && (
-                      <>
-                        <Button 
-                          onClick={deleteSelectedLeads}
-                          variant="destructive"
-                          className="text-white"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Delete Selected ({selectedLeads.length})
-                        </Button>
-                        <Button onClick={exportSelectedToCSV} className="bg-green-600 hover:bg-green-700 text-white">
-                          <Download className="w-4 h-4 mr-2" />
-                          Export Selected ({selectedLeads.length})
-                        </Button>
-                      </>
-                    )}
-                    <Button onClick={exportSelectedToCSV} variant="outline">
-                      <Download className="w-4 h-4 mr-2" />
-                      Export All
+                    {selectedLeads.length > 0 && isSuperAdmin && <Button variant="destructive" onClick={() => {
+                      setBulkDelete(true);
+                      setDeleteModalOpen(true);
+                    }} className="flex items-center gap-2">
+                        <Trash2 className="h-4 w-4" />
+                        Delete Selected ({selectedLeads.length})
+                      </Button>}
+                    <Button onClick={exportToCSV} className="flex items-center gap-2">
+                      <Download className="h-4 w-4" />
+                      Export CSV
                     </Button>
                   </div>
                 </div>
+
+                {isSuperAdmin && selectedLeads.length > 0 && <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h3 className="font-semibold text-blue-900 mb-3">Bulk Actions ({selectedLeads.length} leads selected)</h3>
+                    <div className="flex flex-wrap gap-4 items-center">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-blue-900">Bulk Email Actions:</span>
+                        <Button 
+                          size="sm" 
+                          onClick={() => selectedLeads.forEach(leadId => {
+                            const lead = leads.find(l => l.id === leadId);
+                            if (lead) toggleEmailSequence(lead.email, lead.name, EMAIL_SEQUENCES.FOLLOW_UP, true);
+                          })}
+                          className="text-xs"
+                        >
+                          Enable Follow-up for All
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          onClick={() => selectedLeads.forEach(leadId => {
+                            const lead = leads.find(l => l.id === leadId);
+                            if (lead) toggleEmailSequence(lead.email, lead.name, EMAIL_SEQUENCES.PRE_CALL, true);
+                          })}
+                          className="text-xs"
+                        >
+                          Enable Pre-Call for All
+                        </Button>
+                      </div>
+                    </div>
+                  </div>}
               </CardContent>
             </Card>
 
             {/* Leads Table */}
             <Card>
               <CardContent className="p-0">
-                <div className="overflow-x-auto">
+                <div className="overflow-auto max-h-[70vh]">
                   <Table>
-                    <TableHeader>
+                    <TableHeader className="sticky top-0 bg-background z-10">
                       <TableRow>
-                        <TableHead className="w-12">
-                          <Checkbox checked={selectedLeads.length === filteredLeads.length && filteredLeads.length > 0} onCheckedChange={toggleSelectAll} aria-label="Select all leads" />
-                        </TableHead>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Contact</TableHead>
-                        <TableHead>Location</TableHead>
-                        <TableHead>Loan Details</TableHead>
-                        <TableHead>Score</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Application Status</TableHead>
-                        <TableHead>Created</TableHead>
-                        <TableHead>Email Sequences</TableHead>
-                        <TableHead>Call Now</TableHead>
-                        {isSuperAdmin && <TableHead>Send Lead To Partner</TableHead>}
-                        {isSuperAdmin && <TableHead>Send to Custom Email</TableHead>}
-                        <TableHead>Actions</TableHead>
+                        {isSuperAdmin && <TableHead className="w-12">
+                            <Checkbox checked={selectedLeads.length === filteredLeads.length && filteredLeads.length > 0} onCheckedChange={checked => {
+                        if (checked) {
+                          setSelectedLeads(filteredLeads.map(lead => lead.id));
+                        } else {
+                          setSelectedLeads([]);
+                        }
+                      }} />
+                          </TableHead>}
+                        <TableHead className="min-w-[200px]">Lead Info</TableHead>
+                        <TableHead className="min-w-[120px]">Revenue & Loan</TableHead>
+                        <TableHead className="min-w-[100px]">Credit Score</TableHead>
+                        <TableHead className="min-w-[120px]">Business Info</TableHead>
+                        <TableHead className="min-w-[100px]">Score</TableHead>
+                        <TableHead className="min-w-[100px]">Status</TableHead>
+                        <TableHead className="min-w-[120px]">Applications</TableHead>
+                        <TableHead className="min-w-[100px]">Created</TableHead>
+                        <TableHead className="min-w-[140px]">Email Sequences</TableHead>
+                        <TableHead className="min-w-[100px]">Actions</TableHead>
+                        {isSuperAdmin && <TableHead className="min-w-[200px]">Send to Partner</TableHead>}
+                        {isSuperAdmin && <TableHead className="min-w-[250px]">Custom Email</TableHead>}
+                        {isSuperAdmin && <TableHead className="min-w-[100px]">Admin</TableHead>}
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredLeads.map(lead => <TableRow key={lead.id}>
+                      {filteredLeads.map(lead => <TableRow key={lead.id} className={selectedLeads.includes(lead.id) ? 'bg-blue-50' : ''}>
+                          {isSuperAdmin && <TableCell>
+                              <Checkbox checked={selectedLeads.includes(lead.id)} onCheckedChange={checked => {
+                          if (checked) {
+                            setSelectedLeads(prev => [...prev, lead.id]);
+                          } else {
+                            setSelectedLeads(prev => prev.filter(id => id !== lead.id));
+                          }
+                        }} />
+                            </TableCell>}
                           <TableCell>
-                            <Checkbox checked={selectedLeads.includes(lead.id)} onCheckedChange={() => toggleSelectLead(lead.id)} aria-label={`Select ${lead.name}`} />
-                          </TableCell>
-                          <TableCell className="font-medium">{lead.name}</TableCell>
-                          <TableCell>
-                            <div className="text-sm">
-                              <div>{lead.email}</div>
-                              <div className="text-muted-foreground">{lead.phone}</div>
-                              {lead.website && <div className="text-muted-foreground">
-                                  <a href={lead.website.startsWith('http') ? lead.website : `https://${lead.website}`} target="_blank" rel="noopener noreferrer" className="hover:underline text-primary">
-                                    {lead.website.replace(/^https?:\/\//, '')}
-                                  </a>
-                                </div>}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm">
-                              {lead.country && <div className="font-medium">{lead.country}</div>}
-                              {lead.city_province && <div className="text-muted-foreground">{lead.city_province}</div>}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Collapsible>
-                              <CollapsibleTrigger asChild>
-                                <Button variant="ghost" size="sm" className="p-0 h-auto">
-                                  <div className="flex items-center gap-2">
-                                    <div className="text-sm">
-                                      <div>${lead.loan_amount.toLocaleString()} requested</div>
-                                      <div className="text-muted-foreground">${lead.monthly_revenue.toLocaleString()}/mo revenue</div>
-                                    </div>
-                                    {expandedLeads[lead.id] ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                                  </div>
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <div className="font-medium">{lead.name}</div>
+                                <Button variant="ghost" size="sm" onClick={() => toggleExpandedLead(lead.id)} className="h-6 w-6 p-0">
+                                  {expandedLeads[lead.id] ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
                                 </Button>
-                              </CollapsibleTrigger>
-                              <CollapsibleContent className="mt-2 p-3 border rounded-md bg-muted/50">
-                                <div className="space-y-2 text-sm">
-                                  <div>
-                                    <span className="font-medium">Credit Score:</span> {getCreditScoreNumber(lead.credit_score)} ({lead.credit_score})
-                                  </div>
-                                  <div>
-                                    <span className="font-medium">Time in Business:</span> {lead.time_in_business}
-                                  </div>
-                                  <div>
-                                    <span className="font-medium">Use of Funds:</span> {lead.use_of_funds}
-                                  </div>
-                                </div>
-                              </CollapsibleContent>
-                            </Collapsible>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-col items-center">
-                              <Badge variant="outline" className="mb-1">{lead.score}/100</Badge>
-                              <span className="text-xs text-muted-foreground">
-                                {lead.score >= 85 ? "Excellent" : 
-                                 lead.score >= 70 ? "Great" : 
-                                 lead.score >= 55 ? "Good" : "Fair"}
-                              </span>
+                              </div>
+                              <div className="text-sm text-muted-foreground">{lead.email}</div>
+                              <div className="text-sm text-muted-foreground">{lead.phone}</div>
+                              <div className="text-xs text-muted-foreground">{lead.country}, {lead.city_province}</div>
+                              
+                              <Collapsible open={expandedLeads[lead.id]}>
+                                <CollapsibleContent className="mt-2 p-2 bg-muted rounded text-xs space-y-1">
+                                  <div><strong>Website:</strong> {lead.website || 'Not provided'}</div>
+                                  <div><strong>Use of Funds:</strong> {lead.use_of_funds}</div>
+                                </CollapsibleContent>
+                              </Collapsible>
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge className={getStatusColor(lead.status)}>
-                              <div className="flex items-center gap-1">
-                                {lead.status === 'new' && <UserCheck className="h-3 w-3" />}
-                                {lead.status === 'contacted' && <Phone className="h-3 w-3" />}
-                                {lead.status === 'qualified' && <Check className="h-3 w-3" />}
-                                {lead.status === 'closed' && <DollarSign className="h-3 w-3" />}
-                                {lead.status.toUpperCase()}
-                              </div>
+                            <div className="space-y-1">
+                              <div className="text-sm font-medium">${lead.monthly_revenue?.toLocaleString()}/mo</div>
+                              <div className="text-sm text-muted-foreground">${lead.loan_amount?.toLocaleString()} loan</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="text-xs">
+                              {getCreditScoreNumber(lead.credit_score)}
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            {lead.has_usa_application || lead.has_canadian_application ? (
+                            <div className="text-sm text-muted-foreground">{lead.time_in_business}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <div className={`w-2 h-2 rounded-full ${lead.score >= 80 ? 'bg-green-500' : lead.score >= 60 ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
+                              <span className="font-medium">{lead.score}/100</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Select value={lead.status} onValueChange={value => updateLeadStatus(lead.id, value)}>
+                              <SelectTrigger className="w-32">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="new">
+                                  <Badge className={getStatusColor('new')}>New</Badge>
+                                </SelectItem>
+                                <SelectItem value="contacted">
+                                  <Badge className={getStatusColor('contacted')}>Contacted</Badge>
+                                </SelectItem>
+                                <SelectItem value="qualified">
+                                  <Badge className={getStatusColor('qualified')}>Qualified</Badge>
+                                </SelectItem>
+                                <SelectItem value="closed">
+                                  <Badge className={getStatusColor('closed')}>Closed</Badge>
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell>
+                            {(lead.has_usa_application || lead.has_canadian_application) ? (
                               <div className="space-y-1">
                                 {lead.has_usa_application && (
                                   <div className="flex items-center gap-2">
@@ -1496,55 +1585,25 @@ const Admin = () => {
                             </TableCell>}
                           {isSuperAdmin && <TableCell>
                               <div className="flex items-center gap-2">
-                                <Input
-                                  type="text"
-                                  placeholder="email1@example.com, email2@example.com"
-                                  value={customEmails[lead.id] || ""}
-                                  onChange={(e) => setCustomEmails(prev => ({
-                                    ...prev,
-                                    [lead.id]: e.target.value
-                                  }))}
-                                  disabled={sendingCustomEmails[lead.id]}
-                                  className="w-64"
-                                />
-                                <Button 
-                                  size="sm" 
-                                  onClick={() => sendCustomLeadEmail(lead.id, customEmails[lead.id] || "")}
-                                  disabled={sendingCustomEmails[lead.id] || !customEmails[lead.id]?.trim()}
-                                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                                >
-                                  {sendingCustomEmails[lead.id] ? (
-                                    <>
-                                      <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                                      Sending
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Send className="w-4 h-4 mr-2" />
-                                      Send Lead
-                                    </>
-                                  )}
+                                <Input placeholder="Enter email(s)..." value={customEmails[lead.id] || ""} onChange={e => setCustomEmails(prev => ({
+                              ...prev,
+                              [lead.id]: e.target.value
+                            }))} className="w-40" />
+                                <Button size="sm" onClick={() => sendCustomLeadEmail(lead.id, customEmails[lead.id] || "")} disabled={sendingCustomEmails[lead.id] || !customEmails[lead.id]} className="bg-purple-600 hover:bg-purple-700 text-white whitespace-nowrap">
+                                  <Send className="w-4 h-4 mr-1" />
+                                  {sendingCustomEmails[lead.id] ? "Sending..." : "Send"}
                                 </Button>
                               </div>
                             </TableCell>}
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Select value={lead.status} onValueChange={value => updateLeadStatus(lead.id, value)}>
-                                <SelectTrigger className="w-32">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="new">New</SelectItem>
-                                  <SelectItem value="contacted">Contacted</SelectItem>
-                                  <SelectItem value="qualified">Qualified</SelectItem>
-                                  <SelectItem value="closed">Closed</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              {isSuperAdmin && <Button variant="destructive" size="sm" onClick={() => openDeleteModal(lead.id)}>
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>}
-                            </div>
-                          </TableCell>
+                          {isSuperAdmin && <TableCell>
+                              <Button variant="destructive" size="sm" onClick={() => {
+                                setLeadToDelete(lead.id);
+                                setBulkDelete(false);
+                                setDeleteModalOpen(true);
+                              }} className="flex items-center gap-1">
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </TableCell>}
                         </TableRow>)}
                     </TableBody>
                   </Table>
@@ -1557,7 +1616,7 @@ const Admin = () => {
               </div>}
           </div>;
       case 'applications':
-        return <ApplicationsManagement onCountUpdate={fetchApplicationsCount} />;
+        return <PartnerManagement />;
       case 'usa-applications':
         return <USAApplicationsManagement onCountUpdate={fetchUsaApplicationsCount} />;
       case 'canadian-applications':
@@ -1572,6 +1631,12 @@ const Admin = () => {
         return <SocialProofManagement />;
       case 'settings':
         return <SettingsManagement />;
+      case 'partner-leads':
+        return <PartnerLeads />;
+      case 'partner-applications':
+        return <PartnerApplications />;
+      case 'partner-payments':
+        return <PartnerPayments />;
       default:
         return <div>Select a menu item</div>;
     }
