@@ -199,38 +199,40 @@ export const LeadsSimulation = () => {
                 <div className="text-sm text-accent font-medium">{lead.loanType}</div>
               </CardHeader>
               
-              <CardContent className="relative z-20 pt-0 px-3 pb-3 flex-1 flex flex-col justify-between">
-                <div>
-                  <div className="space-y-1 mb-3">
-                    <div className="flex items-center space-x-2">
-                      <Building2 className="h-3 w-3 text-secondary" />
-                      <span className="text-sm text-muted-foreground">{lead.contactName}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Mail className="h-3 w-3 text-secondary" />
-                      <span className="text-sm text-muted-foreground">{lead.email}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Phone className="h-3 w-3 text-secondary" />
-                      <span className="text-sm text-muted-foreground">{lead.phone}</span>
-                    </div>
-                    <div className="bg-accent/10 border border-accent/20 rounded-lg p-2 mt-1">
-                      <div className="flex items-center space-x-2">
-                        <DollarSign className="h-4 w-4 text-accent" />
-                        <div>
-                          <div className="text-xs text-muted-foreground">Cash Required</div>
-                          <div className="text-lg font-bold text-accent">{lead.loanAmount}</div>
-                        </div>
-                      </div>
+              <CardContent className="relative z-20 pt-0 px-3 pb-3 flex-1 flex flex-col">
+                {/* Most Important: Cash Required */}
+                <div className="bg-accent/10 border border-accent/20 rounded-lg p-2 mb-2">
+                  <div className="flex items-center space-x-2">
+                    <DollarSign className="h-4 w-4 text-accent" />
+                    <div>
+                      <div className="text-xs text-muted-foreground">Cash Required</div>
+                      <div className="text-lg font-bold text-accent">{lead.loanAmount}</div>
                     </div>
                   </div>
                 </div>
+
+                {/* Contact Details - Compact Layout */}
+                <div className="space-y-1 mb-2 flex-1">
+                  <div className="flex items-center space-x-2">
+                    <Building2 className="h-3 w-3 text-secondary flex-shrink-0" />
+                    <span className="text-sm text-foreground font-medium truncate">{lead.contactName}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Phone className="h-3 w-3 text-secondary flex-shrink-0" />
+                    <span className="text-xs text-muted-foreground truncate">{lead.phone}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Mail className="h-3 w-3 text-secondary flex-shrink-0" />
+                    <span className="text-xs text-muted-foreground truncate">{lead.email}</span>
+                  </div>
+                </div>
                 
+                {/* Action Button - Always at bottom */}
                 <Button 
                   onClick={() => handleUnlockClick(lead)}
                   variant="cta" 
                   size="sm" 
-                  className="w-full text-sm bg-accent hover:bg-accent/90"
+                  className="w-full text-sm bg-accent hover:bg-accent/90 mt-auto"
                 >
                   🔓 Unlock Lead
                 </Button>
