@@ -10,6 +10,28 @@
 /privacy-policy/ /privacy 301
 /terms-of-service/ /terms 301
 
+# Fix soft 404 errors - redirect non-existent pages to relevant content
+/cash-out-refinance /small-business-loans 301
+/become-partner /partners 301
+/application_canada /application-canadian 301
+/application_usa /application-usa 301
+/brrrr-strategy / 301
+/fix-and-flip / 301
+/wholesaling / 301
+/bridge-to-sell / 301
+/rental-portfolio / 301
+
+# Handle variations with trailing slashes
+/cash-out-refinance/ /small-business-loans 301
+/become-partner/ /partners 301
+/application_canada/ /application-canadian 301
+/application_usa/ /application-usa 301
+/brrrr-strategy/ / 301
+/fix-and-flip/ / 301
+/wholesaling/ / 301
+/bridge-to-sell/ / 301
+/rental-portfolio/ / 301
+
 # Ensure HTTPS redirects (handled by hosting provider usually)
 # Force WWW removal if applicable
 https://www.truenorthbusinessloan.ca/* https://truenorthbusinessloan.ca/:splat 301
