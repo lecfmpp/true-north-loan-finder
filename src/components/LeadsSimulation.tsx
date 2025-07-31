@@ -172,20 +172,19 @@ export const LeadsSimulation = () => {
           <p className="text-muted-foreground font-serif">See real leads waiting for your response right now</p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="space-y-4 max-w-sm mx-auto">
           {mockLeads.map((lead) => (
-            <Card key={lead.id} className="border-2 border-green-500 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 relative overflow-hidden aspect-square hover:border-green-600 flex flex-col">
-              <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/95 backdrop-blur-sm z-10"></div>
+            <Card key={lead.id} className="border-2 border-green-500 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 relative overflow-hidden hover:border-green-600">
               
-              <CardHeader className="relative z-20 pb-2 px-3 pt-3">
-                <div className="flex items-center justify-between mb-2">
+              <CardHeader className="relative z-20 pb-2 px-4 pt-4">
+                <div className="flex items-center justify-between mb-3">
                   <Badge variant="outline" className="bg-secondary text-secondary-foreground">
                     Credit Score: {lead.creditScore}
                   </Badge>
                   <LiveTimer submittedAt={lead.submittedAt} />
                 </div>
                 
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-3">
                   {lead.phoneVerified && (
                     <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
                       <Shield className="h-3 w-3 mr-1" />
@@ -195,44 +194,45 @@ export const LeadsSimulation = () => {
                   <Badge variant="outline" className="text-xs">{lead.industry}</Badge>
                 </div>
                 
-                <CardTitle className="text-lg font-sans text-primary leading-tight">{lead.businessName}</CardTitle>
-                <div className="text-sm text-accent font-medium">{lead.loanType}</div>
+                <div className="text-center mb-2">
+                  <div className="text-yellow-500 mb-1">★★★★★★</div>
+                  <CardTitle className="text-xl font-sans text-primary leading-tight">{lead.businessName}</CardTitle>
+                  <div className="text-sm text-secondary font-medium">{lead.loanType}</div>
+                </div>
               </CardHeader>
               
-              <CardContent className="relative z-20 pt-0 px-3 pb-3 flex-1 flex flex-col">
+              <CardContent className="relative z-20 pt-0 px-4 pb-4">
                 {/* Most Important: Cash Required */}
-                <div className="bg-accent/10 border border-accent/20 rounded-lg p-2 mb-2">
-                  <div className="flex items-center space-x-2">
-                    <DollarSign className="h-4 w-4 text-accent" />
-                    <div>
-                      <div className="text-xs text-muted-foreground">Cash Required</div>
-                      <div className="text-lg font-bold text-accent">{lead.loanAmount}</div>
-                    </div>
+                <div className="bg-accent/10 border border-accent/20 rounded-lg p-3 mb-4">
+                  <div className="text-xs text-muted-foreground mb-1">Cash Required</div>
+                  <div className="text-2xl font-bold text-accent flex items-center">
+                    <DollarSign className="h-5 w-5 mr-1" />
+                    {lead.loanAmount}
                   </div>
                 </div>
 
-                {/* Contact Details - Compact Layout */}
-                <div className="space-y-1 mb-2">
-                  <div className="flex items-center space-x-2">
-                    <Building2 className="h-3 w-3 text-secondary flex-shrink-0" />
-                    <span className="text-sm text-foreground font-medium truncate">{lead.contactName}</span>
+                {/* Contact Details */}
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center space-x-3">
+                    <Building2 className="h-4 w-4 text-secondary flex-shrink-0" />
+                    <span className="text-sm text-foreground font-medium">{lead.contactName}</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Phone className="h-3 w-3 text-secondary flex-shrink-0" />
-                    <span className="text-xs text-muted-foreground truncate">{lead.phone}</span>
+                  <div className="flex items-center space-x-3">
+                    <Phone className="h-4 w-4 text-secondary flex-shrink-0" />
+                    <span className="text-sm text-muted-foreground">{lead.phone}</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Mail className="h-3 w-3 text-secondary flex-shrink-0" />
-                    <span className="text-xs text-muted-foreground truncate">{lead.email}</span>
+                  <div className="flex items-center space-x-3">
+                    <Mail className="h-4 w-4 text-secondary flex-shrink-0" />
+                    <span className="text-sm text-muted-foreground">{lead.email}</span>
                   </div>
                 </div>
                 
-                {/* Action Button - Always at bottom */}
+                {/* Action Button */}
                 <Button 
                   onClick={() => handleUnlockClick(lead)}
                   variant="cta" 
-                  size="sm" 
-                  className="w-full text-sm bg-accent hover:bg-accent/90 mt-auto"
+                  size="lg" 
+                  className="w-full text-base bg-green-600 hover:bg-green-700 text-white"
                 >
                   🔓 Unlock Lead
                 </Button>
