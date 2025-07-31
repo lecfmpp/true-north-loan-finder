@@ -144,7 +144,7 @@ export const LeadsSimulation = () => {
 
         <div className="grid md:grid-cols-2 gap-4">
           {mockLeads.map((lead) => (
-            <Card key={lead.id} className="border-2 border-green-500 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 relative overflow-hidden aspect-square hover:border-green-600">
+            <Card key={lead.id} className="border-2 border-green-500 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 relative overflow-hidden aspect-square hover:border-green-600 flex flex-col">
               <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/95 backdrop-blur-sm z-10"></div>
               
               <CardHeader className="relative z-20 pb-2 px-3 pt-3">
@@ -172,26 +172,28 @@ export const LeadsSimulation = () => {
                 <div className="text-sm text-accent font-medium">{lead.loanType}</div>
               </CardHeader>
               
-              <CardContent className="relative z-20 pt-0 px-3 pb-3">
-                <div className="space-y-1 mb-3">
-                  <div className="flex items-center space-x-2">
-                    <Building2 className="h-3 w-3 text-secondary" />
-                    <span className="text-sm text-muted-foreground">{lead.contactName}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Mail className="h-3 w-3 text-secondary" />
-                    <span className="text-sm text-muted-foreground">{lead.email}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Phone className="h-3 w-3 text-secondary" />
-                    <span className="text-sm text-muted-foreground">{lead.phone}</span>
-                  </div>
-                  <div className="bg-accent/10 border border-accent/20 rounded-lg p-2 mt-1">
+              <CardContent className="relative z-20 pt-0 px-3 pb-3 flex-1 flex flex-col justify-between">
+                <div>
+                  <div className="space-y-1 mb-3">
                     <div className="flex items-center space-x-2">
-                      <DollarSign className="h-4 w-4 text-accent" />
-                      <div>
-                        <div className="text-xs text-muted-foreground">Cash Required</div>
-                        <div className="text-lg font-bold text-accent">{lead.loanAmount}</div>
+                      <Building2 className="h-3 w-3 text-secondary" />
+                      <span className="text-sm text-muted-foreground">{lead.contactName}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Mail className="h-3 w-3 text-secondary" />
+                      <span className="text-sm text-muted-foreground">{lead.email}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Phone className="h-3 w-3 text-secondary" />
+                      <span className="text-sm text-muted-foreground">{lead.phone}</span>
+                    </div>
+                    <div className="bg-accent/10 border border-accent/20 rounded-lg p-2 mt-1">
+                      <div className="flex items-center space-x-2">
+                        <DollarSign className="h-4 w-4 text-accent" />
+                        <div>
+                          <div className="text-xs text-muted-foreground">Cash Required</div>
+                          <div className="text-lg font-bold text-accent">{lead.loanAmount}</div>
+                        </div>
                       </div>
                     </div>
                   </div>
