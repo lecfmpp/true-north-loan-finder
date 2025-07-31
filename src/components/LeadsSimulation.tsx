@@ -262,7 +262,7 @@ export const LeadsSimulation = () => {
               className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-all duration-200 ${
                 selectedCountry === 'Canada'
                   ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'bg-secondary/50 hover:bg-secondary text-foreground hover:text-primary border border-border/50'
+                  : 'bg-secondary/50 hover:bg-secondary text-foreground border border-border/50'
               }`}
             >
               <span className="text-lg">🇨🇦</span>
