@@ -37,6 +37,7 @@ import USAApplicationsManagement from '@/components/admin/USAApplicationsManagem
 import CanadianApplicationsManagement from '@/components/admin/CanadianApplicationsManagement';
 import SocialProofManagement from '@/components/admin/SocialProofManagement';
 import SettingsManagement from '@/components/admin/SettingsManagement';
+import PartnerManagement from '@/components/admin/PartnerManagement';
 import Footer from '@/components/Footer';
 
 interface QuizResponse {

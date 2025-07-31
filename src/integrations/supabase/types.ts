@@ -918,12 +918,17 @@ export type Database = {
           min_loan_amount: string | null
           min_monthly_revenue: string | null
           min_time_in_business: string | null
+          payment_amount: number | null
+          payment_deadline: string | null
+          payment_status: string | null
           preferred_industries: string[] | null
           rejection_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           status: string
+          stripe_payment_link_id: string | null
           updated_at: string
+          user_id: string | null
           years_of_experience: number | null
         }
         Insert: {
@@ -948,12 +953,17 @@ export type Database = {
           min_loan_amount?: string | null
           min_monthly_revenue?: string | null
           min_time_in_business?: string | null
+          payment_amount?: number | null
+          payment_deadline?: string | null
+          payment_status?: string | null
           preferred_industries?: string[] | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
+          stripe_payment_link_id?: string | null
           updated_at?: string
+          user_id?: string | null
           years_of_experience?: number | null
         }
         Update: {
@@ -978,12 +988,17 @@ export type Database = {
           min_loan_amount?: string | null
           min_monthly_revenue?: string | null
           min_time_in_business?: string | null
+          payment_amount?: number | null
+          payment_deadline?: string | null
+          payment_status?: string | null
           preferred_industries?: string[] | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
+          stripe_payment_link_id?: string | null
           updated_at?: string
+          user_id?: string | null
           years_of_experience?: number | null
         }
         Relationships: []
