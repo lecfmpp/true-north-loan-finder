@@ -172,8 +172,8 @@ export const LeadsSimulation = () => {
           <p className="text-muted-foreground font-serif">See real leads waiting for your response right now</p>
         </div>
 
-        <div className="space-y-4 max-w-sm mx-auto">
-          {mockLeads.map((lead) => (
+        <div className="space-y-4 max-w-sm mx-auto md:max-w-none md:grid md:grid-cols-3 md:gap-6 md:space-y-0">
+          {mockLeads.slice(0, 3).map((lead) => (
             <Card key={lead.id} className="border-2 border-green-500 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 relative overflow-hidden hover:border-green-600">
               
               <CardHeader className="relative z-20 pb-2 px-4 pt-4">
