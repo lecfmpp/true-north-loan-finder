@@ -394,7 +394,7 @@ export const LeadsSimulation = () => {
                 
                 {/* Action Button */}
                 <Button onClick={() => handleUnlockClick(lead)} variant="cta" size="lg" className="w-full text-base bg-green-600 hover:bg-green-700 text-white">
-                  🔓 Unlock Lead
+                  🔓 Unlock Lead and Call Now
                 </Button>
               </CardContent>
             </Card>)}
