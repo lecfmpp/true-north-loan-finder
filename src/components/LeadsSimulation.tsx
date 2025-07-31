@@ -245,7 +245,7 @@ export const LeadsSimulation = () => {
 
         {/* Country Toggle Switch */}
         <div className="flex justify-center mb-6">
-          <div className="flex bg-muted rounded-lg p-1 w-fit">
+          <div className="flex bg-muted rounded-lg p-1 w-fit border-2 border-border shadow-sm">
             <button
               onClick={() => setSelectedCountry('US')}
               className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-all duration-200 ${
