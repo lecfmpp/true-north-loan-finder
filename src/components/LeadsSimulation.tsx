@@ -309,7 +309,11 @@ export const LeadsSimulation = () => {
           </div>
         </div>
 
-        <div className="space-y-4 max-w-sm mx-auto md:max-w-none md:grid md:grid-cols-3 md:gap-6 md:space-y-0">
+        <div className={`space-y-4 max-w-sm mx-auto md:max-w-none md:grid md:gap-6 md:space-y-0 ${
+          leads.length >= 3 ? 'md:grid-cols-3' : 
+          leads.length === 2 ? 'md:grid-cols-2 md:justify-center md:max-w-2xl' : 
+          'md:grid-cols-1 md:justify-center md:max-w-md'
+        }`}>
           {loading ? (
             <div className="col-span-3 text-center py-8">
               <div className="text-muted-foreground">Loading real leads...</div>
