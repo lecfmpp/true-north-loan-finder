@@ -204,7 +204,7 @@ export const LeadsSimulation = () => {
               
               <CardContent className="relative z-20 pt-0 px-4 pb-4">
                 {/* Most Important: Cash Required */}
-                <div className="bg-accent/10 border border-accent/20 rounded-lg p-3 mb-4">
+                <div className="bg-accent/10 border border-accent/20 rounded-lg p-3 mb-4 text-center">
                   <div className="text-xs text-muted-foreground mb-1">Cash Required</div>
                   <div className="text-2xl font-bold text-accent flex items-center">
                     <DollarSign className="h-5 w-5 mr-1" />
