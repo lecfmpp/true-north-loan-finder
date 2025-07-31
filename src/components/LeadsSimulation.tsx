@@ -212,7 +212,7 @@ export const LeadsSimulation = () => {
                 </div>
 
                 {/* Contact Details - Compact Layout */}
-                <div className="space-y-1 mb-2 flex-1">
+                <div className="space-y-1 mb-2">
                   <div className="flex items-center space-x-2">
                     <Building2 className="h-3 w-3 text-secondary flex-shrink-0" />
                     <span className="text-sm text-foreground font-medium truncate">{lead.contactName}</span>
