@@ -147,7 +147,7 @@ export const LeadsSimulation = () => {
             <Card key={lead.id} className="border-2 border-green-500 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 relative overflow-hidden aspect-square hover:border-green-600">
               <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/95 backdrop-blur-sm z-10"></div>
               
-              <CardHeader className="relative z-20 pb-3">
+              <CardHeader className="relative z-20 pb-2 px-3 pt-3">
                 <div className="flex items-center justify-between mb-2">
                   <Badge variant="outline" className="bg-secondary text-secondary-foreground">
                     Credit Score: {lead.creditScore}
@@ -172,8 +172,8 @@ export const LeadsSimulation = () => {
                 <div className="text-sm text-accent font-medium">{lead.loanType}</div>
               </CardHeader>
               
-              <CardContent className="relative z-20 pt-0">
-                <div className="space-y-2 mb-4">
+              <CardContent className="relative z-20 pt-0 px-3 pb-3">
+                <div className="space-y-1 mb-3">
                   <div className="flex items-center space-x-2">
                     <Building2 className="h-3 w-3 text-secondary" />
                     <span className="text-sm text-muted-foreground">{lead.contactName}</span>
