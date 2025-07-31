@@ -152,10 +152,10 @@ const UrgencyCountdown = ({ lastSubmissionTime }: { lastSubmissionTime: Date | n
   }, [lastSubmissionTime]);
 
   if (!lastSubmissionTime) {
-    return <span className="font-semibold text-destructive">URGENT: Lead waiting for immediate response</span>;
+    return <span className="font-semibold text-destructive">Lead waiting for immediate response</span>;
   }
 
-  return <span className="font-semibold text-destructive">URGENT: Lead submitted {timeSinceSubmission} - Waiting for response</span>;
+  return <span className="font-semibold text-destructive">Lead submitted {timeSinceSubmission} - Waiting for response</span>;
 };
 
 export const LeadsSimulation = () => {
@@ -402,7 +402,7 @@ export const LeadsSimulation = () => {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="text-center text-xl font-bold text-primary">
-              🚨 Lead About to Expire!
+              🚨 New Qualified Lead!
             </DialogTitle>
           </DialogHeader>
           
