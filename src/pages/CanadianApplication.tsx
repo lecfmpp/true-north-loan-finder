@@ -335,6 +335,10 @@ const CanadianApplication = () => {
       'image/jpeg',
       'image/jpg', 
       'image/png',
+      'image/gif',
+      'image/webp',
+      'image/bmp',
+      'image/tiff',
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     ];
@@ -344,7 +348,7 @@ const CanadianApplication = () => {
     }
     
     if (!allowedTypes.includes(file.type)) {
-      return `File "${file.name}" is not a supported format. Please use PDF, JPG, PNG, DOC, or DOCX files.`;
+      return `File "${file.name}" is not a supported format. Please use PDF, images (JPG, PNG, GIF, WebP, BMP, TIFF), or document files (DOC, DOCX).`;
     }
     
     return null;
