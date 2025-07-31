@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +15,7 @@ interface Lead {
   email: string;
   phone: string;
   loanAmount: string;
-  timeArrived: string;
+  submittedAt: Date;
   creditScore: number;
   industry: string;
   loanType: string;
@@ -30,7 +30,7 @@ const mockLeads: Lead[] = [
     email: "j****@******.com",
     phone: "(555) ***-****",
     loanAmount: "$85,000",
-    timeArrived: "2 minutes ago",
+    submittedAt: new Date(Date.now() - 2 * 60 * 1000), // 2 minutes ago
     creditScore: 720,
     industry: "Restaurant",
     loanType: "Working Capital",
@@ -43,7 +43,7 @@ const mockLeads: Lead[] = [
     email: "m****@******.com",
     phone: "(555) ***-****",
     loanAmount: "$150,000",
-    timeArrived: "5 minutes ago",
+    submittedAt: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago
     creditScore: 680,
     industry: "Construction", 
     loanType: "Equipment Financing",
@@ -56,7 +56,7 @@ const mockLeads: Lead[] = [
     email: "d****@******.com", 
     phone: "(555) ***-****",
     loanAmount: "$45,000",
-    timeArrived: "8 minutes ago",
+    submittedAt: new Date(Date.now() - 8 * 60 * 1000), // 8 minutes ago
     creditScore: 650,
     industry: "Automotive",
     loanType: "Business Loan",
@@ -69,13 +69,43 @@ const mockLeads: Lead[] = [
     email: "s****@******.com",
     phone: "(555) ***-****", 
     loanAmount: "$200,000",
-    timeArrived: "12 minutes ago",
+    submittedAt: new Date(Date.now() - 12 * 60 * 1000), // 12 minutes ago
     creditScore: 740,
     industry: "Healthcare",
     loanType: "Practice Expansion",
     phoneVerified: true
   }
 ];
+
+const LiveTimer = ({ submittedAt }: { submittedAt: Date }) => {
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    const updateElapsed = () => {
+      const now = new Date();
+      const diff = Math.floor((now.getTime() - submittedAt.getTime()) / 1000);
+      setElapsed(diff);
+    };
+
+    updateElapsed();
+    const interval = setInterval(updateElapsed, 1000);
+
+    return () => clearInterval(interval);
+  }, [submittedAt]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')} ago`;
+  };
+
+  return (
+    <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+      <Clock className="h-3 w-3" />
+      <span className="text-red-600 font-medium">{formatTime(elapsed)}</span>
+    </div>
+  );
+};
 
 export const LeadsSimulation = () => {
   const [showModal, setShowModal] = useState(false);
@@ -152,10 +182,7 @@ export const LeadsSimulation = () => {
                   <Badge variant="outline" className="bg-secondary text-secondary-foreground">
                     Credit Score: {lead.creditScore}
                   </Badge>
-                  <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                    <Clock className="h-3 w-3" />
-                    <span>{lead.timeArrived}</span>
-                  </div>
+                  <LiveTimer submittedAt={lead.submittedAt} />
                 </div>
                 
                 <div className="flex items-center justify-between mb-2">
@@ -229,7 +256,7 @@ export const LeadsSimulation = () => {
                   <span className="font-semibold text-destructive">URGENT: Lead expires in 23 minutes</span>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  This lead arrived {selectedLead?.timeArrived} and needs immediate response
+                  This lead submitted their application and needs immediate response
                 </p>
               </div>
               
