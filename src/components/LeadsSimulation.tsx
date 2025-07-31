@@ -116,6 +116,7 @@ export const LeadsSimulation = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedCountry, setSelectedCountry] = useState<'US' | 'Canada'>('US');
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -126,11 +127,16 @@ export const LeadsSimulation = () => {
   // Fetch real leads from database
   useEffect(() => {
     const fetchLeads = async () => {
+      setLoading(true);
       try {
+        // Filter by country - map US to 'US' or 'USA', Canada to 'Canada' or 'Canadian'
+        const countryFilter = selectedCountry === 'US' ? ['US', 'USA', 'United States'] : ['Canada', 'Canadian'];
+        
         const { data: quizResponses, error } = await supabase
           .from('quiz_responses')
           .select('*')
           .eq('status', 'new')
+          .in('country', countryFilter)
           .order('created_at', { ascending: false })
           .limit(10);
 
@@ -159,6 +165,8 @@ export const LeadsSimulation = () => {
           });
           
           setLeads(transformedLeads);
+        } else {
+          setLeads([]);
         }
       } catch (error) {
         console.error('Error fetching leads:', error);
@@ -170,7 +178,7 @@ export const LeadsSimulation = () => {
     };
 
     fetchLeads();
-  }, []);
+  }, [selectedCountry]); // Re-fetch when country changes
 
   const handleUnlockClick = (lead: Lead) => {
     setSelectedLead(lead);
@@ -224,6 +232,34 @@ export const LeadsSimulation = () => {
         <div className="text-center mb-8">
           <h3 className="text-2xl font-bold font-sans text-primary mb-4">Live Leads Dashboard</h3>
           <p className="text-muted-foreground font-serif">See real leads waiting for your response right now</p>
+        </div>
+
+        {/* Country Toggle Switch */}
+        <div className="flex justify-center mb-6">
+          <div className="flex bg-muted rounded-lg p-1 w-fit">
+            <button
+              onClick={() => setSelectedCountry('US')}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-all duration-200 ${
+                selectedCountry === 'US'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'hover:bg-background text-muted-foreground'
+              }`}
+            >
+              <span className="text-lg">🇺🇸</span>
+              <span className="font-medium">United States</span>
+            </button>
+            <button
+              onClick={() => setSelectedCountry('Canada')}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-all duration-200 ${
+                selectedCountry === 'Canada'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'hover:bg-background text-muted-foreground'
+              }`}
+            >
+              <span className="text-lg">🇨🇦</span>
+              <span className="font-medium">Canada</span>
+            </button>
+          </div>
         </div>
 
         <div className="space-y-4 max-w-sm mx-auto md:max-w-none md:grid md:grid-cols-3 md:gap-6 md:space-y-0">
