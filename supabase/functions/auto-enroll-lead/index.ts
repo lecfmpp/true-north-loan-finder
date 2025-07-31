@@ -111,9 +111,9 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Send the same lead notification email that's used in lead management to admin
-    if (sequenceType === 'follow_up' && userData) {
+    if (sequenceType === 'follow_up' && userData && userData.responseId) {
       try {
-        console.log(`Sending lead notification to superadmin for ${email}`);
+        console.log(`Sending lead notification to superadmin for ${email}, leadId: ${userData.responseId}`);
         
         // Use the same send-lead-email function but send to admin instead
         const leadNotificationResponse = await supabase.functions.invoke('send-lead-email', {

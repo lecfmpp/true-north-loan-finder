@@ -103,7 +103,10 @@ const Results = () => {
               email: userData.email,
               name: userData.name,
               sequenceType: 'follow_up',
-              userData
+              userData: {
+                ...userData,
+                responseId: quizResponseId
+              }
             }
           });
           console.log('Successfully enrolled in follow-up email sequence');
