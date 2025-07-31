@@ -84,7 +84,8 @@ const LiveTimer = ({ submittedAt }: { submittedAt: Date }) => {
     const updateElapsed = () => {
       const now = new Date();
       const diff = Math.floor((now.getTime() - submittedAt.getTime()) / 1000);
-      setElapsed(diff);
+      // Add 15 minutes (900 seconds) to create urgency
+      setElapsed(diff + 900);
     };
 
     updateElapsed();
