@@ -379,7 +379,6 @@ export const LeadsSimulation = () => {
                   <ul className="text-sm space-y-1 text-left">
                     <li>✅ Complete contact information</li>
                     <li>✅ Pre-qualified prospects</li>
-                    <li>✅ Financial documents included</li>
                     <li>✅ Same-day response expected</li>
                   </ul>
                 </CardContent>
