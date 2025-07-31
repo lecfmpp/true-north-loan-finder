@@ -173,7 +173,7 @@ const Home = () => {
               
               <div className="mb-6">
                 <Button asChild variant="cta" size="xl" className="text-lg px-8 bg-accent hover:bg-accent/90 text-accent-foreground">
-                  <Link to="/loan-estimator">Start My Application</Link>
+                  <Link to="/loan-estimator">Get My Funding Estimate</Link>
                 </Button>
               </div>
               
