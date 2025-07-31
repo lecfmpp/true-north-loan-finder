@@ -21,23 +21,23 @@ const BrokerSignup = () => {
       <Header />
 
       {/* Hero Section */}
-      <section className="relative py-12 lg:py-20 overflow-hidden">
+      <section className="relative py-6 md:py-12 lg:py-20 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5"></div>
         <div className="container mx-auto px-4 relative">
           <div className="max-w-4xl mx-auto text-center">
-            <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm font-medium bg-yellow-400 text-black">
+            <Badge variant="secondary" className="mb-4 md:mb-6 px-3 py-1 md:px-4 md:py-2 text-xs md:text-sm font-medium bg-yellow-400 text-black">
               Exclusive Broker Partnership Program
             </Badge>
             
-            <h1 className="text-4xl lg:text-6xl font-bold font-sans text-primary mb-6 leading-tight">
+            <h1 className="text-2xl md:text-4xl lg:text-6xl font-bold font-sans text-primary mb-3 md:mb-6 leading-tight">
               Access <span className="text-accent">High-Quality Leads</span> Every Single Day
             </h1>
             
-            <p className="text-xl lg:text-2xl text-muted-foreground mb-8 font-serif max-w-3xl mx-auto">
+            <p className="text-base md:text-xl lg:text-2xl text-muted-foreground mb-6 md:mb-8 font-serif max-w-3xl mx-auto">
               Join our exclusive broker network and receive pre-qualified business loan leads directly to your inbox. We focus on quality over quantity - delivering genuine opportunities that convert into funded deals.
             </p>
             
-            <div className="mt-8">
+            <div className="mt-4 md:mt-8">
               <LeadsSimulation />
             </div>
           </div>
