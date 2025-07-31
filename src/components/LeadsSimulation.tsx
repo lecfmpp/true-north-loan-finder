@@ -237,28 +237,80 @@ export const LeadsSimulation = () => {
     setShowModal(true);
   };
 
+  // Phone formatting for US/Canada
+  const formatPhoneNumber = (value: string) => {
+    // Remove all non-numeric characters
+    const phoneNumber = value.replace(/\D/g, '');
+    
+    // Format as (XXX) XXX-XXXX for US/Canada
+    if (phoneNumber.length <= 3) {
+      return phoneNumber;
+    } else if (phoneNumber.length <= 6) {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+    } else {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+    }
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setFormData(prev => ({ ...prev, phone: formatted }));
+  };
+
+  // Email validation
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+    return emailRegex.test(email);
+  };
+
+  // Phone validation for US/Canada (10 digits)
+  const isValidPhone = (phone: string) => {
+    const phoneDigits = phone.replace(/\D/g, '');
+    return phoneDigits.length === 10;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validation
+    if (!isValidEmail(formData.email)) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!isValidPhone(formData.phone)) {
+      toast({
+        title: "Invalid Phone Number",
+        description: "Please enter a valid 10-digit US/Canada phone number.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      // Submit broker application
+      // Submit broker application to admin dashboard
       const { error } = await supabase
         .from('lender_broker_applications')
         .insert({
           applicant_name: formData.name,
           applicant_email: formData.email,
           applicant_phone: formData.phone,
-          company_name: "Trial Broker", // Temporary
+          company_name: "Lead Trial Access", 
           application_type: 'broker',
-          business_description: "Lead trial signup"
+          business_description: "Broker lead trial signup - seeking access to qualified leads"
         });
 
       if (error) throw error;
 
       // TODO: Redirect to Stripe payment
       toast({
-        title: "Success!",
+        title: "Application Submitted!",
         description: "Redirecting to payment...",
       });
 
@@ -448,9 +500,10 @@ export const LeadsSimulation = () => {
               />
               <Input
                 type="tel"
-                placeholder="Phone Number"
+                placeholder="Phone Number (XXX) XXX-XXXX"
                 value={formData.phone}
-                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                onChange={handlePhoneChange}
+                maxLength={14}
                 required
               />
               
