@@ -389,7 +389,6 @@ const Application = () => {
     const allowedTypes = [
       'application/pdf',
       'image/jpeg',
-      'image/jpg', 
       'image/png',
       'image/gif',
       'image/webp',
