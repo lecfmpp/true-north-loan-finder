@@ -1393,15 +1393,15 @@ const Application = () => {
                       <p className="text-sm text-muted-foreground">
                         Click here or drag and drop your files
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        Supported formats: PDF, JPG, PNG, DOC, DOCX (Max 10MB each)
-                      </p>
+                       <p className="text-xs text-muted-foreground">
+                         Supported formats: PDF, Images (JPG, PNG, GIF, WebP, BMP, TIFF), DOC, DOCX (Max 10MB each)
+                       </p>
                     </div>
                     <Input
                       id="document_upload"
                       type="file"
                       multiple
-                      accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,application/pdf,image/jpeg,image/png,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                      accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.bmp,.tiff,.doc,.docx,application/pdf,image/jpeg,image/png,image/gif,image/webp,image/bmp,image/tiff,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                        onChange={(e) => {
                          const files = Array.from(e.target.files || []);
                          if (files.length > 0) {
