@@ -128,18 +128,25 @@ const UrgencyCountdown = ({ lastSubmissionTime }: { lastSubmissionTime: Date | n
 
     const updateTime = () => {
       const now = new Date();
-      const minutesSince = Math.floor((now.getTime() - lastSubmissionTime.getTime()) / 1000 / 60);
+      const diffInMinutes = Math.floor((now.getTime() - lastSubmissionTime.getTime()) / (1000 * 60));
       
-      if (minutesSince < 60) {
-        setTimeSinceSubmission(`${minutesSince} minutes ago`);
+      if (diffInMinutes < 1) {
+        setTimeSinceSubmission("just now");
+      } else if (diffInMinutes < 60) {
+        setTimeSinceSubmission(`${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`);
       } else {
-        const hoursSince = Math.floor(minutesSince / 60);
-        setTimeSinceSubmission(`${hoursSince} hour${hoursSince > 1 ? 's' : ''} ago`);
+        const diffInHours = Math.floor(diffInMinutes / 60);
+        if (diffInHours < 24) {
+          setTimeSinceSubmission(`${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`);
+        } else {
+          const diffInDays = Math.floor(diffInHours / 24);
+          setTimeSinceSubmission(`${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`);
+        }
       }
     };
 
     updateTime();
-    const interval = setInterval(updateTime, 60000); // Update every minute
+    const interval = setInterval(updateTime, 30000); // Update every 30 seconds for more accuracy
 
     return () => clearInterval(interval);
   }, [lastSubmissionTime]);
