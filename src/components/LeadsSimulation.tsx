@@ -100,9 +100,9 @@ const LiveTimer = ({ submittedAt }: { submittedAt: Date }) => {
   };
 
   return (
-    <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-      <Clock className="h-3 w-3" />
-      <span className="text-red-600 font-medium">{formatTime(elapsed)}</span>
+    <div className="flex items-center space-x-2 text-xs bg-red-600 text-white px-2 py-1 rounded">
+      <Clock className="h-3 w-3 text-white" />
+      <span className="font-medium">{formatTime(elapsed)}</span>
     </div>
   );
 };
