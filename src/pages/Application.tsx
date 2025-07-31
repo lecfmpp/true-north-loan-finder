@@ -419,10 +419,16 @@ const Application = () => {
         throw new Error(validationError);
       }
       
-      const fileName = `${user?.id || 'anonymous'}/${Date.now()}-${file.name}`;
+      // Create a safe filename by removing special characters and ensuring unique naming
+      const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const fileName = `${user?.id || 'anonymous'}/${Date.now()}-${safeName}`;
+      
       const { error } = await supabase.storage
         .from('application-documents')
-        .upload(fileName, file);
+        .upload(fileName, file, {
+          upsert: false, // Don't overwrite existing files
+          cacheControl: '3600'
+        });
       
       if (error) {
         console.error('Error uploading file:', error);
