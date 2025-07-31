@@ -895,6 +895,57 @@ export type Database = {
           },
         ]
       }
+      lead_assignments: {
+        Row: {
+          assigned_at: string
+          assigned_by: string
+          created_at: string
+          id: string
+          notes: string | null
+          partner_id: string
+          quiz_response_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          partner_id: string
+          quiz_response_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          partner_id?: string
+          quiz_response_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_assignments_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_assignments_quiz_response_id_fkey"
+            columns: ["quiz_response_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_responses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lender_broker_applications: {
         Row: {
           additional_requirements: string | null
@@ -1003,6 +1054,57 @@ export type Database = {
         }
         Relationships: []
       }
+      partners: {
+        Row: {
+          application_type: string
+          company_name: string
+          created_at: string
+          deals_closed: number
+          email: string
+          id: string
+          leads_contacted: number
+          leads_spoken: number
+          name: string
+          phone: string | null
+          status: string
+          total_leads_assigned: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          application_type: string
+          company_name: string
+          created_at?: string
+          deals_closed?: number
+          email: string
+          id?: string
+          leads_contacted?: number
+          leads_spoken?: number
+          name: string
+          phone?: string | null
+          status?: string
+          total_leads_assigned?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          application_type?: string
+          company_name?: string
+          created_at?: string
+          deals_closed?: number
+          email?: string
+          id?: string
+          leads_contacted?: number
+          leads_spoken?: number
+          name?: string
+          phone?: string | null
+          status?: string
+          total_leads_assigned?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1036,7 +1138,9 @@ export type Database = {
       quiz_responses: {
         Row: {
           admin_notes: string | null
+          assigned_partner_id: string | null
           assigned_to: string | null
+          assignment_date: string | null
           city_province: string | null
           company_name: string | null
           country: string | null
@@ -1057,7 +1161,9 @@ export type Database = {
         }
         Insert: {
           admin_notes?: string | null
+          assigned_partner_id?: string | null
           assigned_to?: string | null
+          assignment_date?: string | null
           city_province?: string | null
           company_name?: string | null
           country?: string | null
@@ -1078,7 +1184,9 @@ export type Database = {
         }
         Update: {
           admin_notes?: string | null
+          assigned_partner_id?: string | null
           assigned_to?: string | null
+          assignment_date?: string | null
           city_province?: string | null
           company_name?: string | null
           country?: string | null
@@ -1098,6 +1206,13 @@ export type Database = {
           website?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "quiz_responses_assigned_partner_id_fkey"
+            columns: ["assigned_partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "quiz_responses_assigned_to_fkey"
             columns: ["assigned_to"]
