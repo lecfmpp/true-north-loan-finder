@@ -176,9 +176,9 @@ export const LeadsSimulation = () => {
           {mockLeads.slice(0, 3).map((lead, index) => (
             <Card key={lead.id} className={`border-2 border-green-500 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 relative overflow-hidden hover:border-green-600 md:w-80 md:hover:z-30 md:hover:scale-105 ${
               index === 0 ? 'md:ml-0 md:z-20' : 
-              index === 1 ? 'md:z-10 md:-ml-8' : 
-              index === 2 ? 'md:z-10 md:-ml-8' : 
-              'md:z-10 md:-ml-8'
+              index === 1 ? 'md:z-10 md:-ml-4' : 
+              index === 2 ? 'md:z-10 md:-ml-4' : 
+              'md:z-10 md:-ml-4'
             }`}>
               
               <CardHeader className="relative z-20 pb-2 px-4 pt-4">
