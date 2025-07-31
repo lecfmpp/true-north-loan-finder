@@ -97,8 +97,17 @@ const LiveTimer = ({ submittedAt }: { submittedAt: Date }) => {
   }, [submittedAt]);
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
+    const days = Math.floor(seconds / 86400); // 86400 seconds in a day
+    const hours = Math.floor((seconds % 86400) / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
+    
+    // If more than 48 hours (2 days), show days
+    if (seconds >= 172800) { // 48 hours = 172800 seconds
+      return `${days} day${days > 1 ? 's' : ''} ago`;
+    }
+    
+    // Otherwise show hours:minutes format
     return `${mins}:${secs.toString().padStart(2, '0')} min ago`;
   };
 
