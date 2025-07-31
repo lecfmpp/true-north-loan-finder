@@ -186,9 +186,14 @@ export const LeadsSimulation = () => {
                     <Phone className="h-3 w-3 text-secondary" />
                     <span className="text-sm text-muted-foreground">{lead.phone}</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <DollarSign className="h-3 w-3 text-secondary" />
-                    <span className="text-sm text-muted-foreground font-semibold">{lead.loanAmount}</span>
+                  <div className="bg-accent/10 border border-accent/20 rounded-lg p-2 mt-1">
+                    <div className="flex items-center space-x-2">
+                      <DollarSign className="h-4 w-4 text-accent" />
+                      <div>
+                        <div className="text-xs text-muted-foreground">Cash Required</div>
+                        <div className="text-lg font-bold text-accent">{lead.loanAmount}</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 
