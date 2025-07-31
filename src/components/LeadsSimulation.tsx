@@ -22,60 +22,62 @@ interface Lead {
   phoneVerified: boolean;
 }
 
-const mockLeads: Lead[] = [
-  {
-    id: "1",
-    businessName: "****** Restaurant",
-    contactName: "J*** S******",
-    email: "j****@******.com",
-    phone: "(555) ***-****",
-    loanAmount: "$85,000",
-    submittedAt: new Date(Date.now() - 2 * 60 * 1000), // 2 minutes ago
-    creditScore: 720,
-    industry: "Restaurant",
-    loanType: "Working Capital",
-    phoneVerified: true
-  },
-  {
-    id: "2", 
-    businessName: "******* Construction",
-    contactName: "M*** R*******",
-    email: "m****@******.com",
-    phone: "(555) ***-****",
-    loanAmount: "$150,000",
-    submittedAt: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago
-    creditScore: 680,
-    industry: "Construction", 
-    loanType: "Equipment Financing",
-    phoneVerified: true
-  },
-  {
-    id: "3",
-    businessName: "***** Auto Repair",
-    contactName: "D*** L****",
-    email: "d****@******.com", 
-    phone: "(555) ***-****",
-    loanAmount: "$45,000",
-    submittedAt: new Date(Date.now() - 8 * 60 * 1000), // 8 minutes ago
-    creditScore: 650,
-    industry: "Automotive",
-    loanType: "Business Loan",
-    phoneVerified: true
-  },
-  {
-    id: "4",
-    businessName: "******* Medical",
-    contactName: "S*** K****",
-    email: "s****@******.com",
-    phone: "(555) ***-****", 
-    loanAmount: "$200,000",
-    submittedAt: new Date(Date.now() - 12 * 60 * 1000), // 12 minutes ago
-    creditScore: 740,
-    industry: "Healthcare",
-    loanType: "Practice Expansion",
-    phoneVerified: true
+// Helper function to mask sensitive information
+const maskText = (text: string, visibleStart: number = 1, visibleEnd: number = 1): string => {
+  if (text.length <= visibleStart + visibleEnd) return text;
+  const start = text.substring(0, visibleStart);
+  const end = text.substring(text.length - visibleEnd);
+  const middle = "*".repeat(Math.max(3, text.length - visibleStart - visibleEnd));
+  return start + middle + end;
+};
+
+const maskEmail = (email: string): string => {
+  const [localPart, domain] = email.split('@');
+  if (!domain) return email;
+  const maskedLocal = maskText(localPart, 1, 0);
+  const maskedDomain = maskText(domain, 0, 4);
+  return `${maskedLocal}@${maskedDomain}`;
+};
+
+const maskPhone = (phone: string): string => {
+  const cleanPhone = phone.replace(/\D/g, '');
+  if (cleanPhone.length >= 10) {
+    return `(${cleanPhone.substring(0, 3)}) ***-****`;
   }
-];
+  return "(555) ***-****";
+};
+
+// Helper function to derive business type from use_of_funds
+const getBusinessType = (useOfFunds: string): string => {
+  const funds = useOfFunds.toLowerCase();
+  if (funds.includes('inventory') || funds.includes('equipment')) return 'Equipment Financing';
+  if (funds.includes('working capital') || funds.includes('cash flow')) return 'Working Capital';
+  if (funds.includes('expansion') || funds.includes('location')) return 'Business Expansion';
+  if (funds.includes('marketing') || funds.includes('advertising')) return 'Marketing & Growth';
+  return 'Business Loan';
+};
+
+// Helper function to derive industry from business description or use_of_funds
+const getIndustry = (useOfFunds: string): string => {
+  const funds = useOfFunds.toLowerCase();
+  if (funds.includes('restaurant') || funds.includes('food')) return 'Restaurant';
+  if (funds.includes('construction') || funds.includes('contractor')) return 'Construction';
+  if (funds.includes('medical') || funds.includes('healthcare')) return 'Healthcare';
+  if (funds.includes('retail') || funds.includes('store')) return 'Retail';
+  if (funds.includes('automotive') || funds.includes('auto')) return 'Automotive';
+  if (funds.includes('manufacturing')) return 'Manufacturing';
+  return 'Service Business';
+};
+
+// Helper function to estimate credit score from provided range
+const getCreditScore = (creditScoreRange: string): number => {
+  const range = creditScoreRange.toLowerCase();
+  if (range.includes('excellent') || range.includes('750+') || range.includes('800+')) return 750 + Math.floor(Math.random() * 50);
+  if (range.includes('good') || range.includes('700') || range.includes('680-750')) return 680 + Math.floor(Math.random() * 70);
+  if (range.includes('fair') || range.includes('650') || range.includes('620-680')) return 620 + Math.floor(Math.random() * 60);
+  if (range.includes('poor') || range.includes('below 620')) return 580 + Math.floor(Math.random() * 40);
+  return 650 + Math.floor(Math.random() * 100); // Default range
+};
 
 const LiveTimer = ({ submittedAt }: { submittedAt: Date }) => {
   const [elapsed, setElapsed] = useState(0);
@@ -112,12 +114,63 @@ export const LeadsSimulation = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: ""
   });
   const { toast } = useToast();
+
+  // Fetch real leads from database
+  useEffect(() => {
+    const fetchLeads = async () => {
+      try {
+        const { data: quizResponses, error } = await supabase
+          .from('quiz_responses')
+          .select('*')
+          .eq('status', 'new')
+          .order('created_at', { ascending: false })
+          .limit(10);
+
+        if (error) throw error;
+
+        if (quizResponses && quizResponses.length > 0) {
+          const transformedLeads: Lead[] = quizResponses.map((response) => {
+            // Create business name from name (first part) + industry
+            const firstName = response.name.split(' ')[0];
+            const industry = getIndustry(response.use_of_funds);
+            const businessName = `${maskText(firstName, 1, 0)} ${industry}`;
+
+            return {
+              id: response.id,
+              businessName,
+              contactName: maskText(response.name, 1, 1),
+              email: maskEmail(response.email),
+              phone: maskPhone(response.phone),
+              loanAmount: `$${response.loan_amount.toLocaleString()}`,
+              submittedAt: new Date(response.created_at),
+              creditScore: getCreditScore(response.credit_score),
+              industry: getIndustry(response.use_of_funds),
+              loanType: getBusinessType(response.use_of_funds),
+              phoneVerified: true // Assume verified for leads
+            };
+          });
+          
+          setLeads(transformedLeads);
+        }
+      } catch (error) {
+        console.error('Error fetching leads:', error);
+        // Fallback to empty array on error
+        setLeads([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLeads();
+  }, []);
 
   const handleUnlockClick = (lead: Lead) => {
     setSelectedLead(lead);
@@ -174,7 +227,16 @@ export const LeadsSimulation = () => {
         </div>
 
         <div className="space-y-4 max-w-sm mx-auto md:max-w-none md:grid md:grid-cols-3 md:gap-6 md:space-y-0">
-          {mockLeads.slice(0, 3).map((lead) => (
+          {loading ? (
+            <div className="col-span-3 text-center py-8">
+              <div className="text-muted-foreground">Loading real leads...</div>
+            </div>
+          ) : leads.length === 0 ? (
+            <div className="col-span-3 text-center py-8">
+              <div className="text-muted-foreground">No new leads available at the moment</div>
+            </div>
+          ) : (
+            leads.slice(0, 3).map((lead) => (
             <Card key={lead.id} className="border-2 border-green-500 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 relative overflow-hidden hover:border-green-600">
               
               <CardHeader className="relative z-20 pb-2 px-4 pt-4">
@@ -239,7 +301,8 @@ export const LeadsSimulation = () => {
                 </Button>
               </CardContent>
             </Card>
-          ))}
+            ))
+          )}
         </div>
       </div>
 
