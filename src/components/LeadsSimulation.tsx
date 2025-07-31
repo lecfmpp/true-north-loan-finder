@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Clock, Phone, Mail, Building2, DollarSign, AlertTriangle, CheckCircle, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-
 interface Lead {
   id: string;
   businessName: string;
@@ -30,7 +29,6 @@ const maskText = (text: string, visibleStart: number = 1, visibleEnd: number = 1
   const middle = "*".repeat(Math.max(3, text.length - visibleStart - visibleEnd));
   return start + middle + end;
 };
-
 const maskEmail = (email: string): string => {
   const [localPart, domain] = email.split('@');
   if (!domain) return email;
@@ -38,7 +36,6 @@ const maskEmail = (email: string): string => {
   const maskedDomain = maskText(domain, 0, 4);
   return `${maskedLocal}@${maskedDomain}`;
 };
-
 const maskPhone = (phone: string): string => {
   const cleanPhone = phone.replace(/\D/g, '');
   if (cleanPhone.length >= 10) {
@@ -78,10 +75,12 @@ const getCreditScore = (creditScoreRange: string): number => {
   if (range.includes('poor') || range.includes('below 620')) return 580 + Math.floor(Math.random() * 40);
   return 650 + Math.floor(Math.random() * 100); // Default range
 };
-
-const LiveTimer = ({ submittedAt }: { submittedAt: Date }) => {
+const LiveTimer = ({
+  submittedAt
+}: {
+  submittedAt: Date;
+}) => {
   const [elapsed, setElapsed] = useState(0);
-
   useEffect(() => {
     const updateElapsed = () => {
       const now = new Date();
@@ -89,47 +88,43 @@ const LiveTimer = ({ submittedAt }: { submittedAt: Date }) => {
       // Add 15 minutes (900 seconds) to create urgency
       setElapsed(diff + 900);
     };
-
     updateElapsed();
     const interval = setInterval(updateElapsed, 1000);
-
     return () => clearInterval(interval);
   }, [submittedAt]);
-
   const formatTime = (seconds: number) => {
     const days = Math.floor(seconds / 86400); // 86400 seconds in a day
-    const hours = Math.floor((seconds % 86400) / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
+    const hours = Math.floor(seconds % 86400 / 3600);
+    const mins = Math.floor(seconds % 3600 / 60);
     const secs = seconds % 60;
-    
+
     // If more than 48 hours (2 days), show days
-    if (seconds >= 172800) { // 48 hours = 172800 seconds
+    if (seconds >= 172800) {
+      // 48 hours = 172800 seconds
       return `${days} day${days > 1 ? 's' : ''} ago`;
     }
-    
+
     // Otherwise show hours:minutes format
     return `${mins}:${secs.toString().padStart(2, '0')} min ago`;
   };
-
-  return (
-    <div className="flex items-center space-x-2 text-xs bg-red-600 text-white px-2 py-1 rounded">
+  return <div className="flex items-center space-x-2 text-xs bg-red-600 text-white px-2 py-1 rounded">
       <Clock className="h-3 w-3 text-white" />
       <span className="font-medium">{formatTime(elapsed)}</span>
-    </div>
-  );
+    </div>;
 };
 
 // Dynamic countdown for urgency in modal
-const UrgencyCountdown = ({ lastSubmissionTime }: { lastSubmissionTime: Date | null }) => {
+const UrgencyCountdown = ({
+  lastSubmissionTime
+}: {
+  lastSubmissionTime: Date | null;
+}) => {
   const [timeSinceSubmission, setTimeSinceSubmission] = useState("");
-
   useEffect(() => {
     if (!lastSubmissionTime) return;
-
     const updateTime = () => {
       const now = new Date();
       const diffInMinutes = Math.floor((now.getTime() - lastSubmissionTime.getTime()) / (1000 * 60));
-      
       if (diffInMinutes < 1) {
         setTimeSinceSubmission("just now");
       } else if (diffInMinutes < 60) {
@@ -144,20 +139,16 @@ const UrgencyCountdown = ({ lastSubmissionTime }: { lastSubmissionTime: Date | n
         }
       }
     };
-
     updateTime();
     const interval = setInterval(updateTime, 30000); // Update every 30 seconds for more accuracy
 
     return () => clearInterval(interval);
   }, [lastSubmissionTime]);
-
   if (!lastSubmissionTime) {
     return <span className="font-semibold text-destructive">Lead waiting for immediate response</span>;
   }
-
   return <span className="font-semibold text-destructive">Lead submitted {timeSinceSubmission} - Waiting for response</span>;
 };
-
 export const LeadsSimulation = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -171,7 +162,9 @@ export const LeadsSimulation = () => {
     email: "",
     phone: ""
   });
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
 
   // Fetch real leads from database
   useEffect(() => {
@@ -180,24 +173,19 @@ export const LeadsSimulation = () => {
       try {
         // Filter by country - map US to 'US' or 'USA', Canada to 'Canada' or 'Canadian'
         const countryFilter = selectedCountry === 'US' ? ['US', 'USA', 'United States'] : ['Canada', 'Canadian'];
-        
-        const { data: quizResponses, error } = await supabase
-          .from('quiz_responses')
-          .select('*')
-          .eq('status', 'new')
-          .in('country', countryFilter)
-          .order('created_at', { ascending: false })
-          .limit(10);
-
+        const {
+          data: quizResponses,
+          error
+        } = await supabase.from('quiz_responses').select('*').eq('status', 'new').in('country', countryFilter).order('created_at', {
+          ascending: false
+        }).limit(10);
         if (error) throw error;
-
         if (quizResponses && quizResponses.length > 0) {
-          const transformedLeads: Lead[] = quizResponses.map((response) => {
+          const transformedLeads: Lead[] = quizResponses.map(response => {
             // Create business name from name (first part) + industry
             const firstName = response.name.split(' ')[0];
             const industry = getIndustry(response.use_of_funds);
             const businessName = `${maskText(firstName, 1, 0)} ${industry}`;
-
             return {
               id: response.id,
               businessName,
@@ -212,7 +200,6 @@ export const LeadsSimulation = () => {
               phoneVerified: true // Assume verified for leads
             };
           });
-          
           setLeads(transformedLeads);
           // Set the most recent submission time for the urgency countdown
           setLastSubmissionTime(new Date(quizResponses[0].created_at));
@@ -228,7 +215,6 @@ export const LeadsSimulation = () => {
         setLoading(false);
       }
     };
-
     fetchLeads();
   }, [selectedCountry]); // Re-fetch when country changes
 
@@ -241,7 +227,7 @@ export const LeadsSimulation = () => {
   const formatPhoneNumber = (value: string) => {
     // Remove all non-numeric characters
     const phoneNumber = value.replace(/\D/g, '');
-    
+
     // Format as (XXX) XXX-XXXX for US/Canada
     if (phoneNumber.length <= 3) {
       return phoneNumber;
@@ -251,10 +237,12 @@ export const LeadsSimulation = () => {
       return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
     }
   };
-
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatPhoneNumber(e.target.value);
-    setFormData(prev => ({ ...prev, phone: formatted }));
+    setFormData(prev => ({
+      ...prev,
+      phone: formatted
+    }));
   };
 
   // Email validation
@@ -268,120 +256,92 @@ export const LeadsSimulation = () => {
     const phoneDigits = phone.replace(/\D/g, '');
     return phoneDigits.length === 10;
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validation
     if (!isValidEmail(formData.email)) {
       toast({
         title: "Invalid Email",
         description: "Please enter a valid email address.",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     if (!isValidPhone(formData.phone)) {
       toast({
         title: "Invalid Phone Number",
         description: "Please enter a valid 10-digit US/Canada phone number.",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     setIsSubmitting(true);
-
     try {
       // Submit broker application to admin dashboard
-      const { error } = await supabase
-        .from('lender_broker_applications')
-        .insert({
-          applicant_name: formData.name,
-          applicant_email: formData.email,
-          applicant_phone: formData.phone,
-          company_name: "Lead Trial Access", 
-          application_type: 'broker',
-          business_description: "Broker lead trial signup - seeking access to qualified leads"
-        });
-
+      const {
+        error
+      } = await supabase.from('lender_broker_applications').insert({
+        applicant_name: formData.name,
+        applicant_email: formData.email,
+        applicant_phone: formData.phone,
+        company_name: "Lead Trial Access",
+        application_type: 'broker',
+        business_description: "Broker lead trial signup - seeking access to qualified leads"
+      });
       if (error) throw error;
 
       // TODO: Redirect to Stripe payment
       toast({
         title: "Application Submitted!",
-        description: "Redirecting to payment...",
+        description: "Redirecting to payment..."
       });
 
       // Close modal and reset form
       setShowModal(false);
-      setFormData({ name: "", email: "", phone: "" });
-      
+      setFormData({
+        name: "",
+        email: "",
+        phone: ""
+      });
     } catch (error) {
       console.error('Error:', error);
       toast({
         title: "Error",
         description: "Failed to process. Please try again.",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  return (
-    <>
+  return <>
       <div className="space-y-6">
         <div className="text-center mb-8">
-          <h3 className="text-2xl font-bold font-sans text-primary mb-4">Live Leads Dashboard</h3>
+          <h3 className="font-sans text-primary mb-4 text-lg font-medium">Check out the latest leads and call them right now</h3>
           <p className="text-muted-foreground font-serif">See real leads waiting for your response right now</p>
         </div>
 
         {/* Country Toggle Switch */}
         <div className="flex justify-center mb-6">
           <div className="flex bg-muted rounded-lg p-1 w-fit border-2 border-border shadow-sm">
-            <button
-              onClick={() => setSelectedCountry('US')}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-all duration-200 ${
-                selectedCountry === 'US'
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'hover:bg-background text-muted-foreground'
-              }`}
-            >
+            <button onClick={() => setSelectedCountry('US')} className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-all duration-200 ${selectedCountry === 'US' ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-background text-muted-foreground'}`}>
               <span className="text-lg">🇺🇸</span>
               <span className="font-medium">United States</span>
             </button>
-            <button
-              onClick={() => setSelectedCountry('Canada')}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-all duration-200 ${
-                selectedCountry === 'Canada'
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'hover:bg-background text-muted-foreground'
-              }`}
-            >
+            <button onClick={() => setSelectedCountry('Canada')} className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-all duration-200 ${selectedCountry === 'Canada' ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-background text-muted-foreground'}`}>
               <span className="text-lg">🇨🇦</span>
               <span className="font-medium">Canada</span>
             </button>
           </div>
         </div>
 
-        <div className={`space-y-4 max-w-sm mx-auto md:max-w-none md:grid md:gap-6 md:space-y-0 ${
-          leads.length >= 3 ? 'md:grid-cols-3' : 
-          leads.length === 2 ? 'md:grid-cols-2 md:justify-center md:max-w-2xl' : 
-          'md:grid-cols-1 md:justify-center md:max-w-md'
-        }`}>
-          {loading ? (
-            <div className="col-span-3 text-center py-8">
+        <div className={`space-y-4 max-w-sm mx-auto md:max-w-none md:grid md:gap-6 md:space-y-0 ${leads.length >= 3 ? 'md:grid-cols-3' : leads.length === 2 ? 'md:grid-cols-2 md:justify-center md:max-w-2xl' : 'md:grid-cols-1 md:justify-center md:max-w-md'}`}>
+          {loading ? <div className="col-span-3 text-center py-8">
               <div className="text-muted-foreground">Loading real leads...</div>
-            </div>
-          ) : leads.length === 0 ? (
-            <div className="col-span-3 text-center py-8">
+            </div> : leads.length === 0 ? <div className="col-span-3 text-center py-8">
               <div className="text-muted-foreground">No new leads available at the moment</div>
-            </div>
-          ) : (
-            leads.slice(0, 3).map((lead) => (
-            <Card key={lead.id} className="border-2 border-green-500 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 relative overflow-hidden hover:border-green-600">
+            </div> : leads.slice(0, 3).map(lead => <Card key={lead.id} className="border-2 border-green-500 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 relative overflow-hidden hover:border-green-600">
               
               <CardHeader className="relative z-20 pb-2 px-4 pt-4">
                 <div className="flex items-center justify-between mb-3">
@@ -392,12 +352,10 @@ export const LeadsSimulation = () => {
                 </div>
                 
                 <div className="flex items-center justify-between mb-3">
-                  {lead.phoneVerified && (
-                    <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
+                  {lead.phoneVerified && <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
                       <Shield className="h-3 w-3 mr-1" />
                       Phone Verified
-                    </Badge>
-                  )}
+                    </Badge>}
                   <Badge variant="outline" className="text-xs">{lead.industry}</Badge>
                 </div>
                 
@@ -435,18 +393,11 @@ export const LeadsSimulation = () => {
                 </div>
                 
                 {/* Action Button */}
-                <Button 
-                  onClick={() => handleUnlockClick(lead)}
-                  variant="cta" 
-                  size="lg" 
-                  className="w-full text-base bg-green-600 hover:bg-green-700 text-white"
-                >
+                <Button onClick={() => handleUnlockClick(lead)} variant="cta" size="lg" className="w-full text-base bg-green-600 hover:bg-green-700 text-white">
                   🔓 Unlock Lead
                 </Button>
               </CardContent>
-            </Card>
-            ))
-          )}
+            </Card>)}
         </div>
       </div>
 
@@ -485,35 +436,17 @@ export const LeadsSimulation = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <Input
-                placeholder="Your Full Name"
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                required
-              />
-              <Input
-                type="email"
-                placeholder="Email Address"
-                value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                required
-              />
-              <Input
-                type="tel"
-                placeholder="Phone Number (XXX) XXX-XXXX"
-                value={formData.phone}
-                onChange={handlePhoneChange}
-                maxLength={14}
-                required
-              />
+              <Input placeholder="Your Full Name" value={formData.name} onChange={e => setFormData(prev => ({
+              ...prev,
+              name: e.target.value
+            }))} required />
+              <Input type="email" placeholder="Email Address" value={formData.email} onChange={e => setFormData(prev => ({
+              ...prev,
+              email: e.target.value
+            }))} required />
+              <Input type="tel" placeholder="Phone Number (XXX) XXX-XXXX" value={formData.phone} onChange={handlePhoneChange} maxLength={14} required />
               
-              <Button 
-                type="submit" 
-                variant="cta"
-                size="lg"
-                className="w-full text-lg bg-accent hover:bg-accent/90" 
-                disabled={isSubmitting}
-              >
+              <Button type="submit" variant="cta" size="lg" className="w-full text-lg bg-accent hover:bg-accent/90" disabled={isSubmitting}>
                 {isSubmitting ? "Processing..." : "🔓 Unlock Leads for $500"}
               </Button>
             </form>
@@ -524,6 +457,5 @@ export const LeadsSimulation = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </>
-  );
+    </>;
 };
