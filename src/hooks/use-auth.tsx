@@ -173,7 +173,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('Signing out...');
       const { error } = await supabase.auth.signOut();
       
-      if (error) {
+      // Handle the case where session is already expired/invalid
+      if (error && error.message.includes('Session not found')) {
+        console.log('Session already expired, treating as successful logout');
+      } else if (error) {
         console.error('Supabase signOut error:', error);
         toast({
           title: "Error",
@@ -184,10 +187,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       console.log('Successfully signed out from Supabase');
+      
+      // Clear all auth state
       setProfile(null);
       setUserRoles([]);
       setUser(null);
       setSession(null);
+      
+      // Clear any stored auth data
+      localStorage.removeItem('supabase.auth.token');
       
       toast({
         title: "Signed out",
@@ -195,10 +203,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     } catch (error) {
       console.error('Signout error:', error);
+      // Even if there's an error, clear the local state as the session is likely invalid
+      setProfile(null);
+      setUserRoles([]);
+      setUser(null);
+      setSession(null);
+      
       toast({
-        title: "Error",
-        description: "An error occurred during sign out",
-        variant: "destructive"
+        title: "Signed out",
+        description: "You have been signed out"
       });
     }
   };
