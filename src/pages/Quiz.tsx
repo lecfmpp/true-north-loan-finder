@@ -58,6 +58,7 @@ interface QuizData {
   name: string;
   email: string;
   phone: string;
+  companyName: string;
   website: string;
   country: string;
   stateProvince: string;
@@ -150,6 +151,7 @@ const Quiz = () => {
     name: "",
     email: "",
     phone: "",
+    companyName: "",
     website: "",
     country: "",
     stateProvince: ""
@@ -634,7 +636,7 @@ const Quiz = () => {
       case 3: return quizData.timeInBusiness !== "";
       case 4: return quizData.monthlyRevenue[0] > 0;
       case 5: return quizData.creditScore !== "";
-      case 6: return quizData.name && quizData.email && quizData.phone && quizData.country && quizData.stateProvince;
+      case 6: return quizData.name && quizData.email && quizData.phone && quizData.companyName && quizData.country && quizData.stateProvince;
       default: return true;
     }
   };
@@ -1224,6 +1226,18 @@ const Quiz = () => {
                         placeholder="(555) 123-4567"
                         className="mt-1 md:mt-2 text-base md:text-lg py-2 md:py-3"
                         maxLength={14}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="companyName" className="text-base md:text-lg font-medium">Company Name *</Label>
+                      <Input
+                        id="companyName"
+                        type="text"
+                        value={quizData.companyName}
+                        onChange={(e) => setQuizData({...quizData, companyName: e.target.value})}
+                        placeholder="Your Company Name"
+                        className="mt-1 md:mt-2 text-base md:text-lg py-2 md:py-3"
+                        required
                       />
                     </div>
                     <div>
