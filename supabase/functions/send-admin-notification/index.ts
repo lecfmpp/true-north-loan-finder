@@ -114,6 +114,18 @@ const handler = async (req: Request): Promise<Response> => {
                     <div class="info-value">${data.phone || 'Not provided'}</div>
                   </div>
                   <div class="info-row">
+                    <div class="info-label">Company Name:</div>
+                    <div class="info-value"><strong>${data.company_name || 'Not provided'}</strong></div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">Website:</div>
+                    <div class="info-value">${data.website || 'Not provided'}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">Location:</div>
+                    <div class="info-value">${data.city_province || 'Not provided'}, ${data.country || 'Not provided'}</div>
+                  </div>
+                  <div class="info-row">
                     <div class="info-label">Loan Amount:</div>
                     <div class="info-value"><span class="highlight">$${data.loan_amount?.toLocaleString()}</span></div>
                   </div>
