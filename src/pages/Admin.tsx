@@ -1449,9 +1449,9 @@ const Admin = () => {
                             <SelectValue placeholder="Select partner" />
                           </SelectTrigger>
                           <SelectContent>
-                            {partners.map((partner) => (
+                            {approvedPartners.map((partner) => (
                               <SelectItem key={partner.id} value={partner.id}>
-                                {partner.name} - {partner.company_name}
+                                {partner.name} ({partner.email})
                               </SelectItem>
                             ))}
                           </SelectContent>
