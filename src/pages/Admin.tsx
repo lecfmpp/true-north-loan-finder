@@ -41,6 +41,7 @@ import PartnerManagement from '@/components/admin/PartnerManagement';
 import PartnerLeads from '@/components/admin/PartnerLeads';
 import PartnerApplications from '@/components/admin/PartnerApplications';
 import PartnerPayments from '@/components/admin/PartnerPayments';
+import { PartnersManagement } from '@/components/admin/PartnersManagement';
 import Footer from '@/components/Footer';
 
 interface QuizResponse {
@@ -98,6 +99,8 @@ const Admin = () => {
   const [selectedRecipients, setSelectedRecipients] = useState<{
     [key: string]: string;
   }>({});
+  const [partners, setPartners] = useState<any[]>([]);
+  const [selectedPartner, setSelectedPartner] = useState<string>('');
   const [customEmails, setCustomEmails] = useState<Record<string, string>>({});
   const [sendingCustomEmails, setSendingCustomEmails] = useState<Record<string, boolean>>({});
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -138,6 +141,54 @@ const Admin = () => {
     window.open(`tel:${phone}`, '_self');
   };
 
+  const assignLeadsToPartner = async (leadIds: string[], partnerId: string) => {
+    try {
+      const assignments = leadIds.map(leadId => ({
+        quiz_response_id: leadId,
+        partner_id: partnerId,
+        assigned_by: user?.id
+      }));
+
+      const { error } = await supabase
+        .from('lead_assignments')
+        .insert(assignments);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `${leadIds.length} lead(s) assigned to partner successfully`,
+      });
+
+      setSelectedLeads([]);
+      setSelectedPartner('');
+      fetchLeads(); // Refresh leads to show assignment
+    } catch (error) {
+      console.error('Error assigning leads:', error);
+      toast({
+        title: "Error",
+        description: "Failed to assign leads to partner",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const toggleLeadSelection = (leadId: string) => {
+    setSelectedLeads(prev => 
+      prev.includes(leadId) 
+        ? prev.filter(id => id !== leadId)
+        : [...prev, leadId]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedLeads.length === filteredLeads.length) {
+      setSelectedLeads([]);
+    } else {
+      setSelectedLeads(filteredLeads.map(lead => lead.id));
+    }
+  };
+
   useEffect(() => {
     if (!authLoading && (!user || !isAdmin)) {
       navigate('/auth');
@@ -156,6 +207,7 @@ const Admin = () => {
         fetchLeads();
         fetchApplicationsCount();
         fetchApprovedPartners();
+        fetchPartners();
       }
       fetchUsaApplicationsCount();
       fetchCanadianApplicationsCount();
@@ -322,18 +374,47 @@ const Admin = () => {
     }
   };
 
+  const fetchPartners = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('partners')
+        .select('*')
+        .eq('status', 'active')
+        .order('name', { ascending: true });
+      
+      if (error) throw error;
+      setPartners(data || []);
+    } catch (error) {
+      console.error('Error fetching partners:', error);
+    }
+  };
+
   const fetchApprovedPartners = async () => {
     try {
-      const {
-        data,
-        error
-      } = await supabase.from('lender_broker_applications').select('id, applicant_name, applicant_email').eq('status', 'approved');
-      if (error) throw error;
-      setApprovedPartners(data.map(partner => ({
-        id: partner.id,
-        name: partner.applicant_name,
-        email: partner.applicant_email
-      })));
+      // Fetch from both old applications table and new partners table
+      const [applicationsData, partnersData] = await Promise.all([
+        supabase.from('lender_broker_applications')
+          .select('id, applicant_name, applicant_email')
+          .eq('status', 'approved'),
+        supabase.from('partners')
+          .select('id, name, email')
+          .eq('status', 'active')
+      ]);
+
+      const allPartners = [
+        ...(applicationsData.data || []).map(partner => ({
+          id: partner.id,
+          name: partner.applicant_name,
+          email: partner.applicant_email
+        })),
+        ...(partnersData.data || []).map(partner => ({
+          id: partner.id,
+          name: partner.name,
+          email: partner.email
+        }))
+      ];
+
+      setApprovedPartners(allPartners);
     } catch (error) {
       console.error('Error fetching approved partners:', error);
     }
@@ -791,17 +872,6 @@ const Admin = () => {
     setSelectedLeads(prev => prev.filter(id => filtered.some(lead => lead.id === id)));
   };
 
-  const toggleSelectLead = (leadId: string) => {
-    setSelectedLeads(prev => prev.includes(leadId) ? prev.filter(id => id !== leadId) : [...prev, leadId]);
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedLeads.length === filteredLeads.length) {
-      setSelectedLeads([]);
-    } else {
-      setSelectedLeads(filteredLeads.map(lead => lead.id));
-    }
-  };
 
   const exportSelectedToCSV = () => {
     const leadsToExport = selectedLeads.length > 0 ? leads.filter(lead => selectedLeads.includes(lead.id)) : filteredLeads;
@@ -1180,6 +1250,12 @@ const Admin = () => {
           count: applicationsCount
         },
         {
+          title: "Partners Management",
+          value: "partners",
+          icon: Users,
+          count: partners.length
+        },
+        {
           title: "USA Applications",
           value: "usa-applications", 
           icon: FileText,
@@ -1358,6 +1434,30 @@ const Admin = () => {
                           className="text-xs"
                         >
                           Enable Pre-Call for All
+                        </Button>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-blue-900">Assign to Partner:</span>
+                        <Select value={selectedPartner} onValueChange={setSelectedPartner}>
+                          <SelectTrigger className="w-48">
+                            <SelectValue placeholder="Select partner" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {partners.map((partner) => (
+                              <SelectItem key={partner.id} value={partner.id}>
+                                {partner.name} - {partner.company_name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button 
+                          size="sm" 
+                          disabled={!selectedPartner || selectedLeads.length === 0}
+                          onClick={() => assignLeadsToPartner(selectedLeads, selectedPartner)}
+                          className="text-xs"
+                        >
+                          Assign {selectedLeads.length} Lead(s)
                         </Button>
                       </div>
                     </div>
@@ -1619,6 +1719,8 @@ const Admin = () => {
           </div>;
       case 'applications':
         return <PartnerManagement />;
+      case 'partners':
+        return <PartnersManagement />;
       case 'usa-applications':
         return <USAApplicationsManagement onCountUpdate={fetchUsaApplicationsCount} />;
       case 'canadian-applications':
