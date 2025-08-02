@@ -115,7 +115,7 @@ export default function ConfirmPartner() {
         email: partnerInfo.applicant_email,
         password: password,
         options: {
-          emailRedirectTo: `${window.location.origin}/admin`,
+          emailRedirectTo: `https://truenorthbusinessloan.ca/admin`,
           data: {
             display_name: partnerInfo.applicant_name,
             company_name: partnerInfo.company_name,
@@ -130,7 +130,7 @@ export default function ConfirmPartner() {
           const { error: resetError } = await supabase.auth.resetPasswordForEmail(
             partnerInfo.applicant_email,
             {
-              redirectTo: `${window.location.origin}/auth?mode=reset`
+              redirectTo: `https://truenorthbusinessloan.ca/auth?mode=reset`
             }
           );
           
