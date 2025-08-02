@@ -332,56 +332,20 @@ export const LeadsSimulation = () => {
       });
       return;
     }
-    setIsSubmitting(true);
-    try {
-      // Check if user is authenticated
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.user) {
-        // Redirect to partner auth for login/signup
-        window.location.href = '/auth';
-        return;
-      }
 
-      // Submit broker application to admin dashboard
-      const {
-        error
-      } = await supabase.from('lender_broker_applications').insert({
-        user_id: session.user.id,
-        applicant_name: formData.name,
-        applicant_email: formData.email,
-        applicant_phone: formData.phone,
-        company_name: "Lead Trial Access",
-        application_type: 'broker',
-        business_description: "Broker lead trial signup - seeking access to qualified leads",
-        payment_status: 'pending',
-        payment_amount: 50000 // $500 in cents
-      });
-      if (error) throw error;
+    // Store form data in localStorage for later use in account creation
+    localStorage.setItem('brokerFormData', JSON.stringify(formData));
 
-      // TODO: Redirect to Stripe payment
-      toast({
-        title: "Application Submitted!",
-        description: "Redirecting to payment..."
-      });
+    // Redirect directly to Stripe payment
+    window.open('https://buy.stripe.com/aFadR98YN9bjcJkbII?success_url=' + encodeURIComponent(window.location.origin + '/broker-payment-success'), '_blank');
 
-      // Close modal and reset form
-      setShowModal(false);
-      setFormData({
-        name: "",
-        email: "",
-        phone: ""
-      });
-    } catch (error) {
-      console.error('Error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to process. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Close modal and reset form
+    setShowModal(false);
+    setFormData({
+      name: "",
+      email: "",
+      phone: ""
+    });
   };
   return <>
       <div className="space-y-6">
