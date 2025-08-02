@@ -414,7 +414,7 @@ const BrokerSignup = () => {
                       onClick={() => setSelectedPackage(pkg.leads)}
                     >
                       <CardContent className="p-4 text-center">
-                        <div className="text-2xl font-bold text-secondary mb-1">{pkg.leads}</div>
+                        <div className="text-2xl font-bold text-secondary mb-1">{pkg.leads} leads</div>
                         <div className="text-sm font-medium text-primary mb-1">{pkg.name}</div>
                         <div className="text-lg font-bold text-green-600 mb-1">${pkg.costPerLead}/lead</div>
                         <div className="text-xs text-muted-foreground mb-2">{pkg.description}</div>
