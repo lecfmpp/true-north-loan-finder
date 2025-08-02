@@ -1,271 +1,369 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/use-auth";
-import { 
-  DollarSign, 
-  Calendar, 
-  CreditCard, 
-  Clock, 
-  CheckCircle, 
-  AlertTriangle,
-  ShoppingCart 
-} from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
+import { supabase } from '@/integrations/supabase/client';
+import { CreditCard, DollarSign, ShoppingCart, History, AlertCircle } from 'lucide-react';
 
-interface PaymentInfo {
-  payment_status: string;
-  payment_amount: number;
-  payment_deadline: string;
-  created_at: string;
+interface PartnerCredit {
+  id: string;
+  available_credits: number;
+  total_purchased: number;
+  total_used: number;
+  updated_at: string;
+}
+
+interface PaymentRecord {
+  id: string;
+  amount: number;
+  currency: string;
   status: string;
+  payment_type: string;
+  leads_purchased: number;
+  created_at: string;
+}
+
+interface CreditTransaction {
+  id: string;
+  transaction_type: string;
+  credits_amount: number;
+  balance_after: number;
+  description: string;
+  created_at: string;
 }
 
 export default function PartnerPayments() {
-  const [paymentInfo, setPaymentInfo] = useState<PaymentInfo | null>(null);
+  const [credits, setCredits] = useState<PartnerCredit | null>(null);
+  const [payments, setPayments] = useState<PaymentRecord[]>([]);
+  const [transactions, setTransactions] = useState<CreditTransaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [purchaseDialog, setPurchaseDialog] = useState(false);
+  const [purchaseLoading, setPurchaseLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
     if (user) {
-      fetchPaymentInfo();
+      fetchPartnerData();
     }
   }, [user]);
 
-  const fetchPaymentInfo = async () => {
+  const fetchPartnerData = async () => {
+    if (!user) return;
+
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('lender_broker_applications')
-        .select('payment_status, payment_amount, payment_deadline, created_at, status')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
+
+      // Fetch partner credits
+      const { data: creditsData, error: creditsError } = await supabase
+        .from('partner_lead_credits')
+        .select('*')
+        .eq('user_id', user.id)
         .single();
 
-      if (error) throw error;
-      setPaymentInfo(data);
+      if (creditsError && creditsError.code !== 'PGRST116') throw creditsError;
+
+      // Fetch payment records
+      const { data: paymentsData, error: paymentsError } = await supabase
+        .from('payment_records')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (paymentsError) throw paymentsError;
+
+      // Fetch credit transactions
+      const { data: transactionsData, error: transactionsError } = await supabase
+        .from('lead_credit_transactions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (transactionsError) throw transactionsError;
+
+      setCredits(creditsData);
+      setPayments(paymentsData || []);
+      setTransactions(transactionsData || []);
     } catch (error) {
-      console.error('Error fetching payment info:', error);
-      setPaymentInfo(null);
+      console.error('Error fetching partner data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load your payment data",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const getPaymentStatusBadge = (status: string) => {
-    switch (status) {
-      case 'paid':
-        return (
-          <Badge variant="default" className="bg-green-600">
-            <CheckCircle className="h-3 w-3 mr-1" />
-            Paid
-          </Badge>
-        );
-      case 'pending':
-        return (
-          <Badge variant="secondary">
-            <Clock className="h-3 w-3 mr-1" />
-            Payment Pending
-          </Badge>
-        );
-      case 'expired':
-        return (
-          <Badge variant="destructive">
-            <AlertTriangle className="h-3 w-3 mr-1" />
-            Payment Expired
-          </Badge>
-        );
-      default:
-        return <Badge variant="outline">{status}</Badge>;
+  const handlePurchaseMoreLeads = async () => {
+    try {
+      setPurchaseLoading(true);
+
+      const { data, error } = await supabase.functions.invoke('create-broker-payment');
+
+      if (error) throw error;
+
+      // Open Stripe checkout in new tab
+      if (data?.url) {
+        window.open(data.url, '_blank');
+        setPurchaseDialog(false);
+        
+        toast({
+          title: "Redirecting to Payment",
+          description: "You'll be redirected to complete your purchase"
+        });
+      }
+    } catch (error) {
+      console.error('Error creating payment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create payment session",
+        variant: "destructive"
+      });
+    } finally {
+      setPurchaseLoading(false);
     }
   };
 
-  const handleBuyMoreLeads = () => {
-    // TODO: Implement Stripe payment flow for additional leads
-    toast({
-      title: "Coming Soon",
-      description: "Lead purchase feature will be available soon."
-    });
+  const getStatusBadge = (status: string) => {
+    const variants = {
+      completed: 'default',
+      pending: 'secondary',
+      failed: 'destructive',
+      refunded: 'outline'
+    } as const;
+    
+    return <Badge variant={variants[status as keyof typeof variants] || 'secondary'}>{status}</Badge>;
   };
+
+  const getTransactionTypeBadge = (type: string) => {
+    const variants = {
+      purchase: 'default',
+      usage: 'destructive',
+      admin_adjustment: 'secondary',
+      refund: 'outline'
+    } as const;
+    
+    return <Badge variant={variants[type as keyof typeof variants] || 'secondary'}>{type}</Badge>;
+  };
+
+  const isLowCredits = credits && credits.available_credits <= 5;
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (!paymentInfo) {
-    return (
       <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold">Payment Information</h2>
-          <p className="text-muted-foreground">Your payment status and history</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="p-6">
+                <div className="h-4 bg-muted rounded mb-2"></div>
+                <div className="h-8 bg-muted rounded"></div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
-
-        <Card>
-          <CardContent className="text-center py-8">
-            <p className="text-muted-foreground">No payment information found.</p>
-          </CardContent>
-        </Card>
       </div>
     );
   }
-
-  const isPaymentPending = paymentInfo.payment_status === 'pending';
-  const isPaymentExpired = paymentInfo.payment_status === 'expired';
-  const isPaymentPaid = paymentInfo.payment_status === 'paid';
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">Payment Information</h2>
-        <p className="text-muted-foreground">Your payment status and lead access details</p>
+      {/* Credit Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className={isLowCredits ? "border-orange-200 bg-orange-50" : ""}>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Available Credits</p>
+                <p className="text-2xl font-bold">{credits?.available_credits || 0}</p>
+                {isLowCredits && (
+                  <p className="text-sm text-orange-600 mt-1">Low credits - consider purchasing more</p>
+                )}
+              </div>
+              <CreditCard className={`h-8 w-8 ${isLowCredits ? 'text-orange-600' : 'text-blue-600'}`} />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Purchased</p>
+                <p className="text-2xl font-bold">{credits?.total_purchased || 0}</p>
+              </div>
+              <ShoppingCart className="h-8 w-8 text-green-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Used</p>
+                <p className="text-2xl font-bold">{credits?.total_used || 0}</p>
+              </div>
+              <History className="h-8 w-8 text-purple-600" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Payment Status Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
-            Payment Status
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="font-medium">Current Status:</span>
-            {getPaymentStatusBadge(paymentInfo.payment_status)}
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">Amount:</span>
-              <span>${(paymentInfo.payment_amount / 100).toFixed(2)}</span>
-            </div>
-            
-            {paymentInfo.payment_deadline && (
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium">
-                  {isPaymentPaid ? 'Paid On:' : 'Due Date:'}
-                </span>
-                <span>{new Date(paymentInfo.payment_deadline).toLocaleDateString()}</span>
-              </div>
-            )}
-          </div>
-
-          {isPaymentPending && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <div className="flex items-center gap-2 text-yellow-800">
-                <Clock className="h-4 w-4" />
-                <span className="font-medium">Payment Required</span>
-              </div>
-              <p className="text-yellow-700 text-sm mt-1">
-                Please complete your payment to unlock access to qualified leads.
-              </p>
-            </div>
-          )}
-
-          {isPaymentExpired && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="flex items-center gap-2 text-red-800">
-                <AlertTriangle className="h-4 w-4" />
-                <span className="font-medium">Payment Expired</span>
-              </div>
-              <p className="text-red-700 text-sm mt-1">
-                Your payment deadline has passed. Please contact support to renew access.
-              </p>
-            </div>
-          )}
-
-          {isPaymentPaid && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <div className="flex items-center gap-2 text-green-800">
-                <CheckCircle className="h-4 w-4" />
-                <span className="font-medium">Payment Confirmed</span>
-              </div>
-              <p className="text-green-700 text-sm mt-1">
-                Thank you! You now have access to qualified leads matching your criteria.
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Lead Access Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ShoppingCart className="h-5 w-5" />
-            Lead Access
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {isPaymentPaid ? (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div className="text-2xl font-bold text-blue-600">∞</div>
-                  <div className="text-sm text-blue-600">Available Leads</div>
-                </div>
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <div className="text-2xl font-bold text-green-600">0</div>
-                  <div className="text-sm text-green-600">Leads Contacted</div>
-                </div>
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                  <div className="text-2xl font-bold text-purple-600">Active</div>
-                  <div className="text-sm text-purple-600">Access Status</div>
+      {/* Purchase More Credits */}
+      {isLowCredits && (
+        <Card className="border-orange-200 bg-orange-50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <AlertCircle className="h-6 w-6 text-orange-600" />
+                <div>
+                  <h3 className="font-semibold text-orange-900">Running Low on Credits</h3>
+                  <p className="text-sm text-orange-700">You have {credits?.available_credits || 0} credits remaining. Purchase more to continue receiving leads.</p>
                 </div>
               </div>
-              
-              <div className="flex justify-center">
-                <Button onClick={handleBuyMoreLeads} className="bg-blue-600 hover:bg-blue-700">
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  Purchase Additional Leads
-                </Button>
-              </div>
-            </>
-          ) : (
-            <div className="text-center py-8">
-              <div className="text-6xl mb-4">🔒</div>
-              <h3 className="text-lg font-semibold mb-2">Lead Access Locked</h3>
-              <p className="text-muted-foreground mb-4">
-                Complete your payment to unlock access to qualified business leads.
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Once payment is processed, you'll have immediate access to leads matching your criteria.
-              </p>
+              <Dialog open={purchaseDialog} onOpenChange={setPurchaseDialog}>
+                <DialogTrigger asChild>
+                  <Button className="bg-orange-600 hover:bg-orange-700">
+                    Buy More Credits
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Purchase Lead Credits</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="bg-muted p-4 rounded-lg">
+                      <h4 className="font-semibold mb-2">Lead Credits Package</h4>
+                      <p className="text-2xl font-bold">$500.00</p>
+                      <p className="text-sm text-muted-foreground">Access to qualified leads for 7 days</p>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      <p>• Get access to high-quality, pre-qualified leads</p>
+                      <p>• Leads are assigned based on your preferences</p>
+                      <p>• 7-day trial period with full access</p>
+                    </div>
+                    <Button 
+                      onClick={handlePurchaseMoreLeads} 
+                      className="w-full"
+                      disabled={purchaseLoading}
+                    >
+                      {purchaseLoading ? 'Processing...' : 'Purchase Credits'}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Payment History */}
       <Card>
         <CardHeader>
-          <CardTitle>Payment History</CardTitle>
+          <div className="flex justify-between items-center">
+            <CardTitle>Payment History</CardTitle>
+            {!isLowCredits && (
+              <Dialog open={purchaseDialog} onOpenChange={setPurchaseDialog}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    Buy More Credits
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Purchase Lead Credits</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="bg-muted p-4 rounded-lg">
+                      <h4 className="font-semibold mb-2">Lead Credits Package</h4>
+                      <p className="text-2xl font-bold">$500.00</p>
+                      <p className="text-sm text-muted-foreground">Access to qualified leads for 7 days</p>
+                    </div>
+                    <Button 
+                      onClick={handlePurchaseMoreLeads} 
+                      className="w-full"
+                      disabled={purchaseLoading}
+                    >
+                      {purchaseLoading ? 'Processing...' : 'Purchase Credits'}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between py-2 border-b">
-              <div>
-                <div className="font-medium">Initial Lead Access Payment</div>
-                <div className="text-sm text-muted-foreground">
-                  {new Date(paymentInfo.created_at).toLocaleDateString()}
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="font-medium">${(paymentInfo.payment_amount / 100).toFixed(2)}</span>
-                {getPaymentStatusBadge(paymentInfo.payment_status)}
-              </div>
-            </div>
-          </div>
+          {payments.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Credits</TableHead>
+                  <TableHead>Date</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {payments.map((payment) => (
+                  <TableRow key={payment.id}>
+                    <TableCell>${(payment.amount / 100).toFixed(2)}</TableCell>
+                    <TableCell>{getStatusBadge(payment.status)}</TableCell>
+                    <TableCell>{payment.leads_purchased}</TableCell>
+                    <TableCell>{new Date(payment.created_at).toLocaleDateString()}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <p className="text-center text-muted-foreground py-8">No payment history found</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Transaction History */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Credit Transactions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {transactions.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Balance After</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Date</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {transactions.map((transaction) => (
+                  <TableRow key={transaction.id}>
+                    <TableCell>{getTransactionTypeBadge(transaction.transaction_type)}</TableCell>
+                    <TableCell>
+                      <span className={transaction.credits_amount > 0 ? 'text-green-600' : 'text-red-600'}>
+                        {transaction.credits_amount > 0 ? '+' : ''}{transaction.credits_amount}
+                      </span>
+                    </TableCell>
+                    <TableCell>{transaction.balance_after}</TableCell>
+                    <TableCell className="max-w-xs truncate">{transaction.description}</TableCell>
+                    <TableCell>{new Date(transaction.created_at).toLocaleDateString()}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <p className="text-center text-muted-foreground py-8">No transactions found</p>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -41,6 +41,7 @@ import PartnerManagement from '@/components/admin/PartnerManagement';
 import PartnerLeads from '@/components/admin/PartnerLeads';
 import PartnerApplications from '@/components/admin/PartnerApplications';
 import PartnerPayments from '@/components/admin/PartnerPayments';
+import BillingManagement from '@/components/admin/BillingManagement';
 import { PartnersManagement } from '@/components/admin/PartnersManagement';
 import Footer from '@/components/Footer';
 
@@ -1746,6 +1747,8 @@ const Admin = () => {
         return <PartnerApplications />;
       case 'partner-payments':
         return <PartnerPayments />;
+      case 'billing':
+        return <BillingManagement />;
       default:
         return <div>Select a menu item</div>;
     }

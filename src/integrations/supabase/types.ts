@@ -946,6 +946,45 @@ export type Database = {
           },
         ]
       }
+      lead_credit_transactions: {
+        Row: {
+          balance_after: number
+          created_at: string
+          created_by: string | null
+          credits_amount: number
+          description: string | null
+          id: string
+          metadata: Json | null
+          reference_id: string | null
+          transaction_type: string
+          user_id: string | null
+        }
+        Insert: {
+          balance_after: number
+          created_at?: string
+          created_by?: string | null
+          credits_amount: number
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          reference_id?: string | null
+          transaction_type: string
+          user_id?: string | null
+        }
+        Update: {
+          balance_after?: number
+          created_at?: string
+          created_by?: string | null
+          credits_amount?: number
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          reference_id?: string | null
+          transaction_type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       lender_broker_applications: {
         Row: {
           additional_requirements: string | null
@@ -1054,6 +1093,36 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_lead_credits: {
+        Row: {
+          available_credits: number
+          created_at: string
+          id: string
+          total_purchased: number
+          total_used: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          available_credits?: number
+          created_at?: string
+          id?: string
+          total_purchased?: number
+          total_used?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          available_credits?: number
+          created_at?: string
+          id?: string
+          total_purchased?: number
+          total_used?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       partners: {
         Row: {
           application_type: string
@@ -1100,6 +1169,51 @@ export type Database = {
           phone?: string | null
           status?: string
           total_leads_assigned?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      payment_records: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string | null
+          id: string
+          leads_purchased: number | null
+          metadata: Json | null
+          payment_type: string
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string | null
+          id?: string
+          leads_purchased?: number | null
+          metadata?: Json | null
+          payment_type?: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string | null
+          id?: string
+          leads_purchased?: number | null
+          metadata?: Json | null
+          payment_type?: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -1651,6 +1765,17 @@ export type Database = {
       }
       is_user_superadmin: {
         Args: { _user_id: string }
+        Returns: boolean
+      }
+      update_partner_credits: {
+        Args: {
+          p_user_id: string
+          p_credit_change: number
+          p_transaction_type: string
+          p_description?: string
+          p_reference_id?: string
+          p_created_by?: string
+        }
         Returns: boolean
       }
       validate_email: {
