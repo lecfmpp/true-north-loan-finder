@@ -171,14 +171,18 @@ export const LeadsSimulation = () => {
     const fetchLeads = async () => {
       setLoading(true);
       try {
-        // Filter by country - map US to 'US' or 'USA', Canada to 'Canada' or 'Canadian'
-        const countryFilter = selectedCountry === 'US' ? ['US', 'USA', 'United States'] : ['Canada', 'Canadian'];
-        const {
-          data: quizResponses,
-          error
-        } = await supabase.from('quiz_responses').select('*').eq('status', 'new').in('country', countryFilter).order('created_at', {
-          ascending: false
-        }).limit(10);
+        // Fix country filter to match actual data format
+        const countryFilter = selectedCountry === 'US' 
+          ? ['US', 'USA', 'United States', 'USA'] 
+          : ['Canada', 'Canadian', 'CA', 'CAN'];
+        
+        const { data: quizResponses, error } = await supabase
+          .from('quiz_responses')
+          .select('*')
+          .eq('status', 'new')
+          .in('country', countryFilter)
+          .order('created_at', { ascending: false })
+          .limit(20); // Increased limit to show more recent leads
         if (error) throw error;
         if (quizResponses && quizResponses.length > 0) {
           const transformedLeads: Lead[] = quizResponses.map(response => {
@@ -215,7 +219,30 @@ export const LeadsSimulation = () => {
         setLoading(false);
       }
     };
+    
     fetchLeads();
+    
+    // Set up real-time subscription for new leads
+    const channel = supabase
+      .channel('quiz-responses-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'quiz_responses'
+        },
+        (payload) => {
+          console.log('New lead received:', payload);
+          // Refresh leads when new one comes in
+          fetchLeads();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [selectedCountry]); // Re-fetch when country changes
 
   const handleUnlockClick = (lead: Lead) => {
@@ -348,12 +375,12 @@ export const LeadsSimulation = () => {
           </div>
         </div>
 
-        <div className={`space-y-4 max-w-sm mx-auto md:max-w-none md:grid md:gap-6 md:space-y-0 ${leads.length >= 3 ? 'md:grid-cols-3' : leads.length === 2 ? 'md:grid-cols-2 md:justify-center md:max-w-2xl' : 'md:grid-cols-1 md:justify-center md:max-w-md'}`}>
+        <div className="space-y-4 max-w-sm mx-auto md:max-w-none md:grid md:grid-cols-3 md:gap-6 md:space-y-0">
           {loading ? <div className="col-span-3 text-center py-8">
               <div className="text-muted-foreground">Loading real leads...</div>
             </div> : leads.length === 0 ? <div className="col-span-3 text-center py-8">
               <div className="text-muted-foreground">No new leads available at the moment</div>
-            </div> : leads.slice(0, 3).map(lead => <Card key={lead.id} className="border-2 border-green-500 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 relative overflow-hidden hover:border-green-600">
+            </div> : leads.slice(0, 6).map(lead => <Card key={lead.id} className="border-2 border-green-500 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 relative overflow-hidden hover:border-green-600">
               
               <CardHeader className="relative z-20 pb-2 px-4 pt-4">
                 <div className="flex items-center justify-between mb-3">
