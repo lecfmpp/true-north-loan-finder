@@ -4,46 +4,70 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Content-Type': 'application/json',
 }
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { 
+      headers: corsHeaders,
+      status: 200
+    });
   }
 
   try {
+    console.log('Create partner function called')
+    
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(
-      req.headers.get('Authorization')?.replace('Bearer ', '') ?? ''
-    )
+    // Get authorization header
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      console.log('No authorization header')
+      return new Response(JSON.stringify({ error: 'Unauthorized - no auth header' }), {
+        status: 401,
+        headers: corsHeaders,
+      })
+    }
+
+    const token = authHeader.replace('Bearer ', '')
+    console.log('Token extracted, length:', token.length)
+
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token)
+    console.log('User check result:', { user: user?.id, error: userError?.message })
 
     if (userError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      return new Response(JSON.stringify({ error: 'Unauthorized - invalid token' }), {
         status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: corsHeaders,
       })
     }
 
     // Check if user is superadmin
-    const { data: roles } = await supabaseClient
+    const { data: roles, error: rolesError } = await supabaseClient
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
     
+    console.log('Roles check:', { roles, error: rolesError?.message })
+    
     const isSuperAdmin = roles?.some(r => r.role === 'superadmin')
     if (!isSuperAdmin) {
-      return new Response(JSON.stringify({ error: 'Insufficient permissions' }), {
+      return new Response(JSON.stringify({ error: 'Insufficient permissions - not superadmin' }), {
         status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: corsHeaders,
       })
     }
 
+    console.log('User is superadmin, proceeding with partner creation')
+
     const partnerData = await req.json()
+    console.log('Partner data received:', partnerData)
     
     // Create user account
     const { data: newUser, error: createUserError } = await supabaseClient.auth.admin.createUser({
@@ -56,11 +80,13 @@ serve(async (req) => {
       }
     })
 
+    console.log('User creation result:', { user: newUser?.user?.id, error: createUserError?.message })
+
     if (createUserError || !newUser.user) {
       console.error('Error creating user:', createUserError)
       return new Response(JSON.stringify({ error: createUserError?.message || 'Failed to create user account' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: corsHeaders,
       })
     }
 
@@ -77,11 +103,13 @@ serve(async (req) => {
         status: partnerData.status
       }])
 
+    console.log('Partner creation result:', { error: partnerError?.message })
+
     if (partnerError) {
       console.error('Error creating partner:', partnerError)
       return new Response(JSON.stringify({ error: 'Failed to create partner record' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: corsHeaders,
       })
     }
 
@@ -95,23 +123,27 @@ serve(async (req) => {
         assigned_by: user.id
       }])
 
+    console.log('Role assignment result:', { role: roleToAssign, error: roleError?.message })
+
     if (roleError) {
       console.error('Role assignment error:', roleError)
       // Don't fail the whole operation if role assignment fails
     }
 
+    console.log('Partner created successfully')
+
     return new Response(JSON.stringify({ 
       success: true, 
       message: `Partner created successfully with ${roleToAssign} role` 
     }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: corsHeaders,
     })
 
   } catch (error) {
     console.error('Error in create-partner function:', error)
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+    return new Response(JSON.stringify({ error: 'Internal server error: ' + error.message }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: corsHeaders,
     })
   }
 })
