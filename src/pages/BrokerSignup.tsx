@@ -530,7 +530,7 @@ const BrokerSignup = () => {
                       </div>
                       
                       <div className="border-t pt-4">
-                        <div className="text-base sm:text-lg text-muted-foreground mb-2">Your Monthly Income</div>
+                        <div className="text-base sm:text-lg text-muted-foreground mb-2">Your Monthly Extra Income</div>
                         <div className="text-4xl sm:text-5xl lg:text-7xl font-black text-secondary mb-2">
                           ${monthlyProfit.toLocaleString()}
                         </div>
