@@ -41,7 +41,18 @@ serve(async (req) => {
     const confirmationToken = crypto.randomUUID()
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours from now
     
-    // Store the confirmation token in the database
+    // First, invalidate any existing tokens for this email
+    const { error: invalidateError } = await supabaseClient
+      .from('partner_confirmation_tokens')
+      .update({ used: true })
+      .eq('email', email)
+      .eq('used', false)
+
+    if (invalidateError) {
+      console.error('Error invalidating old tokens:', invalidateError)
+    }
+    
+    // Store the new confirmation token in the database
     const { error: tokenError } = await supabaseClient
       .from('partner_confirmation_tokens')
       .insert({
@@ -59,8 +70,9 @@ serve(async (req) => {
       })
     }
 
-    // Construct confirmation URL
-    const confirmationUrl = `${Deno.env.get('SITE_URL') || 'https://truenorthbusinessloan.ca'}/confirm-partner?token=${confirmationToken}`
+    // Construct confirmation URL - use the request origin if SITE_URL is not set
+    const baseUrl = Deno.env.get('SITE_URL') || req.headers.get('origin') || 'https://truenorthbusinessloan.ca'
+    const confirmationUrl = `${baseUrl}/confirm-partner?token=${confirmationToken}`
     
     // Create email template
     const emailHtml = `
