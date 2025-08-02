@@ -86,7 +86,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Fetch lead information
     const { data: lead, error: leadError } = await supabase
       .from('quiz_responses')
-      .select('id, name, email, phone, loan_amount, monthly_revenue, time_in_business, credit_score, use_of_funds, website, created_at, score')
+      .select('id, name, email, phone, loan_amount, monthly_revenue, time_in_business, credit_score, use_of_funds, website, created_at, score, company_name, country, city_province')
       .eq('id', leadId)
       .single();
 
@@ -98,45 +98,101 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Check for associated applications
+    // Check for associated applications and get complete application data
     let applicationInfo = '';
+    let hasApplication = false;
+    let applicationDocuments = [];
     
     // Check for USA application
     const { data: usaApp } = await supabase
       .from('usa_applications')
-      .select('application_reference_number, status, created_at')
+      .select('application_reference_number, status, created_at, document_files, legal_corporation_name, principal_name, business_type, use_of_funds, years_in_business, months_in_business')
       .eq('quiz_response_id', leadId)
       .single();
       
     // Check for Canadian application  
     const { data: canApp } = await supabase
       .from('canadian_applications')
-      .select('application_reference_number, status, created_at')
+      .select('application_reference_number, status, created_at, document_files, legal_business_name, principal_owner_name, type_of_entity, use_of_funds, business_start_date')
       .eq('quiz_response_id', leadId)
       .single();
 
     if (usaApp) {
+      hasApplication = true;
+      applicationDocuments = usaApp.document_files || [];
+      const timeInBusiness = `${usaApp.years_in_business} years, ${usaApp.months_in_business} months`;
       applicationInfo = `
-      <div class="info-item highlight">
-        <div class="info-label">📄 USA Application Status</div>
-        <div class="info-value">Reference: ${usaApp.application_reference_number}<br>Status: ${usaApp.status}<br>Submitted: ${new Date(usaApp.created_at).toLocaleDateString()}</div>
+      <div class="info-item highlight" style="grid-column: 1 / -1;">
+        <div class="info-label">📄 Complete USA Application Submitted</div>
+        <div class="info-value">
+          <strong>Reference:</strong> ${usaApp.application_reference_number}<br>
+          <strong>Status:</strong> ${usaApp.status}<br>
+          <strong>Business Name:</strong> ${usaApp.legal_corporation_name}<br>
+          <strong>Principal:</strong> ${usaApp.principal_name}<br>
+          <strong>Business Type:</strong> ${usaApp.business_type}<br>
+          <strong>Time in Business:</strong> ${timeInBusiness}<br>
+          <strong>Use of Funds:</strong> ${usaApp.use_of_funds}<br>
+          <strong>Submitted:</strong> ${new Date(usaApp.created_at).toLocaleDateString()}<br>
+          <strong>Documents Provided:</strong> ${applicationDocuments.length} files
+        </div>
       </div>`;
     } else if (canApp) {
+      hasApplication = true;
+      applicationDocuments = canApp.document_files || [];
+      const businessAge = canApp.business_start_date ? 
+        `Since ${new Date(canApp.business_start_date).toLocaleDateString()}` : 
+        'Not specified';
       applicationInfo = `
-      <div class="info-item highlight">
-        <div class="info-label">📄 Canadian Application Status</div>
-        <div class="info-value">Reference: ${canApp.application_reference_number}<br>Status: ${canApp.status}<br>Submitted: ${new Date(canApp.created_at).toLocaleDateString()}</div>
+      <div class="info-item highlight" style="grid-column: 1 / -1;">
+        <div class="info-label">📄 Complete Canadian Application Submitted</div>
+        <div class="info-value">
+          <strong>Reference:</strong> ${canApp.application_reference_number}<br>
+          <strong>Status:</strong> ${canApp.status}<br>
+          <strong>Business Name:</strong> ${canApp.legal_business_name}<br>
+          <strong>Principal:</strong> ${canApp.principal_owner_name}<br>
+          <strong>Entity Type:</strong> ${canApp.type_of_entity}<br>
+          <strong>Business Started:</strong> ${businessAge}<br>
+          <strong>Use of Funds:</strong> ${canApp.use_of_funds}<br>
+          <strong>Submitted:</strong> ${new Date(canApp.created_at).toLocaleDateString()}<br>
+          <strong>Documents Provided:</strong> ${applicationDocuments.length} files
+        </div>
       </div>`;
     }
 
-    // Helper function to get credit score number from classification
-    const getCreditScoreNumber = (creditScore: string) => {
+    // Helper function to get credit score number and description from classification
+    const getCreditScoreDescription = (creditScore: string) => {
       switch (creditScore) {
-        case "excellent": return "750+";
-        case "good": return "700-749";
-        case "fair": return "650-699";
-        case "poor": return "Below 650";
-        default: return creditScore;
+        case "excellent": return { range: "750+", description: "Excellent credit - qualifies for best rates and terms" };
+        case "good": return { range: "700-749", description: "Good credit - qualifies for competitive rates" };
+        case "fair": return { range: "650-699", description: "Fair credit - may need specialized lenders" };
+        case "poor": return { range: "Below 650", description: "Poor credit - alternative financing options available" };
+        case "unsure": return { range: "Unknown", description: "Credit score to be verified during application process" };
+        default: return { range: creditScore, description: "Credit score provided" };
+      }
+    };
+
+    // Helper function to get time in business description
+    const getTimeInBusinessDescription = (timeInBusiness: string) => {
+      switch (timeInBusiness) {
+        case "startup": return "Startup business (less than 6 months)";
+        case "6-12": return "New business (6-12 months in operation)";
+        case "1-2": return "Growing business (1-2 years in operation)";
+        case "2-5": return "Established business (2-5 years in operation)";
+        case "5+": return "Mature business (5+ years in operation)";
+        default: return timeInBusiness;
+      }
+    };
+
+    // Helper function to get use of funds description
+    const getUseOfFundsDescription = (useOfFunds: string) => {
+      switch (useOfFunds) {
+        case "equipment": return "Equipment & Machinery Purchase";
+        case "inventory": return "Inventory & Stock Investment";
+        case "expansion": return "Business Expansion & Growth";
+        case "working-capital": return "Working Capital & Cash Flow";
+        case "real-estate": return "Real Estate & Property Investment";
+        case "other": return "Other Business Purposes";
+        default: return useOfFunds;
       }
     };
 
@@ -399,34 +455,52 @@ const handler = async (req: Request): Promise<Response> => {
 
                 <div class="lead-info">
                     <div class="info-item highlight">
-                        <div class="info-label">💰 Funding Amount</div>
+                        <div class="info-label">💰 Funding Amount Requested</div>
                         <div class="info-value">${formatAmount(lead.loan_amount)}</div>
                     </div>
                     <div class="info-item highlight">
-                        <div class="info-label">📊 Monthly Revenue</div>
+                        <div class="info-label">📊 Monthly Business Revenue</div>
                         <div class="info-value">${formatAmount(lead.monthly_revenue)}</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-label">📞 Phone Number</div>
+                        <div class="info-label">📞 Direct Phone Number</div>
                         <div class="info-value">${formatPhone(lead.phone)}</div>
                     </div>
+                    ${lead.company_name ? `
+                    <div class="info-item">
+                        <div class="info-label">🏢 Company Name</div>
+                        <div class="info-value"><strong>${lead.company_name}</strong></div>
+                    </div>` : ''}
+                    ${lead.country && lead.city_province ? `
+                    <div class="info-item">
+                        <div class="info-label">📍 Business Location</div>
+                        <div class="info-value">${lead.city_province}, ${lead.country}</div>
+                    </div>` : ''}
                     <div class="info-item">
                         <div class="info-label">⏱️ Time in Business</div>
-                        <div class="info-value">${lead.time_in_business}</div>
+                        <div class="info-value">${getTimeInBusinessDescription(lead.time_in_business)}</div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">💳 Credit Score</div>
-                        <div class="info-value">${getCreditScoreNumber(lead.credit_score)} (${lead.credit_score})</div>
+                        <div class="info-value">${getCreditScoreDescription(lead.credit_score).range} - ${getCreditScoreDescription(lead.credit_score).description}</div>
                     </div>
                     <div class="info-item highlight">
                         <div class="info-label">⭐ Qualification Score</div>
-                        <div class="info-value">${lead.score}/100 (${lead.score >= 85 ? "Excellent" : lead.score >= 70 ? "Great" : lead.score >= 55 ? "Good" : "Fair"})</div>
+                        <div class="info-value">${lead.score}/100 (${lead.score >= 85 ? "Excellent - Prime candidate for competitive rates" : lead.score >= 70 ? "Great - Strong qualification profile" : lead.score >= 55 ? "Good - Solid financing candidate" : "Fair - Alternative financing options available"})</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-label">🎯 Use of Funds</div>
-                        <div class="info-value">${lead.use_of_funds}</div>
+                        <div class="info-label">🎯 Intended Use of Funds</div>
+                        <div class="info-value">${getUseOfFundsDescription(lead.use_of_funds)}</div>
                     </div>
                     ${applicationInfo}
+                    ${hasApplication && applicationDocuments.length > 0 ? `
+                    <div class="info-item highlight" style="grid-column: 1 / -1;">
+                        <div class="info-label">📎 Application Documents Available</div>
+                        <div class="info-value">
+                          Complete application with ${applicationDocuments.length} supporting documents has been submitted. 
+                          Contact immediately as applicant expects same-day response with funding options.
+                        </div>
+                    </div>` : ''}
                 </div>
 
                 ${lead.website ? `

@@ -1,14 +1,77 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, TrendingUp, Users, DollarSign, Clock, Phone } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { CheckCircle, TrendingUp, Users, DollarSign, Clock, Phone, MapPin, Building2 } from "lucide-react";
 import { LeadsSimulation } from "@/components/LeadsSimulation";
 import SEOHead from "@/components/SEOHead";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
 import adminDashboardPreview from "@/assets/admin-dashboard-preview.jpg";
 
 const BrokerSignup = () => {
+  const [recentLeads, setRecentLeads] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRecentLeads = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('quiz_responses')
+          .select('id, name, company_name, email, loan_amount, monthly_revenue, country, city_province, created_at, score')
+          .order('created_at', { ascending: false })
+          .limit(20);
+
+        if (error) throw error;
+        setRecentLeads(data || []);
+      } catch (error) {
+        console.error('Error fetching recent leads:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecentLeads();
+  }, []);
+
+  const groupedLeads = recentLeads.reduce((acc, lead) => {
+    const country = lead.country || 'Unknown';
+    if (!acc[country]) {
+      acc[country] = [];
+    }
+    acc[country].push(lead);
+    return acc;
+  }, {} as Record<string, any[]>);
+
+  // Get last 3 leads for each country
+  const getTopLeadsPerCountry = () => {
+    return Object.entries(groupedLeads).map(([country, leads]) => ({
+      country,
+      leads: (leads as any[]).slice(0, 3)
+    }));
+  };
+
+  const formatAmount = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
+
+  const getTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays}d ago`;
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -342,6 +405,132 @@ const BrokerSignup = () => {
         </div>
       </section>
 
+
+      {/* Recent Qualified Leads */}
+      <section className="py-20 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold font-sans text-primary mb-4">
+              Recent Qualified Leads
+            </h2>
+            <h3 className="text-2xl font-semibold text-secondary mb-8">See What You're Missing</h3>
+            <p className="text-xl text-muted-foreground max-w-4xl mx-auto font-serif">
+              These are real, qualified leads from the past week. Each one represents a potential deal that could be yours as a partner.
+            </p>
+          </div>
+
+          {loading ? (
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <p className="text-muted-foreground mt-2">Loading recent leads...</p>
+            </div>
+          ) : (
+            <div className="space-y-8 max-w-6xl mx-auto">
+              {getTopLeadsPerCountry().map(({ country, leads }) => (
+                <div key={country} className="space-y-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <MapPin className="h-5 w-5 text-secondary" />
+                    <h4 className="text-xl font-semibold text-primary">{country} - Last 3 Leads</h4>
+                  </div>
+                  
+                  <div className="grid md:grid-cols-3 gap-4">
+                    {leads.map((lead, index) => (
+                      <Card key={lead.id} className="border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300">
+                        <CardContent className="p-6">
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <Badge variant="secondary" className="text-xs">
+                                {getTimeAgo(lead.created_at)}
+                              </Badge>
+                              <Badge variant={lead.score >= 85 ? "default" : lead.score >= 70 ? "secondary" : "outline"} className="text-xs">
+                                {lead.score}/100
+                              </Badge>
+                            </div>
+                            
+                            <div>
+                              <h5 className="font-semibold text-primary">{lead.name}</h5>
+                              {lead.company_name && (
+                                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                  <Building2 className="h-3 w-3" />
+                                  {lead.company_name}
+                                </div>
+                              )}
+                              <p className="text-sm text-muted-foreground">
+                                {lead.city_province}
+                              </p>
+                            </div>
+
+                            <div className="space-y-2">
+                              <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Loan Amount:</span>
+                                <span className="font-semibold text-primary">{formatAmount(lead.loan_amount)}</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Monthly Revenue:</span>
+                                <span className="font-semibold text-secondary">{formatAmount(lead.monthly_revenue)}</span>
+                              </div>
+                            </div>
+
+                            <div className="pt-2 border-t">
+                              <p className="text-xs text-muted-foreground">
+                                ✓ Pre-qualified & verified
+                              </p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                  
+                  <div className="text-center">
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" className="text-sm">
+                          Show me more qualified leads from {country}
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Exclusive Trial Access - $500</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <p className="text-muted-foreground">
+                            Get exclusive access to all qualified leads from {country} with our trial partnership program.
+                          </p>
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-secondary" />
+                              <span className="text-sm">7-day trial period</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-secondary" />
+                              <span className="text-sm">Unlimited leads in your territory</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-secondary" />
+                              <span className="text-sm">Complete lead profiles & documents</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-secondary" />
+                              <span className="text-sm">Instant email & dashboard access</span>
+                            </div>
+                          </div>
+                          <Button size="lg" className="w-full">
+                            Start Trial for $500
+                          </Button>
+                          <p className="text-xs text-muted-foreground text-center">
+                            Pay-per-lead pricing starts after trial period
+                          </p>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Final CTA */}
       <section className="py-20 bg-gradient-to-r from-primary to-secondary text-primary-foreground">

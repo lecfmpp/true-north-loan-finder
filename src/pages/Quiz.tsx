@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   ArrowLeft, 
   ArrowRight, 
@@ -53,6 +54,8 @@ interface QuizData {
   loanAmount: number[];
   useOfFunds: string;
   timeInBusiness: string;
+  foundingMonth: string;
+  foundingYear: string;
   monthlyRevenue: number[];
   creditScore: string;
   name: string;
@@ -146,6 +149,8 @@ const Quiz = () => {
     loanAmount: [50000],
     useOfFunds: "",
     timeInBusiness: "",
+    foundingMonth: "",
+    foundingYear: "",
     monthlyRevenue: [25000],
     creditScore: "",
     name: "",
@@ -261,11 +266,20 @@ const Quiz = () => {
   const calculateScore = () => {
     let score = 60; // Base score
     
-    // Time in business scoring
-    if (quizData.timeInBusiness === "5+") score += 25;
-    else if (quizData.timeInBusiness === "2-5") score += 20;
-    else if (quizData.timeInBusiness === "1-2") score += 10;
-    else if (quizData.timeInBusiness === "6-12") score += 5;
+    // Calculate business age from founding date
+    if (quizData.foundingMonth && quizData.foundingYear) {
+      const currentDate = new Date();
+      const foundingDate = new Date(parseInt(quizData.foundingYear), parseInt(quizData.foundingMonth) - 1);
+      const ageInMonths = (currentDate.getFullYear() - foundingDate.getFullYear()) * 12 + 
+                         (currentDate.getMonth() - foundingDate.getMonth());
+      
+      // Time in business scoring based on age in months
+      if (ageInMonths >= 60) score += 25; // 5+ years
+      else if (ageInMonths >= 24) score += 20; // 2-5 years  
+      else if (ageInMonths >= 12) score += 10; // 1-2 years
+      else if (ageInMonths >= 6) score += 5; // 6-12 months
+      // Startups (< 6 months) get no bonus points
+    }
     
     // Revenue scoring
     if (quizData.monthlyRevenue[0] >= 50000) score += 15;
@@ -528,11 +542,26 @@ const Quiz = () => {
         await supabase.auth.signOut();
       }
       
+      // Convert founding date to time in business format
+      let timeInBusiness = '';
+      if (data.foundingMonth && data.foundingYear) {
+        const currentDate = new Date();
+        const foundingDate = new Date(parseInt(data.foundingYear), parseInt(data.foundingMonth) - 1);
+        const ageInMonths = (currentDate.getFullYear() - foundingDate.getFullYear()) * 12 + 
+                           (currentDate.getMonth() - foundingDate.getMonth());
+        
+        if (ageInMonths >= 60) timeInBusiness = '5+';
+        else if (ageInMonths >= 24) timeInBusiness = '2-5';
+        else if (ageInMonths >= 12) timeInBusiness = '1-2';
+        else if (ageInMonths >= 6) timeInBusiness = '6-12';
+        else timeInBusiness = 'startup';
+      }
+
       // Save to local Supabase database
       const { data: savedResponse, error } = await supabase.from('quiz_responses').insert({
         loan_amount: data.loanAmount[0],
         use_of_funds: data.useOfFunds,
-        time_in_business: data.timeInBusiness,
+        time_in_business: timeInBusiness,
         monthly_revenue: data.monthlyRevenue[0],
         credit_score: data.creditScore,
         name: data.name,
@@ -563,7 +592,7 @@ const Quiz = () => {
               monthly_revenue: data.monthlyRevenue[0],
               credit_score: data.creditScore,
               use_of_funds: data.useOfFunds,
-              time_in_business: data.timeInBusiness,
+              time_in_business: timeInBusiness,
               score: score
             },
             submissionId: savedResponse.id
@@ -634,7 +663,7 @@ const Quiz = () => {
     switch (currentStep) {
       case 1: return quizData.loanAmount[0] > 0;
       case 2: return quizData.useOfFunds !== "";
-      case 3: return quizData.timeInBusiness !== "";
+      case 3: return quizData.foundingMonth !== "" && quizData.foundingYear !== "";
       case 4: return quizData.monthlyRevenue[0] > 0;
       case 5: return quizData.creditScore !== "";
       case 6: return quizData.name && quizData.email && quizData.phone && quizData.companyName && quizData.country && quizData.stateProvince;
@@ -948,55 +977,111 @@ const Quiz = () => {
                 </div>
               )}
 
-              {/* Step 3: Time in Business */}
+              {/* Step 3: Company Founding Date */}
               {currentStep === 3 && (
                 <div className="space-y-5 md:space-y-8 animate-fade-in">
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-3 mb-2 md:mb-3">
                       <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-green-500 rounded-full flex items-center justify-center">
-                        <Clock className="h-4 sm:h-5 md:h-6 w-4 sm:w-5 md:w-6 text-white" />
+                        <Calendar className="h-4 sm:h-5 md:h-6 w-4 sm:w-5 md:w-6 text-white" />
                       </div>
                       <h3 className="text-lg sm:text-xl md:text-2xl font-bold font-sans text-primary leading-tight">
-                        How long has your business been operating?
+                        When was your company founded?
                       </h3>
                     </div>
                     <p className="text-sm sm:text-base md:text-lg text-muted-foreground font-serif">
-                      Time in business is a key factor for loan qualification
+                      Help us understand your business maturity (month and year is sufficient)
                     </p>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
-                    {timeInBusinessOptions.map((option) => {
-                      const IconComponent = option.icon;
-                      const isSelected = quizData.timeInBusiness === option.id;
-                      
-                      return (
-                        <Card
-                          key={option.id}
-                          className={cn(
-                            "cursor-pointer transition-all duration-300 group hover:shadow-lg border-2",
-                            isSelected 
-                              ? "border-secondary bg-secondary/10 shadow-md" 
-                              : "border-border hover:border-secondary/50 hover:bg-secondary/5"
-                          )}
-                          onClick={() => handleOptionSelect('timeInBusiness', option.id)}
-                        >
-                          <CardContent className="p-3 sm:p-4 md:p-6 flex items-center gap-3 md:gap-4 relative min-h-[48px]">
-                            {isSelected && (
-                              <div className="absolute top-3 right-3">
-                                <Check className="h-5 w-5 md:h-6 md:w-6 text-secondary animate-scale-in" />
-                              </div>
-                            )}
-                            <IconComponent className="h-6 w-6 md:h-8 md:w-8 text-secondary group-hover:scale-110 transition-transform flex-shrink-0" />
-                            <div className="flex-1">
-                              <h3 className="text-base md:text-lg font-semibold text-primary">{option.label}</h3>
-                              <p className="text-xs md:text-sm text-muted-foreground">{option.description}</p>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="founding-month" className="text-sm font-medium text-primary">
+                        Founding Month
+                      </Label>
+                      <Select 
+                        value={quizData.foundingMonth} 
+                        onValueChange={(value) => setQuizData({...quizData, foundingMonth: value})}
+                      >
+                        <SelectTrigger className="h-12">
+                          <SelectValue placeholder="Select month" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">January</SelectItem>
+                          <SelectItem value="2">February</SelectItem>
+                          <SelectItem value="3">March</SelectItem>
+                          <SelectItem value="4">April</SelectItem>
+                          <SelectItem value="5">May</SelectItem>
+                          <SelectItem value="6">June</SelectItem>
+                          <SelectItem value="7">July</SelectItem>
+                          <SelectItem value="8">August</SelectItem>
+                          <SelectItem value="9">September</SelectItem>
+                          <SelectItem value="10">October</SelectItem>
+                          <SelectItem value="11">November</SelectItem>
+                          <SelectItem value="12">December</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="founding-year" className="text-sm font-medium text-primary">
+                        Founding Year
+                      </Label>
+                      <Select 
+                        value={quizData.foundingYear} 
+                        onValueChange={(value) => setQuizData({...quizData, foundingYear: value})}
+                      >
+                        <SelectTrigger className="h-12">
+                          <SelectValue placeholder="Select year" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: 30 }, (_, i) => {
+                            const year = new Date().getFullYear() - i;
+                            return (
+                              <SelectItem key={year} value={year.toString()}>
+                                {year}
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
+
+                  {quizData.foundingMonth && quizData.foundingYear && (
+                    <div className="bg-secondary/10 rounded-lg p-4 text-center">
+                      <div className="text-lg font-semibold text-primary">
+                        Company Age: {(() => {
+                          const currentDate = new Date();
+                          const foundingDate = new Date(parseInt(quizData.foundingYear), parseInt(quizData.foundingMonth) - 1);
+                          const ageInMonths = (currentDate.getFullYear() - foundingDate.getFullYear()) * 12 + 
+                                           (currentDate.getMonth() - foundingDate.getMonth());
+                          const years = Math.floor(ageInMonths / 12);
+                          const months = ageInMonths % 12;
+                          
+                          if (years > 0) {
+                            return months > 0 ? `${years} year${years > 1 ? 's' : ''}, ${months} month${months > 1 ? 's' : ''}` : `${years} year${years > 1 ? 's' : ''}`;
+                          } else {
+                            return `${months} month${months > 1 ? 's' : ''}`;
+                          }
+                        })()}
+                      </div>
+                      <div className="text-sm text-muted-foreground mt-1">
+                        {(() => {
+                          const currentDate = new Date();
+                          const foundingDate = new Date(parseInt(quizData.foundingYear), parseInt(quizData.foundingMonth) - 1);
+                          const ageInMonths = (currentDate.getFullYear() - foundingDate.getFullYear()) * 12 + 
+                                           (currentDate.getMonth() - foundingDate.getMonth());
+                          
+                          if (ageInMonths >= 60) return "Mature business - excellent qualification";
+                          else if (ageInMonths >= 24) return "Established business - strong qualification";
+                          else if (ageInMonths >= 12) return "Growing business - good qualification";
+                          else if (ageInMonths >= 6) return "New business - moderate qualification";
+                          else return "Startup business - alternative financing options";
+                        })()}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
