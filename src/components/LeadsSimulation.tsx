@@ -339,7 +339,7 @@ export const LeadsSimulation = () => {
       
       if (!session?.user) {
         // Redirect to partner auth for login/signup
-        window.location.href = '/partner-auth';
+        window.location.href = '/auth';
         return;
       }
 
