@@ -147,7 +147,7 @@ const UrgencyCountdown = ({
   if (!lastSubmissionTime) {
     return <span className="font-semibold text-destructive">Lead waiting for immediate response</span>;
   }
-  return <span className="font-semibold text-destructive">Lead submitted {timeSinceSubmission} - Waiting for response</span>;
+  return <span className="font-semibold text-destructive">Lead is waiting for response</span>;
 };
 export const LeadsSimulation = () => {
   const [showModal, setShowModal] = useState(false);
