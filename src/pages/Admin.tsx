@@ -561,16 +561,16 @@ const Admin = () => {
       return;
     }
 
-    // Double-check recipient is still approved before sending
+    // Double-check recipient is still active in partners table before sending
     try {
       const {
         data: verifiedRecipient,
         error
-      } = await supabase.from('lender_broker_applications').select('status').eq('id', recipientId).eq('status', 'approved').single();
+      } = await supabase.from('partners').select('status').eq('id', recipientId).eq('status', 'active').single();
       if (error || !verifiedRecipient) {
         toast({
           title: "Error",
-          description: "Recipient is no longer approved to receive leads.",
+          description: "Recipient is no longer an active partner.",
           variant: "destructive"
         });
         // Refresh the partners list
@@ -611,10 +611,10 @@ const Admin = () => {
       console.error('Error sending lead email:', error);
 
       // Handle specific error cases
-      if (error.message?.includes('not an approved partner')) {
+      if (error.message?.includes('not an active partner')) {
         toast({
           title: "Access Denied",
-          description: "Cannot send lead to non-approved partners. The recipient list has been updated.",
+          description: "Cannot send lead to inactive partners. The recipient list has been updated.",
           variant: "destructive"
         });
         // Refresh the partners list
@@ -1745,7 +1745,7 @@ const Admin = () => {
                                 </div>
                               ) : (
                                 <div className="text-sm text-muted-foreground">
-                                  No approved partners
+                                  No active partners
                                 </div>
                               )}
                             </TableCell>}
