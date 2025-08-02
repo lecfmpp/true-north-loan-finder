@@ -65,12 +65,11 @@ serve(async (req) => {
       });
     }
 
-    // Get partner information
+    // Get partner information - remove user_id filter since partners are managed by admin
     const { data: partner, error: partnerError } = await supabaseClient
       .from('partners')
       .select('*')
       .eq('id', partnerId)
-      .eq('user_id', user.id)
       .single();
 
     if (partnerError || !partner) {
