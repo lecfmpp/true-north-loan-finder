@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { CheckCircle, TrendingUp, Users, DollarSign, Clock, Phone, MapPin, Building2 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { CheckCircle, TrendingUp, Users, DollarSign, Clock, Phone, MapPin, Building2, Info } from "lucide-react";
 import { LeadsSimulation } from "@/components/LeadsSimulation";
 import SEOHead from "@/components/SEOHead";
 import Header from "@/components/Header";
@@ -22,11 +23,11 @@ const BrokerSignup = () => {
   const [conversionRate, setConversionRate] = useState(0);
   const [selectedPackage, setSelectedPackage] = useState(100); // Default to 100 leads
   
-  // Package options with pricing
+  // Package options with pricing (15% discount progression)
   const packages = [
-    { leads: 50, name: "Starter", description: "Perfect for testing", costPerLead: 95 },
-    { leads: 100, name: "Professional", description: "Most popular choice", costPerLead: 81 }, // 15% discount
-    { leads: 200, name: "Enterprise", description: "Maximum volume", costPerLead: 69 } // 15% discount from previous
+    { leads: 50, name: "Starter", description: "Perfect for testing", costPerLead: 70 },
+    { leads: 100, name: "Professional", description: "Most popular choice", costPerLead: 60 }, // 15% discount
+    { leads: 200, name: "Enterprise", description: "Maximum volume", costPerLead: 51 } // 15% discount from previous
   ];
   
   // Calculate ROI values
@@ -416,41 +417,73 @@ const BrokerSignup = () => {
               </div>
 
               {/* Step 2: Financial Inputs */}
-              <div>
-                <h4 className="text-lg font-semibold mb-4 text-primary text-center">Step 2: Enter Your Financial Details</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                  <div>
-                    <label className="block text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">Average Commission Per Deal ($)</label>
-                    <input 
-                      type="number" 
-                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg border border-border rounded-md bg-background"
-                      placeholder="e.g., 5000"
-                      value={avgCommission}
-                      onChange={(e) => setAvgCommission(Number(e.target.value) || 0)}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">Cost Per Lead ($)</label>
-                    <input 
-                      type="number" 
-                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg border border-border rounded-md bg-background"
-                      placeholder="e.g., 95"
-                      value={costPerLead}
-                      onChange={(e) => setCostPerLead(Number(e.target.value) || 0)}
-                    />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="block text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">Sales Conversion Rate (%)</label>
-                    <input 
-                      type="number" 
-                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg border border-border rounded-md bg-background"
-                      placeholder="e.g., 15"
-                      value={conversionRate}
-                      onChange={(e) => setConversionRate(Number(e.target.value) || 0)}
-                    />
+              <TooltipProvider>
+                <div>
+                  <h4 className="text-lg font-semibold mb-4 text-primary text-center">Step 2: Enter Your Financial Details</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                    <div>
+                      <label className="flex items-center gap-2 text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">
+                        Average Commission Per Deal ($)
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">The average amount you earn in commission when you successfully close a business loan deal</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </label>
+                      <input 
+                        type="number" 
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg border border-border rounded-md bg-background"
+                        placeholder="e.g., 5000"
+                        value={avgCommission}
+                        onChange={(e) => setAvgCommission(Number(e.target.value) || 0)}
+                      />
+                    </div>
+                    <div>
+                      <label className="flex items-center gap-2 text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">
+                        Cost Per Lead ($)
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">How much you pay for each qualified lead. This is automatically filled based on your selected package</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </label>
+                      <input 
+                        type="number" 
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg border border-border rounded-md bg-background"
+                        placeholder="e.g., 70"
+                        value={costPerLead}
+                        onChange={(e) => setCostPerLead(Number(e.target.value) || 0)}
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="flex items-center gap-2 text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">
+                        Sales Conversion Rate (%)
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">What percentage of leads you typically convert into funded deals. Industry average is 10-20%</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </label>
+                      <input 
+                        type="number" 
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg border border-border rounded-md bg-background"
+                        placeholder="e.g., 15"
+                        value={conversionRate}
+                        onChange={(e) => setConversionRate(Number(e.target.value) || 0)}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
+              </TooltipProvider>
               
               {/* Step 3: Results */}
               {(avgCommission > 0 && costPerLead > 0 && conversionRate > 0) && (
