@@ -119,8 +119,13 @@ const BrokerSignup = () => {
 
   const handlePayment = async () => {
     try {
-      // Direct redirect to Stripe payment link
-      window.open('https://buy.stripe.com/aFadR98YN9bjcJkeaaawo05', '_blank');
+      // Create URL with return URL parameter for Stripe to redirect after payment
+      const currentDomain = window.location.origin;
+      const successUrl = `${currentDomain}/broker-payment-success`;
+      
+      // Direct redirect to Stripe payment link with success URL
+      const stripeUrl = `https://buy.stripe.com/aFadR98YN9bjcJkeaaawo05?success_url=${encodeURIComponent(successUrl)}`;
+      window.open(stripeUrl, '_blank');
     } catch (error) {
       console.error('Error opening payment link:', error);
       toast.error('Failed to open payment link. Please try again.');
