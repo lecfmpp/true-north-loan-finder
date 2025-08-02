@@ -73,21 +73,15 @@ export default function BillingManagement() {
       // Fetch payment records
       const { data: paymentsData, error: paymentsError } = await supabase
         .from('payment_records')
-        .select(`
-          *,
-          profiles:user_id (display_name)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (paymentsError) throw paymentsError;
 
-      // Fetch partner credits
+      // Fetch partner credits  
       const { data: creditsData, error: creditsError } = await supabase
         .from('partner_lead_credits')
-        .select(`
-          *,
-          profiles:user_id (display_name)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (creditsError) throw creditsError;
@@ -95,10 +89,7 @@ export default function BillingManagement() {
       // Fetch recent transactions
       const { data: transactionsData, error: transactionsError } = await supabase
         .from('lead_credit_transactions')
-        .select(`
-          *,
-          profiles:user_id (display_name)
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(50);
 
@@ -297,7 +288,7 @@ export default function BillingManagement() {
               <TableBody>
                 {payments.map((payment) => (
                   <TableRow key={payment.id}>
-                    <TableCell>{payment.profiles?.display_name || 'Unknown'}</TableCell>
+                    <TableCell>{payment.user_id}</TableCell>
                     <TableCell>${(payment.amount / 100).toFixed(2)}</TableCell>
                     <TableCell>{getStatusBadge(payment.status)}</TableCell>
                     <TableCell className="capitalize">{payment.payment_type}</TableCell>
@@ -341,7 +332,7 @@ export default function BillingManagement() {
                         <option value="">Select a partner</option>
                         {partnerCredits.map((partner) => (
                           <option key={partner.id} value={partner.id}>
-                            {partner.profiles?.display_name || 'Unknown'} ({partner.available_credits} credits)
+                            {partner.user_id} ({partner.available_credits} credits)
                           </option>
                         ))}
                       </select>
@@ -391,7 +382,7 @@ export default function BillingManagement() {
                   
                   return (
                     <TableRow key={credit.id}>
-                      <TableCell>{credit.profiles?.display_name || 'Unknown'}</TableCell>
+                      <TableCell>{credit.user_id}</TableCell>
                       <TableCell>
                         <Badge variant={credit.available_credits > 0 ? 'default' : 'secondary'}>
                           {credit.available_credits}
@@ -441,7 +432,7 @@ export default function BillingManagement() {
               <TableBody>
                 {transactions.map((transaction) => (
                   <TableRow key={transaction.id}>
-                    <TableCell>{transaction.profiles?.display_name || 'Unknown'}</TableCell>
+                    <TableCell>{transaction.user_id}</TableCell>
                     <TableCell>{getTransactionTypeBadge(transaction.transaction_type)}</TableCell>
                     <TableCell>
                       <span className={transaction.credits_amount > 0 ? 'text-green-600' : 'text-red-600'}>
