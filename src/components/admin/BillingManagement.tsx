@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
@@ -32,8 +33,10 @@ interface PartnerCredit {
   total_purchased: number;
   total_used: number;
   created_at: string;
-  profiles?: {
-    display_name: string | null;
+  partners?: {
+    name: string;
+    email: string;
+    company_name: string;
   } | null;
 }
 
@@ -45,8 +48,10 @@ interface CreditTransaction {
   balance_after: number;
   description: string;
   created_at: string;
-  profiles?: {
-    display_name: string | null;
+  partners?: {
+    name: string;
+    email: string;
+    company_name: string;
   } | null;
 }
 
@@ -78,18 +83,24 @@ export default function BillingManagement() {
 
       if (paymentsError) throw paymentsError;
 
-      // Fetch partner credits  
+      // Fetch partner credits with partner information
       const { data: creditsData, error: creditsError } = await supabase
         .from('partner_lead_credits')
-        .select('*')
+        .select(`
+          *,
+          partners!inner(name, email, company_name)
+        `)
         .order('created_at', { ascending: false });
 
       if (creditsError) throw creditsError;
 
-      // Fetch recent transactions
+      // Fetch recent transactions with partner information
       const { data: transactionsData, error: transactionsError } = await supabase
         .from('lead_credit_transactions')
-        .select('*')
+        .select(`
+          *,
+          partners!inner(name, email, company_name)
+        `)
         .order('created_at', { ascending: false })
         .limit(50);
 
@@ -321,21 +332,24 @@ export default function BillingManagement() {
                   <div className="space-y-4">
                     <div>
                       <Label>Partner</Label>
-                      <select
-                        className="w-full mt-1 p-2 border rounded-md"
+                      <Select
                         value={selectedPartner?.id || ''}
-                        onChange={(e) => {
-                          const partner = partnerCredits.find(p => p.id === e.target.value);
+                        onValueChange={(value) => {
+                          const partner = partnerCredits.find(p => p.id === value);
                           setSelectedPartner(partner || null);
                         }}
                       >
-                        <option value="">Select a partner</option>
-                        {partnerCredits.map((partner) => (
-                          <option key={partner.id} value={partner.id}>
-                            {partner.user_id} ({partner.available_credits} credits)
-                          </option>
-                        ))}
-                      </select>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select a partner" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border shadow-lg z-50">
+                          {partnerCredits.map((partner) => (
+                            <SelectItem key={partner.id} value={partner.id}>
+                              {partner.partners?.name || 'Unknown Partner'} - {partner.partners?.company_name || 'No Company'} ({partner.available_credits} credits)
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div>
                       <Label>Credit Adjustment</Label>
@@ -382,7 +396,7 @@ export default function BillingManagement() {
                   
                   return (
                     <TableRow key={credit.id}>
-                      <TableCell>{credit.user_id}</TableCell>
+                      <TableCell>{credit.partners?.name || 'Unknown Partner'}</TableCell>
                       <TableCell>
                         <Badge variant={credit.available_credits > 0 ? 'default' : 'secondary'}>
                           {credit.available_credits}
@@ -432,7 +446,7 @@ export default function BillingManagement() {
               <TableBody>
                 {transactions.map((transaction) => (
                   <TableRow key={transaction.id}>
-                    <TableCell>{transaction.user_id}</TableCell>
+                    <TableCell>{transaction.partners?.name || 'Unknown Partner'}</TableCell>
                     <TableCell>{getTransactionTypeBadge(transaction.transaction_type)}</TableCell>
                     <TableCell>
                       <span className={transaction.credits_amount > 0 ? 'text-green-600' : 'text-red-600'}>
