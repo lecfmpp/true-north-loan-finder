@@ -44,10 +44,14 @@ interface ApplicationFormData {
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [matchingLeads, setMatchingLeads] = useState(0);
+  const [isPasswordReset, setIsPasswordReset] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
   const { signIn, signUp, user, isAdmin } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -75,7 +79,16 @@ const Auth = () => {
   });
 
   useEffect(() => {
-    if (user) {
+    // Check for password reset mode in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = urlParams.get('mode');
+    if (mode === 'reset') {
+      setIsPasswordReset(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (user && !isPasswordReset) {
       // Redirect admin users to admin page, regular users to home
       if (isAdmin) {
         navigate('/admin');
@@ -83,7 +96,7 @@ const Auth = () => {
         navigate('/');
       }
     }
-  }, [user, isAdmin, navigate]);
+  }, [user, isAdmin, navigate, isPasswordReset]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,6 +110,88 @@ const Auth = () => {
     setIsLoading(true);
     await signUp(email, password, displayName);
     setIsLoading(false);
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/auth?mode=reset`
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Password Reset Sent",
+        description: "Check your email for password reset instructions."
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send password reset email.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      toast({
+        title: "Error", 
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.updateUser({ 
+        password: newPassword 
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "Password updated successfully! You can now sign in with your new password."
+      });
+      
+      // Clear the password reset state and redirect
+      setIsPasswordReset(false);
+      window.history.replaceState({}, '', '/auth');
+      
+      // Redirect based on user role
+      if (isAdmin) {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update password.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const formatPhoneNumber = (value: string) => {
@@ -306,15 +401,69 @@ const Auth = () => {
     );
   }
 
+  // If in password reset mode, show password reset form
+  if (isPasswordReset && user) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-12">
+          <div className="max-w-md mx-auto">
+            <Card>
+              <CardHeader>
+                <CardTitle>Set New Password</CardTitle>
+                <CardDescription>
+                  Please enter your new password below.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handlePasswordReset} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="new-password">New Password</Label>
+                    <Input
+                      id="new-password"
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Enter new password"
+                      required
+                      minLength={6}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm-password">Confirm Password</Label>
+                    <Input
+                      id="confirm-password"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Confirm new password"
+                      required
+                      minLength={6}
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? 'Updating Password...' : 'Update Password'}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
           <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="forgot">Forgot Password</TabsTrigger>
               <TabsTrigger value="broker">Broker/Lender</TabsTrigger>
             </TabsList>
             
@@ -350,6 +499,35 @@ const Auth = () => {
                     </div>
                     <Button type="submit" className="w-full" disabled={isLoading}>
                       {isLoading ? 'Signing In...' : 'Sign In'}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="forgot">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Reset Password</CardTitle>
+                  <CardDescription>
+                    Enter your email address and we'll send you a link to reset your password.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleForgotPassword} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="reset-email">Email</Label>
+                      <Input
+                        id="reset-email"
+                        type="email"
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                        placeholder="Enter your email address"
+                        required
+                      />
+                    </div>
+                    <Button type="submit" className="w-full" disabled={isLoading}>
+                      {isLoading ? 'Sending Reset Link...' : 'Send Reset Link'}
                     </Button>
                   </form>
                 </CardContent>
