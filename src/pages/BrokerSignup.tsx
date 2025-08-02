@@ -23,7 +23,7 @@ const BrokerSignup = () => {
           .from('quiz_responses')
           .select('id, name, company_name, email, loan_amount, monthly_revenue, country, city_province, created_at, score')
           .order('created_at', { ascending: false })
-          .limit(20);
+          .limit(10); // Get more leads to show variety
 
         if (error) throw error;
         setRecentLeads(data || []);
@@ -444,7 +444,7 @@ const BrokerSignup = () => {
           ) : (
             <div className="max-w-6xl mx-auto">
               {/* Show the 3 most recent leads */}
-              <div className="grid md:grid-cols-3 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 {recentLeads.slice(0, 3).map((lead) => (
                   <Card key={lead.id} className="border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300">
                     <CardContent className="p-6">
