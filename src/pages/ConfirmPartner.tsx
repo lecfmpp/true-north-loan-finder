@@ -53,18 +53,18 @@ export default function ConfirmPartner() {
         return;
       }
 
-      // Get partner information
+      // Get partner information from unified partners table
       const { data: partnerData, error: partnerError } = await supabase
-        .from('lender_broker_applications')
+        .from('partners')
         .select('*')
-        .eq('applicant_email', tokenData.email)
+        .eq('email', tokenData.email)
         .single();
 
       if (partnerError || !partnerData) {
         setTokenValid(false);
         toast({
           title: "Partner Not Found",
-          description: "No partner application found for this email.",
+          description: "No partner found for this email.",
           variant: "destructive"
         });
         return;
@@ -112,12 +112,12 @@ export default function ConfirmPartner() {
     try {
       // Create user account with the partner email and password
       const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: partnerInfo.applicant_email,
+        email: partnerInfo.email,
         password: password,
         options: {
           emailRedirectTo: `https://truenorthbusinessloan.ca/admin`,
           data: {
-            display_name: partnerInfo.applicant_name,
+            display_name: partnerInfo.name,
             company_name: partnerInfo.company_name,
             application_type: partnerInfo.application_type
           }
@@ -128,7 +128,7 @@ export default function ConfirmPartner() {
         // If user already exists, try to update their password
         if (authError.message.includes('already registered')) {
           const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-            partnerInfo.applicant_email,
+            partnerInfo.email,
             {
               redirectTo: `https://truenorthbusinessloan.ca/auth?mode=reset`
             }
@@ -144,12 +144,11 @@ export default function ConfirmPartner() {
           throw authError;
         }
       } else {
-        // Update partner application status to approved and active
+        // Update partner status to pending (awaiting admin approval)
         const { error: updateError } = await supabase
-          .from('lender_broker_applications')
+          .from('partners')
           .update({
-            status: 'approved',
-            operational_status: 'active',
+            status: 'pending',
             user_id: authData.user?.id,
             updated_at: new Date().toISOString()
           })
@@ -233,7 +232,7 @@ export default function ConfirmPartner() {
           </div>
           <CardTitle className="text-2xl">Confirm Your Account</CardTitle>
           <p className="text-muted-foreground">
-            Welcome {partnerInfo?.applicant_name}! Set up your password to access the partner portal.
+            Welcome {partnerInfo?.name}! Set up your password to access the partner portal.
           </p>
         </CardHeader>
         
@@ -241,10 +240,10 @@ export default function ConfirmPartner() {
           <div className="mb-6 p-4 bg-muted rounded-lg">
             <h3 className="font-semibold mb-2">Account Details</h3>
             <div className="space-y-1 text-sm">
-              <p><strong>Name:</strong> {partnerInfo?.applicant_name}</p>
+              <p><strong>Name:</strong> {partnerInfo?.name}</p>
               <p><strong>Company:</strong> {partnerInfo?.company_name}</p>
               <p><strong>Type:</strong> {partnerInfo?.application_type === 'broker' ? 'Broker' : 'Lender'}</p>
-              <p><strong>Email:</strong> {partnerInfo?.applicant_email}</p>
+              <p><strong>Email:</strong> {partnerInfo?.email}</p>
             </div>
           </div>
 
