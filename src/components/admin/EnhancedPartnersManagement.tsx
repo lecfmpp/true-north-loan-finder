@@ -180,23 +180,26 @@ export default function EnhancedPartnersManagement() {
 
   const createPartnerManually = async (partnerData: any) => {
     try {
-      // First create the application record
-      const { data: newApplication, error: createError } = await supabase
-        .from('lender_broker_applications')
-        .insert([{
-          applicant_name: partnerData.name,
-          applicant_email: partnerData.email,
+      console.log('Creating partner manually:', partnerData);
+      
+      // Use the create-partner edge function which handles permissions properly
+      const { data: result, error: createError } = await supabase.functions.invoke('create-partner', {
+        body: {
+          name: partnerData.name,
+          email: partnerData.email,
           company_name: partnerData.company_name,
-          applicant_phone: partnerData.phone,
+          phone: partnerData.phone,
           application_type: partnerData.application_type,
-          status: 'pending', // Always start as pending
-          operational_status: 'pending',
-          admin_notes: 'Created manually by admin'
-        }])
-        .select()
-        .single();
+          status: 'pending' // Always start as pending until they confirm
+        }
+      });
 
-      if (createError) throw createError;
+      if (createError) {
+        console.error('Partner creation error:', createError);
+        throw createError;
+      }
+
+      console.log('Partner created successfully:', result);
 
       // Send confirmation email automatically
       try {
@@ -236,9 +239,10 @@ export default function EnhancedPartnersManagement() {
 
       fetchApplications();
     } catch (error: any) {
+      console.error('Failed to create partner:', error);
       toast({
         title: "Error",
-        description: "Failed to create partner.",
+        description: error.message || "Failed to create partner.",
         variant: "destructive"
       });
     }
