@@ -359,7 +359,6 @@ const BrokerSignup = () => {
             <CardContent>
               <ul className="space-y-3">
                 <li className="flex items-center"><CheckCircle className="h-5 w-5 text-secondary mr-3" />Pre-screened for qualification</li>
-                <li className="flex items-center"><CheckCircle className="h-5 w-5 text-secondary mr-3" />Pre-screened for qualification</li>
                 <li className="flex items-center"><CheckCircle className="h-5 w-5 text-secondary mr-3" />Expecting immediate response</li>
               </ul>
             </CardContent>
