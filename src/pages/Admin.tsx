@@ -25,7 +25,7 @@ const getCreditScoreNumber = (creditScore: string) => {
     default: return creditScore;
   }
 };
-import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Trash2, Phone, ChevronDown, ChevronRight, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign, Settings as SettingsIcon, ExternalLink } from 'lucide-react';
+import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Trash2, Phone, ChevronDown, ChevronRight, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign, Settings as SettingsIcon, ExternalLink, TrendingUp } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import Header from '@/components/Header';
@@ -42,6 +42,7 @@ import PartnerLeads from '@/components/admin/PartnerLeads';
 import PartnerApplications from '@/components/admin/PartnerApplications';
 import PartnerPayments from '@/components/admin/PartnerPayments';
 import BillingManagement from '@/components/admin/BillingManagement';
+import ROIManagement from '@/components/admin/ROIManagement';
 import { PartnersManagement } from '@/components/admin/PartnersManagement';
 import Footer from '@/components/Footer';
 
@@ -1292,6 +1293,16 @@ const Admin = () => {
           title: "Settings",
           value: "settings",
           icon: SettingsIcon
+        },
+        {
+          title: "ROI Dashboard",
+          value: "roi",
+          icon: TrendingUp
+        },
+        {
+          title: "Billing Management",
+          value: "billing",
+          icon: DollarSign
         }
       ];
     } else if (isPartner) {
@@ -1749,6 +1760,8 @@ const Admin = () => {
         return <PartnerPayments />;
       case 'billing':
         return <BillingManagement />;
+      case 'roi':
+        return <ROIManagement />;
       default:
         return <div>Select a menu item</div>;
     }
