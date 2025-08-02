@@ -109,6 +109,7 @@ const Admin = () => {
   const [leadToDelete, setLeadToDelete] = useState<string | null>(null);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [bulkDelete, setBulkDelete] = useState(false); // Track if it's bulk delete
+  const [leadAssignments, setLeadAssignments] = useState<Record<string, any>>({});
   const [leadBookings, setLeadBookings] = useState<Array<{
     id: string;
     booking_status: string;
@@ -143,12 +144,88 @@ const Admin = () => {
     window.open(`tel:${phone}`, '_self');
   };
 
+  const fetchLeadAssignments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('lead_assignments')
+        .select(`
+          *,
+          partners!inner(id, name, email)
+        `);
+      
+      if (error) throw error;
+      
+      const assignmentMap: Record<string, any> = {};
+      data?.forEach(assignment => {
+        assignmentMap[assignment.quiz_response_id] = assignment;
+      });
+      
+      setLeadAssignments(assignmentMap);
+    } catch (error) {
+      console.error('Error fetching lead assignments:', error);
+    }
+  };
+
+  const assignLeadToPartner = async (leadId: string, partnerId: string) => {
+    try {
+      // Check if lead is already assigned
+      if (leadAssignments[leadId]) {
+        toast({
+          title: "Lead Already Assigned",
+          description: `This lead is already assigned to ${leadAssignments[leadId].partners.name}`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('lead_assignments')
+        .insert({
+          quiz_response_id: leadId,
+          partner_id: partnerId,
+          assigned_by: user?.id,
+          status: 'New'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Lead assigned to partner successfully",
+      });
+
+      fetchLeadAssignments(); // Refresh assignments
+    } catch (error) {
+      console.error('Error assigning lead:', error);
+      toast({
+        title: "Error",
+        description: "Failed to assign lead to partner",
+        variant: "destructive",
+      });
+    }
+  };
+
   const assignLeadsToPartner = async (leadIds: string[], partnerId: string) => {
     try {
-      const assignments = leadIds.map(leadId => ({
+      // Filter out already assigned leads
+      const unassignedLeads = leadIds.filter(leadId => !leadAssignments[leadId]);
+      const alreadyAssigned = leadIds.filter(leadId => leadAssignments[leadId]);
+
+      if (alreadyAssigned.length > 0) {
+        toast({
+          title: "Some Leads Already Assigned",
+          description: `${alreadyAssigned.length} lead(s) were already assigned and skipped`,
+          variant: "destructive",
+        });
+      }
+
+      if (unassignedLeads.length === 0) return;
+
+      const assignments = unassignedLeads.map(leadId => ({
         quiz_response_id: leadId,
         partner_id: partnerId,
-        assigned_by: user?.id
+        assigned_by: user?.id,
+        status: 'New'
       }));
 
       const { error } = await supabase
@@ -159,12 +236,12 @@ const Admin = () => {
 
       toast({
         title: "Success",
-        description: `${leadIds.length} lead(s) assigned to partner successfully`,
+        description: `${unassignedLeads.length} lead(s) assigned to partner successfully`,
       });
 
       setSelectedLeads([]);
       setSelectedPartner('');
-      fetchLeads(); // Refresh leads to show assignment
+      fetchLeadAssignments(); // Refresh assignments
     } catch (error) {
       console.error('Error assigning leads:', error);
       toast({
@@ -210,6 +287,7 @@ const Admin = () => {
         fetchApplicationsCount();
         fetchApprovedPartners();
         fetchPartners();
+        fetchLeadAssignments();
       }
       fetchUsaApplicationsCount();
       fetchCanadianApplicationsCount();
@@ -1404,10 +1482,13 @@ const Admin = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Status</SelectItem>
-                        <SelectItem value="new">New</SelectItem>
-                        <SelectItem value="contacted">Contacted</SelectItem>
-                        <SelectItem value="qualified">Qualified</SelectItem>
-                        <SelectItem value="closed">Closed</SelectItem>
+                        <SelectItem value="New">New</SelectItem>
+                        <SelectItem value="No Answer">No Answer</SelectItem>
+                        <SelectItem value="Wrong Number">Wrong Number</SelectItem>
+                        <SelectItem value="Contacted">Contacted</SelectItem>
+                        <SelectItem value="Application Sent">Application Sent</SelectItem>
+                        <SelectItem value="Disqualified">Disqualified</SelectItem>
+                        <SelectItem value="Loan Approved">Loan Approved</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -1509,6 +1590,7 @@ const Admin = () => {
                         <TableHead className="min-w-[140px]">Email Sequences</TableHead>
                         <TableHead className="min-w-[100px]">Actions</TableHead>
                         {isSuperAdmin && <TableHead className="min-w-[200px]">Send to Partner</TableHead>}
+                        {isSuperAdmin && <TableHead className="min-w-[180px]">Assign Lead</TableHead>}
                         {isSuperAdmin && <TableHead className="min-w-[250px]">Custom Email</TableHead>}
                         {isSuperAdmin && <TableHead className="min-w-[100px]">Admin</TableHead>}
                       </TableRow>
@@ -1567,21 +1649,30 @@ const Admin = () => {
                           </TableCell>
                           <TableCell>
                             <Select value={lead.status} onValueChange={value => updateLeadStatus(lead.id, value)}>
-                              <SelectTrigger className="w-32">
+                              <SelectTrigger className="w-36">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="new">
-                                  <Badge className={getStatusColor('new')}>New</Badge>
+                                <SelectItem value="New">
+                                  <Badge className="bg-blue-100 text-blue-800">New</Badge>
                                 </SelectItem>
-                                <SelectItem value="contacted">
-                                  <Badge className={getStatusColor('contacted')}>Contacted</Badge>
+                                <SelectItem value="No Answer">
+                                  <Badge className="bg-gray-100 text-gray-800">No Answer</Badge>
                                 </SelectItem>
-                                <SelectItem value="qualified">
-                                  <Badge className={getStatusColor('qualified')}>Qualified</Badge>
+                                <SelectItem value="Wrong Number">
+                                  <Badge className="bg-red-100 text-red-800">Wrong Number</Badge>
                                 </SelectItem>
-                                <SelectItem value="closed">
-                                  <Badge className={getStatusColor('closed')}>Closed</Badge>
+                                <SelectItem value="Contacted">
+                                  <Badge className="bg-yellow-100 text-yellow-800">Contacted</Badge>
+                                </SelectItem>
+                                <SelectItem value="Application Sent">
+                                  <Badge className="bg-purple-100 text-purple-800">Application Sent</Badge>
+                                </SelectItem>
+                                <SelectItem value="Disqualified">
+                                  <Badge className="bg-red-100 text-red-800">Disqualified</Badge>
+                                </SelectItem>
+                                <SelectItem value="Loan Approved">
+                                  <Badge className="bg-green-100 text-green-800">Loan Approved</Badge>
                                 </SelectItem>
                               </SelectContent>
                             </Select>
@@ -1684,7 +1775,12 @@ const Admin = () => {
                                         </SelectItem>)}
                                     </SelectContent>
                                   </Select>
-                                  {selectedRecipients[lead.id] && <Button size="sm" onClick={() => {
+                                  {selectedRecipients[lead.id] && <Button size="sm" onClick={async () => {
+                              // First assign the lead if not already assigned
+                              if (!leadAssignments[lead.id]) {
+                                await assignLeadToPartner(lead.id, selectedRecipients[lead.id]);
+                              }
+                              // Then send the email
                               sendLeadEmail(lead.id, selectedRecipients[lead.id]);
                               // Clear selection after sending
                               setSelectedRecipients(prev => ({
@@ -1699,6 +1795,40 @@ const Admin = () => {
                               ) : (
                                 <div className="text-sm text-muted-foreground">
                                   No approved partners
+                                </div>
+                              )}
+                            </TableCell>}
+                          {isSuperAdmin && <TableCell>
+                              {leadAssignments[lead.id] ? (
+                                <div className="flex flex-col gap-1">
+                                  <div className="text-sm font-medium text-green-700">
+                                    Assigned to: {leadAssignments[lead.id].partners.name}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {format(new Date(leadAssignments[lead.id].assigned_at), 'MMM dd, yyyy')}
+                                  </div>
+                                </div>
+                              ) : partners.length > 0 ? (
+                                <div className="flex items-center gap-2">
+                                  <Select value="" onValueChange={(partnerId) => assignLeadToPartner(lead.id, partnerId)}>
+                                    <SelectTrigger className="w-40">
+                                      <SelectValue placeholder="Assign to partner" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {partners.map(partner => (
+                                        <SelectItem key={partner.id} value={partner.id}>
+                                          <div className="flex items-center gap-2">
+                                            <UserCheck className="w-4 h-4" />
+                                            {partner.name}
+                                          </div>
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              ) : (
+                                <div className="text-sm text-muted-foreground">
+                                  No active partners
                                 </div>
                               )}
                             </TableCell>}

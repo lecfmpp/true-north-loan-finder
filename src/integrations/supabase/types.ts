@@ -940,8 +940,10 @@ export type Database = {
           assigned_by: string
           created_at: string
           id: string
+          loan_value: number | null
           notes: string | null
           partner_id: string
+          partner_notes: string | null
           quiz_response_id: string
           status: string
           updated_at: string
@@ -951,8 +953,10 @@ export type Database = {
           assigned_by: string
           created_at?: string
           id?: string
+          loan_value?: number | null
           notes?: string | null
           partner_id: string
+          partner_notes?: string | null
           quiz_response_id: string
           status?: string
           updated_at?: string
@@ -962,8 +966,10 @@ export type Database = {
           assigned_by?: string
           created_at?: string
           id?: string
+          loan_value?: number | null
           notes?: string | null
           partner_id?: string
+          partner_notes?: string | null
           quiz_response_id?: string
           status?: string
           updated_at?: string
