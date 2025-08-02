@@ -103,23 +103,37 @@ const handler = async (req: Request): Promise<Response> => {
     let hasApplication = false;
     let applicationDocuments = [];
     
+    console.log(`Checking for applications associated with lead ID: ${leadId}`);
+    
     // Check for USA application
-    const { data: usaApp } = await supabase
+    const { data: usaApp, error: usaError } = await supabase
       .from('usa_applications')
       .select('application_reference_number, status, created_at, document_files, legal_corporation_name, principal_name, business_type, use_of_funds, years_in_business, months_in_business')
       .eq('quiz_response_id', leadId)
       .single();
       
+    if (usaError && usaError.code !== 'PGRST116') {
+      console.error('Error checking USA application:', usaError);
+    }
+      
     // Check for Canadian application  
-    const { data: canApp } = await supabase
+    const { data: canApp, error: canError } = await supabase
       .from('canadian_applications')
       .select('application_reference_number, status, created_at, document_files, legal_business_name, principal_owner_name, type_of_entity, use_of_funds, business_start_date')
       .eq('quiz_response_id', leadId)
       .single();
+      
+    if (canError && canError.code !== 'PGRST116') {
+      console.error('Error checking Canadian application:', canError);
+    }
+
+    console.log(`USA Application found: ${!!usaApp}, Canadian Application found: ${!!canApp}`);
 
     if (usaApp) {
       hasApplication = true;
-      applicationDocuments = usaApp.document_files || [];
+      applicationDocuments = Array.isArray(usaApp.document_files) ? usaApp.document_files : [];
+      console.log(`USA Application documents: ${JSON.stringify(applicationDocuments)}`);
+      
       const timeInBusiness = `${usaApp.years_in_business} years, ${usaApp.months_in_business} months`;
       applicationInfo = `
       <div class="info-item highlight" style="grid-column: 1 / -1;">
@@ -138,7 +152,9 @@ const handler = async (req: Request): Promise<Response> => {
       </div>`;
     } else if (canApp) {
       hasApplication = true;
-      applicationDocuments = canApp.document_files || [];
+      applicationDocuments = Array.isArray(canApp.document_files) ? canApp.document_files : [];
+      console.log(`Canadian Application documents: ${JSON.stringify(applicationDocuments)}`);
+      
       const businessAge = canApp.business_start_date ? 
         `Since ${new Date(canApp.business_start_date).toLocaleDateString()}` : 
         'Not specified';
@@ -158,6 +174,8 @@ const handler = async (req: Request): Promise<Response> => {
         </div>
       </div>`;
     }
+
+    console.log(`Final check - hasApplication: ${hasApplication}, documents count: ${applicationDocuments.length}`);
 
     // Helper function to get credit score number and description from classification
     const getCreditScoreDescription = (creditScore: string) => {
