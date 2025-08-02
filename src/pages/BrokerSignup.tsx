@@ -22,11 +22,11 @@ const BrokerSignup = () => {
   const [conversionRate, setConversionRate] = useState(0);
   const [selectedPackage, setSelectedPackage] = useState(100); // Default to 100 leads
   
-  // Package options
+  // Package options with pricing
   const packages = [
-    { leads: 50, name: "Starter", description: "Perfect for testing" },
-    { leads: 100, name: "Professional", description: "Most popular choice" },
-    { leads: 200, name: "Enterprise", description: "Maximum volume" }
+    { leads: 50, name: "Starter", description: "Perfect for testing", costPerLead: 95 },
+    { leads: 100, name: "Professional", description: "Most popular choice", costPerLead: 81 }, // 15% discount
+    { leads: 200, name: "Enterprise", description: "Maximum volume", costPerLead: 69 } // 15% discount from previous
   ];
   
   // Calculate ROI values
@@ -35,6 +35,14 @@ const BrokerSignup = () => {
   const totalMonthlyCommission = totalMonthlyDeals * avgCommission;
   const monthlyProfit = totalMonthlyCommission - totalMonthlySpend;
   const calculatedROI = totalMonthlySpend > 0 ? Math.round((monthlyProfit / totalMonthlySpend) * 100) : 0;
+
+  // Auto-fill cost per lead when package is selected
+  useEffect(() => {
+    const selectedPkg = packages.find(pkg => pkg.leads === selectedPackage);
+    if (selectedPkg) {
+      setCostPerLead(selectedPkg.costPerLead);
+    }
+  }, [selectedPackage]);
 
   useEffect(() => {
     const fetchRecentLeads = async () => {
@@ -393,9 +401,13 @@ const BrokerSignup = () => {
                       <CardContent className="p-4 text-center">
                         <div className="text-2xl font-bold text-secondary mb-1">{pkg.leads}</div>
                         <div className="text-sm font-medium text-primary mb-1">{pkg.name}</div>
-                        <div className="text-xs text-muted-foreground">{pkg.description}</div>
+                        <div className="text-lg font-bold text-green-600 mb-1">${pkg.costPerLead}/lead</div>
+                        <div className="text-xs text-muted-foreground mb-2">{pkg.description}</div>
                         {pkg.leads === 100 && (
-                          <Badge variant="secondary" className="mt-2 text-xs">Most Popular</Badge>
+                          <Badge variant="secondary" className="mt-1 text-xs">Most Popular</Badge>
+                        )}
+                        {pkg.leads === 200 && (
+                          <Badge variant="outline" className="mt-1 text-xs text-green-600 border-green-600">Best Value</Badge>
                         )}
                       </CardContent>
                     </Card>
