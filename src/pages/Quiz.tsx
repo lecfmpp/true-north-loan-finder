@@ -571,7 +571,8 @@ const Quiz = () => {
         website: data.website,
         country: data.country,
         city_province: data.stateProvince,
-        score: score
+        score: score,
+        status: 'New'
       }).select().single();
 
       if (error) throw error;
