@@ -93,7 +93,7 @@ export const useCanadianApplicationDraft = () => {
         form_data: formData as any, // Cast to any for JSON storage
         current_step: currentStep,
         quiz_response_id: quizResponseId || null,
-        last_updated: new Date().toISOString(),
+        // Note: last_updated is automatically set by database trigger, don't manually set it
       };
 
       if (draftId) {

@@ -457,7 +457,7 @@ const CanadianApplication = () => {
         average_monthly_cc_volume: formData.average_monthly_cc_volume ? parseInt(formData.average_monthly_cc_volume) : null,
         document_files: uploadedFileNames,
         // Add required status field and tracking fields
-        status: 'new',
+        status: 'applicant', // Must be one of: applicant, in_review, approved, rejected
         quiz_response_id: quizResponseId,
         lead_source: quizResponseId ? 'quiz' : 'direct',
         conversion_stage: 'application',
