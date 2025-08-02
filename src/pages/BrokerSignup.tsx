@@ -603,20 +603,6 @@ const BrokerSignup = () => {
 
 
 
-      {/* Final CTA */}
-      <section className="py-20 bg-gradient-to-r from-primary to-secondary text-primary-foreground">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl lg:text-4xl font-bold font-sans mb-6">
-            Ready to Scale Your Brokerage?
-          </h2>
-          <p className="text-xl mb-8 opacity-90 max-w-3xl mx-auto font-serif">
-            Join successful brokers who are already receiving high-quality leads daily and increasing their funding volume by 300% or more.
-          </p>
-          <Button size="xl" variant="secondary" className="text-lg px-8" onClick={handlePayment}>
-            Get Started Today
-          </Button>
-        </div>
-      </section>
 
       <Footer />
     </div>
