@@ -280,10 +280,12 @@ const Admin = () => {
       
       if (isSuperAdmin) {
         fetchLeads();
-        fetchApplicationsCount();
         fetchPartners();
         fetchLeadAssignments();
       }
+      
+      // All admins need application counts for menu items
+      fetchApplicationsCount();
       fetchUsaApplicationsCount();
       fetchCanadianApplicationsCount();
     }
