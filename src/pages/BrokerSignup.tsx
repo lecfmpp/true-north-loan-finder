@@ -18,9 +18,9 @@ const BrokerSignup = () => {
   const [loading, setLoading] = useState(true);
   
   // ROI Calculator state
-  const [avgCommission, setAvgCommission] = useState(0);
-  const [costPerLead, setCostPerLead] = useState(0);
-  const [conversionRate, setConversionRate] = useState(0);
+  const [avgCommission, setAvgCommission] = useState<number | ''>('');
+  const [costPerLead, setCostPerLead] = useState<number | ''>('');
+  const [conversionRate, setConversionRate] = useState<number | ''>('');
   const [selectedPackage, setSelectedPackage] = useState(100); // Default to 100 leads
   
   // Package options with pricing (15% discount progression)
@@ -30,10 +30,14 @@ const BrokerSignup = () => {
     { leads: 200, name: "Enterprise", description: "Maximum volume", costPerLead: 51 } // 15% discount from previous
   ];
   
-  // Calculate ROI values
-  const totalMonthlySpend = selectedPackage * costPerLead;
-  const totalMonthlyDeals = selectedPackage * (conversionRate / 100);
-  const totalMonthlyCommission = totalMonthlyDeals * avgCommission;
+  // Calculate ROI values - convert empty strings to 0 for calculations
+  const avgCommNum = typeof avgCommission === 'number' ? avgCommission : 0;
+  const costPerLeadNum = typeof costPerLead === 'number' ? costPerLead : 0;
+  const conversionRateNum = typeof conversionRate === 'number' ? conversionRate : 0;
+  
+  const totalMonthlySpend = selectedPackage * costPerLeadNum;
+  const totalMonthlyDeals = selectedPackage * (conversionRateNum / 100);
+  const totalMonthlyCommission = totalMonthlyDeals * avgCommNum;
   const monthlyProfit = totalMonthlyCommission - totalMonthlySpend;
   const calculatedROI = totalMonthlySpend > 0 ? Math.round((monthlyProfit / totalMonthlySpend) * 100) : 0;
 
@@ -90,6 +94,16 @@ const BrokerSignup = () => {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(amount);
+  };
+
+  const formatCurrency = (value: number | string) => {
+    if (value === '' || value === 0) return '';
+    const num = typeof value === 'string' ? parseFloat(value) : value;
+    return new Intl.NumberFormat('en-US').format(num);
+  };
+
+  const parseCurrency = (value: string) => {
+    return parseFloat(value.replace(/,/g, '')) || 0;
   };
 
   const getTimeAgo = (dateString: string) => {
@@ -434,11 +448,14 @@ const BrokerSignup = () => {
                         </Tooltip>
                       </label>
                       <input 
-                        type="number" 
+                        type="text" 
                         className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg border border-border rounded-md bg-background"
-                        placeholder="e.g., 5000"
-                        value={avgCommission}
-                        onChange={(e) => setAvgCommission(Number(e.target.value) || 0)}
+                        placeholder="5,000"
+                        value={formatCurrency(avgCommission)}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/,/g, '');
+                          setAvgCommission(value === '' ? '' : parseCurrency(e.target.value));
+                        }}
                       />
                     </div>
                     <div>
@@ -454,11 +471,14 @@ const BrokerSignup = () => {
                         </Tooltip>
                       </label>
                       <input 
-                        type="number" 
+                        type="text" 
                         className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg border border-border rounded-md bg-background"
-                        placeholder="e.g., 70"
-                        value={costPerLead}
-                        onChange={(e) => setCostPerLead(Number(e.target.value) || 0)}
+                        placeholder="70"
+                        value={formatCurrency(costPerLead)}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/,/g, '');
+                          setCostPerLead(value === '' ? '' : parseCurrency(e.target.value));
+                        }}
                       />
                     </div>
                     <div className="sm:col-span-2">
@@ -474,11 +494,14 @@ const BrokerSignup = () => {
                         </Tooltip>
                       </label>
                       <input 
-                        type="number" 
+                        type="text" 
                         className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg border border-border rounded-md bg-background"
-                        placeholder="e.g., 15"
-                        value={conversionRate}
-                        onChange={(e) => setConversionRate(Number(e.target.value) || 0)}
+                        placeholder="15"
+                        value={conversionRate === '' ? '' : conversionRate.toString()}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setConversionRate(value === '' ? '' : Number(value) || 0);
+                        }}
                       />
                     </div>
                   </div>
@@ -486,7 +509,7 @@ const BrokerSignup = () => {
               </TooltipProvider>
               
               {/* Step 3: Results */}
-              {(avgCommission > 0 && costPerLead > 0 && conversionRate > 0) && (
+              {(avgCommNum > 0 && costPerLeadNum > 0 && conversionRateNum > 0) && (
                 <div>
                   <h4 className="text-lg font-semibold mb-4 text-primary text-center">Step 3: Your Monthly Profit Projection</h4>
                   <div className="mt-8 p-4 sm:p-6 bg-gradient-to-br from-secondary/10 via-background to-secondary/20 rounded-xl border-2 border-secondary/30">
