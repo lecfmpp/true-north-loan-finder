@@ -216,7 +216,7 @@ export const LeadsSimulation = () => {
             const industry = getIndustry(response.use_of_funds);
             const businessName = (
               <span>
-                {maskText(firstName)} {industry}
+                <span className="blur-sm select-none">{firstName}</span> {industry}
               </span>
             );
             return {
