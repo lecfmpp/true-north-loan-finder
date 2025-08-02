@@ -1286,7 +1286,7 @@ const Admin = () => {
           count: applicationsCount
         },
         {
-          title: "Partners Management",
+          title: "Active Partners",
           value: "partners",
           icon: Users,
           count: partners.length

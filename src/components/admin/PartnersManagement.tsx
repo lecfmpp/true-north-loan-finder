@@ -177,7 +177,7 @@ export function PartnersManagement() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Partners Management</h2>
+        <h2 className="text-xl font-semibold">Active Partners</h2>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={() => {
