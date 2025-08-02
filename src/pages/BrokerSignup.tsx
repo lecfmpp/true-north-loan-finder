@@ -395,7 +395,7 @@ const BrokerSignup = () => {
 
           <Card className="max-w-2xl mx-auto bg-background text-primary border-0 shadow-[var(--shadow-card)]">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-sans">ROI Calculator</CardTitle>
+              <CardTitle className="text-2xl font-sans">ROI Calculator for Brokers</CardTitle>
               <p className="text-muted-foreground font-serif">Calculate your potential monthly return on investment</p>
             </CardHeader>
             <CardContent className="space-y-8">
