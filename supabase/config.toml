@@ -109,3 +109,6 @@ backend = "postgres"
 
 [functions.send-partner-confirmation]
 verify_jwt = false
+
+[functions.create-partner]
+verify_jwt = false
