@@ -10,9 +10,9 @@ import { supabase } from "@/integrations/supabase/client";
 interface Lead {
   id: string;
   businessName: string;
-  contactName: string;
-  email: string;
-  phone: string;
+  contactName: JSX.Element;
+  email: JSX.Element;
+  phone: JSX.Element;
   loanAmount: string;
   submittedAt: Date;
   creditScore: number;
@@ -21,27 +21,52 @@ interface Lead {
   phoneVerified: boolean;
 }
 
-// Helper function to mask sensitive information
-const maskText = (text: string, visibleStart: number = 1, visibleEnd: number = 1): string => {
-  if (text.length <= visibleStart + visibleEnd) return text;
+// Helper function to mask sensitive information with blur effect
+const maskText = (text: string, visibleStart: number = 3): JSX.Element => {
+  if (text.length <= visibleStart) {
+    return <span>{text}</span>;
+  }
   const start = text.substring(0, visibleStart);
-  const end = text.substring(text.length - visibleEnd);
-  const middle = "*".repeat(Math.max(3, text.length - visibleStart - visibleEnd));
-  return start + middle + end;
+  const rest = text.substring(visibleStart);
+  return (
+    <span>
+      {start}
+      <span className="blur-sm select-none">{rest}</span>
+    </span>
+  );
 };
-const maskEmail = (email: string): string => {
+const maskEmail = (email: string): JSX.Element => {
   const [localPart, domain] = email.split('@');
-  if (!domain) return email;
-  const maskedLocal = maskText(localPart, 1, 0);
-  const maskedDomain = maskText(domain, 0, 4);
-  return `${maskedLocal}@${maskedDomain}`;
+  if (!domain) return <span>{email}</span>;
+  
+  const maskedLocal = localPart.length > 3 ? (
+    <span>
+      {localPart.substring(0, 3)}
+      <span className="blur-sm select-none">{localPart.substring(3)}</span>
+    </span>
+  ) : <span>{localPart}</span>;
+  
+  const maskedDomain = domain.length > 4 ? (
+    <span>
+      <span className="blur-sm select-none">{domain.substring(0, domain.length - 4)}</span>
+      {domain.substring(domain.length - 4)}
+    </span>
+  ) : <span>{domain}</span>;
+  
+  return <span>{maskedLocal}@{maskedDomain}</span>;
 };
-const maskPhone = (phone: string): string => {
+
+const maskPhone = (phone: string): JSX.Element => {
   const cleanPhone = phone.replace(/\D/g, '');
   if (cleanPhone.length >= 10) {
-    return `(${cleanPhone.substring(0, 3)}) ***-****`;
+    return (
+      <span>
+        ({cleanPhone.substring(0, 3)}) 
+        <span className="blur-sm select-none">***-****</span>
+      </span>
+    );
   }
-  return "(555) ***-****";
+  return <span>(555) <span className="blur-sm select-none">***-****</span></span>;
 };
 
 // Helper function to derive business type from use_of_funds
@@ -189,11 +214,11 @@ export const LeadsSimulation = () => {
             // Create business name from name (first part) + industry
             const firstName = response.name.split(' ')[0];
             const industry = getIndustry(response.use_of_funds);
-            const businessName = `${maskText(firstName, 1, 0)} ${industry}`;
+            const businessName = `${firstName} ${industry}`;
             return {
               id: response.id,
               businessName,
-              contactName: maskText(response.name, 1, 1),
+              contactName: maskText(response.name),
               email: maskEmail(response.email),
               phone: maskPhone(response.phone),
               loanAmount: `$${response.loan_amount.toLocaleString()}`,
