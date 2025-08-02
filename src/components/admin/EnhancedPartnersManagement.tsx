@@ -108,6 +108,15 @@ export default function EnhancedPartnersManagement() {
       };
       if (notes) updates.admin_notes = notes;
 
+      // Get the application data before updating
+      const { data: application, error: fetchError } = await supabase
+        .from('lender_broker_applications')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
       const { error } = await supabase
         .from('lender_broker_applications')
         .update(updates)
@@ -115,18 +124,121 @@ export default function EnhancedPartnersManagement() {
 
       if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: status === 'approved' ? 
-          "Partner approved and activated successfully." : 
-          "Application status updated successfully."
-      });
+      // If approving the application, send confirmation email
+      if (status === 'approved' && application) {
+        try {
+          console.log('Sending confirmation email for approved partner:', application.applicant_email);
+          
+          const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-partner-confirmation', {
+            body: {
+              name: application.applicant_name,
+              email: application.applicant_email,
+              company_name: application.company_name,
+              application_type: application.application_type
+            }
+          });
+
+          if (emailError) {
+            console.error('Email sending error:', emailError);
+            // Don't fail the approval if email fails
+            toast({
+              title: "Partner Approved",
+              description: "Partner approved but confirmation email failed to send. Please contact them manually.",
+              variant: "destructive"
+            });
+          } else {
+            console.log('Confirmation email sent successfully:', emailResult);
+            toast({
+              title: "Success",
+              description: "Partner approved and confirmation email sent successfully."
+            });
+          }
+        } catch (emailError) {
+          console.error('Error sending confirmation email:', emailError);
+          toast({
+            title: "Partner Approved",
+            description: "Partner approved but confirmation email failed to send.",
+            variant: "destructive"
+          });
+        }
+      } else {
+        toast({
+          title: "Success",
+          description: "Application status updated successfully."
+        });
+      }
       
       fetchApplications();
     } catch (error: any) {
       toast({
         title: "Error",
         description: "Failed to update application status.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const createPartnerManually = async (partnerData: any) => {
+    try {
+      // First create the application record
+      const { data: newApplication, error: createError } = await supabase
+        .from('lender_broker_applications')
+        .insert([{
+          applicant_name: partnerData.name,
+          applicant_email: partnerData.email,
+          company_name: partnerData.company_name,
+          applicant_phone: partnerData.phone,
+          application_type: partnerData.application_type,
+          status: 'pending', // Always start as pending
+          operational_status: 'pending',
+          admin_notes: 'Created manually by admin'
+        }])
+        .select()
+        .single();
+
+      if (createError) throw createError;
+
+      // Send confirmation email automatically
+      try {
+        console.log('Sending confirmation email for new partner:', partnerData.email);
+        
+        const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-partner-confirmation', {
+          body: {
+            name: partnerData.name,
+            email: partnerData.email,
+            company_name: partnerData.company_name,
+            application_type: partnerData.application_type
+          }
+        });
+
+        if (emailError) {
+          console.error('Email sending error:', emailError);
+          toast({
+            title: "Partner Created",
+            description: "Partner created but confirmation email failed to send. Please contact them manually.",
+            variant: "destructive"
+          });
+        } else {
+          console.log('Confirmation email sent successfully:', emailResult);
+          toast({
+            title: "Success",
+            description: "Partner created and confirmation email sent successfully."
+          });
+        }
+      } catch (emailError) {
+        console.error('Error sending confirmation email:', emailError);
+        toast({
+          title: "Partner Created",
+          description: "Partner created but confirmation email failed to send.",
+          variant: "destructive"
+        });
+      }
+
+      fetchApplications();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to create partner.",
         variant: "destructive"
       });
     }
@@ -222,6 +334,15 @@ export default function EnhancedPartnersManagement() {
       </Badge>
     );
   };
+
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newPartnerForm, setNewPartnerForm] = useState({
+    name: '',
+    email: '',
+    company_name: '',
+    phone: '',
+    application_type: 'broker'
+  });
 
   const pendingApplications = applications.filter(app => app.status === 'pending');
   const activePartners = applications.filter(app => app.status === 'approved');
@@ -415,9 +536,16 @@ export default function EnhancedPartnersManagement() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">Partners Management</h2>
-        <p className="text-muted-foreground">Manage pending applications and active partners</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold">Partners Management</h2>
+          <p className="text-muted-foreground">Manage pending applications and active partners</p>
+        </div>
+        
+        <Button onClick={() => setShowCreateModal(true)}>
+          <Users className="h-4 w-4 mr-2" />
+          Add Partner
+        </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -460,6 +588,107 @@ export default function EnhancedPartnersManagement() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Create Partner Modal */}
+      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create New Partner</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="name">Partner Name</Label>
+              <Input
+                id="name"
+                value={newPartnerForm.name}
+                onChange={(e) => setNewPartnerForm({...newPartnerForm, name: e.target.value})}
+                placeholder="Enter partner name"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={newPartnerForm.email}
+                onChange={(e) => setNewPartnerForm({...newPartnerForm, email: e.target.value})}
+                placeholder="Enter email address"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="company_name">Company Name</Label>
+              <Input
+                id="company_name"
+                value={newPartnerForm.company_name}
+                onChange={(e) => setNewPartnerForm({...newPartnerForm, company_name: e.target.value})}
+                placeholder="Enter company name"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="phone">Phone</Label>
+              <Input
+                id="phone"
+                value={newPartnerForm.phone}
+                onChange={(e) => setNewPartnerForm({...newPartnerForm, phone: e.target.value})}
+                placeholder="Enter phone number"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="application_type">Type</Label>
+              <Select
+                value={newPartnerForm.application_type}
+                onValueChange={(value) => setNewPartnerForm({...newPartnerForm, application_type: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="broker">Broker</SelectItem>
+                  <SelectItem value="lender">Lender</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowCreateModal(false);
+                  setNewPartnerForm({
+                    name: '',
+                    email: '',
+                    company_name: '',
+                    phone: '',
+                    application_type: 'broker'
+                  });
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  createPartnerManually(newPartnerForm);
+                  setShowCreateModal(false);
+                  setNewPartnerForm({
+                    name: '',
+                    email: '',
+                    company_name: '',
+                    phone: '',
+                    application_type: 'broker'
+                  });
+                }}
+                disabled={!newPartnerForm.name || !newPartnerForm.email || !newPartnerForm.company_name}
+              >
+                Create Partner
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Modal */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
