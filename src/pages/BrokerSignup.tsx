@@ -442,108 +442,103 @@ const BrokerSignup = () => {
               <p className="text-muted-foreground mt-2">Loading recent leads...</p>
             </div>
           ) : (
-            <div className="space-y-8 max-w-6xl mx-auto">
-              {getTopLeadsPerCountry().map(({ country, leads }) => (
-                <div key={country} className="space-y-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <MapPin className="h-5 w-5 text-secondary" />
-                    <h4 className="text-xl font-semibold text-primary">{country} - Last 3 Leads</h4>
-                  </div>
-                  
-                  <div className="grid md:grid-cols-3 gap-4">
-                    {leads.map((lead, index) => (
-                      <Card key={lead.id} className="border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300">
-                        <CardContent className="p-6">
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <Badge variant="secondary" className="text-xs">
-                                {getTimeAgo(lead.created_at)}
-                              </Badge>
-                              <Badge variant={lead.score >= 85 ? "default" : lead.score >= 70 ? "secondary" : "outline"} className="text-xs">
-                                {lead.score}/100
-                              </Badge>
+            <div className="max-w-6xl mx-auto">
+              {/* Show the 3 most recent leads */}
+              <div className="grid md:grid-cols-3 gap-6 mb-8">
+                {recentLeads.slice(0, 3).map((lead) => (
+                  <Card key={lead.id} className="border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300">
+                    <CardContent className="p-6">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <Badge variant="secondary" className="text-xs">
+                            {getTimeAgo(lead.created_at)}
+                          </Badge>
+                          <Badge variant={lead.score >= 85 ? "default" : lead.score >= 70 ? "secondary" : "outline"} className="text-xs">
+                            {lead.score}/100
+                          </Badge>
+                        </div>
+                        
+                        <div>
+                          <h5 className="font-semibold text-primary">{lead.name}</h5>
+                          {lead.company_name && (
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                              <Building2 className="h-3 w-3" />
+                              {lead.company_name}
                             </div>
-                            
-                            <div>
-                              <h5 className="font-semibold text-primary">{lead.name}</h5>
-                              {lead.company_name && (
-                                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                  <Building2 className="h-3 w-3" />
-                                  {lead.company_name}
-                                </div>
-                              )}
-                              <p className="text-sm text-muted-foreground">
-                                {lead.city_province}
-                              </p>
-                            </div>
-
-                            <div className="space-y-2">
-                              <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Loan Amount:</span>
-                                <span className="font-semibold text-primary">{formatAmount(lead.loan_amount)}</span>
-                              </div>
-                              <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Monthly Revenue:</span>
-                                <span className="font-semibold text-secondary">{formatAmount(lead.monthly_revenue)}</span>
-                              </div>
-                            </div>
-
-                            <div className="pt-2 border-t">
-                              <p className="text-xs text-muted-foreground">
-                                ✓ Pre-qualified & verified
-                              </p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                  
-                  <div className="text-center">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="outline" className="text-sm">
-                          Show me more qualified leads from {country}
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-md">
-                        <DialogHeader>
-                          <DialogTitle>Exclusive Trial Access - $500</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <p className="text-muted-foreground">
-                            Get exclusive access to all qualified leads from {country} with our trial partnership program.
-                          </p>
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                              <CheckCircle className="h-4 w-4 text-secondary" />
-                              <span className="text-sm">7-day trial period</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <CheckCircle className="h-4 w-4 text-secondary" />
-                              <span className="text-sm">Unlimited leads in your territory</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <CheckCircle className="h-4 w-4 text-secondary" />
-                              <span className="text-sm">Complete lead profiles & documents</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <CheckCircle className="h-4 w-4 text-secondary" />
-                              <span className="text-sm">Instant email & dashboard access</span>
-                            </div>
-                          </div>
-                          <Button size="lg" className="w-full" onClick={handlePayment}>
-                            Start Trial for $500
-                          </Button>
-                          <p className="text-xs text-muted-foreground text-center">
-                            Pay-per-lead pricing starts after trial period
+                          )}
+                          <p className="text-sm text-muted-foreground">
+                            {lead.city_province} {lead.country && `• ${lead.country}`}
                           </p>
                         </div>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
+
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Loan Amount:</span>
+                            <span className="font-semibold text-primary">{formatAmount(lead.loan_amount)}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Monthly Revenue:</span>
+                            <span className="font-semibold text-secondary">{formatAmount(lead.monthly_revenue)}</span>
+                          </div>
+                        </div>
+
+                        <div className="pt-2 border-t">
+                          <p className="text-xs text-muted-foreground">
+                            ✓ Pre-qualified & verified
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              
+              {/* Show "See More Leads" button if there are more than 3 leads */}
+              {recentLeads.length > 3 && (
+                <div className="text-center">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button size="lg" variant="outline" className="text-lg px-8">
+                        See More Leads ({recentLeads.length - 3} additional)
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Exclusive Trial Access - $500</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <p className="text-muted-foreground">
+                          Get exclusive access to all qualified leads with our trial partnership program.
+                        </p>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-secondary" />
+                            <span className="text-sm">7-day trial period</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-secondary" />
+                            <span className="text-sm">Unlimited leads in your territory</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-secondary" />
+                            <span className="text-sm">Complete lead profiles & documents</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-secondary" />
+                            <span className="text-sm">Instant email & dashboard access</span>
+                          </div>
+                        </div>
+                        <Button size="lg" className="w-full" onClick={handlePayment}>
+                          Start Trial for $500
+                        </Button>
+                        <p className="text-xs text-muted-foreground text-center">
+                          Pay-per-lead pricing starts after trial period
+                        </p>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
-              ))}
+              )}
             </div>
           )}
         </div>
