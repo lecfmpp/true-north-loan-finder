@@ -10,6 +10,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import adminDashboardPreview from "@/assets/admin-dashboard-preview.jpg";
+import { toast } from "sonner";
 
 const BrokerSignup = () => {
   const [recentLeads, setRecentLeads] = useState<any[]>([]);
@@ -71,6 +72,22 @@ const BrokerSignup = () => {
     if (diffInHours < 24) return `${diffInHours}h ago`;
     const diffInDays = Math.floor(diffInHours / 24);
     return `${diffInDays}d ago`;
+  };
+
+  const handlePayment = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('create-broker-payment');
+      
+      if (error) throw error;
+      
+      if (data?.url) {
+        // Open Stripe checkout in a new tab
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Error creating payment session:', error);
+      toast.error('Failed to create payment session. Please try again.');
+    }
   };
 
   return (
@@ -515,7 +532,7 @@ const BrokerSignup = () => {
                               <span className="text-sm">Instant email & dashboard access</span>
                             </div>
                           </div>
-                          <Button size="lg" className="w-full">
+                          <Button size="lg" className="w-full" onClick={handlePayment}>
                             Start Trial for $500
                           </Button>
                           <p className="text-xs text-muted-foreground text-center">
@@ -541,7 +558,7 @@ const BrokerSignup = () => {
           <p className="text-xl mb-8 opacity-90 max-w-3xl mx-auto font-serif">
             Join successful brokers who are already receiving high-quality leads daily and increasing their funding volume by 300% or more.
           </p>
-          <Button size="xl" variant="secondary" className="text-lg px-8">
+          <Button size="xl" variant="secondary" className="text-lg px-8" onClick={handlePayment}>
             Get Started Today
           </Button>
         </div>

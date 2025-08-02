@@ -36,6 +36,7 @@ const ApplicationSuccess = lazy(() => import("./pages/ApplicationSuccess"));
 const ApplicationStatus = lazy(() => import("./pages/ApplicationStatus"));
 const CanadianApplication = lazy(() => import("./pages/CanadianApplication"));
 const BrokerSignup = lazy(() => import("./pages/BrokerSignup"));
+const BrokerPaymentSuccess = lazy(() => import("./pages/BrokerPaymentSuccess"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Loading component for lazy routes
@@ -157,6 +158,11 @@ const App = () => (
             <Route path="/broker-signup" element={
               <Suspense fallback={<PageLoader />}>
                 <BrokerSignup />
+              </Suspense>
+            } />
+            <Route path="/broker-payment-success" element={
+              <Suspense fallback={<PageLoader />}>
+                <BrokerPaymentSuccess />
               </Suspense>
             } />
             
