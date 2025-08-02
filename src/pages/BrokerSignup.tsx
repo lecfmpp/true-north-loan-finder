@@ -209,9 +209,9 @@ const BrokerSignup = () => {
             <Card className="border-0 shadow-[var(--shadow-card)] mb-12">
               <CardContent className="p-6">
                 <img 
-                  src={adminDashboardPreview} 
+                  src="/lovable-uploads/41d838b1-6e1e-4789-b545-5f124f30eb3f.png" 
                   alt="Broker Dashboard Preview showing lead management interface" 
-                  className="w-full rounded-lg"
+                  className="w-full rounded-lg border-2 border-green-500 shadow-lg"
                 />
               </CardContent>
             </Card>
