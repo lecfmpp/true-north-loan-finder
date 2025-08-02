@@ -198,13 +198,13 @@ export const LeadsSimulation = () => {
       try {
         // Fix country filter to match actual data format
         const countryFilter = selectedCountry === 'US' 
-          ? ['US', 'USA', 'United States', 'USA'] 
-          : ['Canada', 'Canadian', 'CA', 'CAN'];
+          ? ['US', 'USA', 'United States'] 
+          : ['CA', 'Canada', 'Canadian', 'CAN'];
         
         const { data: quizResponses, error } = await supabase
           .from('quiz_responses')
           .select('*')
-          .eq('status', 'new')
+          .eq('status', 'New') // Fixed: 'New' with capital N, not 'new'
           .in('country', countryFilter)
           .order('created_at', { ascending: false })
           .limit(20); // Increased limit to show more recent leads
