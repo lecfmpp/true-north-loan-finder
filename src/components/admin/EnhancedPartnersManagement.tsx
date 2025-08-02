@@ -51,6 +51,7 @@ interface Partner {
   company_name: string;
   application_type: string;
   status: string;
+  operational_status: string;
   created_at: string;
   updated_at: string;
   user_id: string;
@@ -58,6 +59,9 @@ interface Partner {
   leads_contacted: number;
   leads_spoken: number;
   deals_closed: number;
+  payment_status: string;
+  payment_deadline: string;
+  source: string; // 'application' or 'manual'
 }
 
 export default function EnhancedPartnersManagement() {
@@ -78,13 +82,73 @@ export default function EnhancedPartnersManagement() {
   const fetchPartners = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('partners')
-        .select('*')
-        .order('created_at', { ascending: false });
+      
+      // Fetch from both tables and combine the data
+      const [applicationsResponse, partnersResponse] = await Promise.all([
+        supabase
+          .from('lender_broker_applications')
+          .select('*')
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('partners')
+          .select('*')
+          .order('created_at', { ascending: false })
+      ]);
 
-      if (error) throw error;
-      setPartners(data || []);
+      if (applicationsResponse.error) throw applicationsResponse.error;
+      if (partnersResponse.error) throw partnersResponse.error;
+      
+      // Map applications data to match Partner interface
+      const mappedApplications = (applicationsResponse.data || []).map(app => ({
+        id: app.id,
+        name: app.applicant_name,
+        email: app.applicant_email,
+        phone: app.applicant_phone || '',
+        company_name: app.company_name,
+        application_type: app.application_type,
+        status: app.status,
+        operational_status: app.operational_status || 'active',
+        created_at: app.created_at,
+        updated_at: app.updated_at,
+        user_id: app.user_id || '',
+        total_leads_assigned: app.total_leads_assigned || 0,
+        leads_contacted: app.leads_contacted || 0,
+        leads_spoken: app.leads_spoken || 0,
+        deals_closed: app.deals_closed || 0,
+        payment_status: app.payment_status || 'pending',
+        payment_deadline: app.payment_deadline || '',
+        source: 'application' // Track source
+      }));
+      
+      // Map partners data to match Partner interface
+      const mappedPartners = (partnersResponse.data || []).map(partner => ({
+        id: partner.id,
+        name: partner.name,
+        email: partner.email,
+        phone: partner.phone || '',
+        company_name: partner.company_name,
+        application_type: partner.application_type,
+        status: partner.status,
+        operational_status: 'active',
+        created_at: partner.created_at,
+        updated_at: partner.updated_at,
+        user_id: partner.user_id || '',
+        total_leads_assigned: partner.total_leads_assigned || 0,
+        leads_contacted: partner.leads_contacted || 0,
+        leads_spoken: partner.leads_spoken || 0,
+        deals_closed: partner.deals_closed || 0,
+        payment_status: 'completed', // Manually created partners don't need payment
+        payment_deadline: '',
+        source: 'manual' // Track source
+      }));
+      
+      // Combine and deduplicate by email (prefer applications over manual entries)
+      const allPartners = [...mappedApplications, ...mappedPartners];
+      const uniquePartners = allPartners.filter((partner, index, self) => 
+        index === self.findIndex(p => p.email === partner.email)
+      );
+      
+      setPartners(uniquePartners);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -98,13 +162,20 @@ export default function EnhancedPartnersManagement() {
 
   const updatePartnerStatus = async (id: string, status: string, notes?: string) => {
     try {
+      const partner = partners.find(p => p.id === id);
+      if (!partner) {
+        throw new Error('Partner not found');
+      }
+
       const updates: any = { 
         status, 
         updated_at: new Date().toISOString()
       };
 
+      // Update the correct table based on source
+      const tableName = partner.source === 'application' ? 'lender_broker_applications' : 'partners';
       const { error } = await supabase
-        .from('partners')
+        .from(tableName)
         .update(updates)
         .eq('id', id);
 
@@ -280,8 +351,15 @@ export default function EnhancedPartnersManagement() {
 
   const deletePartner = async (id: string) => {
     try {
+      const partner = partners.find(p => p.id === id);
+      if (!partner) {
+        throw new Error('Partner not found');
+      }
+
+      // Delete from the correct table based on source
+      const tableName = partner.source === 'application' ? 'lender_broker_applications' : 'partners';
       const { error } = await supabase
-        .from('partners')
+        .from(tableName)
         .delete()
         .eq('id', id);
 
