@@ -891,14 +891,21 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
                         <h4 className="font-medium text-muted-foreground mb-2">Supporting Documents:</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                           {selectedApplication.document_files.map((file: any, index: number) => {
-                            const hasValidPath = file.path || file.url;
+                            // Handle both string paths and file objects
+                            const filePath = typeof file === 'string' ? file : (file.path || file.url);
+                            const fileName = typeof file === 'string' 
+                              ? file.split('/').pop()?.replace(/^\d+-/, '') || `Document ${index + 1}` 
+                              : file.name || `Document ${index + 1}`;
+                            const fileSize = typeof file === 'string' ? null : file.size;
+                            const hasValidPath = !!filePath;
+                            
                             return (
                               <div key={index} className="flex items-center gap-2 p-3 border rounded-lg bg-muted/30">
                                 <FileText className="h-4 w-4 text-primary" />
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium truncate">{file.name || `Document ${index + 1}`}</p>
+                                  <p className="text-sm font-medium truncate">{fileName}</p>
                                   <p className="text-xs text-muted-foreground">
-                                    {file.size ? `${(file.size / 1024).toFixed(1)} KB` : 'Unknown size'}
+                                    {fileSize ? `${(fileSize / 1024).toFixed(1)} KB` : 'Unknown size'}
                                     {!hasValidPath && ' - No file path'}
                                   </p>
                                 </div>
@@ -906,7 +913,7 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => downloadFileFromStorage(file.path || file.url, file.name || `document-${index + 1}`)}
+                                    onClick={() => downloadFileFromStorage(filePath, fileName)}
                                   >
                                     <Download className="h-3 w-3" />
                                   </Button>
