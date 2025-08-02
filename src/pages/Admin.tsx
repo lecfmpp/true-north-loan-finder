@@ -74,11 +74,7 @@ interface QuizResponse {
 const Admin = () => {
   const [leads, setLeads] = useState<QuizResponse[]>([]);
   const [filteredLeads, setFilteredLeads] = useState<QuizResponse[]>([]);
-  const [approvedPartners, setApprovedPartners] = useState<Array<{
-    id: string;
-    name: string;
-    email: string;
-  }>>([]);
+  // Removed approvedPartners - using partners instead for consistency
   const [applicationsCount, setApplicationsCount] = useState(0);
   const [usaApplicationsCount, setUsaApplicationsCount] = useState(0);
   const [canadianApplicationsCount, setCanadianApplicationsCount] = useState(0);
@@ -285,7 +281,6 @@ const Admin = () => {
       if (isSuperAdmin) {
         fetchLeads();
         fetchApplicationsCount();
-        fetchApprovedPartners();
         fetchPartners();
         fetchLeadAssignments();
       }
@@ -474,53 +469,9 @@ const Admin = () => {
     }
   };
 
-  const fetchApprovedPartners = async () => {
-    try {
-      // Fetch from both old applications table and new partners table
-      const [applicationsData, partnersData] = await Promise.all([
-        supabase.from('lender_broker_applications')
-          .select('id, applicant_name, applicant_email')
-          .eq('status', 'approved'),
-        supabase.from('partners')
-          .select('id, name, email')
-          .eq('status', 'active')
-      ]);
+  // Removed fetchApprovedPartners function - using fetchPartners for consistency
 
-      const allPartners = [
-        ...(applicationsData.data || []).map(partner => ({
-          id: partner.id,
-          name: partner.applicant_name,
-          email: partner.applicant_email
-        })),
-        ...(partnersData.data || []).map(partner => ({
-          id: partner.id,
-          name: partner.name,
-          email: partner.email
-        }))
-      ];
-
-      setApprovedPartners(allPartners);
-    } catch (error) {
-      console.error('Error fetching approved partners:', error);
-    }
-  };
-
-  // Set up real-time subscription for approved partners
-  useEffect(() => {
-    if (isSuperAdmin) {
-      const channel = supabase.channel('approved-partners-changes').on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'lender_broker_applications',
-        filter: 'status=eq.approved'
-      }, () => {
-        fetchApprovedPartners();
-      }).subscribe();
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }
-  }, [isSuperAdmin]);
+  // Removed real-time subscription for approved partners - using partners table now
 
   const sendCustomLeadEmail = async (leadId: string, recipientEmails: string) => {
     // Parse and validate multiple email addresses
@@ -600,7 +551,7 @@ const Admin = () => {
   };
 
   const sendLeadEmail = async (leadId: string, recipientId: string) => {
-    const recipient = approvedPartners.find(p => p.id === recipientId);
+    const recipient = partners.find(p => p.id === recipientId);
     if (!recipient) {
       toast({
         title: "Error",
@@ -622,8 +573,8 @@ const Admin = () => {
           description: "Recipient is no longer approved to receive leads.",
           variant: "destructive"
         });
-        // Refresh the approved partners list
-        fetchApprovedPartners();
+        // Refresh the partners list
+        fetchPartners();
         return;
       }
     } catch (error) {
@@ -666,8 +617,8 @@ const Admin = () => {
           description: "Cannot send lead to non-approved partners. The recipient list has been updated.",
           variant: "destructive"
         });
-        // Refresh the approved partners list
-        fetchApprovedPartners();
+        // Refresh the partners list
+        fetchPartners();
       } else {
         toast({
           title: "Error",
@@ -1542,7 +1493,7 @@ const Admin = () => {
                             <SelectValue placeholder="Select partner" />
                           </SelectTrigger>
                           <SelectContent>
-                            {approvedPartners.map((partner) => (
+                            {partners.map((partner) => (
                               <SelectItem key={partner.id} value={partner.id}>
                                 {partner.name} ({partner.email})
                               </SelectItem>
@@ -1757,7 +1708,7 @@ const Admin = () => {
                             </Button>
                           </TableCell>
                           {isSuperAdmin && <TableCell>
-                              {approvedPartners.length > 0 ? (
+                              {partners.length > 0 ? (
                                 <div className="flex items-center gap-2">
                                   <Select disabled={sendingEmails[lead.id]} value={selectedRecipients[lead.id] || ""} onValueChange={value => setSelectedRecipients(prev => ({
                               ...prev,
@@ -1767,7 +1718,7 @@ const Admin = () => {
                                       <SelectValue placeholder={sendingEmails[lead.id] ? "Sending..." : "Select partner"} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                      {approvedPartners.map(partner => <SelectItem key={partner.id} value={partner.id}>
+                                      {partners.map(partner => <SelectItem key={partner.id} value={partner.id}>
                                           <div className="flex items-center gap-2">
                                             <Send className="w-4 h-4" />
                                             {partner.name}
