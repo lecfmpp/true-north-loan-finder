@@ -60,7 +60,7 @@ serve(async (req) => {
     }
 
     // Construct confirmation URL
-    const confirmationUrl = `${Deno.env.get('SITE_URL') || 'https://your-app.com'}/confirm-partner?token=${confirmationToken}`
+    const confirmationUrl = `${Deno.env.get('SITE_URL') || 'https://truenorthbusinessloan.ca'}/confirm-partner?token=${confirmationToken}`
     
     // Create email template
     const emailHtml = `
@@ -84,7 +84,7 @@ serve(async (req) => {
         <body>
           <div class="container">
             <div class="header">
-              <h1 style="margin: 0;">Welcome to Our Partner Network!</h1>
+              <h1 style="margin: 0;">Welcome to True North Business Loan Partner Network!</h1>
               <p style="margin: 10px 0 0 0; opacity: 0.9;">Confirm your account to get started</p>
             </div>
             
@@ -128,7 +128,7 @@ serve(async (req) => {
             
             <div class="footer">
               <p>If you didn't request this account, please ignore this email or contact our support team.</p>
-              <p style="margin: 0;">© 2024 Your Company. All rights reserved.</p>
+              <p style="margin: 0;">© 2024 True North Business Loan. All rights reserved.</p>
             </div>
           </div>
         </body>
