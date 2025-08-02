@@ -19,7 +19,8 @@ import {
   AlertTriangle,
   Send,
   Eye,
-  Edit3
+  Edit3,
+  Trash2
 } from "lucide-react";
 import {
   Dialog,
@@ -109,37 +110,56 @@ export default function PartnerManagement() {
     }
   };
 
-  const sendPaymentEmail = async (application: PartnerApplication) => {
+  const sendPaymentLink = async (application: PartnerApplication) => {
     try {
       setIsSendingEmail(true);
       
-      const { error } = await supabase.functions.invoke('send-payment-link-email', {
-        body: {
-          applicationId: application.id,
-          recipientEmail: application.applicant_email,
-          recipientName: application.applicant_name,
-          companyName: application.company_name,
-          paymentAmount: application.payment_amount,
-          paymentDeadline: application.payment_deadline
-        }
-      });
+      const { data, error } = await supabase.functions.invoke('create-broker-payment');
 
       if (error) throw error;
 
-      toast({
-        title: "Email Sent!",
-        description: `Payment link email sent to ${application.applicant_email}`
-      });
+      // Open payment link in new tab
+      if (data?.url) {
+        window.open(data.url, '_blank');
+        toast({
+          title: "Payment Link Generated!",
+          description: `Payment link opened for ${application.applicant_name}`
+        });
+      }
 
       fetchApplications();
     } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to send payment email.",
+        description: "Failed to generate payment link.",
         variant: "destructive"
       });
     } finally {
       setIsSendingEmail(false);
+    }
+  };
+
+  const deleteApplication = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('lender_broker_applications')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Application deleted successfully."
+      });
+      
+      fetchApplications();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to delete application.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -327,17 +347,27 @@ export default function PartnerManagement() {
                       </Button>
                     </div>
 
-                    {app.payment_status === 'pending' && (
+                    <div className="flex gap-2">
+                      {app.payment_status === 'pending' && (
+                        <Button
+                          onClick={() => sendPaymentLink(app)}
+                          disabled={isSendingEmail}
+                          size="sm"
+                          className="flex-1"
+                        >
+                          <Send className="h-4 w-4 mr-1" />
+                          {isSendingEmail ? "Generating..." : "Payment Link"}
+                        </Button>
+                      )}
+                      
                       <Button
-                        onClick={() => sendPaymentEmail(app)}
-                        disabled={isSendingEmail}
+                        onClick={() => deleteApplication(app.id)}
+                        variant="destructive"
                         size="sm"
-                        className="w-full"
                       >
-                        <Send className="h-4 w-4 mr-1" />
-                        {isSendingEmail ? "Sending..." : "Send Payment Link"}
+                        <Trash2 className="h-4 w-4" />
                       </Button>
-                    )}
+                    </div>
                   </div>
                 </div>
               </CardContent>
