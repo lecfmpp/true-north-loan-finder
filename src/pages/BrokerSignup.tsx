@@ -20,11 +20,18 @@ const BrokerSignup = () => {
   const [avgCommission, setAvgCommission] = useState(0);
   const [costPerLead, setCostPerLead] = useState(0);
   const [conversionRate, setConversionRate] = useState(0);
-  const [monthlyLeads, setMonthlyLeads] = useState(0);
+  const [selectedPackage, setSelectedPackage] = useState(100); // Default to 100 leads
+  
+  // Package options
+  const packages = [
+    { leads: 50, name: "Starter", description: "Perfect for testing" },
+    { leads: 100, name: "Professional", description: "Most popular choice" },
+    { leads: 200, name: "Enterprise", description: "Maximum volume" }
+  ];
   
   // Calculate ROI values
-  const totalMonthlySpend = monthlyLeads * costPerLead;
-  const totalMonthlyDeals = monthlyLeads * (conversionRate / 100);
+  const totalMonthlySpend = selectedPackage * costPerLead;
+  const totalMonthlyDeals = selectedPackage * (conversionRate / 100);
   const totalMonthlyCommission = totalMonthlyDeals * avgCommission;
   const monthlyProfit = totalMonthlyCommission - totalMonthlySpend;
   const calculatedROI = totalMonthlySpend > 0 ? Math.round((monthlyProfit / totalMonthlySpend) * 100) : 0;
@@ -369,77 +376,102 @@ const BrokerSignup = () => {
               <p className="text-muted-foreground font-serif">Calculate your potential monthly return on investment</p>
             </CardHeader>
             <CardContent className="space-y-8">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                <div>
-                  <label className="block text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">Average Commission Per Deal ($)</label>
-                  <input 
-                    type="number" 
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg border border-border rounded-md bg-background"
-                    placeholder="e.g., 5000"
-                    value={avgCommission}
-                    onChange={(e) => setAvgCommission(Number(e.target.value) || 0)}
-                  />
+              {/* Step 1: Package Selection */}
+              <div>
+                <h4 className="text-lg font-semibold mb-4 text-primary text-center">Step 1: Choose Your Lead Package</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {packages.map((pkg) => (
+                    <Card 
+                      key={pkg.leads}
+                      className={`cursor-pointer border-2 transition-all duration-300 hover:shadow-lg ${
+                        selectedPackage === pkg.leads 
+                          ? 'border-secondary bg-secondary/10' 
+                          : 'border-border hover:border-secondary/50'
+                      }`}
+                      onClick={() => setSelectedPackage(pkg.leads)}
+                    >
+                      <CardContent className="p-4 text-center">
+                        <div className="text-2xl font-bold text-secondary mb-1">{pkg.leads}</div>
+                        <div className="text-sm font-medium text-primary mb-1">{pkg.name}</div>
+                        <div className="text-xs text-muted-foreground">{pkg.description}</div>
+                        {pkg.leads === 100 && (
+                          <Badge variant="secondary" className="mt-2 text-xs">Most Popular</Badge>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
-                <div>
-                  <label className="block text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">Cost Per Lead ($)</label>
-                  <input 
-                    type="number" 
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg border border-border rounded-md bg-background"
-                    placeholder="e.g., 95"
-                    value={costPerLead}
-                    onChange={(e) => setCostPerLead(Number(e.target.value) || 0)}
-                  />
-                </div>
-                <div>
-                  <label className="block text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">Sales Conversion Rate (%)</label>
-                  <input 
-                    type="number" 
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg border border-border rounded-md bg-background"
-                    placeholder="e.g., 15"
-                    value={conversionRate}
-                    onChange={(e) => setConversionRate(Number(e.target.value) || 0)}
-                  />
-                </div>
-                <div>
-                  <label className="block text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">Number of Leads Per Month</label>
-                  <input 
-                    type="number" 
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg border border-border rounded-md bg-background"
-                    placeholder="e.g., 100"
-                    value={monthlyLeads}
-                    onChange={(e) => setMonthlyLeads(Number(e.target.value) || 0)}
-                  />
+              </div>
+
+              {/* Step 2: Financial Inputs */}
+              <div>
+                <h4 className="text-lg font-semibold mb-4 text-primary text-center">Step 2: Enter Your Financial Details</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                  <div>
+                    <label className="block text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">Average Commission Per Deal ($)</label>
+                    <input 
+                      type="number" 
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg border border-border rounded-md bg-background"
+                      placeholder="e.g., 5000"
+                      value={avgCommission}
+                      onChange={(e) => setAvgCommission(Number(e.target.value) || 0)}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">Cost Per Lead ($)</label>
+                    <input 
+                      type="number" 
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg border border-border rounded-md bg-background"
+                      placeholder="e.g., 95"
+                      value={costPerLead}
+                      onChange={(e) => setCostPerLead(Number(e.target.value) || 0)}
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">Sales Conversion Rate (%)</label>
+                    <input 
+                      type="number" 
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg border border-border rounded-md bg-background"
+                      placeholder="e.g., 15"
+                      value={conversionRate}
+                      onChange={(e) => setConversionRate(Number(e.target.value) || 0)}
+                    />
+                  </div>
                 </div>
               </div>
               
-              {(avgCommission > 0 && costPerLead > 0 && conversionRate > 0 && monthlyLeads > 0) && (
-                <div className="mt-8 p-4 sm:p-6 bg-gradient-to-br from-secondary/10 via-background to-secondary/20 rounded-xl border-2 border-secondary/30">
-                  <div className="text-center space-y-4">
-                    <div className="text-xs sm:text-sm text-muted-foreground uppercase tracking-wide">Monthly Profit Calculation</div>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
-                      <div className="text-center">
-                        <div className="text-xs sm:text-sm text-muted-foreground mb-1">Monthly Lead Cost</div>
-                        <div className="text-xl sm:text-2xl font-bold text-red-600">-${totalMonthlySpend.toLocaleString()}</div>
-                        <div className="text-xs text-muted-foreground">{monthlyLeads} leads × ${costPerLead}</div>
+              {/* Step 3: Results */}
+              {(avgCommission > 0 && costPerLead > 0 && conversionRate > 0) && (
+                <div>
+                  <h4 className="text-lg font-semibold mb-4 text-primary text-center">Step 3: Your Monthly Profit Projection</h4>
+                  <div className="mt-8 p-4 sm:p-6 bg-gradient-to-br from-secondary/10 via-background to-secondary/20 rounded-xl border-2 border-secondary/30">
+                    <div className="text-center space-y-4">
+                      <div className="text-xs sm:text-sm text-muted-foreground uppercase tracking-wide">Monthly Profit Calculation</div>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
+                        <div className="text-center">
+                          <div className="text-xs sm:text-sm text-muted-foreground mb-1">Monthly Lead Cost</div>
+                          <div className="text-xl sm:text-2xl font-bold text-red-600">-${totalMonthlySpend.toLocaleString()}</div>
+                          <div className="text-xs text-muted-foreground">{selectedPackage} leads × ${costPerLead}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-xs sm:text-sm text-muted-foreground mb-1">Monthly Commission</div>
+                          <div className="text-xl sm:text-2xl font-bold text-green-600">+${totalMonthlyCommission.toLocaleString()}</div>
+                          <div className="text-xs text-muted-foreground">{totalMonthlyDeals.toFixed(1)} deals × ${avgCommission.toLocaleString()}</div>
+                        </div>
                       </div>
-                      <div className="text-center">
-                        <div className="text-xs sm:text-sm text-muted-foreground mb-1">Monthly Commission</div>
-                        <div className="text-xl sm:text-2xl font-bold text-green-600">+${totalMonthlyCommission.toLocaleString()}</div>
-                        <div className="text-xs text-muted-foreground">{totalMonthlyDeals.toFixed(1)} deals × ${avgCommission.toLocaleString()}</div>
-                      </div>
-                    </div>
-                    
-                    <div className="border-t pt-4">
-                      <div className="text-base sm:text-lg text-muted-foreground mb-2">Your Monthly Income</div>
-                      <div className="text-4xl sm:text-5xl lg:text-7xl font-black text-secondary mb-2">
-                        ${monthlyProfit.toLocaleString()}
-                      </div>
-                      <div className="text-base sm:text-lg text-muted-foreground">
-                        ROI: <span className="font-bold text-secondary">{calculatedROI}%</span>
-                      </div>
-                      <div className="text-xs sm:text-sm text-muted-foreground mt-2">
-                        Based on {monthlyLeads} leads per month with {conversionRate}% conversion rate
+                      
+                      <div className="border-t pt-4">
+                        <div className="text-base sm:text-lg text-muted-foreground mb-2">Your Monthly Income</div>
+                        <div className="text-4xl sm:text-5xl lg:text-7xl font-black text-secondary mb-2">
+                          ${monthlyProfit.toLocaleString()}
+                        </div>
+                        <div className="text-base sm:text-lg text-muted-foreground">
+                          ROI: <span className="font-bold text-secondary">{calculatedROI}%</span>
+                        </div>
+                        <div className="text-xs sm:text-sm text-muted-foreground mt-2">
+                          Based on {selectedPackage} leads per month with {conversionRate}% conversion rate
+                        </div>
                       </div>
                     </div>
                   </div>
