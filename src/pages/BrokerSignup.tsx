@@ -434,7 +434,7 @@ const BrokerSignup = () => {
               <TooltipProvider>
                 <div>
                   <h4 className="text-lg font-semibold mb-4 text-primary text-center">Step 2: Enter Your Financial Details</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                  <div className="grid grid-cols-1 gap-4 sm:gap-6">
                     <div>
                       <label className="flex items-center gap-2 text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">
                         Average Commission Per Deal ($)
@@ -481,7 +481,7 @@ const BrokerSignup = () => {
                         }}
                       />
                     </div>
-                    <div className="sm:col-span-2">
+                    <div>
                       <label className="flex items-center gap-2 text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">
                         Sales Conversion Rate (%)
                         <Tooltip>
