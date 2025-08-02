@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 interface Lead {
   id: string;
-  businessName: string;
+  businessName: JSX.Element;
   contactName: JSX.Element;
   email: JSX.Element;
   phone: JSX.Element;
@@ -214,7 +214,11 @@ export const LeadsSimulation = () => {
             // Create business name from name (first part) + industry
             const firstName = response.name.split(' ')[0];
             const industry = getIndustry(response.use_of_funds);
-            const businessName = `${firstName} ${industry}`;
+            const businessName = (
+              <span>
+                {maskText(firstName)} {industry}
+              </span>
+            );
             return {
               id: response.id,
               businessName,
