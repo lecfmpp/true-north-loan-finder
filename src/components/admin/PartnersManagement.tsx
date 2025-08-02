@@ -90,60 +90,17 @@ export function PartnersManagement() {
           description: "Partner updated successfully",
         });
       } else {
-        // Create new partner with user account and role
-        
-        // 1. First create a user account in auth.users via admin API
-        const { data: newUser, error: userError } = await supabase.auth.admin.createUser({
-          email: data.email,
-          email_confirm: true,
-          user_metadata: {
-            display_name: data.name,
-            company_name: data.company_name,
-            phone: data.phone
-          }
+        // Create new partner via edge function
+        const { data: result, error } = await supabase.functions.invoke('create-partner', {
+          body: data
         });
 
-        if (userError) throw userError;
-        if (!newUser.user) throw new Error('Failed to create user account');
-
-        // 2. Create partner record linked to user
-        const { error: partnerError } = await supabase
-          .from('partners')
-          .insert([{
-            user_id: newUser.user.id,
-            name: data.name,
-            email: data.email,
-            company_name: data.company_name,
-            phone: data.phone,
-            application_type: data.application_type,
-            status: data.status
-          }]);
-
-        if (partnerError) throw partnerError;
-
-        // 3. Assign user role based on application type
-        const roleToAssign = data.application_type === 'broker' ? 'broker' : 'lender';
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert([{
-            user_id: newUser.user.id,
-            role: roleToAssign,
-            assigned_by: (await supabase.auth.getUser()).data.user?.id
-          }]);
-
-        if (roleError) {
-          console.error('Role assignment error:', roleError);
-          // Don't fail the whole operation if role assignment fails
-          toast({
-            title: "Warning",
-            description: "Partner created but role assignment failed. Please assign role manually.",
-            variant: "destructive",
-          });
-        }
+        if (error) throw error;
+        if (!result.success) throw new Error(result.error || 'Failed to create partner');
         
         toast({
           title: "Success", 
-          description: `Partner created successfully with ${roleToAssign} role`,
+          description: result.message,
         });
       }
       
