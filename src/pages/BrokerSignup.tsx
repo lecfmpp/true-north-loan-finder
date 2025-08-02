@@ -20,10 +20,14 @@ const BrokerSignup = () => {
   const [avgCommission, setAvgCommission] = useState(0);
   const [costPerLead, setCostPerLead] = useState(0);
   const [conversionRate, setConversionRate] = useState(0);
+  const [monthlyLeads, setMonthlyLeads] = useState(0);
   
   // Calculate ROI values
-  const profitPerLead = (avgCommission * (conversionRate / 100)) - costPerLead;
-  const calculatedROI = costPerLead > 0 ? Math.round((profitPerLead / costPerLead) * 100) : 0;
+  const totalMonthlySpend = monthlyLeads * costPerLead;
+  const totalMonthlyDeals = monthlyLeads * (conversionRate / 100);
+  const totalMonthlyCommission = totalMonthlyDeals * avgCommission;
+  const monthlyProfit = totalMonthlyCommission - totalMonthlySpend;
+  const calculatedROI = totalMonthlySpend > 0 ? Math.round((monthlyProfit / totalMonthlySpend) * 100) : 0;
 
   useEffect(() => {
     const fetchRecentLeads = async () => {
@@ -396,9 +400,19 @@ const BrokerSignup = () => {
                     onChange={(e) => setConversionRate(Number(e.target.value) || 0)}
                   />
                 </div>
+                <div>
+                  <label className="block text-lg font-semibold mb-3 text-primary">Number of Leads Per Month</label>
+                  <input 
+                    type="number" 
+                    className="w-full px-4 py-3 text-lg border border-border rounded-md bg-background"
+                    placeholder="e.g., 100"
+                    value={monthlyLeads}
+                    onChange={(e) => setMonthlyLeads(Number(e.target.value) || 0)}
+                  />
+                </div>
               </div>
               
-              {(avgCommission > 0 && costPerLead > 0 && conversionRate > 0) && (
+              {(avgCommission > 0 && costPerLead > 0 && conversionRate > 0 && monthlyLeads > 0) && (
                 <div className="mt-8 p-6 bg-gradient-to-br from-secondary/10 via-background to-secondary/20 rounded-xl border-2 border-secondary/30">
                   <div className="text-center space-y-4">
                     <div className="text-sm text-muted-foreground uppercase tracking-wide">Monthly Profit Calculation</div>
@@ -406,23 +420,26 @@ const BrokerSignup = () => {
                     <div className="grid grid-cols-2 gap-6 mb-6">
                       <div className="text-center">
                         <div className="text-sm text-muted-foreground mb-1">Monthly Lead Cost</div>
-                        <div className="text-2xl font-bold text-red-600">-${(costPerLead * 100).toLocaleString()}</div>
-                        <div className="text-xs text-muted-foreground">100 leads × ${costPerLead}</div>
+                        <div className="text-2xl font-bold text-red-600">-${totalMonthlySpend.toLocaleString()}</div>
+                        <div className="text-xs text-muted-foreground">{monthlyLeads} leads × ${costPerLead}</div>
                       </div>
                       <div className="text-center">
                         <div className="text-sm text-muted-foreground mb-1">Monthly Commission</div>
-                        <div className="text-2xl font-bold text-green-600">+${(avgCommission * 100 * (conversionRate / 100)).toLocaleString()}</div>
-                        <div className="text-xs text-muted-foreground">{100 * (conversionRate / 100)} deals × ${avgCommission.toLocaleString()}</div>
+                        <div className="text-2xl font-bold text-green-600">+${totalMonthlyCommission.toLocaleString()}</div>
+                        <div className="text-xs text-muted-foreground">{totalMonthlyDeals.toFixed(1)} deals × ${avgCommission.toLocaleString()}</div>
                       </div>
                     </div>
                     
                     <div className="border-t pt-4">
-                      <div className="text-lg text-muted-foreground mb-2">Your Monthly Profit</div>
-                      <div className="text-6xl font-black text-secondary mb-2">
-                        ${((avgCommission * 100 * (conversionRate / 100)) - (costPerLead * 100)).toLocaleString()}
+                      <div className="text-lg text-muted-foreground mb-2">Your Monthly Income</div>
+                      <div className="text-7xl font-black text-secondary mb-2">
+                        ${monthlyProfit.toLocaleString()}
                       </div>
                       <div className="text-lg text-muted-foreground">
                         ROI: <span className="font-bold text-secondary">{calculatedROI}%</span>
+                      </div>
+                      <div className="text-sm text-muted-foreground mt-2">
+                        Based on {monthlyLeads} leads per month with {conversionRate}% conversion rate
                       </div>
                     </div>
                   </div>
