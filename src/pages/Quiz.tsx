@@ -1360,8 +1360,8 @@ const Quiz = () => {
                 </div>
               )}
 
-              {/* Navigation - Show Next button only for steps 1, 4, and 6 */}
-              {(currentStep === 1 || currentStep === 4 || currentStep === 6) && (
+              {/* Navigation - Show Next button only for steps 1, 3, 4, and 6 */}
+              {(currentStep === 1 || currentStep === 3 || currentStep === 4 || currentStep === 6) && (
                 <div className="flex justify-between mt-6 md:mt-8 pt-4 md:pt-6 border-t">
                   <Button
                     variant="outline"
@@ -1395,7 +1395,7 @@ const Quiz = () => {
               )}
 
               {/* Back button only for auto-advancing steps */}
-              {(currentStep === 2 || currentStep === 3 || currentStep === 5) && (
+              {(currentStep === 2 || currentStep === 5) && (
                 <div className="flex justify-start mt-6 md:mt-8 pt-4 md:pt-6 border-t">
                   <Button
                     variant="outline"
