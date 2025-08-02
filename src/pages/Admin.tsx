@@ -1814,7 +1814,7 @@ const Admin = () => {
       case 'applications':
         return <EnhancedPartnersManagement />;
       case 'partners':
-        return <PartnersManagement />;
+        return <EnhancedPartnersManagement />;
       case 'usa-applications':
         return <USAApplicationsManagement onCountUpdate={fetchUsaApplicationsCount} />;
       case 'canadian-applications':
