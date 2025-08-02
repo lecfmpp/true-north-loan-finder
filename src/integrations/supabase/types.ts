@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_spend_records: {
+        Row: {
+          amount: number
+          campaign_name: string | null
+          channel: string
+          created_at: string
+          created_by: string | null
+          currency: string | null
+          date: string
+          id: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          campaign_name?: string | null
+          channel: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          date: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          campaign_name?: string | null
+          channel?: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          date?: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       admin_notification_settings: {
         Row: {
           application_notification_email: string
@@ -1255,13 +1294,16 @@ export type Database = {
           assigned_partner_id: string | null
           assigned_to: string | null
           assignment_date: string | null
+          attribution_channel: string | null
           city_province: string | null
           company_name: string | null
+          conversion_status: string | null
           country: string | null
           created_at: string
           credit_score: string
           email: string
           id: string
+          lead_value: number | null
           loan_amount: number
           monthly_revenue: number
           name: string
@@ -1278,13 +1320,16 @@ export type Database = {
           assigned_partner_id?: string | null
           assigned_to?: string | null
           assignment_date?: string | null
+          attribution_channel?: string | null
           city_province?: string | null
           company_name?: string | null
+          conversion_status?: string | null
           country?: string | null
           created_at?: string
           credit_score: string
           email: string
           id?: string
+          lead_value?: number | null
           loan_amount: number
           monthly_revenue: number
           name: string
@@ -1301,13 +1346,16 @@ export type Database = {
           assigned_partner_id?: string | null
           assigned_to?: string | null
           assignment_date?: string | null
+          attribution_channel?: string | null
           city_province?: string | null
           company_name?: string | null
+          conversion_status?: string | null
           country?: string | null
           created_at?: string
           credit_score?: string
           email?: string
           id?: string
+          lead_value?: number | null
           loan_amount?: number
           monthly_revenue?: number
           name?: string
@@ -1743,6 +1791,17 @@ export type Database = {
       generate_application_reference: {
         Args: { app_type: string }
         Returns: string
+      }
+      get_roi_metrics: {
+        Args: { start_date?: string; end_date?: string }
+        Returns: {
+          total_leads: number
+          total_spend: number
+          cost_per_lead: number
+          total_revenue: number
+          roi_percentage: number
+          channel_breakdown: Json
+        }[]
       }
       has_any_management_role: {
         Args: { _user_id: string }
