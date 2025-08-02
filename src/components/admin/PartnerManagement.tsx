@@ -275,8 +275,8 @@ export default function PartnerManagement() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Partner Applications</h2>
-          <p className="text-muted-foreground">Review and approve broker/lender applications</p>
+          <h2 className="text-2xl font-bold">Partners Management</h2>
+          <p className="text-muted-foreground">Manage partner applications and active accounts</p>
         </div>
         <div className="flex gap-2">
           <Select value={filterStatus} onValueChange={setFilterStatus}>

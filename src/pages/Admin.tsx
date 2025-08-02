@@ -1280,16 +1280,10 @@ const Admin = () => {
           count: leads.length
         },
         {
-          title: "Partner Applications",
-          value: "applications",
-          icon: UserCheck,
-          count: applicationsCount
-        },
-        {
-          title: "Active Partners",
-          value: "partners",
+          title: "Partners",
+          value: "partners", 
           icon: Users,
-          count: partners.length
+          count: applicationsCount
         },
         {
           title: "USA Applications",

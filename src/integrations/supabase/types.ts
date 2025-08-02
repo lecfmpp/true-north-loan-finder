@@ -1043,9 +1043,12 @@ export type Database = {
           company_name: string
           company_website: string | null
           created_at: string
+          deals_closed: number | null
           funding_purposes: string[] | null
           geographic_areas: string[] | null
           id: string
+          leads_contacted: number | null
+          leads_spoken: number | null
           license_number: string | null
           max_loan_amount: string | null
           max_monthly_revenue: string | null
@@ -1053,6 +1056,8 @@ export type Database = {
           min_loan_amount: string | null
           min_monthly_revenue: string | null
           min_time_in_business: string | null
+          operational_status: string | null
+          partner_notes: string | null
           payment_amount: number | null
           payment_deadline: string | null
           payment_status: string | null
@@ -1062,6 +1067,7 @@ export type Database = {
           reviewed_by: string | null
           status: string
           stripe_payment_link_id: string | null
+          total_leads_assigned: number | null
           updated_at: string
           user_id: string | null
           years_of_experience: number | null
@@ -1078,9 +1084,12 @@ export type Database = {
           company_name: string
           company_website?: string | null
           created_at?: string
+          deals_closed?: number | null
           funding_purposes?: string[] | null
           geographic_areas?: string[] | null
           id?: string
+          leads_contacted?: number | null
+          leads_spoken?: number | null
           license_number?: string | null
           max_loan_amount?: string | null
           max_monthly_revenue?: string | null
@@ -1088,6 +1097,8 @@ export type Database = {
           min_loan_amount?: string | null
           min_monthly_revenue?: string | null
           min_time_in_business?: string | null
+          operational_status?: string | null
+          partner_notes?: string | null
           payment_amount?: number | null
           payment_deadline?: string | null
           payment_status?: string | null
@@ -1097,6 +1108,7 @@ export type Database = {
           reviewed_by?: string | null
           status?: string
           stripe_payment_link_id?: string | null
+          total_leads_assigned?: number | null
           updated_at?: string
           user_id?: string | null
           years_of_experience?: number | null
@@ -1113,9 +1125,12 @@ export type Database = {
           company_name?: string
           company_website?: string | null
           created_at?: string
+          deals_closed?: number | null
           funding_purposes?: string[] | null
           geographic_areas?: string[] | null
           id?: string
+          leads_contacted?: number | null
+          leads_spoken?: number | null
           license_number?: string | null
           max_loan_amount?: string | null
           max_monthly_revenue?: string | null
@@ -1123,6 +1138,8 @@ export type Database = {
           min_loan_amount?: string | null
           min_monthly_revenue?: string | null
           min_time_in_business?: string | null
+          operational_status?: string | null
+          partner_notes?: string | null
           payment_amount?: number | null
           payment_deadline?: string | null
           payment_status?: string | null
@@ -1132,6 +1149,7 @@ export type Database = {
           reviewed_by?: string | null
           status?: string
           stripe_payment_link_id?: string | null
+          total_leads_assigned?: number | null
           updated_at?: string
           user_id?: string | null
           years_of_experience?: number | null
