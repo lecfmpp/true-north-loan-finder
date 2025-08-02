@@ -1394,19 +1394,41 @@ const Quiz = () => {
                 </div>
               )}
 
-              {/* Back button only for auto-advancing steps */}
-              {(currentStep === 2 || currentStep === 3 || currentStep === 5) && (
-                <div className="flex justify-start mt-6 md:mt-8 pt-4 md:pt-6 border-t">
-                  <Button
-                    variant="outline"
-                    onClick={handleBack}
-                    className="flex items-center text-sm md:text-base py-2 md:py-3"
-                  >
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back
-                  </Button>
-                </div>
-              )}
+              {/* Navigation buttons for all steps */}
+              <div className="flex justify-between mt-6 md:mt-8 pt-4 md:pt-6 border-t">
+                <Button
+                  variant="outline"
+                  onClick={handleBack}
+                  disabled={currentStep === 1}
+                  className="flex items-center gap-2"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back
+                </Button>
+                
+                <Button
+                  onClick={handleNext}
+                  disabled={!isStepValid() || isSubmitting}
+                  className="flex items-center gap-2"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : currentStep === totalSteps ? (
+                    <>
+                      Send my details
+                      <ArrowRight className="h-4 w-4" />
+                    </>
+                  ) : (
+                    <>
+                      Next
+                      <ArrowRight className="h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
