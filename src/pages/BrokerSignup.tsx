@@ -586,11 +586,7 @@ const BrokerSignup = () => {
               </Card>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="text-center">
-                <div className="text-4xl font-bold text-secondary mb-2">95%+</div>
-                <div className="text-muted-foreground">Lead Quality Score</div>
-              </div>
+            <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
               <div className="text-center">
                 <div className="text-4xl font-bold text-secondary mb-2">24hr</div>
                 <div className="text-muted-foreground">Response Window</div>
