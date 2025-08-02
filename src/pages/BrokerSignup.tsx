@@ -388,7 +388,7 @@ const BrokerSignup = () => {
                     <li className="flex items-center"><CheckCircle className="h-5 w-5 text-secondary mr-3" />Manual verification process</li>
                     <li className="flex items-center"><CheckCircle className="h-5 w-5 text-secondary mr-3" />Credit and income pre-qualified</li>
                     <li className="flex items-center"><CheckCircle className="h-5 w-5 text-secondary mr-3" />Real contact information</li>
-                    <li className="flex items-center"><CheckCircle className="h-5 w-5 text-secondary mr-3" />Replacement guarantee</li>
+                    
                   </ul>
                 </CardContent>
               </Card>
