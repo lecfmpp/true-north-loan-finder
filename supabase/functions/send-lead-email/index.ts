@@ -547,13 +547,92 @@ const handler = async (req: Request): Promise<Response> => {
     </html>
     `;
 
-    // Send the email (using verified domain)
-    const emailResponse = await resend.emails.send({
+    // Prepare attachments if there are application documents
+    let attachments = [];
+    
+    if (hasApplication && applicationDocuments.length > 0) {
+      console.log(`Processing ${applicationDocuments.length} documents for attachment`);
+      
+      for (const filePath of applicationDocuments) {
+        try {
+          // Download the file from Supabase storage
+          const { data: fileData, error: fileError } = await supabase.storage
+            .from('application-documents')
+            .download(filePath);
+
+          if (fileError) {
+            console.error(`Error downloading file ${filePath}:`, fileError);
+            continue; // Skip this file and continue with others
+          }
+
+          if (fileData) {
+            // Convert file to base64
+            const arrayBuffer = await fileData.arrayBuffer();
+            const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+            
+            // Extract filename from path
+            const fileName = filePath.split('/').pop() || 'document';
+            
+            // Get file extension to determine content type
+            const fileExtension = fileName.split('.').pop()?.toLowerCase() || '';
+            let contentType = 'application/octet-stream';
+            
+            switch (fileExtension) {
+              case 'pdf':
+                contentType = 'application/pdf';
+                break;
+              case 'jpg':
+              case 'jpeg':
+                contentType = 'image/jpeg';
+                break;
+              case 'png':
+                contentType = 'image/png';
+                break;
+              case 'gif':
+                contentType = 'image/gif';
+                break;
+              case 'doc':
+                contentType = 'application/msword';
+                break;
+              case 'docx':
+                contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+                break;
+              case 'txt':
+                contentType = 'text/plain';
+                break;
+            }
+
+            attachments.push({
+              filename: fileName.replace(/^\d+-/, ''), // Remove timestamp prefix if present
+              content: base64,
+              content_type: contentType
+            });
+            
+            console.log(`Successfully prepared attachment: ${fileName}`);
+          }
+        } catch (attachError) {
+          console.error(`Error processing attachment ${filePath}:`, attachError);
+          continue; // Skip this file and continue with others
+        }
+      }
+      
+      console.log(`Prepared ${attachments.length} attachments for email`);
+    }
+
+    // Send the email (using verified domain) with optional attachments
+    const emailPayload: any = {
       from: "True North Business Loan <leads@email.truenorthbusinessloan.ca>",
       to: [recipientEmail],
-      subject: `🚀 New Qualified Lead: ${lead.name} - ${formatAmount(lead.loan_amount)} Funding Request`,
+      subject: `🚀 New Qualified Lead: ${lead.name} - ${formatAmount(lead.loan_amount)} Funding Request${hasApplication ? ' (Complete Application Attached)' : ''}`,
       html: emailHtml,
-    });
+    };
+
+    // Add attachments if any exist
+    if (attachments.length > 0) {
+      emailPayload.attachments = attachments;
+    }
+
+    const emailResponse = await resend.emails.send(emailPayload);
 
     console.log("Lead email sent successfully:", emailResponse);
 
