@@ -88,6 +88,15 @@ export default function PartnerManagement() {
       const updates: any = { status, updated_at: new Date().toISOString() };
       if (notes) updates.admin_notes = notes;
 
+      // Get the application data before updating
+      const { data: application, error: fetchError } = await supabase
+        .from('lender_broker_applications')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
       const { error } = await supabase
         .from('lender_broker_applications')
         .update(updates)
@@ -95,9 +104,68 @@ export default function PartnerManagement() {
 
       if (error) throw error;
 
+      // If approving the application, create partner record and assign role
+      if (status === 'approved' && application) {
+        try {
+          // Check if partner already exists for this user
+          const { data: existingPartner } = await supabase
+            .from('partners')
+            .select('id')
+            .eq('user_id', application.user_id)
+            .single();
+
+          if (!existingPartner) {
+            // Create partner record
+            const { error: partnerError } = await supabase
+              .from('partners')
+              .insert([{
+                user_id: application.user_id,
+                name: application.applicant_name,
+                email: application.applicant_email,
+                company_name: application.company_name,
+                phone: application.applicant_phone,
+                application_type: application.application_type,
+                status: 'active'
+              }]);
+
+            if (partnerError) throw partnerError;
+
+            // Assign user role based on application type
+            const roleToAssign = application.application_type === 'broker' ? 'broker' : 'lender';
+            
+            // Check if role already exists
+            const { data: existingRole } = await supabase
+              .from('user_roles')
+              .select('id')
+              .eq('user_id', application.user_id)
+              .eq('role', roleToAssign)
+              .single();
+
+            if (!existingRole) {
+              const { error: roleError } = await supabase
+                .from('user_roles')
+                .insert([{
+                  user_id: application.user_id,
+                  role: roleToAssign,
+                  assigned_by: (await supabase.auth.getUser()).data.user?.id
+                }]);
+
+              if (roleError) {
+                console.error('Role assignment error:', roleError);
+              }
+            }
+          }
+        } catch (partnerError) {
+          console.error('Partner creation error:', partnerError);
+          // Don't fail the status update if partner creation fails
+        }
+      }
+
       toast({
         title: "Success",
-        description: "Application status updated successfully."
+        description: status === 'approved' ? 
+          "Application approved and partner account created successfully." : 
+          "Application status updated successfully."
       });
       
       fetchApplications();

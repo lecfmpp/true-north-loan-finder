@@ -43,7 +43,11 @@ export function PartnersManagement() {
   const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
   const { toast } = useToast();
   
-  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<PartnerFormData>();
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<PartnerFormData>({
+    defaultValues: {
+      status: 'active'
+    }
+  });
 
   useEffect(() => {
     fetchPartners();
@@ -86,16 +90,60 @@ export function PartnersManagement() {
           description: "Partner updated successfully",
         });
       } else {
-        // Create new partner
-        const { error } = await supabase
-          .from('partners')
-          .insert([data]);
+        // Create new partner with user account and role
+        
+        // 1. First create a user account in auth.users via admin API
+        const { data: newUser, error: userError } = await supabase.auth.admin.createUser({
+          email: data.email,
+          email_confirm: true,
+          user_metadata: {
+            display_name: data.name,
+            company_name: data.company_name,
+            phone: data.phone
+          }
+        });
 
-        if (error) throw error;
+        if (userError) throw userError;
+        if (!newUser.user) throw new Error('Failed to create user account');
+
+        // 2. Create partner record linked to user
+        const { error: partnerError } = await supabase
+          .from('partners')
+          .insert([{
+            user_id: newUser.user.id,
+            name: data.name,
+            email: data.email,
+            company_name: data.company_name,
+            phone: data.phone,
+            application_type: data.application_type,
+            status: data.status
+          }]);
+
+        if (partnerError) throw partnerError;
+
+        // 3. Assign user role based on application type
+        const roleToAssign = data.application_type === 'broker' ? 'broker' : 'lender';
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert([{
+            user_id: newUser.user.id,
+            role: roleToAssign,
+            assigned_by: (await supabase.auth.getUser()).data.user?.id
+          }]);
+
+        if (roleError) {
+          console.error('Role assignment error:', roleError);
+          // Don't fail the whole operation if role assignment fails
+          toast({
+            title: "Warning",
+            description: "Partner created but role assignment failed. Please assign role manually.",
+            variant: "destructive",
+          });
+        }
         
         toast({
           title: "Success", 
-          description: "Partner added successfully",
+          description: `Partner created successfully with ${roleToAssign} role`,
         });
       }
       
@@ -103,11 +151,11 @@ export function PartnersManagement() {
       setIsAddDialogOpen(false);
       setEditingPartner(null);
       reset();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving partner:', error);
       toast({
         title: "Error",
-        description: "Failed to save partner",
+        description: error.message || "Failed to save partner",
         variant: "destructive",
       });
     }
@@ -237,7 +285,7 @@ export function PartnersManagement() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="application_type">Type</Label>
-                  <Select onValueChange={(value) => setValue('application_type', value)}>
+                  <Select onValueChange={(value) => setValue('application_type', value)} defaultValue={editingPartner?.application_type}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
@@ -246,11 +294,11 @@ export function PartnersManagement() {
                       <SelectItem value="broker">Broker</SelectItem>
                     </SelectContent>
                   </Select>
-                  {errors.application_type && <span className="text-red-500 text-sm">{errors.application_type.message}</span>}
+                  {errors.application_type && <span className="text-red-500 text-sm">Application type is required</span>}
                 </div>
                 <div>
                   <Label htmlFor="status">Status</Label>
-                  <Select onValueChange={(value) => setValue('status', value)}>
+                  <Select onValueChange={(value) => setValue('status', value)} defaultValue={editingPartner?.status || 'active'}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
@@ -259,7 +307,7 @@ export function PartnersManagement() {
                       <SelectItem value="inactive">Inactive</SelectItem>
                     </SelectContent>
                   </Select>
-                  {errors.status && <span className="text-red-500 text-sm">{errors.status.message}</span>}
+                  {errors.status && <span className="text-red-500 text-sm">Status is required</span>}
                 </div>
               </div>
 
