@@ -362,35 +362,35 @@ const BrokerSignup = () => {
           <Card className="max-w-2xl mx-auto bg-background text-primary border-0 shadow-[var(--shadow-card)]">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl font-sans">ROI Calculator</CardTitle>
-              <p className="text-muted-foreground font-serif">Calculate your potential return on investment</p>
+              <p className="text-muted-foreground font-serif">Calculate your potential monthly return on investment</p>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid gap-4">
+            <CardContent className="space-y-8">
+              <div className="grid gap-6">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Average Commission Per Deal ($)</label>
+                  <label className="block text-lg font-semibold mb-3 text-primary">Average Commission Per Deal ($)</label>
                   <input 
                     type="number" 
-                    className="w-full px-3 py-2 border border-border rounded-md bg-background"
+                    className="w-full px-4 py-3 text-lg border border-border rounded-md bg-background"
                     placeholder="e.g., 5000"
                     value={avgCommission}
                     onChange={(e) => setAvgCommission(Number(e.target.value) || 0)}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Cost Per Lead ($)</label>
+                  <label className="block text-lg font-semibold mb-3 text-primary">Cost Per Lead ($)</label>
                   <input 
                     type="number" 
-                    className="w-full px-3 py-2 border border-border rounded-md bg-background"
+                    className="w-full px-4 py-3 text-lg border border-border rounded-md bg-background"
                     placeholder="e.g., 95"
                     value={costPerLead}
                     onChange={(e) => setCostPerLead(Number(e.target.value) || 0)}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Sales Conversion Rate (%)</label>
+                  <label className="block text-lg font-semibold mb-3 text-primary">Sales Conversion Rate (%)</label>
                   <input 
                     type="number" 
-                    className="w-full px-3 py-2 border border-border rounded-md bg-background"
+                    className="w-full px-4 py-3 text-lg border border-border rounded-md bg-background"
                     placeholder="e.g., 15"
                     value={conversionRate}
                     onChange={(e) => setConversionRate(Number(e.target.value) || 0)}
@@ -399,15 +399,31 @@ const BrokerSignup = () => {
               </div>
               
               {(avgCommission > 0 && costPerLead > 0 && conversionRate > 0) && (
-                <div className="mt-6 p-4 bg-secondary/10 rounded-lg border border-secondary/20">
-                  <div className="text-center">
-                    <div className="text-sm text-muted-foreground mb-2">Your ROI</div>
-                    <div className="text-3xl font-bold text-secondary">{calculatedROI}%</div>
-                    <div className="text-sm text-muted-foreground mt-2">
-                      Profit per lead: ${profitPerLead.toFixed(2)}
+                <div className="mt-8 p-6 bg-gradient-to-br from-secondary/10 via-background to-secondary/20 rounded-xl border-2 border-secondary/30">
+                  <div className="text-center space-y-4">
+                    <div className="text-sm text-muted-foreground uppercase tracking-wide">Monthly Profit Calculation</div>
+                    
+                    <div className="grid grid-cols-2 gap-6 mb-6">
+                      <div className="text-center">
+                        <div className="text-sm text-muted-foreground mb-1">Monthly Lead Cost</div>
+                        <div className="text-2xl font-bold text-red-600">-${(costPerLead * 100).toLocaleString()}</div>
+                        <div className="text-xs text-muted-foreground">100 leads × ${costPerLead}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-sm text-muted-foreground mb-1">Monthly Commission</div>
+                        <div className="text-2xl font-bold text-green-600">+${(avgCommission * 100 * (conversionRate / 100)).toLocaleString()}</div>
+                        <div className="text-xs text-muted-foreground">{100 * (conversionRate / 100)} deals × ${avgCommission.toLocaleString()}</div>
+                      </div>
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      Based on {conversionRate}% conversion rate
+                    
+                    <div className="border-t pt-4">
+                      <div className="text-lg text-muted-foreground mb-2">Your Monthly Profit</div>
+                      <div className="text-6xl font-black text-secondary mb-2">
+                        ${((avgCommission * 100 * (conversionRate / 100)) - (costPerLead * 100)).toLocaleString()}
+                      </div>
+                      <div className="text-lg text-muted-foreground">
+                        ROI: <span className="font-bold text-secondary">{calculatedROI}%</span>
+                      </div>
                     </div>
                   </div>
                 </div>
