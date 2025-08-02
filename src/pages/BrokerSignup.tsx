@@ -353,7 +353,7 @@ const BrokerSignup = () => {
           <Card className="max-w-2xl mx-auto bg-background text-primary border-0 shadow-[var(--shadow-card)]">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl font-sans">Lead Pricing</CardTitle>
-              <div className="text-4xl font-bold text-secondary">from 40 to 150</div>
+              <div className="text-4xl font-bold text-secondary">$40 to $150</div>
               <p className="text-muted-foreground font-serif">Per qualified lead, depending on loan amount, product type, and package selected.</p>
             </CardHeader>
             <CardContent>
