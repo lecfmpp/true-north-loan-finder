@@ -69,32 +69,59 @@ serve(async (req) => {
     const partnerData = await req.json()
     console.log('Partner data received:', partnerData)
     
-    // Create user account
-    const { data: newUser, error: createUserError } = await supabaseClient.auth.admin.createUser({
-      email: partnerData.email,
-      email_confirm: true,
-      user_metadata: {
-        display_name: partnerData.name,
-        company_name: partnerData.company_name,
-        phone: partnerData.phone
-      }
-    })
+    let targetUserId = null
+    let isNewUser = false
 
-    console.log('User creation result:', { user: newUser?.user?.id, error: createUserError?.message })
+    // First, check if user already exists
+    const { data: existingUsers, error: listError } = await supabaseClient.auth.admin.listUsers()
+    console.log('Checking for existing users...')
 
-    if (createUserError || !newUser.user) {
-      console.error('Error creating user:', createUserError)
-      return new Response(JSON.stringify({ error: createUserError?.message || 'Failed to create user account' }), {
-        status: 400,
+    if (listError) {
+      console.error('Error listing users:', listError)
+      return new Response(JSON.stringify({ error: 'Failed to check existing users' }), {
+        status: 500,
         headers: corsHeaders,
       })
+    }
+
+    const existingUser = existingUsers.users.find(u => u.email === partnerData.email)
+    
+    if (existingUser) {
+      console.log('User already exists, using existing user ID:', existingUser.id)
+      targetUserId = existingUser.id
+      isNewUser = false
+    } else {
+      console.log('Creating new user account...')
+      // Create new user account
+      const { data: newUser, error: createUserError } = await supabaseClient.auth.admin.createUser({
+        email: partnerData.email,
+        email_confirm: true,
+        user_metadata: {
+          display_name: partnerData.name,
+          company_name: partnerData.company_name,
+          phone: partnerData.phone
+        }
+      })
+
+      console.log('User creation result:', { user: newUser?.user?.id, error: createUserError?.message })
+
+      if (createUserError || !newUser.user) {
+        console.error('Error creating user:', createUserError)
+        return new Response(JSON.stringify({ error: createUserError?.message || 'Failed to create user account' }), {
+          status: 400,
+          headers: corsHeaders,
+        })
+      }
+
+      targetUserId = newUser.user.id
+      isNewUser = true
     }
 
     // Create partner record
     const { error: partnerError } = await supabaseClient
       .from('partners')
       .insert([{
-        user_id: newUser.user.id,
+        user_id: targetUserId,
         name: partnerData.name,
         email: partnerData.email,
         company_name: partnerData.company_name,
@@ -113,21 +140,33 @@ serve(async (req) => {
       })
     }
 
-    // Assign user role
+    // Assign user role (only if they don't already have it)
     const roleToAssign = partnerData.application_type === 'broker' ? 'broker' : 'lender'
-    const { error: roleError } = await supabaseClient
+    
+    // Check if user already has this role
+    const { data: existingRoles } = await supabaseClient
       .from('user_roles')
-      .insert([{
-        user_id: newUser.user.id,
-        role: roleToAssign,
-        assigned_by: user.id
-      }])
+      .select('role')
+      .eq('user_id', targetUserId)
+      .eq('role', roleToAssign)
+    
+    if (!existingRoles || existingRoles.length === 0) {
+      const { error: roleError } = await supabaseClient
+        .from('user_roles')
+        .insert([{
+          user_id: targetUserId,
+          role: roleToAssign,
+          assigned_by: user.id
+        }])
 
-    console.log('Role assignment result:', { role: roleToAssign, error: roleError?.message })
+      console.log('Role assignment result:', { role: roleToAssign, error: roleError?.message })
 
-    if (roleError) {
-      console.error('Role assignment error:', roleError)
-      // Don't fail the whole operation if role assignment fails
+      if (roleError) {
+        console.error('Role assignment error:', roleError)
+        // Don't fail the whole operation if role assignment fails
+      }
+    } else {
+      console.log('User already has role:', roleToAssign)
     }
 
     console.log('Partner created successfully')
