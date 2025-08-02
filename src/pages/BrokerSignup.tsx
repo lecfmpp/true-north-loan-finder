@@ -119,17 +119,11 @@ const BrokerSignup = () => {
 
   const handlePayment = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('create-broker-payment');
-      
-      if (error) throw error;
-      
-      if (data?.url) {
-        // Open Stripe checkout in a new tab
-        window.open(data.url, '_blank');
-      }
+      // Direct redirect to Stripe payment link
+      window.open('https://buy.stripe.com/aFadR98YN9bjcJkeaaawo05', '_blank');
     } catch (error) {
-      console.error('Error creating payment session:', error);
-      toast.error('Failed to create payment session. Please try again.');
+      console.error('Error opening payment link:', error);
+      toast.error('Failed to open payment link. Please try again.');
     }
   };
 
