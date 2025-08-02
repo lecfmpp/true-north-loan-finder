@@ -112,3 +112,6 @@ verify_jwt = false
 
 [functions.create-partner]
 verify_jwt = false
+
+[functions.create-partner-payment]
+verify_jwt = false

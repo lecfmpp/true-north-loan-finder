@@ -20,10 +20,12 @@ import {
   Eye,
   EyeOff,
   ExternalLink,
-  HelpCircle
+  HelpCircle,
+  DollarSign
 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import NotificationEmailSettings from './NotificationEmailSettings';
+import LeadPricingManagement from './LeadPricingManagement';
 
 interface GoogleSettings {
   serviceAccountKey: string;
@@ -194,15 +196,23 @@ const SettingsManagement = () => {
       </div>
 
       <Tabs defaultValue="email" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-1">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="email" className="flex items-center gap-2">
             <Mail className="h-4 w-4" />
             Email Settings
+          </TabsTrigger>
+          <TabsTrigger value="pricing" className="flex items-center gap-2">
+            <DollarSign className="h-4 w-4" />
+            Lead Pricing
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="email" className="space-y-6">
           <NotificationEmailSettings />
+        </TabsContent>
+
+        <TabsContent value="pricing" className="space-y-6">
+          <LeadPricingManagement />
         </TabsContent>
       </Tabs>
     </div>

@@ -26,14 +26,16 @@ import {
   Users,
   TrendingUp,
   Target,
-  Award
+  Award,
+  RefreshCw,
+  CreditCard,
+  Send
 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Collapsible,
@@ -41,57 +43,52 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 
-interface PartnerApplication {
+interface Partner {
   id: string;
-  applicant_name: string;
-  applicant_email: string;
-  applicant_phone: string;
+  name: string;
+  email: string;
+  phone: string;
   company_name: string;
-  company_website: string;
   application_type: string;
   status: string;
-  payment_status: string;
-  payment_amount: number;
-  payment_deadline: string;
   created_at: string;
   updated_at: string;
-  admin_notes: string;
   user_id: string;
   total_leads_assigned: number;
   leads_contacted: number;
   leads_spoken: number;
   deals_closed: number;
-  operational_status: string;
-  partner_notes: string;
 }
 
 export default function EnhancedPartnersManagement() {
-  const [applications, setApplications] = useState<PartnerApplication[]>([]);
+  const [partners, setPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedApp, setSelectedApp] = useState<PartnerApplication | null>(null);
+  const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [leadCount, setLeadCount] = useState(10);
   const [expandedPartners, setExpandedPartners] = useState<Set<string>>(new Set());
-  const [activeTab, setActiveTab] = useState("pending");
+  const [activeTab, setActiveTab] = useState("unconfirmed");
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchApplications();
+    fetchPartners();
   }, []);
 
-  const fetchApplications = async () => {
+  const fetchPartners = async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('lender_broker_applications')
+        .from('partners')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setApplications(data || []);
+      setPartners(data || []);
     } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to fetch partner applications.",
+        description: "Failed to fetch partners.",
         variant: "destructive"
       });
     } finally {
@@ -99,80 +96,94 @@ export default function EnhancedPartnersManagement() {
     }
   };
 
-  const updateApplicationStatus = async (id: string, status: string, notes?: string) => {
+  const updatePartnerStatus = async (id: string, status: string, notes?: string) => {
     try {
       const updates: any = { 
         status, 
-        updated_at: new Date().toISOString(),
-        operational_status: status === 'approved' ? 'active' : 'pending'
+        updated_at: new Date().toISOString()
       };
-      if (notes) updates.admin_notes = notes;
-
-      // Get the application data before updating
-      const { data: application, error: fetchError } = await supabase
-        .from('lender_broker_applications')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (fetchError) throw fetchError;
 
       const { error } = await supabase
-        .from('lender_broker_applications')
+        .from('partners')
         .update(updates)
         .eq('id', id);
 
       if (error) throw error;
 
-      // If approving the application, send confirmation email
-      if (status === 'approved' && application) {
-        try {
-          console.log('Sending confirmation email for approved partner:', application.applicant_email);
-          
-          const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-partner-confirmation', {
-            body: {
-              name: application.applicant_name,
-              email: application.applicant_email,
-              company_name: application.company_name,
-              application_type: application.application_type
-            }
-          });
+      toast({
+        title: "Success",
+        description: `Partner status updated to ${status}.`,
+      });
 
-          if (emailError) {
-            console.error('Email sending error:', emailError);
-            // Don't fail the approval if email fails
-            toast({
-              title: "Partner Approved",
-              description: "Partner approved but confirmation email failed to send. Please contact them manually.",
-              variant: "destructive"
-            });
-          } else {
-            console.log('Confirmation email sent successfully:', emailResult);
-            toast({
-              title: "Success",
-              description: "Partner approved and confirmation email sent successfully."
-            });
-          }
-        } catch (emailError) {
-          console.error('Error sending confirmation email:', emailError);
-          toast({
-            title: "Partner Approved",
-            description: "Partner approved but confirmation email failed to send.",
-            variant: "destructive"
-          });
-        }
-      } else {
-        toast({
-          title: "Success",
-          description: "Application status updated successfully."
-        });
-      }
-      
-      fetchApplications();
+      fetchPartners();
     } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to update application status.",
+        description: "Failed to update partner status.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const resendConfirmationEmail = async (partner: Partner) => {
+    try {
+      const { error } = await supabase.functions.invoke('send-partner-confirmation', {
+        body: {
+          name: partner.name,
+          email: partner.email,
+          company_name: partner.company_name,
+          application_type: partner.application_type
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Confirmation email sent successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to send confirmation email.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const initiatePayment = async (partner: Partner, leadPackageCount: number) => {
+    try {
+      if (!partner.user_id) {
+        toast({
+          title: "Error",
+          description: "Partner must confirm their account first.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('create-partner-payment', {
+        body: {
+          leadPackageCount,
+          partnerId: partner.id
+        }
+      });
+
+      if (error) throw error;
+
+      // Open payment in new tab
+      if (data.url) {
+        window.open(data.url, '_blank');
+        
+        toast({
+          title: "Payment Link Created",
+          description: `Payment link opened for ${leadPackageCount} leads ($${(data.amount / 100).toFixed(2)}).`,
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to create payment link.",
         variant: "destructive"
       });
     }
@@ -182,7 +193,6 @@ export default function EnhancedPartnersManagement() {
     try {
       console.log('Creating partner manually:', partnerData);
       
-      // Use the create-partner edge function which handles permissions properly
       const { data: result, error: createError } = await supabase.functions.invoke('create-partner', {
         body: {
           name: partnerData.name,
@@ -190,7 +200,7 @@ export default function EnhancedPartnersManagement() {
           company_name: partnerData.company_name,
           phone: partnerData.phone,
           application_type: partnerData.application_type,
-          status: 'pending' // Always start as pending until they confirm
+          status: 'unconfirmed' // Start as unconfirmed until they confirm email
         }
       });
 
@@ -218,7 +228,7 @@ export default function EnhancedPartnersManagement() {
           console.error('Email sending error:', emailError);
           toast({
             title: "Partner Created",
-            description: "Partner created but confirmation email failed to send. Please contact them manually.",
+            description: "Partner created but confirmation email failed to send. Please resend manually.",
             variant: "destructive"
           });
         } else {
@@ -237,7 +247,7 @@ export default function EnhancedPartnersManagement() {
         });
       }
 
-      fetchApplications();
+      fetchPartners();
     } catch (error: any) {
       console.error('Failed to create partner:', error);
       toast({
@@ -248,31 +258,17 @@ export default function EnhancedPartnersManagement() {
     }
   };
 
-  const resetPassword = async (email: string, hasPassword: boolean) => {
+  const resetPassword = async (email: string) => {
     try {
-      if (hasPassword) {
-        // Send password reset email
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/auth`
-        });
-        if (error) throw error;
-        
-        toast({
-          title: "Password Reset Sent",
-          description: "Password reset link has been sent to the user's email."
-        });
-      } else {
-        // Send invitation to set password
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/auth`
-        });
-        if (error) throw error;
-        
-        toast({
-          title: "Password Setup Link Sent",
-          description: "Link to create password has been sent to the user's email."
-        });
-      }
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth`
+      });
+      if (error) throw error;
+      
+      toast({
+        title: "Password Reset Sent",
+        description: "Password reset link has been sent to the user's email."
+      });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -282,10 +278,10 @@ export default function EnhancedPartnersManagement() {
     }
   };
 
-  const deleteApplication = async (id: string) => {
+  const deletePartner = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('lender_broker_applications')
+        .from('partners')
         .delete()
         .eq('id', id);
 
@@ -296,7 +292,7 @@ export default function EnhancedPartnersManagement() {
         description: "Partner deleted successfully."
       });
       
-      fetchApplications();
+      fetchPartners();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -318,12 +314,14 @@ export default function EnhancedPartnersManagement() {
     });
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, hasUserId: boolean) => {
     switch (status) {
-      case 'approved':
-        return <Badge variant="default" className="bg-green-600 text-white">Active</Badge>;
+      case 'unconfirmed':
+        return <Badge variant="outline" className="border-orange-500 text-orange-700">Unconfirmed</Badge>;
       case 'pending':
-        return <Badge variant="secondary">Pending</Badge>;
+        return <Badge variant="secondary">Pending Approval</Badge>;
+      case 'active':
+        return <Badge variant="default" className="bg-green-600 text-white">Active</Badge>;
       case 'rejected':
         return <Badge variant="destructive">Rejected</Badge>;
       default:
@@ -348,8 +346,9 @@ export default function EnhancedPartnersManagement() {
     application_type: 'broker'
   });
 
-  const pendingApplications = applications.filter(app => app.status === 'pending');
-  const activePartners = applications.filter(app => app.status === 'approved');
+  const unconfirmedPartners = partners.filter(p => p.status === 'unconfirmed' || !p.user_id);
+  const pendingPartners = partners.filter(p => p.status === 'pending' && p.user_id);
+  const activePartners = partners.filter(p => p.status === 'active');
 
   const MetricsCard = ({ title, value, icon: Icon, trend }: any) => (
     <Card className="p-4">
@@ -371,7 +370,7 @@ export default function EnhancedPartnersManagement() {
     </Card>
   );
 
-  const PartnerCard = ({ partner }: { partner: PartnerApplication }) => {
+  const PartnerCard = ({ partner }: { partner: Partner }) => {
     const isExpanded = expandedPartners.has(partner.id);
     const conversionRate = partner.total_leads_assigned > 0 
       ? Math.round((partner.deals_closed / partner.total_leads_assigned) * 100) 
@@ -394,8 +393,8 @@ export default function EnhancedPartnersManagement() {
                   )}
                   <div>
                     <div className="flex items-center gap-2">
-                      <CardTitle className="text-lg">{partner.applicant_name}</CardTitle>
-                      {getStatusBadge(partner.status)}
+                      <CardTitle className="text-lg">{partner.name}</CardTitle>
+                      {getStatusBadge(partner.status, !!partner.user_id)}
                       {getTypeBadge(partner.application_type)}
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">
@@ -404,7 +403,7 @@ export default function EnhancedPartnersManagement() {
                   </div>
                 </div>
                 
-                {partner.status === 'approved' && (
+                {partner.status === 'active' && (
                   <div className="grid grid-cols-3 gap-4 text-center">
                     <div>
                       <p className="text-2xl font-bold text-primary">{partner.total_leads_assigned}</p>
@@ -431,12 +430,12 @@ export default function EnhancedPartnersManagement() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-muted-foreground" />
-                    {partner.applicant_email}
+                    {partner.email}
                   </div>
-                  {partner.applicant_phone && (
+                  {partner.phone && (
                     <div className="flex items-center gap-2">
                       <Phone className="h-4 w-4 text-muted-foreground" />
-                      {partner.applicant_phone}
+                      {partner.phone}
                     </div>
                   )}
                   <div className="flex items-center gap-2">
@@ -449,8 +448,21 @@ export default function EnhancedPartnersManagement() {
                   </div>
                 </div>
 
+                {/* Account Status Info */}
+                <div className="bg-muted p-3 rounded-lg">
+                  <p className="text-sm font-medium mb-1">Account Status</p>
+                  <p className="text-xs text-muted-foreground">
+                    {!partner.user_id ? 
+                      "🔄 Email confirmation pending - partner needs to confirm email and set password" :
+                      partner.status === 'pending' ?
+                      "✅ Email confirmed - waiting for admin approval or payment" :
+                      "🎉 Fully active - can receive lead assignments"
+                    }
+                  </p>
+                </div>
+
                 {/* Metrics for Active Partners */}
-                {partner.status === 'approved' && (
+                {partner.status === 'active' && (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <MetricsCard
                       title="Total Leads"
@@ -475,30 +487,57 @@ export default function EnhancedPartnersManagement() {
                   </div>
                 )}
 
-                {/* Admin Notes */}
-                {partner.admin_notes && (
-                  <div>
-                    <Label className="text-sm font-medium">Admin Notes</Label>
-                    <p className="text-sm bg-muted p-2 rounded mt-1">{partner.admin_notes}</p>
-                  </div>
-                )}
-
                 {/* Action Buttons */}
-                <div className="flex gap-2 pt-4 border-t">
-                  {partner.status === 'pending' && (
+                <div className="flex gap-2 pt-4 border-t flex-wrap">
+                  {partner.status === 'unconfirmed' && (
                     <Button
-                      onClick={() => updateApplicationStatus(partner.id, 'approved')}
-                      className="bg-green-600 hover:bg-green-700"
+                      onClick={() => resendConfirmationEmail(partner)}
+                      variant="outline"
+                      className="border-orange-500 text-orange-700 hover:bg-orange-50"
                     >
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      Approve
+                      <Send className="h-4 w-4 mr-2" />
+                      Resend Confirmation
+                    </Button>
+                  )}
+                  
+                  {partner.status === 'pending' && partner.user_id && (
+                    <>
+                      <Button
+                        onClick={() => updatePartnerStatus(partner.id, 'active')}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Approve
+                      </Button>
+                      
+                      <Button
+                        onClick={() => {
+                          setSelectedPartner(partner);
+                          setIsPaymentModalOpen(true);
+                        }}
+                        variant="outline"
+                        className="border-blue-500 text-blue-700 hover:bg-blue-50"
+                      >
+                        <CreditCard className="h-4 w-4 mr-2" />
+                        Create Payment
+                      </Button>
+                    </>
+                  )}
+                  
+                  {partner.user_id && (
+                    <Button
+                      variant="outline"
+                      onClick={() => resetPassword(partner.email)}
+                    >
+                      <Key className="h-4 w-4 mr-2" />
+                      Reset Password
                     </Button>
                   )}
                   
                   <Button
                     variant="outline"
                     onClick={() => {
-                      setSelectedApp(partner);
+                      setSelectedPartner(partner);
                       setIsEditModalOpen(true);
                     }}
                   >
@@ -507,16 +546,8 @@ export default function EnhancedPartnersManagement() {
                   </Button>
                   
                   <Button
-                    variant="outline"
-                    onClick={() => resetPassword(partner.applicant_email, true)}
-                  >
-                    <Key className="h-4 w-4 mr-2" />
-                    Reset Password
-                  </Button>
-                  
-                  <Button
                     variant="destructive"
-                    onClick={() => deleteApplication(partner.id)}
+                    onClick={() => deletePartner(partner.id)}
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
                     Delete
@@ -543,20 +574,30 @@ export default function EnhancedPartnersManagement() {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold">Partners Management</h2>
-          <p className="text-muted-foreground">Manage pending applications and active partners</p>
+          <p className="text-muted-foreground">Manage partner workflow from creation to activation</p>
         </div>
         
-        <Button onClick={() => setShowCreateModal(true)}>
-          <Users className="h-4 w-4 mr-2" />
-          Add Partner
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={fetchPartners}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+          <Button onClick={() => setShowCreateModal(true)}>
+            <Users className="h-4 w-4 mr-2" />
+            Add Partner
+          </Button>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="unconfirmed" className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4" />
+            Unconfirmed ({unconfirmedPartners.length})
+          </TabsTrigger>
           <TabsTrigger value="pending" className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
-            Pending ({pendingApplications.length})
+            Pending ({pendingPartners.length})
           </TabsTrigger>
           <TabsTrigger value="active" className="flex items-center gap-2">
             <CheckCircle className="h-4 w-4" />
@@ -564,21 +605,53 @@ export default function EnhancedPartnersManagement() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="pending" className="space-y-4">
-          {pendingApplications.length === 0 ? (
+        <TabsContent value="unconfirmed" className="space-y-4">
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
+            <h3 className="font-medium text-orange-900 mb-1">Unconfirmed Partners</h3>
+            <p className="text-sm text-orange-800">
+              These partners haven't confirmed their email yet. Use "Resend Confirmation" to send another email.
+            </p>
+          </div>
+          {unconfirmedPartners.length === 0 ? (
             <Card>
               <CardContent className="text-center py-8">
-                <p className="text-muted-foreground">No pending applications found.</p>
+                <p className="text-muted-foreground">No unconfirmed partners found.</p>
               </CardContent>
             </Card>
           ) : (
-            pendingApplications.map((partner) => (
+            unconfirmedPartners.map((partner) => (
+              <PartnerCard key={partner.id} partner={partner} />
+            ))
+          )}
+        </TabsContent>
+
+        <TabsContent value="pending" className="space-y-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <h3 className="font-medium text-blue-900 mb-1">Pending Approval</h3>
+            <p className="text-sm text-blue-800">
+              These partners have confirmed their email but need approval or payment to become active.
+            </p>
+          </div>
+          {pendingPartners.length === 0 ? (
+            <Card>
+              <CardContent className="text-center py-8">
+                <p className="text-muted-foreground">No pending partners found.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            pendingPartners.map((partner) => (
               <PartnerCard key={partner.id} partner={partner} />
             ))
           )}
         </TabsContent>
 
         <TabsContent value="active" className="space-y-4">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+            <h3 className="font-medium text-green-900 mb-1">Active Partners</h3>
+            <p className="text-sm text-green-800">
+              These partners are fully activated and can receive lead assignments.
+            </p>
+          </div>
           {activePartners.length === 0 ? (
             <Card>
               <CardContent className="text-center py-8">
@@ -694,39 +767,76 @@ export default function EnhancedPartnersManagement() {
         </DialogContent>
       </Dialog>
 
+      {/* Payment Modal */}
+      <Dialog open={isPaymentModalOpen} onOpenChange={setIsPaymentModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create Payment for {selectedPartner?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="leadCount">Number of Leads</Label>
+              <Input
+                id="leadCount"
+                type="number"
+                min="1"
+                max="1000"
+                value={leadCount}
+                onChange={(e) => setLeadCount(parseInt(e.target.value) || 1)}
+                placeholder="Enter number of leads"
+              />
+              <p className="text-sm text-muted-foreground mt-1">
+                @ $50 per lead = ${(leadCount * 50).toFixed(2)} total
+              </p>
+            </div>
+
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setIsPaymentModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (selectedPartner) {
+                    initiatePayment(selectedPartner, leadCount);
+                  }
+                  setIsPaymentModalOpen(false);
+                }}
+              >
+                <CreditCard className="h-4 w-4 mr-2" />
+                Create Payment Link
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Edit Modal */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Update Partner</DialogTitle>
           </DialogHeader>
-          {selectedApp && (
+          {selectedPartner && (
             <div className="space-y-4">
               <div>
                 <Label htmlFor="status">Status</Label>
                 <Select
-                  value={selectedApp.status}
-                  onValueChange={(value) => setSelectedApp({...selectedApp, status: value})}
+                  value={selectedPartner.status}
+                  onValueChange={(value) => setSelectedPartner({...selectedPartner, status: value})}
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="unconfirmed">Unconfirmed</SelectItem>
                     <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="approved">Approved</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
                     <SelectItem value="rejected">Rejected</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-              
-              <div>
-                <Label htmlFor="admin_notes">Admin Notes</Label>
-                <Textarea
-                  value={selectedApp.admin_notes || ''}
-                  onChange={(e) => setSelectedApp({...selectedApp, admin_notes: e.target.value})}
-                  placeholder="Add notes about this partner..."
-                  rows={3}
-                />
               </div>
 
               <div className="flex gap-2 justify-end">
@@ -738,7 +848,7 @@ export default function EnhancedPartnersManagement() {
                 </Button>
                 <Button
                   onClick={() => {
-                    updateApplicationStatus(selectedApp.id, selectedApp.status, selectedApp.admin_notes);
+                    updatePartnerStatus(selectedPartner.id, selectedPartner.status);
                     setIsEditModalOpen(false);
                   }}
                 >

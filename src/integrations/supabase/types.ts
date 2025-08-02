@@ -1030,6 +1030,36 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_pricing: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          currency: string
+          id: string
+          is_active: boolean
+          price_per_lead: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          id?: string
+          is_active?: boolean
+          price_per_lead?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          id?: string
+          is_active?: boolean
+          price_per_lead?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lender_broker_applications: {
         Row: {
           additional_requirements: string | null
