@@ -37,7 +37,7 @@ import USAApplicationsManagement from '@/components/admin/USAApplicationsManagem
 import CanadianApplicationsManagement from '@/components/admin/CanadianApplicationsManagement';
 import SocialProofManagement from '@/components/admin/SocialProofManagement';
 import SettingsManagement from '@/components/admin/SettingsManagement';
-import PartnerManagement from '@/components/admin/PartnerManagement';
+import EnhancedPartnersManagement from '@/components/admin/EnhancedPartnersManagement';
 import PartnerLeads from '@/components/admin/PartnerLeads';
 import PartnerApplications from '@/components/admin/PartnerApplications';
 import PartnerPayments from '@/components/admin/PartnerPayments';
@@ -1812,7 +1812,7 @@ const Admin = () => {
               </div>}
           </div>;
       case 'applications':
-        return <PartnerManagement />;
+        return <EnhancedPartnersManagement />;
       case 'partners':
         return <PartnersManagement />;
       case 'usa-applications':
