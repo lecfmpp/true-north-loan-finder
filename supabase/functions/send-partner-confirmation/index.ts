@@ -137,7 +137,7 @@ serve(async (req) => {
 
     // Send email using Resend
     const emailResult = await resend.emails.send({
-      from: 'Partners <onboarding@resend.dev>',
+      from: 'True North Business Loan <leads@email.truenorthbusinessloan.ca>',
       to: [email],
       subject: `Welcome ${name}! Confirm your ${application_type === 'broker' ? 'Broker' : 'Lender'} account`,
       html: emailHtml,
