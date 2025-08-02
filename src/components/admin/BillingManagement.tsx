@@ -83,32 +83,58 @@ export default function BillingManagement() {
 
       if (paymentsError) throw paymentsError;
 
-      // Fetch partner credits with partner information
+      // Fetch partner credits without join first
       const { data: creditsData, error: creditsError } = await supabase
         .from('partner_lead_credits')
-        .select(`
-          *,
-          partners!inner(name, email, company_name)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (creditsError) throw creditsError;
 
-      // Fetch recent transactions with partner information
+      // Fetch partners separately
+      const { data: partnersData, error: partnersError } = await supabase
+        .from('partners')
+        .select('*');
+
+      if (partnersError) throw partnersError;
+
+      // Fetch recent transactions without join first
       const { data: transactionsData, error: transactionsError } = await supabase
         .from('lead_credit_transactions')
-        .select(`
-          *,
-          partners!inner(name, email, company_name)
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (transactionsError) throw transactionsError;
 
+      // Merge the data manually
+      const creditsWithPartners = (creditsData || []).map(credit => {
+        const partner = (partnersData || []).find(p => p.user_id === credit.user_id);
+        return {
+          ...credit,
+          partners: partner ? {
+            name: partner.name,
+            email: partner.email,
+            company_name: partner.company_name
+          } : null
+        };
+      });
+
+      const transactionsWithPartners = (transactionsData || []).map(transaction => {
+        const partner = (partnersData || []).find(p => p.user_id === transaction.user_id);
+        return {
+          ...transaction,
+          partners: partner ? {
+            name: partner.name,
+            email: partner.email,
+            company_name: partner.company_name
+          } : null
+        };
+      });
+
       setPayments((paymentsData as any) || []);
-      setPartnerCredits((creditsData as any) || []);
-      setTransactions((transactionsData as any) || []);
+      setPartnerCredits(creditsWithPartners as any);
+      setTransactions(transactionsWithPartners as any);
     } catch (error) {
       console.error('Error fetching billing data:', error);
       toast({
