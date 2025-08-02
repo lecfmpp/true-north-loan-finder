@@ -235,6 +235,176 @@ const BrokerSignup = () => {
         </div>
       </section>
 
+      {/* Transparent Pricing */}
+      <section className="py-20 bg-gradient-to-r from-primary to-secondary text-primary-foreground">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold font-sans mb-4">
+              Transparent Pricing
+            </h2>
+            <h3 className="text-2xl font-semibold mb-8 opacity-90">Pay-Per-Lead Model</h3>
+            <p className="text-xl opacity-90 mb-16 max-w-4xl mx-auto font-serif">
+              We operate on a transparent pay-per-lead basis - no monthly fees, no commission splits, no hidden costs. You only pay for qualified leads that match your criteria.
+            </p>
+          </div>
+
+          <Card className="max-w-2xl mx-auto bg-background text-primary border-0 shadow-[var(--shadow-card)]">
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl font-sans">ROI Calculator for Brokers</CardTitle>
+              <p className="text-muted-foreground font-serif">Calculate your potential monthly return on investment</p>
+            </CardHeader>
+            <CardContent className="space-y-8">
+              {/* Step 1: Package Selection */}
+              <div>
+                <h4 className="text-lg font-semibold mb-4 text-primary text-center">Step 1: Choose Your Lead Package</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {packages.map((pkg) => (
+                    <Card 
+                      key={pkg.leads}
+                      className={`cursor-pointer border-2 transition-all duration-300 hover:shadow-lg ${
+                        selectedPackage === pkg.leads 
+                          ? 'border-secondary bg-secondary/10' 
+                          : 'border-border hover:border-secondary/50'
+                      }`}
+                      onClick={() => setSelectedPackage(pkg.leads)}
+                    >
+                      <CardContent className="p-4 text-center">
+                        <div className="text-2xl font-bold text-secondary mb-1">{pkg.leads} leads</div>
+                        <div className="text-sm font-medium text-primary mb-1">{pkg.name}</div>
+                        <div className="text-lg font-bold text-green-600 mb-1">${pkg.costPerLead}/lead</div>
+                        <div className="text-xs text-muted-foreground mb-2">{pkg.description}</div>
+                        {pkg.leads === 100 && (
+                          <Badge variant="secondary" className="mt-1 text-xs">Most Popular</Badge>
+                        )}
+                        {pkg.leads === 200 && (
+                          <Badge variant="outline" className="mt-1 text-xs text-green-600 border-green-600">Best Value</Badge>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+
+              {/* Step 2: Financial Inputs */}
+              <TooltipProvider>
+                <div>
+                  <h4 className="text-lg font-semibold mb-4 text-primary text-center">Step 2: Enter Your Financial Details</h4>
+                  <div className="grid grid-cols-1 gap-4 sm:gap-6">
+                    <div>
+                      <label className="flex items-center gap-2 text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">
+                        Average Commission Per Deal ($)
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">The average amount you earn in commission when you successfully close a business loan deal</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </label>
+                      <input 
+                        type="text" 
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg border border-border rounded-md bg-background"
+                        placeholder="5,000"
+                        value={formatCurrency(avgCommission)}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/,/g, '');
+                          setAvgCommission(value === '' ? '' : parseCurrency(e.target.value));
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="flex items-center gap-2 text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">
+                        Cost Per Lead ($)
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">How much you pay for each qualified lead. This is automatically filled based on your selected package</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </label>
+                      <input 
+                        type="text" 
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg border border-border rounded-md bg-background"
+                        placeholder="70"
+                        value={formatCurrency(costPerLead)}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/,/g, '');
+                          setCostPerLead(value === '' ? '' : parseCurrency(e.target.value));
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="flex items-center gap-2 text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">
+                        Sales Conversion Rate (%)
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">What percentage of leads you typically convert into funded deals. Industry average is 10-20%</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </label>
+                      <input 
+                        type="text" 
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg border border-border rounded-md bg-background"
+                        placeholder="15"
+                        value={conversionRate === '' ? '' : conversionRate.toString()}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setConversionRate(value === '' ? '' : Number(value) || 0);
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </TooltipProvider>
+              
+              {/* Step 3: Results */}
+              {(avgCommNum > 0 && costPerLeadNum > 0 && conversionRateNum > 0) && (
+                <div>
+                  <h4 className="text-lg font-semibold mb-4 text-primary text-center">Step 3: Your Monthly Profit Projection</h4>
+                  <div className="mt-8 p-4 sm:p-6 bg-gradient-to-br from-secondary/10 via-background to-secondary/20 rounded-xl border-2 border-secondary/30">
+                    <div className="text-center space-y-4">
+                      <div className="text-xs sm:text-sm text-muted-foreground uppercase tracking-wide">Monthly Profit Calculation</div>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
+                        <div className="text-center">
+                          <div className="text-xs sm:text-sm text-muted-foreground mb-1">Monthly Lead Cost</div>
+                          <div className="text-xl sm:text-2xl font-bold text-red-600">-${totalMonthlySpend.toLocaleString()}</div>
+                          <div className="text-xs text-muted-foreground">{selectedPackage} leads × ${costPerLeadNum}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-xs sm:text-sm text-muted-foreground mb-1">Monthly Commission</div>
+                          <div className="text-xl sm:text-2xl font-bold text-green-600">+${totalMonthlyCommission.toLocaleString()}</div>
+                          <div className="text-xs text-muted-foreground">{totalMonthlyDeals.toFixed(1)} deals × ${avgCommNum.toLocaleString()}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="border-t pt-4">
+                        <div className="text-base sm:text-lg text-muted-foreground mb-2">Your Monthly Extra Income</div>
+                        <div className="text-4xl sm:text-5xl lg:text-7xl font-black text-secondary mb-2">
+                          ${monthlyProfit.toLocaleString()}
+                        </div>
+                        <div className="text-base sm:text-lg text-muted-foreground">
+                          ROI: <span className="font-bold text-secondary">{calculatedROI}%</span>
+                        </div>
+                        <div className="text-xs sm:text-sm text-muted-foreground mt-2">
+                          Based on {selectedPackage} leads per month with {conversionRateNum}% conversion rate
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
       {/* Dashboard Preview */}
       <section className="py-20">
         <div className="container mx-auto px-4">
@@ -380,175 +550,6 @@ const BrokerSignup = () => {
         </div>
       </section>
 
-      {/* Transparent Pricing */}
-      <section className="py-20 bg-gradient-to-r from-primary to-secondary text-primary-foreground">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold font-sans mb-4">
-              Transparent Pricing
-            </h2>
-            <h3 className="text-2xl font-semibold mb-8 opacity-90">Pay-Per-Lead Model</h3>
-            <p className="text-xl opacity-90 mb-16 max-w-4xl mx-auto font-serif">
-              We operate on a transparent pay-per-lead basis - no monthly fees, no commission splits, no hidden costs. You only pay for qualified leads that match your criteria.
-            </p>
-          </div>
-
-          <Card className="max-w-2xl mx-auto bg-background text-primary border-0 shadow-[var(--shadow-card)]">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-sans">ROI Calculator for Brokers</CardTitle>
-              <p className="text-muted-foreground font-serif">Calculate your potential monthly return on investment</p>
-            </CardHeader>
-            <CardContent className="space-y-8">
-              {/* Step 1: Package Selection */}
-              <div>
-                <h4 className="text-lg font-semibold mb-4 text-primary text-center">Step 1: Choose Your Lead Package</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {packages.map((pkg) => (
-                    <Card 
-                      key={pkg.leads}
-                      className={`cursor-pointer border-2 transition-all duration-300 hover:shadow-lg ${
-                        selectedPackage === pkg.leads 
-                          ? 'border-secondary bg-secondary/10' 
-                          : 'border-border hover:border-secondary/50'
-                      }`}
-                      onClick={() => setSelectedPackage(pkg.leads)}
-                    >
-                      <CardContent className="p-4 text-center">
-                        <div className="text-2xl font-bold text-secondary mb-1">{pkg.leads} leads</div>
-                        <div className="text-sm font-medium text-primary mb-1">{pkg.name}</div>
-                        <div className="text-lg font-bold text-green-600 mb-1">${pkg.costPerLead}/lead</div>
-                        <div className="text-xs text-muted-foreground mb-2">{pkg.description}</div>
-                        {pkg.leads === 100 && (
-                          <Badge variant="secondary" className="mt-1 text-xs">Most Popular</Badge>
-                        )}
-                        {pkg.leads === 200 && (
-                          <Badge variant="outline" className="mt-1 text-xs text-green-600 border-green-600">Best Value</Badge>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-
-              {/* Step 2: Financial Inputs */}
-              <TooltipProvider>
-                <div>
-                  <h4 className="text-lg font-semibold mb-4 text-primary text-center">Step 2: Enter Your Financial Details</h4>
-                  <div className="grid grid-cols-1 gap-4 sm:gap-6">
-                    <div>
-                      <label className="flex items-center gap-2 text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">
-                        Average Commission Per Deal ($)
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="max-w-xs">The average amount you earn in commission when you successfully close a business loan deal</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </label>
-                      <input 
-                        type="text" 
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg border border-border rounded-md bg-background"
-                        placeholder="5,000"
-                        value={formatCurrency(avgCommission)}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/,/g, '');
-                          setAvgCommission(value === '' ? '' : parseCurrency(e.target.value));
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <label className="flex items-center gap-2 text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">
-                        Cost Per Lead ($)
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="max-w-xs">How much you pay for each qualified lead. This is automatically filled based on your selected package</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </label>
-                      <input 
-                        type="text" 
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg border border-border rounded-md bg-background"
-                        placeholder="70"
-                        value={formatCurrency(costPerLead)}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/,/g, '');
-                          setCostPerLead(value === '' ? '' : parseCurrency(e.target.value));
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <label className="flex items-center gap-2 text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">
-                        Sales Conversion Rate (%)
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="max-w-xs">What percentage of leads you typically convert into funded deals. Industry average is 10-20%</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </label>
-                      <input 
-                        type="text" 
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg border border-border rounded-md bg-background"
-                        placeholder="15"
-                        value={conversionRate === '' ? '' : conversionRate.toString()}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setConversionRate(value === '' ? '' : Number(value) || 0);
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </TooltipProvider>
-              
-              {/* Step 3: Results */}
-              {(avgCommNum > 0 && costPerLeadNum > 0 && conversionRateNum > 0) && (
-                <div>
-                  <h4 className="text-lg font-semibold mb-4 text-primary text-center">Step 3: Your Monthly Profit Projection</h4>
-                  <div className="mt-8 p-4 sm:p-6 bg-gradient-to-br from-secondary/10 via-background to-secondary/20 rounded-xl border-2 border-secondary/30">
-                    <div className="text-center space-y-4">
-                      <div className="text-xs sm:text-sm text-muted-foreground uppercase tracking-wide">Monthly Profit Calculation</div>
-                      
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
-                        <div className="text-center">
-                          <div className="text-xs sm:text-sm text-muted-foreground mb-1">Monthly Lead Cost</div>
-                          <div className="text-xl sm:text-2xl font-bold text-red-600">-${totalMonthlySpend.toLocaleString()}</div>
-                          <div className="text-xs text-muted-foreground">{selectedPackage} leads × ${costPerLead}</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-xs sm:text-sm text-muted-foreground mb-1">Monthly Commission</div>
-                          <div className="text-xl sm:text-2xl font-bold text-green-600">+${totalMonthlyCommission.toLocaleString()}</div>
-                          <div className="text-xs text-muted-foreground">{totalMonthlyDeals.toFixed(1)} deals × ${avgCommission.toLocaleString()}</div>
-                        </div>
-                      </div>
-                      
-                      <div className="border-t pt-4">
-                        <div className="text-base sm:text-lg text-muted-foreground mb-2">Your Monthly Extra Income</div>
-                        <div className="text-4xl sm:text-5xl lg:text-7xl font-black text-secondary mb-2">
-                          ${monthlyProfit.toLocaleString()}
-                        </div>
-                        <div className="text-base sm:text-lg text-muted-foreground">
-                          ROI: <span className="font-bold text-secondary">{calculatedROI}%</span>
-                        </div>
-                        <div className="text-xs sm:text-sm text-muted-foreground mt-2">
-                          Based on {selectedPackage} leads per month with {conversionRate}% conversion rate
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </section>
 
       {/* Quality Guarantee */}
       <section className="py-20">
