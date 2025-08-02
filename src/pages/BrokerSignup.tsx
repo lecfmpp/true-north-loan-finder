@@ -15,6 +15,15 @@ import { toast } from "sonner";
 const BrokerSignup = () => {
   const [recentLeads, setRecentLeads] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // ROI Calculator state
+  const [avgCommission, setAvgCommission] = useState(0);
+  const [costPerLead, setCostPerLead] = useState(0);
+  const [conversionRate, setConversionRate] = useState(0);
+  
+  // Calculate ROI values
+  const profitPerLead = (avgCommission * (conversionRate / 100)) - costPerLead;
+  const calculatedROI = costPerLead > 0 ? Math.round((profitPerLead / costPerLead) * 100) : 0;
 
   useEffect(() => {
     const fetchRecentLeads = async () => {
@@ -352,15 +361,57 @@ const BrokerSignup = () => {
 
           <Card className="max-w-2xl mx-auto bg-background text-primary border-0 shadow-[var(--shadow-card)]">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-sans">Average Lead Pricing</CardTitle>
-              <div className="text-4xl font-bold text-secondary">$40 to $150</div>
-              <p className="text-muted-foreground font-serif">Per qualified lead, depending on loan amount, product type, and package selected.</p>
+              <CardTitle className="text-2xl font-sans">ROI Calculator</CardTitle>
+              <p className="text-muted-foreground font-serif">Calculate your potential return on investment</p>
             </CardHeader>
-            <CardContent>
-              <ul className="space-y-3">
-                <li className="flex items-center"><CheckCircle className="h-5 w-5 text-secondary mr-3" />Pre-screened for qualification</li>
-                <li className="flex items-center"><CheckCircle className="h-5 w-5 text-secondary mr-3" />Expecting immediate response</li>
-              </ul>
+            <CardContent className="space-y-6">
+              <div className="grid gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Average Commission Per Deal ($)</label>
+                  <input 
+                    type="number" 
+                    className="w-full px-3 py-2 border border-border rounded-md bg-background"
+                    placeholder="e.g., 5000"
+                    value={avgCommission}
+                    onChange={(e) => setAvgCommission(Number(e.target.value) || 0)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Cost Per Lead ($)</label>
+                  <input 
+                    type="number" 
+                    className="w-full px-3 py-2 border border-border rounded-md bg-background"
+                    placeholder="e.g., 95"
+                    value={costPerLead}
+                    onChange={(e) => setCostPerLead(Number(e.target.value) || 0)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Sales Conversion Rate (%)</label>
+                  <input 
+                    type="number" 
+                    className="w-full px-3 py-2 border border-border rounded-md bg-background"
+                    placeholder="e.g., 15"
+                    value={conversionRate}
+                    onChange={(e) => setConversionRate(Number(e.target.value) || 0)}
+                  />
+                </div>
+              </div>
+              
+              {(avgCommission > 0 && costPerLead > 0 && conversionRate > 0) && (
+                <div className="mt-6 p-4 bg-secondary/10 rounded-lg border border-secondary/20">
+                  <div className="text-center">
+                    <div className="text-sm text-muted-foreground mb-2">Your ROI</div>
+                    <div className="text-3xl font-bold text-secondary">{calculatedROI}%</div>
+                    <div className="text-sm text-muted-foreground mt-2">
+                      Profit per lead: ${profitPerLead.toFixed(2)}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Based on {conversionRate}% conversion rate
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
