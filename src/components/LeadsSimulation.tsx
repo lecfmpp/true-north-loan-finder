@@ -337,7 +337,7 @@ export const LeadsSimulation = () => {
     localStorage.setItem('brokerFormData', JSON.stringify(formData));
 
     // Redirect directly to Stripe payment with custom domain
-    window.open('https://buy.stripe.com/aFadR98YN9bjcJkbII?success_url=' + encodeURIComponent('https://truenorthbusinessloan.ca/broker-payment-success'), '_blank');
+    window.open('https://buy.stripe.com/aFadR98YN9bjcJkeaaawo05?success_url=' + encodeURIComponent('https://truenorthbusinessloan.ca/broker-payment-success'), '_blank');
 
     // Close modal and reset form
     setShowModal(false);
