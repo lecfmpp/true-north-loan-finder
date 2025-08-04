@@ -81,6 +81,7 @@ const Admin = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [countryFilter, setCountryFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('leads');
   const [expandedLeads, setExpandedLeads] = useState<{
     [key: string]: boolean;
@@ -101,6 +102,7 @@ const Admin = () => {
   const [selectedPartner, setSelectedPartner] = useState<string>('');
   const [customEmails, setCustomEmails] = useState<Record<string, string>>({});
   const [sendingCustomEmails, setSendingCustomEmails] = useState<Record<string, boolean>>({});
+  const [emailsSentTo, setEmailsSentTo] = useState<Record<string, string[]>>({});
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [leadToDelete, setLeadToDelete] = useState<string | null>(null);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
@@ -293,7 +295,7 @@ const Admin = () => {
 
   useEffect(() => {
     filterLeads();
-  }, [leads, searchTerm, statusFilter]);
+  }, [leads, searchTerm, statusFilter, countryFilter]);
 
   const fetchLeads = async () => {
     try {
@@ -532,6 +534,12 @@ const Admin = () => {
         setCustomEmails(prev => ({
           ...prev,
           [leadId]: ""
+        }));
+
+        // Track emails sent to
+        setEmailsSentTo(prev => ({
+          ...prev,
+          [leadId]: emailList
         }));
       } else {
         throw new Error("All email sends failed");
@@ -903,6 +911,9 @@ const Admin = () => {
     }
     if (statusFilter !== 'all') {
       filtered = filtered.filter(lead => lead.status === statusFilter);
+    }
+    if (countryFilter !== 'all') {
+      filtered = filtered.filter(lead => lead.country === countryFilter);
     }
     setFilteredLeads(filtered);
 
@@ -1438,6 +1449,16 @@ const Admin = () => {
                         <SelectItem value="Loan Approved">Loan Approved</SelectItem>
                       </SelectContent>
                     </Select>
+                    <Select value={countryFilter} onValueChange={setCountryFilter}>
+                      <SelectTrigger className="w-full sm:w-40">
+                        <SelectValue placeholder="Filter by country" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Countries</SelectItem>
+                        <SelectItem value="Canada">Canada</SelectItem>
+                        <SelectItem value="United States">United States</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   
                   <div className="flex gap-2">
@@ -1564,6 +1585,13 @@ const Admin = () => {
                               <div className="text-sm text-muted-foreground">{lead.email}</div>
                               <div className="text-sm text-muted-foreground">{lead.phone}</div>
                               <div className="text-xs text-muted-foreground">{lead.country}, {lead.city_province}</div>
+                              
+                              {/* Email tracking badge */}
+                              {emailsSentTo[lead.id] && emailsSentTo[lead.id].length > 0 && (
+                                <Badge variant="secondary" className="mt-1 text-xs bg-green-100 text-green-800">
+                                  ✉️ Sent to: {emailsSentTo[lead.id].join(', ')}
+                                </Badge>
+                              )}
                               
                               <Collapsible open={expandedLeads[lead.id]}>
                                 <CollapsibleContent className="mt-2 p-2 bg-muted rounded text-xs space-y-1">
