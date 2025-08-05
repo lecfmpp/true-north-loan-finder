@@ -1486,7 +1486,7 @@ const Admin = () => {
                   <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{leads.length}</div>
+                  <div className="text-2xl font-bold">{filteredLeads.length}</div>
                 </CardContent>
               </Card>
               <Card>
@@ -1494,7 +1494,7 @@ const Admin = () => {
                   <CardTitle className="text-sm font-medium">New Leads</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{leads.filter(l => l.status === 'new').length}</div>
+                  <div className="text-2xl font-bold">{filteredLeads.filter(l => l.status === 'new').length}</div>
                 </CardContent>
               </Card>
               <Card>
@@ -1502,7 +1502,7 @@ const Admin = () => {
                   <CardTitle className="text-sm font-medium">Qualified</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{leads.filter(l => l.status === 'qualified').length}</div>
+                  <div className="text-2xl font-bold">{filteredLeads.filter(l => l.status === 'qualified').length}</div>
                 </CardContent>
               </Card>
               <Card>
@@ -1510,7 +1510,7 @@ const Admin = () => {
                   <CardTitle className="text-sm font-medium">Closed</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{leads.filter(l => l.status === 'closed').length}</div>
+                  <div className="text-2xl font-bold">{filteredLeads.filter(l => l.status === 'closed').length}</div>
                 </CardContent>
               </Card>
             </div>
