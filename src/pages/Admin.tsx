@@ -1834,20 +1834,16 @@ const Admin = () => {
                                   </div>
                                 )}
                                 {lead.has_canadian_application && (
-                                  <div className="flex items-center gap-2">
-                                    <Badge variant="default" className="bg-blue-100 text-blue-800 hover:bg-blue-100">
-                                      <FileText className="h-3 w-3 mr-1" />
-                                      CAN App
-                                    </Badge>
-                                    <span className="text-xs font-mono text-muted-foreground">
-                                      {lead.canadian_application_reference}
-                                    </span>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => downloadApplicationPDF(lead)}
-                                      className="h-6 w-6 p-0"
-                                      title="Download Application"
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-mono text-muted-foreground">
+                                    {lead.canadian_application_reference}
+                                  </span>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => downloadApplicationPDF(lead)}
+                                    className="h-6 w-6 p-0"
+                                    title="Download Application"
                                     >
                                       <Download className="h-3 w-3" />
                                     </Button>
