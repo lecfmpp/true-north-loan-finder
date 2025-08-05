@@ -1851,7 +1851,7 @@ const Admin = () => {
                                 )}
                               </div>
                             ) : (
-                              <Badge variant="outline" className="text-muted-foreground">
+                              <Badge variant="outline" className="text-muted-foreground whitespace-nowrap">
                                 No Application
                               </Badge>
                             )}
