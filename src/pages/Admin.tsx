@@ -1772,7 +1772,7 @@ const Admin = () => {
                       }} />
                           </TableHead>}
                         <TableHead className="min-w-[200px]">
-                          <Button variant="ghost" className="h-auto p-0 font-medium" onClick={() => handleSort('name')}>
+                          <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent hover:text-current" onClick={() => handleSort('name')}>
                             Lead Info
                             {sortField === 'name' && (
                               sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
@@ -1781,7 +1781,7 @@ const Admin = () => {
                           </Button>
                         </TableHead>
                         <TableHead className="min-w-[120px]">
-                          <Button variant="ghost" className="h-auto p-0 font-medium" onClick={() => handleSort('monthly_revenue')}>
+                          <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent hover:text-current" onClick={() => handleSort('monthly_revenue')}>
                             Monthly Revenue
                             {sortField === 'monthly_revenue' && (
                               sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
@@ -1790,7 +1790,7 @@ const Admin = () => {
                           </Button>
                         </TableHead>
                         <TableHead className="min-w-[120px]">
-                          <Button variant="ghost" className="h-auto p-0 font-medium" onClick={() => handleSort('loan_amount')}>
+                          <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent hover:text-current" onClick={() => handleSort('loan_amount')}>
                             Loan Amount
                             {sortField === 'loan_amount' && (
                               sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
@@ -1799,7 +1799,7 @@ const Admin = () => {
                           </Button>
                         </TableHead>
                         <TableHead className="min-w-[100px]">
-                          <Button variant="ghost" className="h-auto p-0 font-medium" onClick={() => handleSort('credit_score')}>
+                          <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent hover:text-current" onClick={() => handleSort('credit_score')}>
                             Credit Score
                             {sortField === 'credit_score' && (
                               sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
@@ -1808,7 +1808,7 @@ const Admin = () => {
                           </Button>
                         </TableHead>
                         <TableHead className="min-w-[120px]">
-                          <Button variant="ghost" className="h-auto p-0 font-medium" onClick={() => handleSort('time_in_business')}>
+                          <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent hover:text-current" onClick={() => handleSort('time_in_business')}>
                             Business Info
                             {sortField === 'time_in_business' && (
                               sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
@@ -1817,7 +1817,7 @@ const Admin = () => {
                           </Button>
                         </TableHead>
                         <TableHead className="min-w-[100px]">
-                          <Button variant="ghost" className="h-auto p-0 font-medium" onClick={() => handleSort('score')}>
+                          <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent hover:text-current" onClick={() => handleSort('score')}>
                             Score
                             {sortField === 'score' && (
                               sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
@@ -1826,7 +1826,7 @@ const Admin = () => {
                           </Button>
                         </TableHead>
                         <TableHead className="min-w-[100px]">
-                          <Button variant="ghost" className="h-auto p-0 font-medium" onClick={() => handleSort('status')}>
+                          <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent hover:text-current" onClick={() => handleSort('status')}>
                             Status
                             {sortField === 'status' && (
                               sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
@@ -1836,7 +1836,7 @@ const Admin = () => {
                         </TableHead>
                         <TableHead className="min-w-[120px]">Applications</TableHead>
                         <TableHead className="min-w-[100px]">
-                          <Button variant="ghost" className="h-auto p-0 font-medium" onClick={() => handleSort('created_at')}>
+                          <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent hover:text-current" onClick={() => handleSort('created_at')}>
                             Created
                             {sortField === 'created_at' && (
                               sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
@@ -1850,7 +1850,7 @@ const Admin = () => {
                         {isSuperAdmin && <TableHead className="min-w-[180px]">Assign Lead</TableHead>}
                         {isSuperAdmin && <TableHead className="min-w-[250px]">Custom Email</TableHead>}
                         {isSuperAdmin && <TableHead className="min-w-[150px]">
-                          <Button variant="ghost" className="h-auto p-0 font-medium" onClick={() => handleSort('partner_loan_amount')}>
+                          <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent hover:text-current" onClick={() => handleSort('partner_loan_amount')}>
                             Partner Loan Amount
                             {sortField === 'partner_loan_amount' && (
                               sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
