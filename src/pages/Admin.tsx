@@ -76,6 +76,8 @@ interface QuizResponse {
     sent_by: string;
     sent_at: string;
   }>;
+  // Add partner loan amount
+  partner_loan_amount?: number;
 }
 
 const Admin = () => {
@@ -1085,6 +1087,34 @@ const Admin = () => {
     }
   };
 
+  const updatePartnerLoanAmount = async (leadId: string, amount: string) => {
+    try {
+      const numericAmount = amount ? parseInt(amount) : null;
+      const { error } = await supabase
+        .from('quiz_responses')
+        .update({ partner_loan_amount: numericAmount })
+        .eq('id', leadId);
+      
+      if (error) throw error;
+      
+      setLeads(leads.map(lead => 
+        lead.id === leadId ? { ...lead, partner_loan_amount: numericAmount } : lead
+      ));
+      
+      toast({
+        title: "Success",
+        description: "Partner loan amount updated"
+      });
+    } catch (error) {
+      console.error('Error updating partner loan amount:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update partner loan amount",
+        variant: "destructive"
+      });
+    }
+  };
+
   const exportToCSV = () => {
     const headers = ['Name', 'Email', 'Phone', 'Country', 'State/Province', 'Monthly Revenue', 'Loan Amount', 'Credit Score', 'Time in Business', 'Use of Funds', 'Score', 'Status', 'Created At'];
     const csvContent = [headers.join(','), ...filteredLeads.map(lead => [lead.name, lead.email, lead.phone, lead.country || '', lead.city_province || '', lead.monthly_revenue, lead.loan_amount, lead.credit_score, lead.time_in_business, lead.use_of_funds, lead.score, lead.status, format(new Date(lead.created_at), 'yyyy-MM-dd HH:mm:ss')].join(','))].join('\n');
@@ -1713,6 +1743,7 @@ const Admin = () => {
                         {isSuperAdmin && <TableHead className="min-w-[200px]">Send to Partner</TableHead>}
                         {isSuperAdmin && <TableHead className="min-w-[180px]">Assign Lead</TableHead>}
                         {isSuperAdmin && <TableHead className="min-w-[250px]">Custom Email</TableHead>}
+                        {isSuperAdmin && <TableHead className="min-w-[150px]">Partner Loan Amount</TableHead>}
                         {isSuperAdmin && <TableHead className="min-w-[100px]">Admin</TableHead>}
                       </TableRow>
                     </TableHeader>
@@ -1987,6 +2018,15 @@ const Admin = () => {
                                   </Button>
                                 </div>
                               </div>
+                            </TableCell>}
+                          {isSuperAdmin && <TableCell>
+                              <Input
+                                type="number"
+                                placeholder="Enter amount..."
+                                value={lead.partner_loan_amount || ""}
+                                onChange={(e) => updatePartnerLoanAmount(lead.id, e.target.value)}
+                                className="w-32"
+                              />
                             </TableCell>}
                           {isSuperAdmin && <TableCell>
                               <Button variant="destructive" size="sm" onClick={() => {

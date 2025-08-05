@@ -1284,6 +1284,7 @@ export type Database = {
       partners: {
         Row: {
           application_type: string
+          commission_percentage: number | null
           company_name: string
           created_at: string
           deals_closed: number
@@ -1300,6 +1301,7 @@ export type Database = {
         }
         Insert: {
           application_type: string
+          commission_percentage?: number | null
           company_name: string
           created_at?: string
           deals_closed?: number
@@ -1316,6 +1318,7 @@ export type Database = {
         }
         Update: {
           application_type?: string
+          commission_percentage?: number | null
           company_name?: string
           created_at?: string
           deals_closed?: number
@@ -1426,6 +1429,7 @@ export type Database = {
           loan_amount: number
           monthly_revenue: number
           name: string
+          partner_loan_amount: number | null
           phone: string
           score: number
           status: string | null
@@ -1452,6 +1456,7 @@ export type Database = {
           loan_amount: number
           monthly_revenue: number
           name: string
+          partner_loan_amount?: number | null
           phone: string
           score: number
           status?: string | null
@@ -1478,6 +1483,7 @@ export type Database = {
           loan_amount?: number
           monthly_revenue?: number
           name?: string
+          partner_loan_amount?: number | null
           phone?: string
           score?: number
           status?: string | null
