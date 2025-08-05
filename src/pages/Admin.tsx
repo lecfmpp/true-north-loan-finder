@@ -1767,7 +1767,7 @@ const Admin = () => {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-xs whitespace-nowrap">
                               {getCreditScoreNumber(lead.credit_score)}
                             </Badge>
                           </TableCell>
