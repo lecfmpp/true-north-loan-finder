@@ -25,7 +25,7 @@ const getCreditScoreNumber = (creditScore: string) => {
     default: return creditScore;
   }
 };
-import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Trash2, Phone, ChevronDown, ChevronRight, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign, Settings as SettingsIcon, ExternalLink, TrendingUp } from 'lucide-react';
+import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Trash2, Phone, ChevronDown, ChevronRight, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign, Settings as SettingsIcon, ExternalLink, TrendingUp, ChevronUp, ArrowUpDown } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import Header from '@/components/Header';
@@ -95,6 +95,8 @@ const Admin = () => {
   const [loanAmountFilter, setLoanAmountFilter] = useState('all');
   const [timeInBusinessFilter, setTimeInBusinessFilter] = useState('all');
   const [applicationSentFilter, setApplicationSentFilter] = useState('all');
+  const [sortField, setSortField] = useState<string>('');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [activeTab, setActiveTab] = useState('leads');
   const [expandedLeads, setExpandedLeads] = useState<{
     [key: string]: boolean;
@@ -313,7 +315,7 @@ const Admin = () => {
 
   useEffect(() => {
     filterLeads();
-  }, [leads, searchTerm, statusFilter, countryFilter, monthlyRevenueFilter, loanAmountFilter, timeInBusinessFilter, applicationSentFilter]);
+  }, [leads, searchTerm, statusFilter, countryFilter, monthlyRevenueFilter, loanAmountFilter, timeInBusinessFilter, applicationSentFilter, sortField, sortDirection]);
 
   const fetchLeads = async () => {
     try {
@@ -1012,11 +1014,50 @@ const Admin = () => {
         }
       });
     }
+    
+    // Apply sorting
+    if (sortField) {
+      filtered = filtered.sort((a, b) => {
+        let aValue: any = a[sortField as keyof QuizResponse];
+        let bValue: any = b[sortField as keyof QuizResponse];
+        
+        // Handle special cases for sorting
+        if (sortField === 'created_at') {
+          aValue = new Date(aValue).getTime();
+          bValue = new Date(bValue).getTime();
+        } else if (sortField === 'monthly_revenue' || sortField === 'loan_amount' || sortField === 'score' || sortField === 'partner_loan_amount') {
+          aValue = Number(aValue) || 0;
+          bValue = Number(bValue) || 0;
+        } else if (typeof aValue === 'string') {
+          aValue = aValue.toLowerCase();
+          bValue = bValue.toLowerCase();
+        }
+        
+        if (sortDirection === 'asc') {
+          return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+        } else {
+          return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+        }
+      });
+    }
+    
     setFilteredLeads(filtered);
 
     // Clear selected leads that are no longer in filtered results
     setSelectedLeads(prev => prev.filter(id => filtered.some(lead => lead.id === id)));
   };
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      // Toggle direction if same field
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // New field, start with ascending
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
 
 
   const exportSelectedToCSV = () => {
@@ -1730,21 +1771,93 @@ const Admin = () => {
                         }
                       }} />
                           </TableHead>}
-                        <TableHead className="min-w-[200px]">Lead Info</TableHead>
-                        <TableHead className="min-w-[120px]">Monthly Revenue</TableHead>
-                        <TableHead className="min-w-[120px]">Loan Amount</TableHead>
-                        <TableHead className="min-w-[100px]">Credit Score</TableHead>
-                        <TableHead className="min-w-[120px]">Business Info</TableHead>
-                        <TableHead className="min-w-[100px]">Score</TableHead>
-                        <TableHead className="min-w-[100px]">Status</TableHead>
+                        <TableHead className="min-w-[200px]">
+                          <Button variant="ghost" className="h-auto p-0 font-medium" onClick={() => handleSort('name')}>
+                            Lead Info
+                            {sortField === 'name' && (
+                              sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
+                            )}
+                            {sortField !== 'name' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
+                          </Button>
+                        </TableHead>
+                        <TableHead className="min-w-[120px]">
+                          <Button variant="ghost" className="h-auto p-0 font-medium" onClick={() => handleSort('monthly_revenue')}>
+                            Monthly Revenue
+                            {sortField === 'monthly_revenue' && (
+                              sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
+                            )}
+                            {sortField !== 'monthly_revenue' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
+                          </Button>
+                        </TableHead>
+                        <TableHead className="min-w-[120px]">
+                          <Button variant="ghost" className="h-auto p-0 font-medium" onClick={() => handleSort('loan_amount')}>
+                            Loan Amount
+                            {sortField === 'loan_amount' && (
+                              sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
+                            )}
+                            {sortField !== 'loan_amount' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
+                          </Button>
+                        </TableHead>
+                        <TableHead className="min-w-[100px]">
+                          <Button variant="ghost" className="h-auto p-0 font-medium" onClick={() => handleSort('credit_score')}>
+                            Credit Score
+                            {sortField === 'credit_score' && (
+                              sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
+                            )}
+                            {sortField !== 'credit_score' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
+                          </Button>
+                        </TableHead>
+                        <TableHead className="min-w-[120px]">
+                          <Button variant="ghost" className="h-auto p-0 font-medium" onClick={() => handleSort('time_in_business')}>
+                            Business Info
+                            {sortField === 'time_in_business' && (
+                              sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
+                            )}
+                            {sortField !== 'time_in_business' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
+                          </Button>
+                        </TableHead>
+                        <TableHead className="min-w-[100px]">
+                          <Button variant="ghost" className="h-auto p-0 font-medium" onClick={() => handleSort('score')}>
+                            Score
+                            {sortField === 'score' && (
+                              sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
+                            )}
+                            {sortField !== 'score' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
+                          </Button>
+                        </TableHead>
+                        <TableHead className="min-w-[100px]">
+                          <Button variant="ghost" className="h-auto p-0 font-medium" onClick={() => handleSort('status')}>
+                            Status
+                            {sortField === 'status' && (
+                              sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
+                            )}
+                            {sortField !== 'status' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
+                          </Button>
+                        </TableHead>
                         <TableHead className="min-w-[120px]">Applications</TableHead>
-                        <TableHead className="min-w-[100px]">Created</TableHead>
+                        <TableHead className="min-w-[100px]">
+                          <Button variant="ghost" className="h-auto p-0 font-medium" onClick={() => handleSort('created_at')}>
+                            Created
+                            {sortField === 'created_at' && (
+                              sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
+                            )}
+                            {sortField !== 'created_at' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
+                          </Button>
+                        </TableHead>
                         <TableHead className="min-w-[140px]">Email Sequences</TableHead>
                         <TableHead className="min-w-[100px]">Actions</TableHead>
                         {isSuperAdmin && <TableHead className="min-w-[200px]">Send to Partner</TableHead>}
                         {isSuperAdmin && <TableHead className="min-w-[180px]">Assign Lead</TableHead>}
                         {isSuperAdmin && <TableHead className="min-w-[250px]">Custom Email</TableHead>}
-                        {isSuperAdmin && <TableHead className="min-w-[150px]">Partner Loan Amount</TableHead>}
+                        {isSuperAdmin && <TableHead className="min-w-[150px]">
+                          <Button variant="ghost" className="h-auto p-0 font-medium" onClick={() => handleSort('partner_loan_amount')}>
+                            Partner Loan Amount
+                            {sortField === 'partner_loan_amount' && (
+                              sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
+                            )}
+                            {sortField !== 'partner_loan_amount' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
+                          </Button>
+                        </TableHead>}
                         {isSuperAdmin && <TableHead className="min-w-[100px]">Admin</TableHead>}
                       </TableRow>
                     </TableHeader>
