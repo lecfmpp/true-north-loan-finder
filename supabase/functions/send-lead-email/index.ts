@@ -584,9 +584,18 @@ const handler = async (req: Request): Promise<Response> => {
           }
 
           if (fileData) {
-            // Convert file to base64
+            // Convert file to base64 - handle large files efficiently
             const arrayBuffer = await fileData.arrayBuffer();
-            const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+            const uint8Array = new Uint8Array(arrayBuffer);
+            
+            // Convert to base64 in chunks to avoid "Maximum call stack size exceeded"
+            let base64 = '';
+            const chunkSize = 8192; // Process in 8KB chunks
+            
+            for (let i = 0; i < uint8Array.length; i += chunkSize) {
+              const chunk = uint8Array.slice(i, i + chunkSize);
+              base64 += btoa(String.fromCharCode.apply(null, Array.from(chunk)));
+            }
             
             // Extract filename from path
             const fileName = filePath.split('/').pop() || 'document';
@@ -661,7 +670,7 @@ const handler = async (req: Request): Promise<Response> => {
         .insert({
           lead_id: leadId,
           recipient_emails: [recipientEmail],
-          sent_by: "system", // You might want to pass this from the request if user context is available
+          sent_by: null, // Set to null for system-generated emails since it expects a UUID
           sent_at: new Date().toISOString()
         });
 
