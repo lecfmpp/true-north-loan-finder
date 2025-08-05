@@ -654,6 +654,26 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Lead email sent successfully:", emailResponse);
 
+    // Record the custom email send in the database
+    try {
+      const { error: insertError } = await supabase
+        .from('lead_custom_emails')
+        .insert({
+          lead_id: leadId,
+          recipient_emails: [recipientEmail],
+          sent_by: "system", // You might want to pass this from the request if user context is available
+          sent_at: new Date().toISOString()
+        });
+
+      if (insertError) {
+        console.error("Error recording custom email:", insertError);
+      } else {
+        console.log("Custom email recorded successfully");
+      }
+    } catch (recordError) {
+      console.error("Error recording custom email:", recordError);
+    }
+
     return new Response(JSON.stringify({ 
       success: true, 
       emailId: emailResponse.data?.id,
