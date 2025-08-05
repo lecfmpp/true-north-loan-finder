@@ -1782,7 +1782,7 @@ const Admin = () => {
                           </TableCell>
                           <TableCell>
                             <Select value={lead.status} onValueChange={value => updateLeadStatus(lead.id, value)}>
-                              <SelectTrigger className="w-36">
+                              <SelectTrigger className="w-40 whitespace-nowrap">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
