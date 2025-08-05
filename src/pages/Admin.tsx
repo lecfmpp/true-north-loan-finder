@@ -1534,7 +1534,7 @@ const Admin = () => {
                         <SelectValue placeholder="Filter by status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Status</SelectItem>
+                        <SelectItem value="all">Lead Status (All)</SelectItem>
                         <SelectItem value="New">New</SelectItem>
                         <SelectItem value="No Answer">No Answer</SelectItem>
                         <SelectItem value="Wrong Number">Wrong Number</SelectItem>
@@ -1563,7 +1563,7 @@ const Admin = () => {
                         <SelectValue placeholder="Monthly Revenue" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Revenue</SelectItem>
+                        <SelectItem value="all">Monthly Revenue (All)</SelectItem>
                         <SelectItem value="under-10k">Under $10k</SelectItem>
                         <SelectItem value="10k-25k">$10k - $25k</SelectItem>
                         <SelectItem value="25k-50k">$25k - $50k</SelectItem>
@@ -1578,7 +1578,7 @@ const Admin = () => {
                         <SelectValue placeholder="Loan Amount" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Amounts</SelectItem>
+                        <SelectItem value="all">Loan Required (All)</SelectItem>
                         <SelectItem value="under-25k">Under $25k</SelectItem>
                         <SelectItem value="25k-50k">$25k - $50k</SelectItem>
                         <SelectItem value="50k-100k">$50k - $100k</SelectItem>
@@ -1593,7 +1593,7 @@ const Admin = () => {
                         <SelectValue placeholder="Time in Business" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Experience</SelectItem>
+                        <SelectItem value="all">Business Age (All)</SelectItem>
                         <SelectItem value="startup">Startup</SelectItem>
                         <SelectItem value="6-12">6-12 months</SelectItem>
                         <SelectItem value="1-2">1-2 years</SelectItem>
@@ -1607,7 +1607,7 @@ const Admin = () => {
                         <SelectValue placeholder="Application Sent" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Leads</SelectItem>
+                        <SelectItem value="all">Applications (All)</SelectItem>
                         <SelectItem value="yes">Yes</SelectItem>
                         <SelectItem value="no">No</SelectItem>
                       </SelectContent>
