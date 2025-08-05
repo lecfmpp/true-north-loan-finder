@@ -1731,7 +1731,8 @@ const Admin = () => {
                       }} />
                           </TableHead>}
                         <TableHead className="min-w-[200px]">Lead Info</TableHead>
-                        <TableHead className="min-w-[120px]">Revenue & Loan</TableHead>
+                        <TableHead className="min-w-[120px]">Monthly Revenue</TableHead>
+                        <TableHead className="min-w-[120px]">Loan Amount</TableHead>
                         <TableHead className="min-w-[100px]">Credit Score</TableHead>
                         <TableHead className="min-w-[120px]">Business Info</TableHead>
                         <TableHead className="min-w-[100px]">Score</TableHead>
@@ -1787,9 +1788,13 @@ const Admin = () => {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <div className="space-y-1">
-                              <div className="text-sm font-medium">${lead.monthly_revenue?.toLocaleString()}/mo</div>
-                              <div className="text-sm text-muted-foreground">${lead.loan_amount?.toLocaleString()} loan</div>
+                            <div className="text-sm font-medium">
+                              ${lead.monthly_revenue?.toLocaleString()}/mo
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm font-medium">
+                              ${lead.loan_amount?.toLocaleString()}
                             </div>
                           </TableCell>
                           <TableCell>
