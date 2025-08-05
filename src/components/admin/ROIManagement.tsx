@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { TrendingUp, DollarSign, Target, BarChart3, Plus } from 'lucide-react';
+import { TrendingUp, DollarSign, Target, BarChart3, Plus, Upload, FileSpreadsheet } from 'lucide-react';
 
 interface ROIMetrics {
   total_leads: number;
@@ -39,6 +39,9 @@ export default function ROIManagement() {
   const [adSpends, setAdSpends] = useState<AdSpendRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [addSpendDialog, setAddSpendDialog] = useState(false);
+  const [csvUploadDialog, setCsvUploadDialog] = useState(false);
+  const [uploadingCsv, setUploadingCsv] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [newSpend, setNewSpend] = useState({
     date: new Date().toISOString().split('T')[0],
     channel: '',
@@ -132,6 +135,53 @@ export default function ROIManagement() {
     }
   };
 
+  const handleCsvUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !file.name.toLowerCase().endsWith('.csv')) {
+      toast({
+        title: "Error",
+        description: "Please select a valid CSV file",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setUploadingCsv(true);
+    
+    try {
+      const csvContent = await file.text();
+      
+      const { data, error } = await supabase.functions.invoke('process-csv-adspend', {
+        body: { csvContent }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        toast({
+          title: "Success",
+          description: `Successfully imported ${data.inserted} ad spend records`
+        });
+        setCsvUploadDialog(false);
+        fetchROIData();
+      } else {
+        throw new Error(data.error || 'Failed to process CSV');
+      }
+    } catch (error) {
+      console.error('Error uploading CSV:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to process CSV file",
+        variant: "destructive"
+      });
+    } finally {
+      setUploadingCsv(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -156,65 +206,113 @@ export default function ROIManagement() {
           <h2 className="text-2xl font-bold">ROI Dashboard</h2>
           <p className="text-muted-foreground">Track ad spend and lead performance</p>
         </div>
-        <Dialog open={addSpendDialog} onOpenChange={setAddSpendDialog}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Ad Spend
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Ad Spend Record</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label>Date</Label>
-                <Input
-                  type="date"
-                  value={newSpend.date}
-                  onChange={(e) => setNewSpend({...newSpend, date: e.target.value})}
-                />
-              </div>
-              <div>
-                <Label>Channel</Label>
-                <Select value={newSpend.channel} onValueChange={(value) => setNewSpend({...newSpend, channel: value})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select channel" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CHANNELS.map((channel) => (
-                      <SelectItem key={channel.value} value={channel.value}>
-                        {channel.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Amount ($)</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  value={newSpend.amount}
-                  onChange={(e) => setNewSpend({...newSpend, amount: e.target.value})}
-                />
-              </div>
-              <div>
-                <Label>Campaign Name (Optional)</Label>
-                <Input
-                  placeholder="Campaign name"
-                  value={newSpend.campaign_name}
-                  onChange={(e) => setNewSpend({...newSpend, campaign_name: e.target.value})}
-                />
-              </div>
-              <Button onClick={handleAddSpend} className="w-full">
-                Add Record
+        <div className="flex gap-2">
+          <Dialog open={csvUploadDialog} onOpenChange={setCsvUploadDialog}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Upload className="h-4 w-4 mr-2" />
+                Import CSV
               </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Import Ad Spend from CSV</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="text-sm text-muted-foreground">
+                  <p className="mb-2">CSV should contain columns for:</p>
+                  <ul className="list-disc list-inside space-y-1">
+                    <li><strong>Date:</strong> Date of ad spend (any common format)</li>
+                    <li><strong>Channel:</strong> google, meta, tiktok, or linkedin</li>
+                    <li><strong>Amount:</strong> Spend amount in dollars</li>
+                    <li><strong>Campaign Name:</strong> (Optional) Campaign identifier</li>
+                    <li><strong>Notes:</strong> (Optional) Additional notes</li>
+                  </ul>
+                </div>
+                <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+                  <FileSpreadsheet className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Select a CSV file to upload
+                  </p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".csv"
+                    onChange={handleCsvUpload}
+                    className="hidden"
+                    disabled={uploadingCsv}
+                  />
+                  <Button 
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingCsv}
+                    variant="outline"
+                  >
+                    {uploadingCsv ? 'Processing...' : 'Choose File'}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={addSpendDialog} onOpenChange={setAddSpendDialog}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Ad Spend
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add Ad Spend Record</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label>Date</Label>
+                  <Input
+                    type="date"
+                    value={newSpend.date}
+                    onChange={(e) => setNewSpend({...newSpend, date: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label>Channel</Label>
+                  <Select value={newSpend.channel} onValueChange={(value) => setNewSpend({...newSpend, channel: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select channel" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CHANNELS.map((channel) => (
+                        <SelectItem key={channel.value} value={channel.value}>
+                          {channel.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Amount ($)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={newSpend.amount}
+                    onChange={(e) => setNewSpend({...newSpend, amount: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label>Campaign Name (Optional)</Label>
+                  <Input
+                    placeholder="Campaign name"
+                    value={newSpend.campaign_name}
+                    onChange={(e) => setNewSpend({...newSpend, campaign_name: e.target.value})}
+                  />
+                </div>
+                <Button onClick={handleAddSpend} className="w-full">
+                  Add Record
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {/* ROI Metrics */}
