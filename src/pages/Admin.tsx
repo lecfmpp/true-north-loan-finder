@@ -69,6 +69,13 @@ interface QuizResponse {
   has_canadian_application?: boolean;
   usa_application_reference?: string;
   canadian_application_reference?: string;
+  // Add custom email tracking
+  custom_emails_sent?: Array<{
+    id: string;
+    recipient_emails: string[];
+    sent_by: string;
+    sent_at: string;
+  }>;
 }
 
 const Admin = () => {
@@ -102,7 +109,12 @@ const Admin = () => {
   const [selectedPartner, setSelectedPartner] = useState<string>('');
   const [customEmails, setCustomEmails] = useState<Record<string, string>>({});
   const [sendingCustomEmails, setSendingCustomEmails] = useState<Record<string, boolean>>({});
-  const [emailsSentTo, setEmailsSentTo] = useState<Record<string, string[]>>({});
+  const [leadCustomEmails, setLeadCustomEmails] = useState<Record<string, Array<{
+    id: string;
+    recipient_emails: string[];
+    sent_by: string;
+    sent_at: string;
+  }>>>({});
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [leadToDelete, setLeadToDelete] = useState<string | null>(null);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
@@ -347,6 +359,8 @@ const Admin = () => {
 
       // Fetch email enrollments for all leads
       await fetchEmailEnrollments(enrichedLeads);
+      // Fetch custom emails for all leads
+      await fetchLeadCustomEmails(enrichedLeads);
     } catch (error) {
       console.error('Error fetching leads:', error);
       toast({
@@ -401,6 +415,44 @@ const Admin = () => {
       setEmailEnrollments(enrollmentMap);
     } catch (error) {
       console.error('Error fetching email enrollments:', error);
+    }
+  };
+
+  const fetchLeadCustomEmails = async (leadsData: QuizResponse[]) => {
+    try {
+      const { data: customEmailsData, error } = await supabase
+        .from('lead_custom_emails')
+        .select('*')
+        .in('lead_id', leadsData.map(lead => lead.id))
+        .order('sent_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching custom emails:', error);
+        return;
+      }
+
+      const customEmailsMap: Record<string, Array<{
+        id: string;
+        recipient_emails: string[];
+        sent_by: string;
+        sent_at: string;
+      }>> = {};
+
+      customEmailsData?.forEach(email => {
+        if (!customEmailsMap[email.lead_id]) {
+          customEmailsMap[email.lead_id] = [];
+        }
+        customEmailsMap[email.lead_id].push({
+          id: email.id,
+          recipient_emails: email.recipient_emails,
+          sent_by: email.sent_by,
+          sent_at: email.sent_at
+        });
+      });
+
+      setLeadCustomEmails(customEmailsMap);
+    } catch (error) {
+      console.error('Error fetching lead custom emails:', error);
     }
   };
 
@@ -536,11 +588,6 @@ const Admin = () => {
           [leadId]: ""
         }));
 
-        // Track emails sent to
-        setEmailsSentTo(prev => ({
-          ...prev,
-          [leadId]: emailList
-        }));
       } else {
         throw new Error("All email sends failed");
       }
@@ -1586,10 +1633,10 @@ const Admin = () => {
                               <div className="text-sm text-muted-foreground">{lead.phone}</div>
                               <div className="text-xs text-muted-foreground">{lead.country}, {lead.city_province}</div>
                               
-                              {/* Email tracking badge */}
-                              {emailsSentTo[lead.id] && emailsSentTo[lead.id].length > 0 && (
+                              {/* Custom emails sent tracking */}
+                              {leadCustomEmails[lead.id] && leadCustomEmails[lead.id].length > 0 && (
                                 <Badge variant="secondary" className="mt-1 text-xs bg-green-100 text-green-800">
-                                  ✉️ Sent to: {emailsSentTo[lead.id].join(', ')}
+                                  ✉️ {leadCustomEmails[lead.id].length} custom email(s) sent
                                 </Badge>
                               )}
                               

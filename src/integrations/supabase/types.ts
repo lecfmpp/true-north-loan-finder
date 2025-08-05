@@ -1030,6 +1030,44 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_custom_emails: {
+        Row: {
+          created_at: string
+          id: string
+          lead_id: string
+          recipient_emails: string[]
+          sent_at: string
+          sent_by: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lead_id: string
+          recipient_emails: string[]
+          sent_at?: string
+          sent_by: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lead_id?: string
+          recipient_emails?: string[]
+          sent_at?: string
+          sent_by?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_custom_emails_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_responses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_pricing: {
         Row: {
           created_at: string
