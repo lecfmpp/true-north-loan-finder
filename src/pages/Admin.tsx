@@ -1962,15 +1962,35 @@ const Admin = () => {
                               )}
                             </TableCell>}
                           {isSuperAdmin && <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Input placeholder="Enter email(s)..." value={customEmails[lead.id] || ""} onChange={e => setCustomEmails(prev => ({
-                              ...prev,
-                              [lead.id]: e.target.value
-                            }))} className="w-40" />
-                                <Button size="sm" onClick={() => sendCustomLeadEmail(lead.id, customEmails[lead.id] || "")} disabled={sendingCustomEmails[lead.id] || !customEmails[lead.id]} className="bg-purple-600 hover:bg-purple-700 text-white whitespace-nowrap">
-                                  <Send className="w-4 h-4 mr-1" />
-                                  {sendingCustomEmails[lead.id] ? "Sending..." : "Send"}
-                                </Button>
+                              <div className="space-y-2">
+                                {/* Display sent emails */}
+                                {leadCustomEmails[lead.id] && leadCustomEmails[lead.id].length > 0 && (
+                                  <div className="space-y-1">
+                                    <div className="text-xs font-medium text-muted-foreground">Emails Sent:</div>
+                                    {leadCustomEmails[lead.id].map((customEmail, index) => (
+                                      <div key={customEmail.id} className="text-xs bg-muted/50 p-2 rounded border">
+                                        <div className="font-medium text-green-700">
+                                          {customEmail.recipient_emails.join(', ')}
+                                        </div>
+                                        <div className="text-muted-foreground">
+                                          {new Date(customEmail.sent_at).toLocaleDateString()} {new Date(customEmail.sent_at).toLocaleTimeString()}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                                
+                                {/* Input for sending new emails */}
+                                <div className="flex items-center gap-2">
+                                  <Input placeholder="Enter email(s)..." value={customEmails[lead.id] || ""} onChange={e => setCustomEmails(prev => ({
+                                ...prev,
+                                [lead.id]: e.target.value
+                              }))} className="w-40" />
+                                  <Button size="sm" onClick={() => sendCustomLeadEmail(lead.id, customEmails[lead.id] || "")} disabled={sendingCustomEmails[lead.id] || !customEmails[lead.id]} className="bg-purple-600 hover:bg-purple-700 text-white whitespace-nowrap">
+                                    <Send className="w-4 h-4 mr-1" />
+                                    {sendingCustomEmails[lead.id] ? "Sending..." : "Send"}
+                                  </Button>
+                                </div>
                               </div>
                             </TableCell>}
                           {isSuperAdmin && <TableCell>
