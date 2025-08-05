@@ -89,6 +89,9 @@ const Admin = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [countryFilter, setCountryFilter] = useState('all');
+  const [monthlyRevenueFilter, setMonthlyRevenueFilter] = useState('all');
+  const [loanAmountFilter, setLoanAmountFilter] = useState('all');
+  const [timeInBusinessFilter, setTimeInBusinessFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('leads');
   const [expandedLeads, setExpandedLeads] = useState<{
     [key: string]: boolean;
@@ -307,7 +310,7 @@ const Admin = () => {
 
   useEffect(() => {
     filterLeads();
-  }, [leads, searchTerm, statusFilter, countryFilter]);
+  }, [leads, searchTerm, statusFilter, countryFilter, monthlyRevenueFilter, loanAmountFilter, timeInBusinessFilter]);
 
   const fetchLeads = async () => {
     try {
@@ -962,6 +965,46 @@ const Admin = () => {
     if (countryFilter !== 'all') {
       filtered = filtered.filter(lead => lead.country === countryFilter);
     }
+    if (monthlyRevenueFilter !== 'all') {
+      filtered = filtered.filter(lead => {
+        const revenue = lead.monthly_revenue;
+        switch (monthlyRevenueFilter) {
+          case 'under-10k': return revenue < 10000;
+          case '10k-25k': return revenue >= 10000 && revenue < 25000;
+          case '25k-50k': return revenue >= 25000 && revenue < 50000;
+          case '50k-100k': return revenue >= 50000 && revenue < 100000;
+          case '100k-250k': return revenue >= 100000 && revenue < 250000;
+          case 'over-250k': return revenue >= 250000;
+          default: return true;
+        }
+      });
+    }
+    if (loanAmountFilter !== 'all') {
+      filtered = filtered.filter(lead => {
+        const loanAmount = lead.loan_amount;
+        switch (loanAmountFilter) {
+          case 'under-25k': return loanAmount < 25000;
+          case '25k-50k': return loanAmount >= 25000 && loanAmount < 50000;
+          case '50k-100k': return loanAmount >= 50000 && loanAmount < 100000;
+          case '100k-250k': return loanAmount >= 100000 && loanAmount < 250000;
+          case '250k-500k': return loanAmount >= 250000 && loanAmount < 500000;
+          case 'over-500k': return loanAmount >= 500000;
+          default: return true;
+        }
+      });
+    }
+    if (timeInBusinessFilter !== 'all') {
+      filtered = filtered.filter(lead => {
+        const timeInBusiness = lead.time_in_business;
+        switch (timeInBusinessFilter) {
+          case 'under-1-year': return timeInBusiness === 'under_1_year';
+          case '1-2-years': return timeInBusiness === '1_2_years';
+          case '2-5-years': return timeInBusiness === '2_5_years';
+          case 'over-5-years': return timeInBusiness === 'over_5_years';
+          default: return true;
+        }
+      });
+    }
     setFilteredLeads(filtered);
 
     // Clear selected leads that are no longer in filtered results
@@ -1504,6 +1547,52 @@ const Admin = () => {
                         <SelectItem value="all">All Countries</SelectItem>
                         <SelectItem value="CA">Canada</SelectItem>
                         <SelectItem value="US">United States</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* Additional Filters Row */}
+                  <div className="flex flex-col sm:flex-row gap-2 flex-1">
+                    <Select value={monthlyRevenueFilter} onValueChange={setMonthlyRevenueFilter}>
+                      <SelectTrigger className="w-full sm:w-48">
+                        <SelectValue placeholder="Monthly Revenue" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Revenue</SelectItem>
+                        <SelectItem value="under-10k">Under $10k</SelectItem>
+                        <SelectItem value="10k-25k">$10k - $25k</SelectItem>
+                        <SelectItem value="25k-50k">$25k - $50k</SelectItem>
+                        <SelectItem value="50k-100k">$50k - $100k</SelectItem>
+                        <SelectItem value="100k-250k">$100k - $250k</SelectItem>
+                        <SelectItem value="over-250k">Over $250k</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <Select value={loanAmountFilter} onValueChange={setLoanAmountFilter}>
+                      <SelectTrigger className="w-full sm:w-48">
+                        <SelectValue placeholder="Loan Amount" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Amounts</SelectItem>
+                        <SelectItem value="under-25k">Under $25k</SelectItem>
+                        <SelectItem value="25k-50k">$25k - $50k</SelectItem>
+                        <SelectItem value="50k-100k">$50k - $100k</SelectItem>
+                        <SelectItem value="100k-250k">$100k - $250k</SelectItem>
+                        <SelectItem value="250k-500k">$250k - $500k</SelectItem>
+                        <SelectItem value="over-500k">Over $500k</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <Select value={timeInBusinessFilter} onValueChange={setTimeInBusinessFilter}>
+                      <SelectTrigger className="w-full sm:w-48">
+                        <SelectValue placeholder="Time in Business" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Experience</SelectItem>
+                        <SelectItem value="under-1-year">Under 1 year</SelectItem>
+                        <SelectItem value="1-2-years">1-2 years</SelectItem>
+                        <SelectItem value="2-5-years">2-5 years</SelectItem>
+                        <SelectItem value="over-5-years">Over 5 years</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
