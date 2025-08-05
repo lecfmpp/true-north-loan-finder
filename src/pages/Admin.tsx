@@ -92,6 +92,7 @@ const Admin = () => {
   const [monthlyRevenueFilter, setMonthlyRevenueFilter] = useState('all');
   const [loanAmountFilter, setLoanAmountFilter] = useState('all');
   const [timeInBusinessFilter, setTimeInBusinessFilter] = useState('all');
+  const [applicationSentFilter, setApplicationSentFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('leads');
   const [expandedLeads, setExpandedLeads] = useState<{
     [key: string]: boolean;
@@ -310,7 +311,7 @@ const Admin = () => {
 
   useEffect(() => {
     filterLeads();
-  }, [leads, searchTerm, statusFilter, countryFilter, monthlyRevenueFilter, loanAmountFilter, timeInBusinessFilter]);
+  }, [leads, searchTerm, statusFilter, countryFilter, monthlyRevenueFilter, loanAmountFilter, timeInBusinessFilter, applicationSentFilter]);
 
   const fetchLeads = async () => {
     try {
@@ -1005,6 +1006,16 @@ const Admin = () => {
         }
       });
     }
+    if (applicationSentFilter !== 'all') {
+      filtered = filtered.filter(lead => {
+        const hasApplication = lead.has_usa_application || lead.has_canadian_application;
+        switch (applicationSentFilter) {
+          case 'yes': return hasApplication;
+          case 'no': return !hasApplication;
+          default: return true;
+        }
+      });
+    }
     setFilteredLeads(filtered);
 
     // Clear selected leads that are no longer in filtered results
@@ -1593,6 +1604,17 @@ const Admin = () => {
                         <SelectItem value="1-2-years">1-2 years</SelectItem>
                         <SelectItem value="2-5-years">2-5 years</SelectItem>
                         <SelectItem value="over-5-years">Over 5 years</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <Select value={applicationSentFilter} onValueChange={setApplicationSentFilter}>
+                      <SelectTrigger className="w-full sm:w-48">
+                        <SelectValue placeholder="Application Sent" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Leads</SelectItem>
+                        <SelectItem value="yes">Yes</SelectItem>
+                        <SelectItem value="no">No</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
