@@ -997,13 +997,7 @@ const Admin = () => {
     if (timeInBusinessFilter !== 'all') {
       filtered = filtered.filter(lead => {
         const timeInBusiness = lead.time_in_business;
-        switch (timeInBusinessFilter) {
-          case 'under-1-year': return timeInBusiness === 'under_1_year';
-          case '1-2-years': return timeInBusiness === '1_2_years';
-          case '2-5-years': return timeInBusiness === '2_5_years';
-          case 'over-5-years': return timeInBusiness === 'over_5_years';
-          default: return true;
-        }
+        return timeInBusiness === timeInBusinessFilter;
       });
     }
     if (applicationSentFilter !== 'all') {
@@ -1600,10 +1594,11 @@ const Admin = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Experience</SelectItem>
-                        <SelectItem value="under-1-year">Under 1 year</SelectItem>
-                        <SelectItem value="1-2-years">1-2 years</SelectItem>
-                        <SelectItem value="2-5-years">2-5 years</SelectItem>
-                        <SelectItem value="over-5-years">Over 5 years</SelectItem>
+                        <SelectItem value="startup">Startup</SelectItem>
+                        <SelectItem value="6-12">6-12 months</SelectItem>
+                        <SelectItem value="1-2">1-2 years</SelectItem>
+                        <SelectItem value="2-5">2-5 years</SelectItem>
+                        <SelectItem value="5+">5+ years</SelectItem>
                       </SelectContent>
                     </Select>
                     
