@@ -438,6 +438,10 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
           <p className="text-sm text-muted-foreground">
             Track multiple campaigns and channels per day. Each row represents a unique campaign-channel-date combination.
           </p>
+          <div className="mt-2 p-2 bg-muted/50 rounded text-xs">
+            Database Status: {getSortedData().length} records loaded
+            {getSortedData().length === 0 && " - Import your CSV file to see data"}
+          </div>
         </div>
         <Button onClick={() => setIsAddingNew(true)} disabled={isAddingNew}>
           <Plus className="h-4 w-4 mr-2" />
