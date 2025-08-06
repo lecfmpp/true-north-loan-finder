@@ -1781,6 +1781,15 @@ const Admin = () => {
                             {sortField !== 'name' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
                           </Button>
                         </TableHead>
+                        <TableHead className="min-w-[100px]">
+                          <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent hover:text-current" onClick={() => handleSort('attribution_channel')}>
+                            Lead Source
+                            {sortField === 'attribution_channel' && (
+                              sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
+                            )}
+                            {sortField !== 'attribution_channel' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
+                          </Button>
+                        </TableHead>
                         <TableHead className="min-w-[120px]">
                           <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent hover:text-current" onClick={() => handleSort('monthly_revenue')}>
                             Monthly Revenue
@@ -1846,15 +1855,6 @@ const Admin = () => {
                           </Button>
                         </TableHead>
                         <TableHead className="min-w-[140px]">Email Sequences</TableHead>
-                        <TableHead className="min-w-[100px]">
-                          <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent hover:text-current" onClick={() => handleSort('attribution_channel')}>
-                            Lead Source
-                            {sortField === 'attribution_channel' && (
-                              sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
-                            )}
-                            {sortField !== 'attribution_channel' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
-                          </Button>
-                        </TableHead>
                         <TableHead className="min-w-[100px]">Actions</TableHead>
                         {isSuperAdmin && <TableHead className="min-w-[200px]">Send to Partner</TableHead>}
                         {isSuperAdmin && <TableHead className="min-w-[180px]">Assign Lead</TableHead>}
@@ -1911,6 +1911,11 @@ const Admin = () => {
                             </div>
                           </TableCell>
                           <TableCell>
+                            <Badge variant="outline" className="text-xs">
+                              {lead.attribution_channel ? lead.attribution_channel.charAt(0).toUpperCase() + lead.attribution_channel.slice(1) : 'Direct'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
                             <div className="text-sm font-medium">
                               ${lead.monthly_revenue?.toLocaleString()}/mo
                             </div>
@@ -1921,32 +1926,49 @@ const Admin = () => {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline" className="text-xs whitespace-nowrap">
+                            <div className="text-sm font-medium">
                               {getCreditScoreNumber(lead.credit_score)}
-                            </Badge>
+                            </div>
                           </TableCell>
                           <TableCell>
-                            <div className="text-sm text-muted-foreground">{lead.time_in_business}</div>
+                            <div className="text-sm">
+                              <div className="font-medium">{lead.time_in_business.replace('_', ' ')}</div>
+                              <div className="text-xs text-muted-foreground">{lead.use_of_funds}</div>
+                            </div>
                           </TableCell>
                           <TableCell>
-                            <div className="flex items-center gap-1">
-                              <div className={`w-2 h-2 rounded-full ${lead.score >= 80 ? 'bg-green-500' : lead.score >= 60 ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
-                              <span className="font-medium">{lead.score}/100</span>
+                            <div className="text-sm font-medium">
+                              {lead.score}
                             </div>
                           </TableCell>
                           <TableCell>
                             <Select value={lead.status} onValueChange={value => updateLeadStatus(lead.id, value)}>
-                              <SelectTrigger className="w-40 whitespace-nowrap">
+                              <SelectTrigger className="w-auto border-none p-0 h-auto focus:ring-0">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="New">
+                                <SelectItem value="new">
                                   <Badge className="bg-blue-100 text-blue-800">New</Badge>
                                 </SelectItem>
-                                <SelectItem value="No Answer">
-                                  <Badge className="bg-gray-100 text-gray-800">No Answer</Badge>
+                                <SelectItem value="called">
+                                  <Badge className="bg-orange-100 text-orange-800">Called</Badge>
                                 </SelectItem>
-                                <SelectItem value="Wrong Number">
+                                <SelectItem value="no_answer">
+                                  <Badge className="bg-yellow-100 text-yellow-800">No Answer</Badge>
+                                </SelectItem>
+                                <SelectItem value="voicemail">
+                                  <Badge className="bg-purple-100 text-purple-800">Voicemail</Badge>
+                                </SelectItem>
+                                <SelectItem value="callback">
+                                  <Badge className="bg-cyan-100 text-cyan-800">Callback</Badge>
+                                </SelectItem>
+                                <SelectItem value="not_interested">
+                                  <Badge className="bg-red-100 text-red-800">Not Interested</Badge>
+                                </SelectItem>
+                                <SelectItem value="interested">
+                                  <Badge className="bg-green-100 text-green-800">Interested</Badge>
+                                </SelectItem>
+                                <SelectItem value="wrong_number">
                                   <Badge className="bg-red-100 text-red-800">Wrong Number</Badge>
                                 </SelectItem>
                                 <SelectItem value="Contacted">
@@ -2032,11 +2054,6 @@ const Admin = () => {
                                 <span className="text-sm text-muted-foreground">Pre-Call</span>
                               </div>
                             </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="text-xs">
-                              {lead.attribution_channel ? lead.attribution_channel.charAt(0).toUpperCase() + lead.attribution_channel.slice(1) : 'Direct'}
-                            </Badge>
                           </TableCell>
                           <TableCell>
                             <Button size="sm" onClick={() => handleCallNow(lead.phone)} disabled={!lead.phone} className="bg-green-600 hover:bg-green-700 text-white">
