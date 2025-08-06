@@ -204,13 +204,10 @@ Provide actionable insights for campaign optimization.`);
     }
 
     try {
-      // Convert CTR from percentage to decimal (e.g., 5.5% -> 0.055)
+      // Keep CTR as percentage value (not decimal)
       let ctrValue = parseFloat(newSpend.ctr) || 0;
-      if (ctrValue > 1) {
-        ctrValue = ctrValue / 100; // Convert percentage to decimal
-      }
-      // Cap at 9.9999 to prevent overflow
-      ctrValue = Math.min(ctrValue, 9.9999);
+      // Cap CTR at 100%
+      ctrValue = Math.min(ctrValue, 100);
 
       const { error } = await supabase
         .from('ad_spend_records')
