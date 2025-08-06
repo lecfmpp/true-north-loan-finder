@@ -115,7 +115,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email
     const emailResponse = await resend.emails.send({
-      from: "True North Business Loan <noreply@truenorthbusinessloan.ca>",
+      from: "True North Business Loan <onboarding@resend.dev>",
       to: [recipientEmail],
       subject: `Complete Application Details - ${refNumber} (${businessName})`,
       html: emailContent,
