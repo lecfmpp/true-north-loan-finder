@@ -353,31 +353,12 @@ Provide actionable insights for campaign optimization.`);
     
     try {
       const [headers, ...dataRows] = csvData;
-      const mappedData = dataRows.map(row => {
-        const record: any = {};
-        Object.entries(columnMapping).forEach(([dbColumn, csvHeader]) => {
-          if (csvHeader && csvHeader !== 'none') {
-            const csvIndex = headers.indexOf(csvHeader);
-            if (csvIndex !== -1) {
-              record[dbColumn] = row[csvIndex] || '';
-            }
-          }
-        });
-        return record;
-      });
-
-      // Process the mapped data through the existing edge function
-      const csvContent = [
-        Object.values(columnMapping).filter(val => val && val !== 'none').join(','),
-        ...mappedData.map(record => 
-          Object.entries(columnMapping)
-            .filter(([_, csvHeader]) => csvHeader && csvHeader !== 'none')
-            .map(([dbColumn]) => record[dbColumn] || '')
-            .join(',')
-        )
-      ].join('\n');
-
-      const { data, error } = await supabase.functions.invoke('process-csv-adspend', {
+      
+      // Reconstruct the original CSV content for AI processing
+      const csvContent = csvData.map(row => row.join(',')).join('\n');
+      
+      // Process the CSV with AI-powered parsing
+      const { data, error } = await supabase.functions.invoke('ai-parse-csv', {
         body: { csvContent }
       });
 
@@ -385,23 +366,58 @@ Provide actionable insights for campaign optimization.`);
 
       if (data.success) {
         toast({
-          title: "Success",
-          description: `Successfully imported ${data.inserted} ad spend records`
+          title: "AI Analysis Complete",
+          description: `Successfully imported ${data.inserted} records. Confidence: ${(data.analysis.confidence * 100).toFixed(1)}%`
         });
+        
+        // Show AI suggestions if any
+        if (data.analysis.suggestions?.length > 0) {
+          console.log('AI Suggestions:', data.analysis.suggestions);
+          toast({
+            title: "AI Recommendations",
+            description: `Check console for ${data.analysis.suggestions.length} optimization suggestions`,
+            duration: 5000
+          });
+        }
+        
         setColumnMappingDialog(false);
         setCsvData([]);
         setColumnMapping({});
         fetchROIData();
       } else {
-        throw new Error(data.error || 'Failed to process CSV');
+        throw new Error(data.error || 'Failed to process CSV with AI');
       }
     } catch (error) {
-      console.error('Error uploading CSV:', error);
+      console.error('Error with AI CSV processing:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to process CSV file",
+        title: "AI Processing Failed",
+        description: "Falling back to manual processing. " + (error.message || "Please try again."),
         variant: "destructive"
       });
+      
+      // Fallback to original manual processing
+      try {
+        const fallbackCsvContent = csvData.map(row => row.join(',')).join('\n');
+        const { data: fallbackData, error: fallbackError } = await supabase.functions.invoke('process-csv-adspend', {
+          body: { csvContent: fallbackCsvContent }
+        });
+        
+        if (fallbackError) throw fallbackError;
+        
+        if (fallbackData.success) {
+          toast({
+            title: "Manual Processing Complete",
+            description: `Successfully imported ${fallbackData.inserted} records using manual processing`
+          });
+          setColumnMappingDialog(false);
+          setCsvData([]);
+          setColumnMapping({});
+          fetchROIData();
+        }
+      } catch (fallbackErr) {
+        console.error('Fallback processing also failed:', fallbackErr);
+        throw new Error('Both AI and manual processing failed');
+      }
     } finally {
       setUploadingCsv(false);
     }
