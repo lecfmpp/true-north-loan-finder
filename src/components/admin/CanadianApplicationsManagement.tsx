@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ExternalLink, Eye, Search, Filter, FileText, User, Building2, Phone, Mail, Download, Paperclip, Trash2 } from "lucide-react";
+import { ExternalLink, Eye, Search, Filter, FileText, User, Building2, Phone, Mail, Download, Paperclip, Trash2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import jsPDF from 'jspdf';
@@ -199,6 +199,8 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [applicationToDelete, setApplicationToDelete] = useState<{id: string, refNumber: string} | null>(null);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [emailRecipient, setEmailRecipient] = useState("");
+  const [isEmailSending, setIsEmailSending] = useState(false);
 
   const openDeleteModal = (id: string, refNumber: string) => {
     setApplicationToDelete({id, refNumber});
@@ -415,6 +417,46 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
     } catch (error) {
       console.error('Error downloading file:', error);
       toast.error("Failed to download file");
+    }
+  };
+
+  const sendApplicationEmail = async () => {
+    if (!emailRecipient || !selectedApplication) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailRecipient)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+    setIsEmailSending(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('send-application-email', {
+        body: {
+          applicationId: selectedApplication.id,
+          recipientEmail: emailRecipient,
+          applicationType: 'canadian'
+        }
+      });
+
+      if (error) {
+        console.error('Error sending email:', error);
+        toast.error('Failed to send email');
+        return;
+      }
+
+      toast.success(`Application details sent to ${emailRecipient} with ${data.attachmentCount} attachments`);
+      setEmailRecipient("");
+    } catch (error) {
+      console.error('Error sending application email:', error);
+      toast.error('Failed to send email');
+    } finally {
+      setIsEmailSending(false);
     }
   };
 
@@ -637,19 +679,23 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
       {/* Application Details Modal */}
       {selectedApplication && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="max-w-6xl w-full max-h-[90vh] overflow-y-auto">
-            <CardHeader className="flex flex-row items-center justify-between">
+          <Card className="max-w-6xl w-full max-h-[90vh] overflow-y-auto relative">
+            <CardHeader className="flex flex-row items-center justify-between relative">
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
                 Complete Application Details
               </CardTitle>
               <Button
                 variant="outline"
-                size="sm"
-                onClick={() => downloadApplicationPDF(selectedApplication)}
+                size="icon"
+                onClick={() => {
+                  setSelectedApplication(null);
+                  setNotes("");
+                  setEmailRecipient("");
+                }}
+                className="absolute top-4 right-4 h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
               >
-                <Download className="h-4 w-4 mr-2" />
-                Download PDF
+                <X className="h-4 w-4" />
               </Button>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -954,7 +1000,46 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
                   />
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                {/* Email Application Section */}
+                <div className="mt-6 p-4 border rounded-lg bg-muted/20">
+                  <h4 className="font-medium mb-3 flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    Email Complete Application
+                  </h4>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex-1">
+                      <Input
+                        type="email"
+                        placeholder="Enter recipient email address..."
+                        value={emailRecipient}
+                        onChange={(e) => setEmailRecipient(e.target.value)}
+                        className="w-full"
+                      />
+                    </div>
+                    <Button
+                      onClick={sendApplicationEmail}
+                      disabled={isEmailSending || !emailRecipient}
+                      className="sm:w-auto w-full"
+                    >
+                      {isEmailSending ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Mail className="h-4 w-4 mr-2" />
+                          Send Email
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    This will send complete application details and all uploaded documents as attachments.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-2 mt-6">
                   <Button
                     onClick={() => updateApplicationStatus(selectedApplication.id, 'approved', notes)}
                     className="bg-green-600 hover:bg-green-700"
@@ -979,15 +1064,6 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
                   >
                     <Download className="h-4 w-4 mr-2" />
                     Download PDF
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setSelectedApplication(null);
-                      setNotes("");
-                    }}
-                  >
-                    Close
                   </Button>
                 </div>
               </div>
