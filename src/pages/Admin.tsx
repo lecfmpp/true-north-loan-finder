@@ -26,8 +26,7 @@ import LeadSimulationManagement from '@/components/admin/LeadSimulationManagemen
 import { Badge } from '@/components/ui/badge';
 
 const Admin = () => {
-  const { user } = useAuth();
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const { user, userRoles, loading: authLoading, isAdmin } = useAuth();
   const [loading, setLoading] = useState(true);
   const [seoFormData, setSeoFormData] = useState({
     title: '',
@@ -45,25 +44,16 @@ const Admin = () => {
   });
 
   useEffect(() => {
-    const checkUserRole = async () => {
-      if (!user) return;
-      
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .single();
-
-      if (data) {
-        setUserRole(data.role);
-      }
+    // Wait for auth to complete loading
+    if (!authLoading) {
+      console.log('Auth loading complete, user:', user);
+      console.log('User roles:', userRoles);
+      console.log('Is admin:', isAdmin);
       setLoading(false);
-    };
+    }
+  }, [authLoading, user, userRoles, isAdmin]);
 
-    checkUserRole();
-  }, [user]);
-
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
         <div className="text-lg">Loading admin panel...</div>
@@ -71,7 +61,22 @@ const Admin = () => {
     );
   }
 
-  if (!user || !userRole || !['superadmin', 'lender', 'broker'].includes(userRole)) {
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Authentication Required</CardTitle>
+            <CardDescription>
+              Please sign in to access the admin panel.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
         <Card className="w-full max-w-md">
@@ -79,6 +84,8 @@ const Admin = () => {
             <CardTitle>Access Denied</CardTitle>
             <CardDescription>
               You don't have permission to access the admin panel.
+              <br />
+              Your current roles: {userRoles.length > 0 ? userRoles.join(', ') : 'None'}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -95,7 +102,7 @@ const Admin = () => {
             <p className="text-gray-600">Manage applications, partners, and system settings</p>
           </div>
           <Badge variant="secondary" className="text-sm">
-            Role: {userRole}
+            Roles: {userRoles.join(', ')}
           </Badge>
         </div>
 
