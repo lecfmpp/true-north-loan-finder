@@ -179,7 +179,7 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
       amount: (record.amount / 100).toString(), // Convert from cents to dollars
       campaign_name: record.campaign_name,
       clicks: record.clicks.toString(),
-      ctr: record.ctr ? (record.ctr * 100).toString() : '', // Convert to percentage
+      ctr: record.ctr ? record.ctr.toString() : '', // Use raw CTR value
       conversions: record.conversions.toString()
     });
   };
@@ -370,7 +370,7 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
           <TableRow>
             <TableHead>Date</TableHead>
             <TableHead>Channel</TableHead>
-            <TableHead>Amount</TableHead>
+            <TableHead>Cost</TableHead>
             <TableHead>Campaign</TableHead>
             <TableHead>Clicks</TableHead>
             <TableHead>Cost per Click</TableHead>
@@ -520,7 +520,7 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
                   <EditableCell 
                     recordId={spend.id} 
                     field="ctr" 
-                    value={spend.ctr ? `${(spend.ctr * 100).toFixed(2)}%` : '0%'} 
+                    value={spend.ctr || 0} 
                     type="number"
                   />
                 </TableCell>
