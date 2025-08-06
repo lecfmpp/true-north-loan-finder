@@ -159,11 +159,11 @@ Provide actionable insights for campaign optimization.`);
 
       if (metricsError) throw metricsError;
 
-      // Fetch ad spend records
+      // Fetch ad spend records (ordered by created_at to maintain order)
       const { data: spendsData, error: spendsError } = await supabase
         .from('ad_spend_records')
         .select('*')
-        .order('date', { ascending: false })
+        .order('created_at', { ascending: false })
         .limit(50);
 
       if (spendsError) throw spendsError;

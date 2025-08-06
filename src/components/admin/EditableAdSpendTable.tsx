@@ -112,31 +112,6 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
     }
   };
 
-  const updateDate = async (recordId: string, date: Date) => {
-    try {
-      const { error } = await supabase
-        .from('ad_spend_records')
-        .update({ date: format(date, 'yyyy-MM-dd') })
-        .eq('id', recordId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Date updated successfully"
-      });
-
-      onDataUpdate();
-    } catch (error) {
-      console.error('Error updating date:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update date",
-        variant: "destructive"
-      });
-    }
-  };
-
   const addNewRecord = async () => {
     if (!newRecord.channel || !newRecord.amount) {
       toast({
@@ -332,31 +307,51 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
   };
 
   const DateCell = ({ recordId, date }: { recordId: string; date: string }) => {
-    return (
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-left font-normal hover:bg-muted/50"
-          >
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {new Date(date).toLocaleDateString()}
+    const isEditing = editingCell?.recordId === recordId && editingCell?.field === 'date';
+    
+    if (isEditing) {
+      return (
+        <div className="flex items-center gap-2">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full justify-start text-left font-normal">
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {editValue || new Date(date).toLocaleDateString()}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={editValue ? new Date(editValue) : new Date(date)}
+                onSelect={(selectedDate) => {
+                  if (selectedDate) {
+                    setEditValue(format(selectedDate, 'yyyy-MM-dd'));
+                  }
+                }}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
+          <Button size="sm" variant="ghost" onClick={saveEdit}>
+            <Check className="h-4 w-4" />
           </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="single"
-            selected={new Date(date)}
-            onSelect={(selectedDate) => {
-              if (selectedDate) {
-                updateDate(recordId, selectedDate);
-              }
-            }}
-            initialFocus
-            className={cn("p-3 pointer-events-auto")}
-          />
-        </PopoverContent>
-      </Popover>
+          <Button size="sm" variant="ghost" onClick={cancelEdit}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      );
+    }
+
+    return (
+      <div 
+        className="cursor-pointer hover:bg-muted/50 p-1 rounded group flex items-center gap-2"
+        onClick={() => startEdit(recordId, 'date', date)}
+      >
+        <CalendarIcon className="h-4 w-4" />
+        <span>{new Date(date).toLocaleDateString()}</span>
+        <Edit className="h-3 w-3 opacity-0 group-hover:opacity-100" />
+      </div>
     );
   };
 
