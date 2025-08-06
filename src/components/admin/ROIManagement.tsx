@@ -69,6 +69,7 @@ export default function ROIManagement() {
   const [dateFilter, setDateFilter] = useState('last_7_days');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
+  const [leadTypeFilter, setLeadTypeFilter] = useState('all');
   const [aiInstructionsDialog, setAiInstructionsDialog] = useState(false);
   const [aiInstructions, setAiInstructions] = useState(`You are an AI assistant helping with ROI analysis for ad spend tracking. 
 
@@ -398,6 +399,51 @@ Provide actionable insights for campaign optimization.`);
     });
     setEditingInstructions(false);
     setAiInstructionsDialog(false);
+  };
+
+  const getFilteredLeadCount = () => {
+    if (!metrics) return 0;
+    switch (leadTypeFilter) {
+      case 'qualified': return metrics.qualified_leads;
+      case 'funded': return metrics.funded_leads;
+      case 'application': return metrics.application_leads;
+      default: return metrics.total_leads;
+    }
+  };
+
+  const getLeadTypeDescription = () => {
+    switch (leadTypeFilter) {
+      case 'qualified': return 'Qualified leads ($10k+ monthly revenue)';
+      case 'funded': return 'Funded leads (loan approved)';
+      case 'application': return 'Application leads (US & Canada)';
+      default: return 'All leads';
+    }
+  };
+
+  const getChannelSpend = (channel: string) => {
+    const { startDate, endDate } = getDateRange();
+    return adSpends
+      .filter(spend => spend.channel === channel && 
+        spend.date >= startDate && spend.date <= endDate)
+      .reduce((total, spend) => total + (spend.amount / 100), 0);
+  };
+
+  const getChannelLeads = (channel: string) => {
+    // For now, we'll estimate leads based on conversions in ad spend records
+    // In a real application, you'd need to track leads by channel properly
+    const { startDate, endDate } = getDateRange();
+    return adSpends
+      .filter(spend => spend.channel === channel && 
+        spend.date >= startDate && spend.date <= endDate)
+      .reduce((total, spend) => total + (spend.conversions || 0), 0) || 1; // Fallback to 1 to avoid division by zero
+  };
+
+  const getChannelRevenue = (channel: string) => {
+    // This would need to be properly calculated based on actual revenue attribution
+    // For now, using a simplified calculation
+    const channelLeads = getChannelLeads(channel);
+    const avgLeadValue = (metrics?.total_revenue || 0) / Math.max(metrics?.total_leads || 1, 1);
+    return channelLeads * avgLeadValue;
   };
 
   if (loading) {
@@ -792,14 +838,38 @@ Provide actionable insights for campaign optimization.`);
         </AccordionItem>
       </Accordion>
 
-      {/* ROI Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* Lead Type Filter */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              <Label>Lead Type:</Label>
+            </div>
+            <Select value={leadTypeFilter} onValueChange={setLeadTypeFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Leads</SelectItem>
+                <SelectItem value="qualified">Qualified Leads ($10k+)</SelectItem>
+                <SelectItem value="funded">Funded Leads</SelectItem>
+                <SelectItem value="application">Application Leads</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Overview Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Leads</p>
-                <p className="text-2xl font-bold">{metrics?.total_leads || 0}</p>
+                <p className="text-2xl font-bold">{getFilteredLeadCount()}</p>
+                <p className="text-xs text-muted-foreground">{getLeadTypeDescription()}</p>
               </div>
               <Target className="h-8 w-8 text-blue-600" />
             </div>
@@ -812,84 +882,9 @@ Provide actionable insights for campaign optimization.`);
               <div>
                 <p className="text-sm text-muted-foreground">Total Spend</p>
                 <p className="text-2xl font-bold">${((metrics?.total_spend || 0) / 100).toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground">All channels combined</p>
               </div>
               <DollarSign className="h-8 w-8 text-red-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Cost Per Lead</p>
-                <p className="text-2xl font-bold">${(metrics?.cost_per_lead || 0).toFixed(2)}</p>
-              </div>
-              <BarChart3 className="h-8 w-8 text-orange-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">ROI</p>
-                <p className="text-2xl font-bold">{(metrics?.roi_percentage || 0).toFixed(1)}%</p>
-              </div>
-              <TrendingUp className={`h-8 w-8 ${(metrics?.roi_percentage || 0) > 0 ? 'text-green-600' : 'text-red-600'}`} />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Qualified Leads</p>
-                <p className="text-2xl font-bold">{metrics?.qualified_leads || 0}</p>
-                <p className="text-xs text-muted-foreground">$10k+ monthly revenue</p>
-              </div>
-              <Users className="h-8 w-8 text-emerald-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Funded Leads</p>
-                <p className="text-2xl font-bold">{metrics?.funded_leads || 0}</p>
-                <p className="text-xs text-muted-foreground">Loan approved status</p>
-              </div>
-              <Award className="h-8 w-8 text-yellow-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">All Leads</p>
-                <p className="text-2xl font-bold">{metrics?.all_leads || 0}</p>
-                <p className="text-xs text-muted-foreground">Total unfiltered</p>
-              </div>
-              <FileText className="h-8 w-8 text-purple-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Application Leads</p>
-                <p className="text-2xl font-bold">{metrics?.application_leads || 0}</p>
-                <p className="text-xs text-muted-foreground">US & Canada applications</p>
-              </div>
-              <CheckCircle className="h-8 w-8 text-indigo-600" />
             </div>
           </CardContent>
         </Card>
@@ -907,6 +902,65 @@ Provide actionable insights for campaign optimization.`);
           </CardContent>
         </Card>
       </div>
+
+      {/* Channel Performance */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Channel Performance</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Performance metrics by advertising channel for {getLeadTypeDescription().toLowerCase()}
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
+            {CHANNELS.map((channel) => {
+              const channelSpend = getChannelSpend(channel.value);
+              const channelLeads = getChannelLeads(channel.value);
+              const costPerLead = channelLeads > 0 ? channelSpend / channelLeads : 0;
+              const roas = channelSpend > 0 ? (getChannelRevenue(channel.value) / channelSpend) : 0;
+
+              return (
+                <Card key={channel.value} className="border-l-4 border-l-primary/20">
+                  <CardContent className="p-4">
+                    <div className="mb-3">
+                      <h4 className="font-semibold text-lg">{channel.label}</h4>
+                      <p className="text-xs text-muted-foreground">Channel performance</p>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Leads</span>
+                        <span className="font-bold text-blue-600">{channelLeads}</span>
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Cost per Lead</span>
+                        <span className="font-bold text-orange-600">
+                          ${costPerLead > 0 ? costPerLead.toFixed(2) : '0.00'}
+                        </span>
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">ROAS</span>
+                        <span className={`font-bold ${roas > 1 ? 'text-green-600' : 'text-red-600'}`}>
+                          {roas > 0 ? `${roas.toFixed(2)}x` : '0.00x'}
+                        </span>
+                      </div>
+                      
+                      <div className="pt-2 border-t">
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-muted-foreground">Total Spend</span>
+                          <span className="font-medium">${channelSpend.toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Ad Spend Records */}
       <Card>
