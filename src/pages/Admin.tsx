@@ -1845,6 +1845,7 @@ const Admin = () => {
                             {sortField !== 'created_at' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
                           </Button>
                         </TableHead>
+                        <TableHead className="min-w-[140px]">Email Sequences</TableHead>
                         <TableHead className="min-w-[100px]">
                           <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent hover:text-current" onClick={() => handleSort('attribution_channel')}>
                             Lead Source
@@ -1854,7 +1855,6 @@ const Admin = () => {
                             {sortField !== 'attribution_channel' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
                           </Button>
                         </TableHead>
-                        <TableHead className="min-w-[140px]">Email Sequences</TableHead>
                         <TableHead className="min-w-[100px]">Actions</TableHead>
                         {isSuperAdmin && <TableHead className="min-w-[200px]">Send to Partner</TableHead>}
                         {isSuperAdmin && <TableHead className="min-w-[180px]">Assign Lead</TableHead>}
