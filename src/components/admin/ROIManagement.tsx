@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { TrendingUp, DollarSign, Target, BarChart3, Plus, Upload, FileSpreadsheet } from 'lucide-react';
+import { TrendingUp, DollarSign, Target, BarChart3, Plus, Upload, FileSpreadsheet, Trash2 } from 'lucide-react';
 
 interface ROIMetrics {
   total_leads: number;
@@ -43,7 +43,9 @@ export default function ROIManagement() {
   const [loading, setLoading] = useState(true);
   const [addSpendDialog, setAddSpendDialog] = useState(false);
   const [csvUploadDialog, setCsvUploadDialog] = useState(false);
+  const [cleanupDialog, setCleanupDialog] = useState(false);
   const [uploadingCsv, setUploadingCsv] = useState(false);
+  const [deletingData, setDeletingData] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [newSpend, setNewSpend] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -194,6 +196,36 @@ export default function ROIManagement() {
     }
   };
 
+  const handleCleanupData = async () => {
+    setDeletingData(true);
+    
+    try {
+      const { error } = await supabase
+        .from('ad_spend_records')
+        .delete()
+        .neq('id', ''); // Delete all records
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "All ad spend records have been deleted"
+      });
+
+      setCleanupDialog(false);
+      fetchROIData();
+    } catch (error) {
+      console.error('Error deleting ad spend data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete ad spend records",
+        variant: "destructive"
+      });
+    } finally {
+      setDeletingData(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -263,6 +295,45 @@ export default function ROIManagement() {
                     variant="outline"
                   >
                     {uploadingCsv ? 'Processing...' : 'Choose File'}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={cleanupDialog} onOpenChange={setCleanupDialog}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="text-destructive hover:bg-destructive hover:text-destructive-foreground">
+                <Trash2 className="h-4 w-4 mr-2" />
+                Clean Data
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Delete All Ad Spend Records</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Are you sure you want to delete all ad spend records? This action cannot be undone and will permanently remove all tracking data from the ROI dashboard.
+                </p>
+                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+                  <p className="text-sm font-medium text-destructive">
+                    ⚠️ Warning: This will delete all ad spend data permanently
+                  </p>
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setCleanupDialog(false)}
+                    disabled={deletingData}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    onClick={handleCleanupData}
+                    disabled={deletingData}
+                  >
+                    {deletingData ? 'Deleting...' : 'Delete All Data'}
                   </Button>
                 </div>
               </div>
