@@ -4,12 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { TrendingUp, DollarSign, Target, BarChart3, Plus, Upload, FileSpreadsheet, Trash2, Users, Award, FileText, CheckCircle, Calendar, Settings, Save } from 'lucide-react';
+import { TrendingUp, DollarSign, Target, BarChart3, Plus, Upload, FileSpreadsheet, Trash2, Users, Award, FileText, CheckCircle, Calendar, Settings, Save, Banknote } from 'lucide-react';
 
 interface ROIMetrics {
   total_leads: number;
@@ -21,6 +22,7 @@ interface ROIMetrics {
   funded_leads: number;
   all_leads: number;
   application_leads: number;
+  commission_generated: number;
 }
 
 interface AdSpendRecord {
@@ -732,59 +734,63 @@ Provide actionable insights for campaign optimization.`);
       </Card>
 
       {/* AI Instructions */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
+      <Accordion type="single" collapsible className="w-full">
+        <AccordionItem value="ai-instructions">
+          <AccordionTrigger className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
             AI Instructions
-          </CardTitle>
-          <Dialog open={aiInstructionsDialog} onOpenChange={setAiInstructionsDialog}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Settings className="h-4 w-4 mr-2" />
-                Edit Instructions
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-3xl">
-              <DialogHeader>
-                <DialogTitle>Edit AI Instructions</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <Label>Instructions for AI Analysis:</Label>
-                <Textarea
-                  value={aiInstructions}
-                  onChange={(e) => setAiInstructions(e.target.value)}
-                  rows={12}
-                  className="min-h-80"
-                  placeholder="Enter instructions for AI analysis..."
-                />
-                <div className="flex gap-2 justify-end">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => {
-                      setAiInstructionsDialog(false);
-                      // Reset to original value if needed
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSaveInstructions}>
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Instructions
-                  </Button>
-                </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-4">
+              <div className="flex justify-end">
+                <Dialog open={aiInstructionsDialog} onOpenChange={setAiInstructionsDialog}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Settings className="h-4 w-4 mr-2" />
+                      Edit Instructions
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-3xl">
+                    <DialogHeader>
+                      <DialogTitle>Edit AI Instructions</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <Label>Instructions for AI Analysis:</Label>
+                      <Textarea
+                        value={aiInstructions}
+                        onChange={(e) => setAiInstructions(e.target.value)}
+                        rows={12}
+                        className="min-h-80"
+                        placeholder="Enter instructions for AI analysis..."
+                      />
+                      <div className="flex gap-2 justify-end">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => {
+                            setAiInstructionsDialog(false);
+                            // Reset to original value if needed
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button onClick={handleSaveInstructions}>
+                          <Save className="h-4 w-4 mr-2" />
+                          Save Instructions
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
-            </DialogContent>
-          </Dialog>
-        </CardHeader>
-        <CardContent>
-          <div className="bg-muted/50 p-4 rounded-lg">
-            <pre className="text-sm whitespace-pre-wrap text-muted-foreground font-mono">
-              {aiInstructions}
-            </pre>
-          </div>
-        </CardContent>
-      </Card>
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <pre className="text-sm whitespace-pre-wrap text-muted-foreground font-mono">
+                  {aiInstructions}
+                </pre>
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
 
       {/* ROI Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -884,6 +890,19 @@ Provide actionable insights for campaign optimization.`);
                 <p className="text-xs text-muted-foreground">US & Canada applications</p>
               </div>
               <CheckCircle className="h-8 w-8 text-indigo-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Commission Generated</p>
+                <p className="text-2xl font-bold">${(metrics?.commission_generated || 0).toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground">From funded partner loans</p>
+              </div>
+              <Banknote className="h-8 w-8 text-teal-600" />
             </div>
           </CardContent>
         </Card>

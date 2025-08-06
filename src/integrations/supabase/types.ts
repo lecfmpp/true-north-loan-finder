@@ -1939,6 +1939,7 @@ export type Database = {
           funded_leads: number
           all_leads: number
           application_leads: number
+          commission_generated: number
         }[]
       }
       has_any_management_role: {
