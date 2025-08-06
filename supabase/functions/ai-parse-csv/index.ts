@@ -33,7 +33,7 @@ serve(async (req) => {
     const requestBody = await req.json();
     console.log('Request body keys:', Object.keys(requestBody));
     
-    const { csvContent, batchSize = 50 } = requestBody;
+    const { csvContent, batchSize = 50, defaultChannel } = requestBody;
     
     if (!csvContent) {
       console.error('No CSV content provided');
