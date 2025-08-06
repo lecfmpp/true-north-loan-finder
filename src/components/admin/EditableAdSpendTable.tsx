@@ -433,7 +433,12 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold">Ad Spend Records</h3>
+        <div>
+          <h3 className="text-lg font-semibold">Ad Spend Records</h3>
+          <p className="text-sm text-muted-foreground">
+            Track multiple campaigns and channels per day. Each row represents a unique campaign-channel-date combination.
+          </p>
+        </div>
         <Button onClick={() => setIsAddingNew(true)} disabled={isAddingNew}>
           <Plus className="h-4 w-4 mr-2" />
           Add Record
@@ -635,6 +640,41 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
           })}
         </TableBody>
       </Table>
+
+      {/* Daily Summary when multiple entries exist */}
+      {getSortedData().length > 0 && (
+        <div className="mt-6 p-4 bg-muted/30 rounded-lg">
+          <h4 className="text-sm font-semibold mb-3">Daily Summary</h4>
+          {(() => {
+            const dailyTotals = getSortedData().reduce((acc, spend) => {
+              const date = spend.date;
+              if (!acc[date]) {
+                acc[date] = { campaigns: 0, totalCost: 0, totalClicks: 0, totalConversions: 0 };
+              }
+              acc[date].campaigns++;
+              acc[date].totalCost += (spend.amount || 0) / 100;
+              acc[date].totalClicks += spend.clicks || 0;
+              acc[date].totalConversions += spend.conversions || 0;
+              return acc;
+            }, {} as Record<string, { campaigns: number; totalCost: number; totalClicks: number; totalConversions: number }>);
+
+            return Object.entries(dailyTotals)
+              .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
+              .slice(0, 7) // Show last 7 days
+              .map(([date, totals]) => (
+                <div key={date} className="flex justify-between items-center py-2 border-b border-muted last:border-0">
+                  <span className="text-sm font-medium">{new Date(date).toLocaleDateString()}</span>
+                  <div className="text-sm text-muted-foreground">
+                    {totals.campaigns} campaign{totals.campaigns > 1 ? 's' : ''} • 
+                    ${totals.totalCost.toFixed(2)} spent • 
+                    {totals.totalClicks} clicks • 
+                    {totals.totalConversions} conversions
+                  </div>
+                </div>
+              ));
+          })()}
+        </div>
+      )}
     </div>
   );
 }

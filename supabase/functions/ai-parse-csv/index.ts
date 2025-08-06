@@ -335,12 +335,33 @@ function processRow(row: string[], mapping: any, rowIndex: number) {
   const dateStr = getColumnValue('date');
   const channelStr = getColumnValue('channel');
   const amountStr = getColumnValue('amount');
+  const campaignName = getColumnValue('campaign_name') || `Campaign ${rowIndex}`;
+
+  // Enhanced channel inference for multiple campaigns per day
+  let finalChannel = 'google'; // Default
+  
+  if (channelStr && channelStr.trim()) {
+    // Use explicit channel if provided
+    finalChannel = channelStr.trim();
+  } else {
+    // Infer channel from campaign name for better multi-campaign support
+    const lowerCampaign = campaignName.toLowerCase();
+    if (lowerCampaign.includes('meta') || lowerCampaign.includes('facebook') || lowerCampaign.includes('fb')) {
+      finalChannel = 'meta';
+    } else if (lowerCampaign.includes('tiktok') || lowerCampaign.includes('tt')) {
+      finalChannel = 'tiktok';
+    } else if (lowerCampaign.includes('linkedin') || lowerCampaign.includes('li')) {
+      finalChannel = 'linkedin';
+    } else if (lowerCampaign.includes('google') || lowerCampaign.includes('ggl') || lowerCampaign.includes('search') || lowerCampaign.includes('performance')) {
+      finalChannel = 'google';
+    }
+  }
 
   const processedRow = {
     date: standardizeDate(dateStr),
-    channel: standardizeChannel(channelStr),
+    channel: standardizeChannel(finalChannel),
     amount: Math.round(parseAmount(amountStr) * 100), // Convert to cents
-    campaign_name: getColumnValue('campaign_name') || `Campaign ${rowIndex}`,
+    campaign_name: campaignName,
     clicks: Math.min(parseInt(getColumnValue('clicks')) || 0, 1000000), // Cap clicks at 1M
     ctr: Math.min(Math.max(parseFloat(getColumnValue('ctr')) || 0, 0), 9.9999), // Keep CTR as decimal, cap at 9.9999
     conversions: Math.min(parseInt(getColumnValue('conversions')) || 0, 100000) // Cap conversions at 100k
