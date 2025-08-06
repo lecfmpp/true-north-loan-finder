@@ -16,7 +16,6 @@ import { ApplicationAuth } from "@/components/ApplicationAuth";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/hooks/use-auth";
-import { useApplicationDraft } from "@/hooks/use-application-draft";
 
 interface ApplicationData {
   // Company Information
@@ -104,12 +103,10 @@ const Application = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const { user, loading } = useAuth();
-  const { saveDraft, loadDraft, deleteDraft, checkQuizCompletion } = useApplicationDraft();
-  const [isDraftLoaded, setIsDraftLoaded] = useState(false);
-  const [showResumePrompt, setShowResumePrompt] = useState(false);
-  const totalSteps = 6; // Updated to remove auth step
+  const totalSteps = 6;
   
   const [formData, setFormData] = useState<ApplicationData>({
+    // Company Information
     legal_corporation_name: "",
     dba_name: "",
     physical_address: "",
@@ -121,10 +118,14 @@ const Application = () => {
     fax_number: "",
     website: "",
     email_address: "",
+    
+    // Federal & State Information
     federal_tax_id: "",
     state_tax_id: "",
     state_of_incorporation: "",
     date_incorporated: "",
+    
+    // Principal Information
     principal_name: "",
     principal_title: "",
     principal_ssn: "",
@@ -137,130 +138,69 @@ const Application = () => {
     principal_cell_phone: "",
     principal_email: "",
     principal_ownership_percentage: "",
+    
+    // Business Information
     years_in_business: "",
     months_in_business: "",
     number_of_employees: "",
     business_type: "",
     business_description: "",
+    
+    // Bank Information
     bank_name: "",
     bank_account_type: "",
     bank_routing_number: "",
     bank_account_number: "",
     months_with_bank: "",
+    
+    // Financial Information
     average_monthly_deposits: "",
     monthly_rent_mortgage: "",
+    
+    // Processing Information
     accept_cards: [],
     current_processor: "",
     mid_number: "",
     monthly_processing_volume: "",
     average_ticket: "",
     high_ticket: "",
+    
+    // Loan Information
     loan_amount_requested: "",
     use_of_funds: "",
-    document_files: [],
+    
+    // Document Files
+    document_files: []
   });
 
-  // Auto-fill form from URL parameters when coming from quiz results
+  // Initialize form data from URL params or user account
   useEffect(() => {
-    const name = searchParams.get('name');
-    const email = searchParams.get('email');
-    const phone = searchParams.get('phone');
-    const loanAmount = searchParams.get('loanAmount');
-    const monthlyRevenue = searchParams.get('monthlyRevenue');
-    const useOfFunds = searchParams.get('useOfFunds');
+    if (!loading) {
+      // Pre-fill from quiz data if available
+      const name = searchParams.get('name');
+      const email = searchParams.get('email');
+      const phone = searchParams.get('phone');
+      const loanAmount = searchParams.get('loanAmount');
+      const company = searchParams.get('company');
 
-    // Pre-fill form if quiz data is available
-    if (name || email || phone || loanAmount) {
-      setFormData(prev => ({
-        ...prev,
-        principal_name: name || prev.principal_name,
-        principal_email: email || prev.principal_email,
-        email_address: email || prev.email_address,
-        principal_cell_phone: phone || prev.principal_cell_phone,
-        loan_amount_requested: loanAmount || prev.loan_amount_requested,
-        use_of_funds: useOfFunds || prev.use_of_funds,
-      }));
-    }
-  }, [searchParams]);
-
-  // Pre-fill email from authenticated user
-  useEffect(() => {
-    if (user?.email && !formData.email_address) {
-      setFormData(prev => ({
-        ...prev,
-        email_address: user.email || '',
-        principal_email: user.email || '',
-      }));
-    }
-  }, [user, formData.email_address]);
-
-  // Load draft and quiz data when user is authenticated
-  useEffect(() => {
-    const initializeFormData = async () => {
-      if (!user || isDraftLoaded) return;
+      const updates: Partial<ApplicationData> = {};
       
-      try {
-        // First check if there's quiz data from URL params
-        const hasQuizData = searchParams.get('name') || searchParams.get('email') || searchParams.get('loanAmount');
-        
-        if (!hasQuizData) {
-          // Try to load existing draft
-          const draft = await loadDraft();
-          if (draft) {
-            // Show resume prompt to user
-            setShowResumePrompt(true);
-            return;
-          }
-          
-          // No draft found, check if user has completed quiz
-          const quizId = await checkQuizCompletion();
-          if (!quizId) {
-            // No quiz completion found, but allow direct application
-            // Just pre-fill with user email if available
-            setFormData(prev => ({
-              ...prev,
-              email_address: user?.email || prev.email_address,
-            }));
-          }
-        }
-        
-        setIsDraftLoaded(true);
-      } catch (error) {
-        console.error('Error initializing form data:', error);
-        setIsDraftLoaded(true);
+      if (name) updates.principal_name = name;
+      if (email) updates.email_address = email;
+      if (phone) updates.telephone_number = phone;
+      if (loanAmount) updates.loan_amount_requested = loanAmount;
+      if (company) updates.legal_corporation_name = company;
+      
+      // Use user email if logged in and no email from quiz
+      if (user?.email && !email) {
+        updates.email_address = user.email;
       }
-    };
 
-    initializeFormData();
-  }, [user, isDraftLoaded, searchParams, loadDraft, checkQuizCompletion, navigate]);
-
-  // Auto-save draft periodically and on step changes
-  useEffect(() => {
-    if (!user || !isDraftLoaded || currentStep === 1) return;
-    
-    const saveTimer = setTimeout(() => {
-      const quizId = searchParams.get('quiz_id') || localStorage.getItem('quiz_response_id');
-      saveDraft(formData, currentStep, quizId || undefined);
-    }, 2000); // Save after 2 seconds of inactivity
-
-    return () => clearTimeout(saveTimer);
-  }, [formData, currentStep, user, isDraftLoaded, saveDraft, searchParams]);
-
-  const handleResumeDraft = async () => {
-    const draft = await loadDraft();
-    if (draft) {
-      setFormData(draft.form_data);
-      setCurrentStep(draft.current_step);
-      toast.success("Resuming from where you left off!");
+      if (Object.keys(updates).length > 0) {
+        setFormData(prev => ({ ...prev, ...updates }));
+      }
     }
-    setShowResumePrompt(false);
-    setIsDraftLoaded(true);
-  };
-
-  const handleStartFresh = () => {
-    setShowResumePrompt(false);
-    setIsDraftLoaded(true);
-  };
+  }, [user, loading, searchParams]);
 
   const updateFormData = (field: keyof ApplicationData, value: any) => {
     setFormData(prev => ({
@@ -271,89 +211,47 @@ const Application = () => {
 
   const [showValidationErrors, setShowValidationErrors] = useState(false);
 
-  const getFieldValidationClass = (fieldName: keyof ApplicationData, step: number): string => {
-    // Only show validation errors when user tries to proceed and there are errors
+  const getFieldValidationClass = (fieldName: keyof ApplicationData, requiredFields: string[]) => {
     if (!showValidationErrors) return "";
     
-    const requiredFields = getRequiredFieldsForStep(step);
+    const value = formData[fieldName];
+    const isEmpty = Array.isArray(value) ? value.length === 0 : !value;
     const isRequired = requiredFields.includes(fieldName);
-    const isEmpty = !formData[fieldName] || (Array.isArray(formData[fieldName]) && (formData[fieldName] as any[]).length === 0);
     
-    return isRequired && isEmpty ? "border-red-500 focus:border-red-500" : "";
-  };
-
-  const getRequiredFieldsForStep = (step: number): (keyof ApplicationData)[] => {
-    switch (step) {
-      case 1:
-        return ['legal_corporation_name', 'physical_address', 'city', 'state', 'zip', 'entity_type', 'telephone_number', 'email_address'];
-      case 2:
-        return ['federal_tax_id'];
-      case 3:
-        return ['principal_name', 'principal_title', 'principal_ssn', 'principal_date_of_birth', 'principal_home_address', 'principal_city', 'principal_state', 'principal_zip', 'principal_email', 'principal_ownership_percentage'];
-      case 4:
-        return ['years_in_business', 'number_of_employees', 'business_type', 'business_description'];
-      case 5:
-        return ['bank_name', 'bank_account_type', 'bank_routing_number', 'bank_account_number', 'months_with_bank', 'average_monthly_deposits', 'monthly_rent_mortgage', 'accept_cards'];
-      case 6:
-        return ['loan_amount_requested', 'use_of_funds'];
-      default:
-        return [];
-    }
+    return isRequired && isEmpty ? "border-destructive" : "";
   };
 
   const validateStep = (step: number): boolean => {
+    const requiredFields = getStepRequiredFields(step);
+    
+    for (const field of requiredFields) {
+      const value = formData[field as keyof ApplicationData];
+      if (Array.isArray(value)) {
+        if (value.length === 0) return false;
+      } else {
+        if (!value || value.toString().trim() === "") return false;
+      }
+    }
+    
+    return true;
+  };
+
+  const getStepRequiredFields = (step: number): string[] => {
     switch (step) {
-      case 1:
-        return !!(
-          formData.legal_corporation_name &&
-          formData.physical_address &&
-          formData.city &&
-          formData.state &&
-          formData.zip &&
-          formData.entity_type &&
-          formData.telephone_number &&
-          formData.email_address
-        );
-      case 2:
-        return !!(formData.federal_tax_id);
-      case 3:
-        return !!(
-          formData.principal_name &&
-          formData.principal_title &&
-          formData.principal_ssn &&
-          formData.principal_date_of_birth &&
-          formData.principal_home_address &&
-          formData.principal_city &&
-          formData.principal_state &&
-          formData.principal_zip &&
-          formData.principal_email &&
-          formData.principal_ownership_percentage
-        );
-      case 4:
-        return !!(
-          formData.years_in_business &&
-          formData.number_of_employees &&
-          formData.business_type &&
-          formData.business_description
-        );
-      case 5:
-        return !!(
-          formData.bank_name &&
-          formData.bank_account_type &&
-          formData.bank_routing_number &&
-          formData.bank_account_number &&
-          formData.months_with_bank &&
-          formData.average_monthly_deposits &&
-          formData.monthly_rent_mortgage &&
-          formData.accept_cards.length > 0
-        );
-      case 6:
-        return !!(
-          formData.loan_amount_requested &&
-          formData.use_of_funds
-        );
+      case 1: // Company Information
+        return ['legal_corporation_name', 'physical_address', 'city', 'state', 'zip', 'entity_type', 'telephone_number', 'email_address'];
+      case 2: // Federal & State Information
+        return ['federal_tax_id'];
+      case 3: // Principal Information
+        return ['principal_name', 'principal_title', 'principal_ssn', 'principal_date_of_birth', 'principal_home_address', 'principal_city', 'principal_state', 'principal_zip', 'principal_email', 'principal_ownership_percentage'];
+      case 4: // Business Information
+        return ['years_in_business', 'months_in_business', 'number_of_employees', 'business_type', 'business_description'];
+      case 5: // Bank & Financial Information
+        return ['bank_name', 'bank_account_type', 'bank_routing_number', 'bank_account_number', 'months_with_bank', 'average_monthly_deposits'];
+      case 6: // Loan Information
+        return ['loan_amount_requested', 'use_of_funds'];
       default:
-        return true;
+        return [];
     }
   };
 
@@ -364,15 +262,10 @@ const Application = () => {
       return;
     }
     
-    setShowValidationErrors(false); // Reset validation errors when moving forward
+    setShowValidationErrors(false);
     
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
-      // Save progress when moving to next step
-      if (user) {
-        const quizId = searchParams.get('quiz_id') || localStorage.getItem('quiz_response_id');
-        saveDraft(formData, currentStep + 1, quizId || undefined);
-      }
       window.scrollTo(0, 0);
     }
   };
@@ -389,163 +282,193 @@ const Application = () => {
     const allowedTypes = [
       'application/pdf',
       'image/jpeg',
+      'image/jpg', 
       'image/png',
-      'image/gif',
-      'image/webp',
-      'image/bmp',
-      'image/tiff',
       'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     ];
-    
+
     if (file.size > maxSize) {
-      return `File "${file.name}" is too large. Maximum size is 10MB.`;
+      return 'File size must be less than 10MB';
     }
-    
+
     if (!allowedTypes.includes(file.type)) {
-      return `File "${file.name}" is not a supported format. Please use PDF, images (JPG, PNG, GIF, WebP, BMP, TIFF), or document files (DOC, DOCX).`;
+      return 'Please upload PDF, Word, Excel, or image files only';
     }
-    
+
     return null;
   };
 
-  const handleFileUpload = async (files: File[]): Promise<string[]> => {
-    const uploadedFiles: string[] = [];
+  const handleFileUpload = async (files: FileList) => {
+    const validFiles: File[] = [];
     
-    for (const file of files) {
-      const validationError = validateFile(file);
-      if (validationError) {
-        throw new Error(validationError);
-      }
-      
-      // Create a safe filename by removing special characters and ensuring unique naming
-      const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-      const fileName = `${user?.id || 'anonymous'}/${Date.now()}-${safeName}`;
-      
-      const { error } = await supabase.storage
-        .from('application-documents')
-        .upload(fileName, file, {
-          upsert: false, // Don't overwrite existing files
-          cacheControl: '3600'
-        });
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const error = validateFile(file);
       
       if (error) {
-        console.error('Error uploading file:', error);
-        if (error.message.includes('duplicate')) {
-          throw new Error(`File "${file.name}" already exists. Please rename it and try again.`);
-        }
-        throw new Error(`Failed to upload "${file.name}": ${error.message}`);
+        toast.error(`${file.name}: ${error}`);
+        continue;
       }
       
-      uploadedFiles.push(fileName);
+      validFiles.push(file);
     }
-    
-    return uploadedFiles;
+
+    if (validFiles.length === 0) return [];
+
+    const uploadedFiles: string[] = [];
+
+    try {
+      for (const file of validFiles) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `applications/${fileName}`;
+
+        const { error: uploadError, data } = await supabase.storage
+          .from('documents')
+          .upload(filePath, file);
+
+        if (uploadError) {
+          console.error('Error uploading file:', uploadError);
+          toast.error(`Failed to upload ${file.name}`);
+          continue;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('documents')
+          .getPublicUrl(filePath);
+
+        uploadedFiles.push(publicUrl);
+      }
+
+      if (uploadedFiles.length > 0) {
+        toast.success(`Successfully uploaded ${uploadedFiles.length} file(s)`);
+      }
+
+      return uploadedFiles;
+    } catch (error) {
+      console.error('Error in file upload process:', error);
+      toast.error('An error occurred during file upload');
+      return [];
+    }
   };
 
   const handleSubmit = async () => {
-    // Check if user is authenticated first
     if (!user) {
       setShowAuth(true);
       return;
     }
 
-    setIsSubmitting(true);
-    
-    try {
-      // Get quiz response ID from URL params or localStorage
-      const urlParams = new URLSearchParams(window.location.search);
-      const quizResponseId = urlParams.get('quiz_id') || localStorage.getItem('quiz_response_id');
-      
-      // Upload documents first
-      let uploadedFileNames: string[] = [];
-      if (formData.document_files.length > 0) {
-        uploadedFileNames = await handleFileUpload(formData.document_files);
-      }
+    if (!validateStep(currentStep)) {
+      setShowValidationErrors(true);
+      toast.error("Please fill in all required fields before submitting.");
+      return;
+    }
 
-      const applicationData = {
-        legal_corporation_name: formData.legal_corporation_name || 'Not Provided',
+    setIsSubmitting(true);
+
+    try {
+      // Upload documents if any
+      const documentUrls = formData.document_files.length > 0 
+        ? await handleFileUpload(formData.document_files as any) 
+        : [];
+
+      // Prepare data for submission
+      const submissionData = {
+        user_id: user.id,
+        legal_corporation_name: formData.legal_corporation_name,
         dba_name: formData.dba_name || null,
-        physical_address: formData.physical_address || 'Not Provided',
-        city: formData.city || 'Not Provided',
-        state: formData.state || 'Not Provided',
-        zip: formData.zip || '00000',
-        entity_type: formData.entity_type || 'LLC',
-        telephone_number: formData.telephone_number || '0000000000',
+        physical_address: formData.physical_address,
+        city: formData.city,
+        state: formData.state,
+        zip: formData.zip,
+        entity_type: formData.entity_type,
+        telephone_number: formData.telephone_number,
         fax_number: formData.fax_number || null,
         website: formData.website || null,
-        email_address: formData.email_address || user?.email || 'no-email@example.com',
-        federal_tax_id: formData.federal_tax_id || '000000000',
+        email_address: formData.email_address,
+        federal_tax_id: formData.federal_tax_id,
         state_tax_id: formData.state_tax_id || null,
         state_of_incorporation: formData.state_of_incorporation || null,
         date_incorporated: formData.date_incorporated || null,
-        principal_name: formData.principal_name || 'Not Provided',
-        principal_title: formData.principal_title || 'Owner',
-        principal_ssn: formData.principal_ssn || '000000000',
-        principal_date_of_birth: formData.principal_date_of_birth || '1980-01-01',
-        principal_home_address: formData.principal_home_address || 'Not Provided',
-        principal_city: formData.principal_city || 'Not Provided',
-        principal_state: formData.principal_state || 'Not Provided',
-        principal_zip: formData.principal_zip || '00000',
+        principal_name: formData.principal_name,
+        principal_title: formData.principal_title,
+        principal_ssn: formData.principal_ssn,
+        principal_date_of_birth: formData.principal_date_of_birth,
+        principal_home_address: formData.principal_home_address,
+        principal_city: formData.principal_city,
+        principal_state: formData.principal_state,
+        principal_zip: formData.principal_zip,
         principal_home_phone: formData.principal_home_phone || null,
         principal_cell_phone: formData.principal_cell_phone || null,
-        principal_email: formData.principal_email || user?.email || 'no-email@example.com',
-        principal_ownership_percentage: parseInt(formData.principal_ownership_percentage) || 100,
-        years_in_business: parseInt(formData.years_in_business) || 0,
-        months_in_business: parseInt(formData.months_in_business) || 0,
-        number_of_employees: parseInt(formData.number_of_employees) || 1,
-        business_type: formData.business_type || 'Other',
-        business_description: formData.business_description || 'Business description not provided',
-        bank_name: formData.bank_name || 'Not Provided',
-        bank_account_type: formData.bank_account_type || 'Checking',
-        bank_routing_number: formData.bank_routing_number || '000000000',
-        bank_account_number: formData.bank_account_number || '000000000',
-        months_with_bank: parseInt(formData.months_with_bank) || 12,
-        average_monthly_deposits: parseInt(formData.average_monthly_deposits) || 1000,
-        monthly_rent_mortgage: parseInt(formData.monthly_rent_mortgage) || 1000,
-        accept_cards: formData.accept_cards && formData.accept_cards.length > 0 ? formData.accept_cards : ['Visa'],
+        principal_email: formData.principal_email,
+        principal_ownership_percentage: parseInt(formData.principal_ownership_percentage),
+        years_in_business: parseInt(formData.years_in_business),
+        months_in_business: parseInt(formData.months_in_business),
+        number_of_employees: parseInt(formData.number_of_employees),
+        business_type: formData.business_type,
+        business_description: formData.business_description,
+        bank_name: formData.bank_name,
+        bank_account_type: formData.bank_account_type,
+        bank_routing_number: formData.bank_routing_number,
+        bank_account_number: formData.bank_account_number,
+        months_with_bank: parseInt(formData.months_with_bank),
+        average_monthly_deposits: parseInt(formData.average_monthly_deposits),
+        monthly_rent_mortgage: formData.monthly_rent_mortgage ? parseInt(formData.monthly_rent_mortgage) : null,
+        accept_cards: formData.accept_cards,
         current_processor: formData.current_processor || null,
         mid_number: formData.mid_number || null,
         monthly_processing_volume: formData.monthly_processing_volume ? parseInt(formData.monthly_processing_volume) : null,
         average_ticket: formData.average_ticket ? parseInt(formData.average_ticket) : null,
         high_ticket: formData.high_ticket ? parseInt(formData.high_ticket) : null,
-        loan_amount_requested: parseInt(formData.loan_amount_requested) || 1000,
-        use_of_funds: formData.use_of_funds || 'working-capital',
-        document_files: uploadedFileNames,
-        status: 'applicant',
-        // Add tracking fields
-        quiz_response_id: quizResponseId || null,
-        lead_source: quizResponseId ? 'quiz' : 'direct',
-        conversion_stage: 'application',
-        // Associate with authenticated user
-        user_id: user?.id,
+        loan_amount_requested: parseInt(formData.loan_amount_requested),
+        use_of_funds: formData.use_of_funds,
+        document_files: documentUrls,
+        quiz_response_id: searchParams.get('quiz_id') || localStorage.getItem('quiz_response_id') || null
       };
 
+      // Submit to database
       const { data, error } = await supabase
         .from('usa_applications')
-        .insert([applicationData])
-        .select('application_reference_number')
+        .insert([submissionData])
+        .select()
         .single();
 
-      if (error) throw error;
-
-      // Store reference number for success page
-      if (data?.application_reference_number) {
-        localStorage.setItem('application_reference_number', data.application_reference_number);
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
       }
 
-      // Send admin notification
+      // Send notifications
       try {
-        await supabase.functions.invoke('send-admin-notification', {
-          body: {
-            type: 'application',
-            data: applicationData,
-            submissionId: data.application_reference_number
+        await supabase.functions.invoke('send-application-email', {
+          body: { 
+            applicationData: submissionData,
+            applicationId: data.id,
+            applicationType: 'usa'
           }
         });
-      } catch (adminNotificationError) {
-        console.error('Failed to send admin notification:', adminNotificationError);
-        // Don't fail the whole submission if admin notification fails
+      } catch (emailError) {
+        console.error('Error sending application email:', emailError);
+      }
+
+      try {
+        await supabase.functions.invoke('send-admin-notification', {
+          body: { 
+            type: 'new_application',
+            data: {
+              applicant_name: formData.principal_name,
+              applicant_email: formData.email_address,
+              loan_amount: formData.loan_amount_requested,
+              application_type: 'USA Application',
+              application_id: data.id
+            }
+          }
+        });
+      } catch (notificationError) {
+        console.error('Error sending admin notification:', notificationError);
       }
 
       // Track conversion
@@ -555,28 +478,13 @@ const Application = () => {
         });
       }
 
-      // Delete draft after successful submission
-      await deleteDraft();
-
       toast.success("Application submitted successfully!");
       navigate("/application-success");
     } catch (error) {
       console.error('Error submitting application:', error);
       console.error('Form data that failed:', formData);
       
-      // More specific error messages based on the error type
-      let errorMessage = "Failed to submit application. Please try again.";
-      if (error instanceof Error) {
-        if (error.message.includes('violates not-null constraint')) {
-          errorMessage = "Please fill in all required fields before submitting.";
-        } else if (error.message.includes('invalid input')) {
-          errorMessage = "Please check your input values and try again.";
-        } else if (error.message.includes('duplicate')) {
-          errorMessage = "This application has already been submitted.";
-        }
-      }
-      
-      toast.error(errorMessage);
+      toast.error("There was an error submitting your application. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -586,136 +494,133 @@ const Application = () => {
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-6">
-            <div className="flex items-center gap-3 mb-4 md:mb-6">
-              <Building2 className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-              <h2 className="text-xl md:text-2xl font-bold">Company Information</h2>
-            </div>
-            
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="legal_corporation_name">Legal Corporation Name *</Label>
-                <Input
-                  id="legal_corporation_name"
-                  value={formData.legal_corporation_name}
-                  onChange={(e) => updateFormData('legal_corporation_name', e.target.value)}
-                  maxLength={100}
-                  required
-                  className={getFieldValidationClass('legal_corporation_name', currentStep)}
-                />
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
+                Company Information
+              </CardTitle>
+              <CardDescription>Tell us about your business</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="legal_corporation_name">Legal Corporation Name *</Label>
+                  <Input
+                    id="legal_corporation_name"
+                    value={formData.legal_corporation_name}
+                    onChange={(e) => updateFormData('legal_corporation_name', e.target.value)}
+                    className={getFieldValidationClass('legal_corporation_name', getStepRequiredFields(1))}
+                    placeholder="ABC Corp, LLC"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dba_name">DBA Name (if applicable)</Label>
+                  <Input
+                    id="dba_name"
+                    value={formData.dba_name}
+                    onChange={(e) => updateFormData('dba_name', e.target.value)}
+                    placeholder="Doing Business As"
+                  />
+                </div>
               </div>
-              
+
               <div className="space-y-2">
-                <Label htmlFor="dba_name">DBA Name</Label>
-                <Input
-                  id="dba_name"
-                  value={formData.dba_name}
-                  onChange={(e) => updateFormData('dba_name', e.target.value)}
-                  maxLength={100}
-                />
-              </div>
-              
-              <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="physical_address">Physical Address *</Label>
                 <Input
                   id="physical_address"
                   value={formData.physical_address}
                   onChange={(e) => updateFormData('physical_address', e.target.value)}
-                  maxLength={150}
-                  required
-                  className={getFieldValidationClass('physical_address', currentStep)}
+                  className={getFieldValidationClass('physical_address', getStepRequiredFields(1))}
+                  placeholder="123 Business St"
                 />
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="city">City *</Label>
-                <Input
-                  id="city"
-                  value={formData.city}
-                  onChange={(e) => updateFormData('city', e.target.value)}
-                  maxLength={50}
-                  required
-                  className={getFieldValidationClass('city', currentStep)}
-                />
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="city">City *</Label>
+                  <Input
+                    id="city"
+                    value={formData.city}
+                    onChange={(e) => updateFormData('city', e.target.value)}
+                    className={getFieldValidationClass('city', getStepRequiredFields(1))}
+                    placeholder="New York"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="state">State *</Label>
+                  <Select value={formData.state} onValueChange={(value) => updateFormData('state', value)}>
+                    <SelectTrigger className={getFieldValidationClass('state', getStepRequiredFields(1))}>
+                      <SelectValue placeholder="Select state" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {US_STATES.map(state => (
+                        <SelectItem key={state} value={state}>{state}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="zip">ZIP Code *</Label>
+                  <Input
+                    id="zip"
+                    value={formData.zip}
+                    onChange={(e) => updateFormData('zip', e.target.value)}
+                    className={getFieldValidationClass('zip', getStepRequiredFields(1))}
+                    placeholder="10001"
+                  />
+                </div>
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="state">State *</Label>
-                <Select value={formData.state} onValueChange={(value) => updateFormData('state', value)}>
-                  <SelectTrigger className={getFieldValidationClass('state', currentStep)}>
-                    <SelectValue placeholder="Select state" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {US_STATES.map((state) => (
-                      <SelectItem key={state} value={state}>{state}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="entity_type">Type of Entity *</Label>
+                  <Select value={formData.entity_type} onValueChange={(value) => updateFormData('entity_type', value)}>
+                    <SelectTrigger className={getFieldValidationClass('entity_type', getStepRequiredFields(1))}>
+                      <SelectValue placeholder="Select entity type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sole_proprietorship">Sole Proprietorship</SelectItem>
+                      <SelectItem value="partnership">Partnership</SelectItem>
+                      <SelectItem value="llc">LLC</SelectItem>
+                      <SelectItem value="corporation">Corporation</SelectItem>
+                      <SelectItem value="s_corp">S-Corporation</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="telephone_number">Business Phone *</Label>
+                  <Input
+                    id="telephone_number"
+                    value={formData.telephone_number}
+                    onChange={(e) => updateFormData('telephone_number', e.target.value)}
+                    className={getFieldValidationClass('telephone_number', getStepRequiredFields(1))}
+                    placeholder="(555) 123-4567"
+                  />
+                </div>
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="zip">ZIP Code *</Label>
-                <Input
-                  id="zip"
-                  value={formData.zip}
-                  onChange={(e) => {
-                    const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{5})(\d{4})/, '$1-$2');
-                    updateFormData('zip', formatted.slice(0, 10));
-                  }}
-                  placeholder="12345 or 12345-6789"
-                  maxLength={10}
-                  required
-                  className={getFieldValidationClass('zip', currentStep)}
-                />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="fax_number">Fax Number</Label>
+                  <Input
+                    id="fax_number"
+                    value={formData.fax_number}
+                    onChange={(e) => updateFormData('fax_number', e.target.value)}
+                    placeholder="(555) 123-4568"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="website">Website</Label>
+                  <Input
+                    id="website"
+                    value={formData.website}
+                    onChange={(e) => updateFormData('website', e.target.value)}
+                    placeholder="https://www.example.com"
+                  />
+                </div>
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="entity_type">Entity Type *</Label>
-                <Select value={formData.entity_type} onValueChange={(value) => updateFormData('entity_type', value)}>
-                  <SelectTrigger className={getFieldValidationClass('entity_type', currentStep)}>
-                    <SelectValue placeholder="Select entity type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Corporation">Corporation</SelectItem>
-                    <SelectItem value="LLC">LLC</SelectItem>
-                    <SelectItem value="Partnership">Partnership</SelectItem>
-                    <SelectItem value="Sole Proprietorship">Sole Proprietorship</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="telephone_number">Telephone Number *</Label>
-                <Input
-                  id="telephone_number"
-                  type="tel"
-                  value={formData.telephone_number}
-                  onChange={(e) => {
-                    const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-                    updateFormData('telephone_number', formatted.slice(0, 14));
-                  }}
-                  placeholder="(555) 123-4567"
-                  maxLength={14}
-                  required
-                  className={getFieldValidationClass('telephone_number', currentStep)}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="fax_number">Fax Number</Label>
-                <Input
-                  id="fax_number"
-                  type="tel"
-                  value={formData.fax_number}
-                  onChange={(e) => {
-                    const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-                    updateFormData('fax_number', formatted.slice(0, 14));
-                  }}
-                  placeholder="(555) 123-4567"
-                  maxLength={14}
-                />
-              </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="email_address">Email Address *</Label>
                 <Input
@@ -723,25 +628,12 @@ const Application = () => {
                   type="email"
                   value={formData.email_address}
                   onChange={(e) => updateFormData('email_address', e.target.value)}
-                  placeholder="example@domain.com"
-                  maxLength={100}
-                  required
-                  className={getFieldValidationClass('email_address', currentStep)}
+                  className={getFieldValidationClass('email_address', getStepRequiredFields(1))}
+                  placeholder="business@example.com"
                 />
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="website">Website</Label>
-                <Input
-                  id="website"
-                  type="url"
-                  value={formData.website}
-                  onChange={(e) => updateFormData('website', e.target.value)}
-                  maxLength={100}
-                />
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         );
 
       case 2:
@@ -765,7 +657,7 @@ const Application = () => {
                   placeholder="12-3456789"
                   maxLength={10}
                   required
-                  className={getFieldValidationClass('federal_tax_id', currentStep)}
+                  className={getFieldValidationClass('federal_tax_id', getStepRequiredFields(2))}
                 />
               </div>
               
@@ -821,7 +713,7 @@ const Application = () => {
                   value={formData.principal_name}
                   onChange={(e) => updateFormData('principal_name', e.target.value)}
                   required
-                  className={getFieldValidationClass('principal_name', currentStep)}
+                  className={getFieldValidationClass('principal_name', getStepRequiredFields(3))}
                 />
               </div>
               
@@ -832,7 +724,7 @@ const Application = () => {
                   value={formData.principal_title}
                   onChange={(e) => updateFormData('principal_title', e.target.value)}
                   required
-                  className={getFieldValidationClass('principal_title', currentStep)}
+                  className={getFieldValidationClass('principal_title', getStepRequiredFields(3))}
                 />
               </div>
               
@@ -848,7 +740,7 @@ const Application = () => {
                   placeholder="123-45-6789"
                   maxLength={11}
                   required
-                  className={getFieldValidationClass('principal_ssn', currentStep)}
+                  className={getFieldValidationClass('principal_ssn', getStepRequiredFields(3))}
                 />
               </div>
               
@@ -860,7 +752,7 @@ const Application = () => {
                   value={formData.principal_date_of_birth}
                   onChange={(e) => updateFormData('principal_date_of_birth', e.target.value)}
                   required
-                  className={getFieldValidationClass('principal_date_of_birth', currentStep)}
+                  className={getFieldValidationClass('principal_date_of_birth', getStepRequiredFields(3))}
                 />
               </div>
               
@@ -871,7 +763,7 @@ const Application = () => {
                   value={formData.principal_home_address}
                   onChange={(e) => updateFormData('principal_home_address', e.target.value)}
                   required
-                  className={getFieldValidationClass('principal_home_address', currentStep)}
+                  className={getFieldValidationClass('principal_home_address', getStepRequiredFields(3))}
                 />
               </div>
               
@@ -903,14 +795,14 @@ const Application = () => {
                   value={formData.principal_city}
                   onChange={(e) => updateFormData('principal_city', e.target.value)}
                   required
-                  className={getFieldValidationClass('principal_city', currentStep)}
+                  className={getFieldValidationClass('principal_city', getStepRequiredFields(3))}
                 />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="principal_state">State *</Label>
                 <Select value={formData.principal_state} onValueChange={(value) => updateFormData('principal_state', value)}>
-                  <SelectTrigger className={getFieldValidationClass('principal_state', currentStep)}>
+                  <SelectTrigger className={getFieldValidationClass('principal_state', getStepRequiredFields(3))}>
                     <SelectValue placeholder="Select state" />
                   </SelectTrigger>
                   <SelectContent>
@@ -933,7 +825,7 @@ const Application = () => {
                   placeholder="12345 or 12345-6789"
                   maxLength={10}
                   required
-                  className={getFieldValidationClass('principal_zip', currentStep)}
+                  className={getFieldValidationClass('principal_zip', getStepRequiredFields(3))}
                 />
               </div>
               
@@ -976,7 +868,7 @@ const Application = () => {
                   onChange={(e) => updateFormData('principal_email', e.target.value)}
                   placeholder="example@domain.com"
                   required
-                  className={getFieldValidationClass('principal_email', currentStep)}
+                  className={getFieldValidationClass('principal_email', getStepRequiredFields(3))}
                 />
               </div>
               
@@ -991,7 +883,7 @@ const Application = () => {
                   onChange={(e) => updateFormData('principal_ownership_percentage', e.target.value)}
                   placeholder="%"
                   required
-                  className={getFieldValidationClass('principal_ownership_percentage', currentStep)}
+                  className={getFieldValidationClass('principal_ownership_percentage', getStepRequiredFields(3))}
                 />
               </div>
             </div>
@@ -1016,7 +908,21 @@ const Application = () => {
                   value={formData.years_in_business}
                   onChange={(e) => updateFormData('years_in_business', e.target.value)}
                   required
-                  className={getFieldValidationClass('years_in_business', currentStep)}
+                  className={getFieldValidationClass('years_in_business', getStepRequiredFields(4))}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="months_in_business">Months in Business *</Label>
+                <Input
+                  id="months_in_business"
+                  type="number"
+                  min="0"
+                  max="11"
+                  value={formData.months_in_business}
+                  onChange={(e) => updateFormData('months_in_business', e.target.value)}
+                  required
+                  className={getFieldValidationClass('months_in_business', getStepRequiredFields(4))}
                 />
               </div>
               
@@ -1029,7 +935,7 @@ const Application = () => {
                   value={formData.number_of_employees}
                   onChange={(e) => updateFormData('number_of_employees', e.target.value)}
                   required
-                  className={getFieldValidationClass('number_of_employees', currentStep)}
+                  className={getFieldValidationClass('number_of_employees', getStepRequiredFields(4))}
                 />
               </div>
               
@@ -1051,7 +957,7 @@ const Application = () => {
                   onChange={(e) => updateFormData('business_type', e.target.value)}
                   placeholder="e.g., Restaurant, Retail, Construction"
                   required
-                  className={getFieldValidationClass('business_type', currentStep)}
+                  className={getFieldValidationClass('business_type', getStepRequiredFields(4))}
                 />
               </div>
               
@@ -1063,7 +969,7 @@ const Application = () => {
                   onChange={(e) => updateFormData('business_description', e.target.value)}
                   rows={3}
                   required
-                  className={getFieldValidationClass('business_description', currentStep)}
+                  className={getFieldValidationClass('business_description', getStepRequiredFields(4))}
                 />
               </div>
               
@@ -1087,13 +993,13 @@ const Application = () => {
                   onChange={(e) => updateFormData('average_monthly_deposits', e.target.value)}
                   placeholder="$0"
                   required
-                  className={getFieldValidationClass('average_monthly_deposits', currentStep)}
+                  className={getFieldValidationClass('average_monthly_deposits', getStepRequiredFields(4))}
                 />
                 <p className="text-xs text-muted-foreground mt-1">Amount in USD</p>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="monthly_rent_mortgage">Monthly Rent/Mortgage *</Label>
+                <Label htmlFor="monthly_rent_mortgage">Monthly Rent/Mortgage</Label>
                 <Input
                   id="monthly_rent_mortgage"
                   type="number"
@@ -1101,8 +1007,6 @@ const Application = () => {
                   value={formData.monthly_rent_mortgage}
                   onChange={(e) => updateFormData('monthly_rent_mortgage', e.target.value)}
                   placeholder="$0"
-                  required
-                  className={getFieldValidationClass('monthly_rent_mortgage', currentStep)}
                 />
                 <p className="text-xs text-muted-foreground mt-1">Amount in USD</p>
               </div>
@@ -1126,14 +1030,14 @@ const Application = () => {
                   value={formData.bank_name}
                   onChange={(e) => updateFormData('bank_name', e.target.value)}
                   required
-                  className={getFieldValidationClass('bank_name', currentStep)}
+                  className={getFieldValidationClass('bank_name', getStepRequiredFields(5))}
                 />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="bank_account_type">Account Type *</Label>
                 <Select value={formData.bank_account_type} onValueChange={(value) => updateFormData('bank_account_type', value)}>
-                  <SelectTrigger className={getFieldValidationClass('bank_account_type', currentStep)}>
+                  <SelectTrigger className={getFieldValidationClass('bank_account_type', getStepRequiredFields(5))}>
                     <SelectValue placeholder="Select account type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1156,7 +1060,7 @@ const Application = () => {
                   placeholder="123456789"
                   maxLength={9}
                   required
-                  className={getFieldValidationClass('bank_routing_number', currentStep)}
+                  className={getFieldValidationClass('bank_routing_number', getStepRequiredFields(5))}
                 />
               </div>
               
@@ -1172,7 +1076,7 @@ const Application = () => {
                   placeholder="Account number (up to 17 digits)"
                   maxLength={17}
                   required
-                  className={getFieldValidationClass('bank_account_number', currentStep)}
+                  className={getFieldValidationClass('bank_account_number', getStepRequiredFields(5))}
                 />
               </div>
               
@@ -1185,7 +1089,7 @@ const Application = () => {
                   value={formData.months_with_bank}
                   onChange={(e) => updateFormData('months_with_bank', e.target.value)}
                   required
-                  className={getFieldValidationClass('months_with_bank', currentStep)}
+                  className={getFieldValidationClass('months_with_bank', getStepRequiredFields(5))}
                 />
               </div>
               
@@ -1333,7 +1237,7 @@ const Application = () => {
                   onChange={(e) => updateFormData('loan_amount_requested', e.target.value)}
                   placeholder="$1,000"
                   required
-                  className={getFieldValidationClass('loan_amount_requested', currentStep)}
+                  className={getFieldValidationClass('loan_amount_requested', getStepRequiredFields(6))}
                 />
                 <p className="text-xs text-muted-foreground mt-1">Amount in USD</p>
               </div>
@@ -1347,7 +1251,7 @@ const Application = () => {
                   rows={4}
                   placeholder="Please describe how you plan to use the loan funds..."
                   required
-                  className={getFieldValidationClass('use_of_funds', currentStep)}
+                  className={getFieldValidationClass('use_of_funds', getStepRequiredFields(6))}
                 />
               </div>
             </div>
@@ -1478,153 +1382,87 @@ const Application = () => {
     }
   };
 
-  // Show resume prompt if user has existing draft
-  if (showResumePrompt) {
+  if (loading) {
     return (
-      <TooltipProvider>
-        <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
-          <Header />
-          
-          <div className="container mx-auto px-4 py-4 md:py-8">
-            <div className="max-w-2xl mx-auto">
-              <Card className="shadow-xl border-0 md:border">
-                <CardContent className="p-4 md:p-8 text-center">
-                  <div className="mx-auto mb-4 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                    <FileText className="h-6 w-6 text-primary" />
-                  </div>
-                  <h2 className="text-xl md:text-2xl font-bold mb-4">Welcome Back!</h2>
-                  <p className="text-muted-foreground mb-6">
-                    We found a saved application in progress. Would you like to continue where you left off or start fresh?
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Button onClick={handleResumeDraft} className="flex items-center gap-2">
-                      <FileText className="h-4 w-4" />
-                      Resume Application
-                    </Button>
-                    <Button variant="outline" onClick={handleStartFresh}>
-                      Start Fresh
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-          
-          <Footer />
+      <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-lg">Loading...</p>
         </div>
-      </TooltipProvider>
-    );
-  }
-
-  // Show authentication form if user is not authenticated and showAuth is true
-  if (showAuth || (!user && !loading)) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
-        <Header />
-        
-        <div className="container mx-auto px-4 py-4 md:py-8">
-          <div className="max-w-2xl mx-auto">
-            {/* Header */}
-            <div className="text-center mb-6">
-              <h1 className="text-2xl md:text-3xl font-bold text-primary mb-2">US Business Application</h1>
-              <p className="text-sm md:text-base text-muted-foreground mb-6">
-                Step 1 of {totalSteps}: Create Your Secure Account
-              </p>
-              {/* Progress */}
-              <div className="max-w-md mx-auto mb-6">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs md:text-sm font-medium">Step 1 of {totalSteps}</span>
-                  <span className="text-xs md:text-sm text-muted-foreground">
-                    {Math.round((1 / totalSteps) * 100)}% Complete
-                  </span>
-                </div>
-                <Progress value={(1 / totalSteps) * 100} className="h-2" />
-              </div>
-            </div>
-            
-            <ApplicationAuth
-              email={searchParams.get('email') || formData.email_address}
-              name={searchParams.get('name') || formData.principal_name}
-              onAuthSuccess={() => setShowAuth(false)}
-            />
-          </div>
-        </div>
-        
-        <Footer />
       </div>
     );
   }
 
   return (
     <TooltipProvider>
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
-      <Header />
-      <div className="container mx-auto px-4 py-4 md:py-8">
-        {/* Mobile-optimized header */}
-        <div className="text-center mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-primary mb-2">US Business Application</h1>
-          <p className="text-sm md:text-base text-muted-foreground mb-4">
-            Complete your secure application in {totalSteps} steps
-          </p>
-          <div className="max-w-md mx-auto">
-            <Progress value={(currentStep / totalSteps) * 100} className="h-2 md:h-3" />
-            <p className="text-xs md:text-sm text-muted-foreground mt-2">
-              Step {currentStep} of {totalSteps}
-            </p>
+      <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
+        <Header />
+        
+        <div className="container mx-auto px-4 py-4 md:py-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-8">
+              <h1 className="text-2xl md:text-3xl font-bold mb-2">Business Loan Application</h1>
+              <p className="text-muted-foreground">Fast, secure, and simple application process</p>
+            </div>
+
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">Step {currentStep} of {totalSteps}</span>
+                <span className="text-sm text-muted-foreground">{Math.round((currentStep / totalSteps) * 100)}% Complete</span>
+              </div>
+              <Progress value={(currentStep / totalSteps) * 100} className="h-2" />
+            </div>
+
+            {renderStep()}
+
+            <div className="flex justify-between mt-8">
+              <Button
+                variant="outline"
+                onClick={prevStep}
+                disabled={currentStep === 1}
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Previous
+              </Button>
+
+              {currentStep === totalSteps ? (
+                <Button
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className="min-w-[120px]"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      Submit Application
+                      <CheckCircle className="h-4 w-4 ml-2" />
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button onClick={nextStep}>
+                  Next
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="max-w-2xl mx-auto">
-          <Card className="shadow-xl border-0 md:border">
-            <CardContent className="p-4 md:p-8">
-              {renderStep()}
-              
-              {/* Mobile-optimized navigation */}
-              <div className="flex flex-col sm:flex-row justify-between gap-4 mt-8 pt-6 border-t">
-                <Button
-                  variant="outline"
-                  onClick={prevStep}
-                  disabled={currentStep === 1}
-                  className="flex items-center justify-center gap-2 w-full sm:w-auto order-2 sm:order-1"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Previous
-                </Button>
-                
-                {currentStep < totalSteps ? (
-                  <Button
-                    onClick={nextStep}
-                    className="flex items-center justify-center gap-2 w-full sm:w-auto order-1 sm:order-2"
-                  >
-                    Next
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={isSubmitting}
-                    className="flex items-center justify-center gap-2 w-full sm:w-auto order-1 sm:order-2"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                        Submitting...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="h-4 w-4" />
-                        Submit Application
-                      </>
-                    )}
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <Footer />
+
+        {showAuth && (
+          <ApplicationAuth 
+            isOpen={showAuth} 
+            onClose={() => setShowAuth(false)}
+            onSuccess={() => setShowAuth(false)}
+          />
+        )}
       </div>
-      <Footer />
-    </div>
     </TooltipProvider>
   );
 };

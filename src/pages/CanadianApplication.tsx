@@ -7,7 +7,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { ArrowLeft, ArrowRight, Building2, User, CreditCard, FileText, CheckCircle, Upload, Info, MapPin, DollarSign } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -16,7 +15,6 @@ import { ApplicationAuth } from "@/components/ApplicationAuth";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/hooks/use-auth";
-import { useCanadianApplicationDraft } from "@/hooks/use-canadian-application-draft";
 
 interface CanadianApplicationData {
   // Business Information
@@ -88,11 +86,8 @@ const CanadianApplication = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
-  const [showResumeDialog, setShowResumeDialog] = useState(false);
-  const [savedDraft, setSavedDraft] = useState<any>(null);
   const { user, loading } = useAuth();
-  const { saveDraft, loadDraft, deleteDraft, checkQuizCompletion } = useCanadianApplicationDraft();
-  const totalSteps = 4; // Updated to move submit to step 4
+  const totalSteps = 4;
   
   const [formData, setFormData] = useState<CanadianApplicationData>({
     legal_business_name: "",
@@ -118,6 +113,8 @@ const CanadianApplication = () => {
     existing_advance: false,
     if_so_with_who: "",
     outstanding_balance: "",
+    
+    // Primary Owner Information
     principal_owner_name: "",
     ownership_percentage: "",
     ssn: "",
@@ -129,6 +126,8 @@ const CanadianApplication = () => {
     home_phone: "",
     cell_phone: "",
     email_address: "",
+    
+    // Secondary Owner Information
     principal_owner_name_2: "",
     ownership_percentage_2: "",
     ssn_2: "",
@@ -140,72 +139,49 @@ const CanadianApplication = () => {
     home_phone_2: "",
     cell_phone_2: "",
     email_address_2: "",
+    
+    // Credit Card Processing
     current_credit_card_processor: "",
     annual_credit_card_sales: "",
     average_monthly_cc_volume: "",
+    
+    // Documents
     document_files: [],
-    quiz_response_id: null,
+    
+    // Tracking
+    quiz_response_id: null
   });
 
-  // Check for existing draft or quiz data on component mount
+  // Initialize form data from URL params or user account
   useEffect(() => {
-    const initializeApplication = async () => {
-      if (!user || loading) return;
+    if (!loading) {
+      // Pre-fill from quiz data if available
+      const name = searchParams.get('name');
+      const email = searchParams.get('email');
+      const phone = searchParams.get('phone');
+      const loanAmount = searchParams.get('loanAmount');
+      const company = searchParams.get('company');
+      const quizId = searchParams.get('quiz_id');
 
-      try {
-        // First, check URL parameters for quiz data
-        const name = searchParams.get('name');
-        const email = searchParams.get('email');
-        const phone = searchParams.get('phone');
-        const loanAmount = searchParams.get('loanAmount');
-        const monthlyRevenue = searchParams.get('monthlyRevenue');
-        const useOfFunds = searchParams.get('useOfFunds');
-        const quizResponseId = searchParams.get('quizResponseId');
-
-        // Check for existing draft
-        const draft = await loadDraft();
-        
-        if (draft && !quizResponseId) {
-          // User has a saved draft and didn't come from quiz
-          setSavedDraft(draft);
-          setShowResumeDialog(true);
-          return;
-        }
-
-        // Pre-fill form if quiz data is available from URL
-        if (name || email || phone || loanAmount || quizResponseId) {
-          console.log('Pre-filling Canadian application with quiz data:', {
-            name, email, phone, loanAmount, monthlyRevenue, useOfFunds, quizResponseId
-          });
-
-          setFormData(prev => ({
-            ...prev,
-            principal_owner_name: name || prev.principal_owner_name,
-            email_address: email || user.email || prev.email_address,
-            cell_phone: phone || prev.cell_phone,
-            amount_requested: loanAmount || prev.amount_requested,
-            annual_gross_sales: monthlyRevenue ? (parseInt(monthlyRevenue) * 12).toString() : prev.annual_gross_sales,
-            use_of_funds: useOfFunds || prev.use_of_funds,
-            quiz_response_id: quizResponseId || prev.quiz_response_id,
-          }));
-        } else if (draft) {
-          // Load draft data if no quiz data in URL
-          setFormData(draft.form_data);
-          setCurrentStep(draft.current_step);
-        } else {
-          // No quiz data and no draft - just pre-fill email from auth
-          setFormData(prev => ({
-            ...prev,
-            email_address: user.email || prev.email_address,
-          }));
-        }
-      } catch (error) {
-        console.error('Error initializing application:', error);
+      const updates: Partial<CanadianApplicationData> = {};
+      
+      if (name) updates.principal_owner_name = name;
+      if (email) updates.email_address = email;
+      if (phone) updates.business_phone = phone;
+      if (loanAmount) updates.amount_requested = loanAmount;
+      if (company) updates.legal_business_name = company;
+      if (quizId) updates.quiz_response_id = quizId;
+      
+      // Use user email if logged in and no email from quiz
+      if (user?.email && !email) {
+        updates.email_address = user.email;
       }
-    };
 
-    initializeApplication();
-  }, [user, loading, searchParams, loadDraft]);
+      if (Object.keys(updates).length > 0) {
+        setFormData(prev => ({ ...prev, ...updates }));
+      }
+    }
+  }, [user, loading, searchParams]);
 
   const updateFormData = (field: keyof CanadianApplicationData, value: any) => {
     setFormData(prev => ({
@@ -214,106 +190,56 @@ const CanadianApplication = () => {
     }));
   };
 
-  // Auto-save draft when form data changes (debounced)
-  useEffect(() => {
-    if (!user || currentStep === 1) return; // Don't auto-save on first step or if not logged in
-    
-    const timeoutId = setTimeout(() => {
-      saveDraft(formData, currentStep, formData.quiz_response_id || undefined);
-    }, 2000); // Save after 2 seconds of inactivity
-
-    return () => clearTimeout(timeoutId);
-  }, [formData, currentStep, user, saveDraft]);
-
-  // Save draft when step changes
-  useEffect(() => {
-    if (!user || currentStep === 1) return;
-    saveDraft(formData, currentStep, formData.quiz_response_id || undefined);
-  }, [currentStep, user, saveDraft, formData]);
+  const [showValidationErrors, setShowValidationErrors] = useState(false);
 
   const getStepRequiredFields = (step: number): string[] => {
     switch (step) {
       case 1:
-        const step1Fields = [];
-        if (!formData.legal_business_name) step1Fields.push("Legal Business Name");
-        if (!formData.physical_address) step1Fields.push("Physical Address");
-        if (!formData.city) step1Fields.push("City");
-        if (!formData.state) step1Fields.push("Province");
-        if (!formData.zip) step1Fields.push("Postal Code");
-        if (!formData.business_phone) step1Fields.push("Business Phone");
-        return step1Fields;
+        return ['legal_business_name', 'physical_address', 'city', 'state', 'zip', 'business_phone', 'type_of_entity', 'federal_tax_id', 'business_start_date', 'annual_gross_sales', 'amount_requested', 'use_of_funds'];
       case 2:
-        const step2Fields = [];
-        if (!formData.type_of_entity) step2Fields.push("Type of Entity");
-        if (!formData.federal_tax_id) step2Fields.push("Federal Tax ID");
-        if (!formData.business_start_date) step2Fields.push("Business Start Date");
-        if (!formData.number_of_locations) step2Fields.push("Number of Locations");
-        if (!formData.business_property_type) step2Fields.push("Business Property Type");
-        return step2Fields;
+        return ['principal_owner_name', 'ownership_percentage', 'ssn', 'dob', 'home_address', 'city_owner', 'state_owner', 'zip_owner', 'email_address'];
       case 3:
-        const step3Fields = [];
-        if (!formData.annual_gross_sales) step3Fields.push("Annual Gross Sales");
-        if (!formData.amount_requested) step3Fields.push("Amount Requested");
-        if (!formData.use_of_funds) step3Fields.push("Use of Funds");
-        return step3Fields;
+        return [];
       case 4:
-        const step4Fields = [];
-        if (!formData.principal_owner_name) step4Fields.push("Principal Owner Name");
-        if (!formData.ownership_percentage) step4Fields.push("Ownership Percentage");
-        if (!formData.ssn) step4Fields.push("SIN");
-        if (!formData.dob) step4Fields.push("Date of Birth");
-        if (!formData.home_address) step4Fields.push("Home Address");
-        if (!formData.city_owner) step4Fields.push("City");
-        if (!formData.state_owner) step4Fields.push("Province");
-        if (!formData.zip_owner) step4Fields.push("Postal Code");
-        if (!formData.email_address) step4Fields.push("Email Address");
-        return step4Fields;
+        return [];
       default:
         return [];
     }
   };
 
-  const [showValidationErrors, setShowValidationErrors] = useState(false);
-
-  const getFieldValidationClass = (fieldName: keyof CanadianApplicationData, step: number): string => {
-    // Only show validation errors when user tries to proceed and there are errors
+  const getFieldValidationClass = (fieldName: keyof CanadianApplicationData, requiredFields: string[]) => {
     if (!showValidationErrors) return "";
     
-    const requiredFields = getRequiredFieldsForStep(step);
+    const value = formData[fieldName];
+    const isEmpty = Array.isArray(value) ? value.length === 0 : !value;
     const isRequired = requiredFields.includes(fieldName);
-    const isEmpty = !formData[fieldName] || (Array.isArray(formData[fieldName]) && (formData[fieldName] as any[]).length === 0);
     
-    return isRequired && isEmpty ? "border-red-500 focus:border-red-500" : "";
-  };
-
-  const getRequiredFieldsForStep = (step: number): (keyof CanadianApplicationData)[] => {
-    switch (step) {
-      case 1:
-        return ['legal_business_name', 'physical_address', 'city', 'state', 'zip', 'business_phone'];
-      case 2:
-        return ['type_of_entity', 'federal_tax_id', 'business_start_date', 'number_of_locations', 'business_property_type'];
-      case 3:
-        return ['annual_gross_sales', 'amount_requested', 'use_of_funds'];
-      case 4:
-        return ['principal_owner_name', 'ownership_percentage', 'ssn', 'dob', 'home_address', 'city_owner', 'state_owner', 'zip_owner', 'email_address'];
-      default:
-        return [];
-    }
+    return isRequired && isEmpty ? "border-destructive" : "";
   };
 
   const validateStep = (step: number): boolean => {
-    return getStepRequiredFields(step).length === 0;
+    const requiredFields = getStepRequiredFields(step);
+    
+    for (const field of requiredFields) {
+      const value = formData[field as keyof CanadianApplicationData];
+      if (Array.isArray(value)) {
+        if (value.length === 0) return false;
+      } else {
+        if (!value || value.toString().trim() === "") return false;
+      }
+    }
+    
+    return true;
   };
 
   const nextStep = () => {
-    const missingFields = getStepRequiredFields(currentStep);
-    if (missingFields.length > 0) {
+    if (!validateStep(currentStep)) {
       setShowValidationErrors(true);
-      toast.error(`Please fill in the following required fields: ${missingFields.join(", ")}`);
+      toast.error("Please fill in all required fields before proceeding.");
       return;
     }
     
-    setShowValidationErrors(false); // Reset validation errors when moving forward
+    setShowValidationErrors(false);
     
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
@@ -333,114 +259,130 @@ const CanadianApplication = () => {
     const allowedTypes = [
       'application/pdf',
       'image/jpeg',
+      'image/jpg', 
       'image/png',
-      'image/gif',
-      'image/webp',
-      'image/bmp',
-      'image/tiff',
       'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     ];
-    
+
     if (file.size > maxSize) {
-      return `File "${file.name}" is too large. Maximum size is 10MB.`;
+      return 'File size must be less than 10MB';
     }
-    
+
     if (!allowedTypes.includes(file.type)) {
-      return `File "${file.name}" is not a supported format. Please use PDF, images (JPG, PNG, GIF, WebP, BMP, TIFF), or document files (DOC, DOCX).`;
+      return 'Please upload PDF, Word, Excel, or image files only';
     }
-    
+
     return null;
   };
 
-  const handleFileUpload = async (files: File[]): Promise<string[]> => {
-    const uploadedFiles: string[] = [];
+  const handleFileUpload = async (files: FileList) => {
+    const validFiles: File[] = [];
     
-    for (const file of files) {
-      const validationError = validateFile(file);
-      if (validationError) {
-        throw new Error(validationError);
-      }
-      
-      // Create a safe filename by removing special characters and ensuring unique naming
-      const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-      const fileName = `${user?.id || 'anonymous'}/canadian_${Date.now()}-${safeName}`;
-      
-      const { error } = await supabase.storage
-        .from('application-documents')
-        .upload(fileName, file, {
-          upsert: false, // Don't overwrite existing files
-          cacheControl: '3600'
-        });
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const error = validateFile(file);
       
       if (error) {
-        console.error('Error uploading file:', error);
-        if (error.message.includes('duplicate')) {
-          throw new Error(`File "${file.name}" already exists. Please rename it and try again.`);
-        }
-        throw new Error(`Failed to upload "${file.name}": ${error.message}`);
+        toast.error(`${file.name}: ${error}`);
+        continue;
       }
       
-      uploadedFiles.push(fileName);
+      validFiles.push(file);
     }
-    
-    return uploadedFiles;
+
+    if (validFiles.length === 0) return [];
+
+    const uploadedFiles: string[] = [];
+
+    try {
+      for (const file of validFiles) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `applications/${fileName}`;
+
+        const { error: uploadError, data } = await supabase.storage
+          .from('documents')
+          .upload(filePath, file);
+
+        if (uploadError) {
+          console.error('Error uploading file:', uploadError);
+          toast.error(`Failed to upload ${file.name}`);
+          continue;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('documents')
+          .getPublicUrl(filePath);
+
+        uploadedFiles.push(publicUrl);
+      }
+
+      if (uploadedFiles.length > 0) {
+        toast.success(`Successfully uploaded ${uploadedFiles.length} file(s)`);
+      }
+
+      return uploadedFiles;
+    } catch (error) {
+      console.error('Error in file upload process:', error);
+      toast.error('An error occurred during file upload');
+      return [];
+    }
   };
 
   const handleSubmit = async () => {
-    // Check if user is authenticated first
     if (!user) {
       setShowAuth(true);
       return;
     }
 
     setIsSubmitting(true);
-    
-    try {
-      // Use quiz response ID from form data (pre-filled from URL params)
-      const quizResponseId = formData.quiz_response_id || null;
-      
-      // Upload documents first
-      let uploadedFileNames: string[] = [];
-      if (formData.document_files.length > 0) {
-        uploadedFileNames = await handleFileUpload(formData.document_files);
-      }
 
-      const applicationData = {
-        legal_business_name: formData.legal_business_name || 'Not Provided',
+    try {
+      // Upload documents if any
+      const documentUrls = formData.document_files.length > 0 
+        ? await handleFileUpload(formData.document_files as any) 
+        : [];
+
+      // Prepare data for submission
+      const submissionData = {
+        user_id: user.id,
+        legal_business_name: formData.legal_business_name,
         dba_name: formData.dba_name || null,
-        physical_address: formData.physical_address || 'Not Provided',
+        physical_address: formData.physical_address,
         mailing_address: formData.mailing_address || null,
-        city: formData.city || 'Not Provided',
-        state: formData.state || 'Not Provided',
-        zip: formData.zip || 'A0A 0A0',
-        business_phone: formData.business_phone || '0000000000',
+        city: formData.city,
+        state: formData.state,
+        zip: formData.zip,
+        business_phone: formData.business_phone,
         business_fax: formData.business_fax || null,
-        type_of_entity: formData.type_of_entity || 'Corporation',
-        federal_tax_id: formData.federal_tax_id || '000000000',
-        business_start_date: formData.business_start_date || '2020-01-01',
-        number_of_locations: parseInt(formData.number_of_locations) || 1,
-        business_property_type: formData.business_property_type || 'Lease',
+        type_of_entity: formData.type_of_entity,
+        federal_tax_id: formData.federal_tax_id,
+        business_start_date: formData.business_start_date,
+        number_of_locations: parseInt(formData.number_of_locations),
+        business_property_type: formData.business_property_type,
         monthly_rent_or_mortgage: formData.monthly_rent_or_mortgage ? parseInt(formData.monthly_rent_or_mortgage) : null,
         landlord_or_bank_company_name: formData.landlord_or_bank_company_name || null,
         landlord_or_bank_phone: formData.landlord_or_bank_phone || null,
-        annual_gross_sales: parseInt(formData.annual_gross_sales) || 1000,
-        amount_requested: parseInt(formData.amount_requested) || 1000,
-        use_of_funds: formData.use_of_funds || 'working-capital',
+        annual_gross_sales: parseInt(formData.annual_gross_sales),
+        amount_requested: parseInt(formData.amount_requested),
+        use_of_funds: formData.use_of_funds,
         existing_advance: formData.existing_advance,
         if_so_with_who: formData.if_so_with_who || null,
         outstanding_balance: formData.outstanding_balance ? parseInt(formData.outstanding_balance) : null,
-        principal_owner_name: formData.principal_owner_name || 'Not Provided',
-        ownership_percentage: parseInt(formData.ownership_percentage) || 100,
-        ssn: formData.ssn || '000000000',
-        dob: formData.dob || '1980-01-01',
-        home_address: formData.home_address || 'Not Provided',
-        city_owner: formData.city_owner || 'Not Provided',
-        state_owner: formData.state_owner || 'Not Provided',
-        zip_owner: formData.zip_owner || 'A0A 0A0',
+        principal_owner_name: formData.principal_owner_name,
+        ownership_percentage: parseInt(formData.ownership_percentage),
+        ssn: formData.ssn,
+        dob: formData.dob,
+        home_address: formData.home_address,
+        city_owner: formData.city_owner,
+        state_owner: formData.state_owner,
+        zip_owner: formData.zip_owner,
         home_phone: formData.home_phone || null,
         cell_phone: formData.cell_phone || null,
-        email_address: formData.email_address || user?.email || 'no-email@example.com',
+        email_address: formData.email_address,
         principal_owner_name_2: formData.principal_owner_name_2 || null,
         ownership_percentage_2: formData.ownership_percentage_2 ? parseInt(formData.ownership_percentage_2) : null,
         ssn_2: formData.ssn_2 || null,
@@ -455,56 +397,50 @@ const CanadianApplication = () => {
         current_credit_card_processor: formData.current_credit_card_processor || null,
         annual_credit_card_sales: formData.annual_credit_card_sales ? parseInt(formData.annual_credit_card_sales) : null,
         average_monthly_cc_volume: formData.average_monthly_cc_volume ? parseInt(formData.average_monthly_cc_volume) : null,
-        document_files: uploadedFileNames,
-        // Add required status field and tracking fields
-        status: 'applicant', // Must be one of: applicant, in_review, approved, rejected
-        quiz_response_id: quizResponseId,
-        lead_source: quizResponseId ? 'quiz' : 'direct',
-        conversion_stage: 'application',
-        // Associate with authenticated user
-        user_id: user?.id,
+        document_files: documentUrls,
+        quiz_response_id: formData.quiz_response_id
       };
 
+      // Submit to database
       const { data, error } = await supabase
         .from('canadian_applications')
-        .insert([applicationData])
-        .select('application_reference_number')
+        .insert([submissionData])
+        .select()
         .single();
 
-      if (error) throw error;
-
-      // Store reference number for success page
-      if (data?.application_reference_number) {
-        localStorage.setItem('application_reference_number', data.application_reference_number);
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
       }
 
-      // Send admin notification
+      // Send notifications
       try {
-        await supabase.functions.invoke('send-admin-notification', {
-          body: {
-            type: 'canadian_application',
-            data: applicationData,
-            submissionId: data.application_reference_number
+        await supabase.functions.invoke('send-application-email', {
+          body: { 
+            applicationData: submissionData,
+            applicationId: data.id,
+            applicationType: 'canadian'
           }
         });
-      } catch (adminNotificationError) {
-        console.error('Failed to send admin notification:', adminNotificationError);
-        // Don't fail the whole submission if admin notification fails
+      } catch (emailError) {
+        console.error('Error sending application email:', emailError);
       }
 
-      // Delete draft upon successful submission
       try {
-        await deleteDraft();
-      } catch (error) {
-        console.error('Error deleting draft:', error);
-        // Don't fail submission if draft deletion fails
-      }
-
-      // Track conversion
-      if (typeof window !== 'undefined' && (window as any).gtag) {
-        (window as any).gtag('event', 'conversion', {
-          'send_to': 'AW-16458367327/ads_conversion_SUBMIT_CANADIAN_APPLICATION_1'
+        await supabase.functions.invoke('send-admin-notification', {
+          body: { 
+            type: 'new_application',
+            data: {
+              applicant_name: formData.principal_owner_name,
+              applicant_email: formData.email_address,
+              loan_amount: formData.amount_requested,
+              application_type: 'Canadian Application',
+              application_id: data.id
+            }
+          }
         });
+      } catch (notificationError) {
+        console.error('Error sending admin notification:', notificationError);
       }
 
       toast.success("Application submitted successfully!");
@@ -513,109 +449,83 @@ const CanadianApplication = () => {
       console.error('Error submitting application:', error);
       console.error('Form data that failed:', formData);
       
-      // More specific error messages based on the error type
-      let errorMessage = "Failed to submit application. Please try again.";
-      if (error instanceof Error) {
-        if (error.message.includes('violates not-null constraint')) {
-          errorMessage = "Please fill in all required fields before submitting.";
-        } else if (error.message.includes('invalid input')) {
-          errorMessage = "Please check your input values and try again.";
-        } else if (error.message.includes('duplicate')) {
-          errorMessage = "This application has already been submitted.";
-        }
-      }
-      
-      toast.error(errorMessage);
+      toast.error("There was an error submitting your application. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleResumeDraft = () => {
-    if (savedDraft) {
-      setFormData(savedDraft.form_data);
-      setCurrentStep(savedDraft.current_step);
-      setShowResumeDialog(false);
-      toast.success('Resumed from your saved application');
-    }
-  };
-
-  const handleStartFresh = () => {
-    setShowResumeDialog(false);
-    if (savedDraft) {
-      deleteDraft();
-    }
-    toast.success('Starting fresh application');
   };
 
   const renderStep = () => {
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-4">
-              <MapPin className="h-5 w-5 text-primary" />
-              <h2 className="text-xl md:text-2xl font-bold">Business Information</h2>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="legal_business_name" className="text-sm font-medium">Legal Business Name *</Label>
-                <Input
-                  id="legal_business_name"
-                  value={formData.legal_business_name}
-                  onChange={(e) => updateFormData('legal_business_name', e.target.value)}
-                  className={`mt-1 ${getFieldValidationClass('legal_business_name', currentStep)}`}
-                  required
-                />
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
+                Business Information
+              </CardTitle>
+              <CardDescription>Tell us about your Canadian business</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="legal_business_name">Legal Business Name *</Label>
+                  <Input
+                    id="legal_business_name"
+                    value={formData.legal_business_name}
+                    onChange={(e) => updateFormData('legal_business_name', e.target.value)}
+                    className={getFieldValidationClass('legal_business_name', getStepRequiredFields(1))}
+                    placeholder="ABC Corp Inc."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dba_name">DBA Name (if applicable)</Label>
+                  <Input
+                    id="dba_name"
+                    value={formData.dba_name}
+                    onChange={(e) => updateFormData('dba_name', e.target.value)}
+                    placeholder="Doing Business As"
+                  />
+                </div>
               </div>
-              
-              <div>
-                <Label htmlFor="dba_name" className="text-sm font-medium">DBA Name</Label>
-                <Input
-                  id="dba_name"
-                  value={formData.dba_name}
-                  onChange={(e) => updateFormData('dba_name', e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="physical_address" className="text-sm font-medium">Physical Address *</Label>
+
+              <div className="space-y-2">
+                <Label htmlFor="physical_address">Physical Address *</Label>
                 <Input
                   id="physical_address"
                   value={formData.physical_address}
                   onChange={(e) => updateFormData('physical_address', e.target.value)}
-                  className={`mt-1 ${getFieldValidationClass('physical_address', currentStep)}`}
-                  required
+                  className={getFieldValidationClass('physical_address', getStepRequiredFields(1))}
+                  placeholder="123 Business St"
                 />
               </div>
-              
-              <div>
-                <Label htmlFor="mailing_address" className="text-sm font-medium">Mailing Address (if different)</Label>
+
+              <div className="space-y-2">
+                <Label htmlFor="mailing_address">Mailing Address (if different)</Label>
                 <Input
                   id="mailing_address"
                   value={formData.mailing_address}
                   onChange={(e) => updateFormData('mailing_address', e.target.value)}
-                  className="mt-1"
+                  placeholder="PO Box 123"
                 />
               </div>
-              
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="city" className="text-sm font-medium">City *</Label>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="city">City *</Label>
                   <Input
                     id="city"
                     value={formData.city}
                     onChange={(e) => updateFormData('city', e.target.value)}
-                    className={`mt-1 ${getFieldValidationClass('city', currentStep)}`}
-                    required
+                    className={getFieldValidationClass('city', getStepRequiredFields(1))}
+                    placeholder="Toronto"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="state" className="text-sm font-medium">Province *</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="state">Province *</Label>
                   <Select value={formData.state} onValueChange={(value) => updateFormData('state', value)}>
-                    <SelectTrigger className={`mt-1 ${getFieldValidationClass('state', currentStep)}`}>
+                    <SelectTrigger className={getFieldValidationClass('state', getStepRequiredFields(1))}>
                       <SelectValue placeholder="Select province" />
                     </SelectTrigger>
                     <SelectContent>
@@ -624,324 +534,189 @@ const CanadianApplication = () => {
                       <SelectItem value="MB">Manitoba</SelectItem>
                       <SelectItem value="NB">New Brunswick</SelectItem>
                       <SelectItem value="NL">Newfoundland and Labrador</SelectItem>
-                      <SelectItem value="NT">Northwest Territories</SelectItem>
                       <SelectItem value="NS">Nova Scotia</SelectItem>
-                      <SelectItem value="NU">Nunavut</SelectItem>
                       <SelectItem value="ON">Ontario</SelectItem>
                       <SelectItem value="PE">Prince Edward Island</SelectItem>
                       <SelectItem value="QC">Quebec</SelectItem>
                       <SelectItem value="SK">Saskatchewan</SelectItem>
+                      <SelectItem value="NT">Northwest Territories</SelectItem>
+                      <SelectItem value="NU">Nunavut</SelectItem>
                       <SelectItem value="YT">Yukon</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="zip">Postal Code *</Label>
+                  <Input
+                    id="zip"
+                    value={formData.zip}
+                    onChange={(e) => updateFormData('zip', e.target.value)}
+                    className={getFieldValidationClass('zip', getStepRequiredFields(1))}
+                    placeholder="M5V 3A8"
+                  />
+                </div>
               </div>
-              
-              <div>
-                <Label htmlFor="zip" className="text-sm font-medium">Postal Code *</Label>
-                <Input
-                  id="zip"
-                  value={formData.zip}
-                  onChange={(e) => {
-                    const formatted = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/(\w{3})(\w{3})/, '$1 $2');
-                    updateFormData('zip', formatted);
-                  }}
-                  className={`mt-1 ${getFieldValidationClass('zip', currentStep)}`}
-                  placeholder="A1A 1A1"
-                  maxLength={7}
-                  required
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-3">
-                 <div>
-                   <Label htmlFor="business_phone" className="text-sm font-medium">Business Phone *</Label>
-                    <Input
-                      id="business_phone"
-                      type="tel"
-                      value={formData.business_phone}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '');
-                        if (value.length <= 10) {
-                          const formatted = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-                          updateFormData('business_phone', formatted);
-                        }
-                      }}
-                      className={`mt-1 ${getFieldValidationClass('business_phone', currentStep)}`}
-                      placeholder="(555) 123-4567"
-                      maxLength={14}
-                      required
-                    />
-                 </div>
-                 <div>
-                   <Label htmlFor="business_fax" className="text-sm font-medium">Business Fax</Label>
-                   <Input
-                     id="business_fax"
-                     type="tel"
-                     value={formData.business_fax}
-                     onChange={(e) => {
-                       const value = e.target.value.replace(/\D/g, '');
-                       if (value.length <= 10) {
-                         const formatted = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-                         updateFormData('business_fax', formatted);
-                       }
-                     }}
-                     className="mt-1"
-                     placeholder="(555) 123-4567"
-                     maxLength={14}
-                   />
-                 </div>
-              </div>
-            </div>
-          </div>
-        );
 
-      case 2:
-        return (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-4">
-              <Building2 className="h-5 w-5 text-primary" />
-              <h2 className="text-xl md:text-2xl font-bold">Business Details</h2>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="type_of_entity" className="text-sm font-medium">Type of Entity *</Label>
-                <Select value={formData.type_of_entity} onValueChange={(value) => updateFormData('type_of_entity', value)}>
-                  <SelectTrigger className={`mt-1 ${getFieldValidationClass('type_of_entity', currentStep)}`}>
-                    <SelectValue placeholder="Select entity type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Corporation">Corporation</SelectItem>
-                    <SelectItem value="Partnership">Partnership</SelectItem>
-                    <SelectItem value="Sole Proprietorship">Sole Proprietorship</SelectItem>
-                    <SelectItem value="Limited Partnership">Limited Partnership</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="business_phone">Business Phone *</Label>
+                  <Input
+                    id="business_phone"
+                    value={formData.business_phone}
+                    onChange={(e) => updateFormData('business_phone', e.target.value)}
+                    className={getFieldValidationClass('business_phone', getStepRequiredFields(1))}
+                    placeholder="(416) 123-4567"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="business_fax">Business Fax</Label>
+                  <Input
+                    id="business_fax"
+                    value={formData.business_fax}
+                    onChange={(e) => updateFormData('business_fax', e.target.value)}
+                    placeholder="(416) 123-4568"
+                  />
+                </div>
               </div>
-              
-               <div>
-                 <Label htmlFor="federal_tax_id" className="text-sm font-medium">Federal Tax ID (Business Number) *</Label>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="type_of_entity">Type of Entity *</Label>
+                  <Select value={formData.type_of_entity} onValueChange={(value) => updateFormData('type_of_entity', value)}>
+                    <SelectTrigger className={getFieldValidationClass('type_of_entity', getStepRequiredFields(1))}>
+                      <SelectValue placeholder="Select entity type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sole_proprietorship">Sole Proprietorship</SelectItem>
+                      <SelectItem value="partnership">Partnership</SelectItem>
+                      <SelectItem value="corporation">Corporation</SelectItem>
+                      <SelectItem value="limited_liability">Limited Liability Company</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="federal_tax_id">Business Number *</Label>
                   <Input
                     id="federal_tax_id"
                     value={formData.federal_tax_id}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, '');
-                      if (value.length <= 15) {
-                        const formatted = value.replace(/(\d{9})(\d{2})(\d{4})/, '$1 $2 $3');
-                        updateFormData('federal_tax_id', formatted);
-                      }
-                    }}
-                    className={`mt-1 ${getFieldValidationClass('federal_tax_id', currentStep)}`}
-                    placeholder="123456789 RT 0001"
-                    maxLength={17}
-                    required
+                    onChange={(e) => updateFormData('federal_tax_id', e.target.value)}
+                    className={getFieldValidationClass('federal_tax_id', getStepRequiredFields(1))}
+                    placeholder="123456789"
                   />
-               </div>
-              
-              <div>
-                <Label htmlFor="business_start_date" className="text-sm font-medium">Business Start Date *</Label>
-                <Input
-                  id="business_start_date"
-                  type="date"
-                  value={formData.business_start_date}
-                  onChange={(e) => updateFormData('business_start_date', e.target.value)}
-                  className={`mt-1 ${getFieldValidationClass('business_start_date', currentStep)}`}
-                  required
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="number_of_locations" className="text-sm font-medium"># of Locations *</Label>
-                <Input
-                  id="number_of_locations"
-                  type="number"
-                  min="1"
-                  value={formData.number_of_locations}
-                  onChange={(e) => updateFormData('number_of_locations', e.target.value)}
-                  className={`mt-1 ${getFieldValidationClass('number_of_locations', currentStep)}`}
-                  required
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="business_property_type" className="text-sm font-medium">Business Property Type *</Label>
-                <div className="flex gap-2 mt-1">
-                  <label className="flex items-center gap-2">
-                    <Checkbox
-                      checked={formData.business_property_type === 'Own'}
-                      onCheckedChange={(checked) => updateFormData('business_property_type', checked ? 'Own' : '')}
-                    />
-                    <span className="text-sm">Own</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <Checkbox
-                      checked={formData.business_property_type === 'Rent'}
-                      onCheckedChange={(checked) => updateFormData('business_property_type', checked ? 'Rent' : '')}
-                    />
-                    <span className="text-sm">Rent</span>
-                  </label>
                 </div>
               </div>
-              
-              <div>
-                <Label htmlFor="monthly_rent_or_mortgage" className="text-sm font-medium">Monthly Rent/Mortgage</Label>
-                <Input
-                  id="monthly_rent_or_mortgage"
-                  type="number"
-                  value={formData.monthly_rent_or_mortgage}
-                  onChange={(e) => updateFormData('monthly_rent_or_mortgage', e.target.value)}
-                  className="mt-1"
-                  placeholder="0"
-                  min="0"
-                />
-                <p className="text-xs text-muted-foreground mt-1">Amount in CAD</p>
-              </div>
-              
-              <div>
-                <Label htmlFor="landlord_or_bank_company_name" className="text-sm font-medium">Landlord/Bank Company Name</Label>
-                <Input
-                  id="landlord_or_bank_company_name"
-                  value={formData.landlord_or_bank_company_name}
-                  onChange={(e) => updateFormData('landlord_or_bank_company_name', e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-              
-               <div>
-                 <Label htmlFor="landlord_or_bank_phone" className="text-sm font-medium">Landlord/Bank Phone</Label>
-                 <Input
-                   id="landlord_or_bank_phone"
-                   type="tel"
-                   value={formData.landlord_or_bank_phone}
-                   onChange={(e) => {
-                     const value = e.target.value.replace(/\D/g, '');
-                     if (value.length <= 10) {
-                       const formatted = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-                       updateFormData('landlord_or_bank_phone', formatted);
-                     }
-                   }}
-                   className="mt-1"
-                   placeholder="(555) 123-4567"
-                   maxLength={14}
-                 />
-               </div>
-            </div>
-          </div>
-        );
 
-      case 3:
-        return (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-4">
-              <DollarSign className="h-5 w-5 text-primary" />
-              <h2 className="text-xl md:text-2xl font-bold">Financial Information</h2>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="annual_gross_sales" className="text-sm font-medium">Annual Gross Sales *</Label>
-                <Input
-                  id="annual_gross_sales"
-                  type="number"
-                  value={formData.annual_gross_sales}
-                  onChange={(e) => updateFormData('annual_gross_sales', e.target.value)}
-                  className={`mt-1 ${getFieldValidationClass('annual_gross_sales', currentStep)}`}
-                  placeholder="0"
-                  min="0"
-                  required
-                />
-                <p className="text-xs text-muted-foreground mt-1">Amount in CAD</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="business_start_date">Business Start Date *</Label>
+                  <Input
+                    id="business_start_date"
+                    type="date"
+                    value={formData.business_start_date}
+                    onChange={(e) => updateFormData('business_start_date', e.target.value)}
+                    className={getFieldValidationClass('business_start_date', getStepRequiredFields(1))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="number_of_locations">Number of Locations</Label>
+                  <Input
+                    id="number_of_locations"
+                    type="number"
+                    value={formData.number_of_locations}
+                    onChange={(e) => updateFormData('number_of_locations', e.target.value)}
+                    placeholder="1"
+                  />
+                </div>
               </div>
-              
-              <div>
-                <Label htmlFor="amount_requested" className="text-sm font-medium">Amount Requested *</Label>
-                <Input
-                  id="amount_requested"
-                  type="number"
-                  value={formData.amount_requested}
-                  onChange={(e) => updateFormData('amount_requested', e.target.value)}
-                  className={`mt-1 ${getFieldValidationClass('amount_requested', currentStep)}`}
-                  placeholder="0"
-                  min="0"
-                  required
-                />
-                <p className="text-xs text-muted-foreground mt-1">Amount in CAD</p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="annual_gross_sales">Annual Gross Sales (CAD) *</Label>
+                  <Input
+                    id="annual_gross_sales"
+                    type="number"
+                    value={formData.annual_gross_sales}
+                    onChange={(e) => updateFormData('annual_gross_sales', e.target.value)}
+                    className={getFieldValidationClass('annual_gross_sales', getStepRequiredFields(1))}
+                    placeholder="500000"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="amount_requested">Amount Requested (CAD) *</Label>
+                  <Input
+                    id="amount_requested"
+                    type="number"
+                    value={formData.amount_requested}
+                    onChange={(e) => updateFormData('amount_requested', e.target.value)}
+                    className={getFieldValidationClass('amount_requested', getStepRequiredFields(1))}
+                    placeholder="50000"
+                  />
+                </div>
               </div>
-              
-              <div>
-                <Label htmlFor="use_of_funds" className="text-sm font-medium">Use of Funds *</Label>
+
+              <div className="space-y-2">
+                <Label htmlFor="use_of_funds">Use of Funds *</Label>
                 <Textarea
                   id="use_of_funds"
                   value={formData.use_of_funds}
                   onChange={(e) => updateFormData('use_of_funds', e.target.value)}
-                  className={`mt-1 ${getFieldValidationClass('use_of_funds', currentStep)}`}
+                  className={getFieldValidationClass('use_of_funds', getStepRequiredFields(1))}
+                  placeholder="Describe how you plan to use the funds..."
                   rows={3}
-                  required
                 />
               </div>
-              
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Existing Advance? *</Label>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-2">
-                    <Checkbox
-                      checked={formData.existing_advance === true}
-                      onCheckedChange={(checked) => updateFormData('existing_advance', checked)}
-                    />
-                    <span className="text-sm">Yes</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <Checkbox
-                      checked={formData.existing_advance === false}
-                      onCheckedChange={(checked) => updateFormData('existing_advance', !checked)}
-                    />
-                    <span className="text-sm">No</span>
-                  </label>
+
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="existing_advance"
+                    checked={formData.existing_advance}
+                    onCheckedChange={(checked) => updateFormData('existing_advance', checked)}
+                  />
+                  <Label htmlFor="existing_advance">
+                    Do you currently have a merchant cash advance or similar product?
+                  </Label>
                 </div>
+
+                {formData.existing_advance && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="if_so_with_who">If so, with whom?</Label>
+                      <Input
+                        id="if_so_with_who"
+                        value={formData.if_so_with_who}
+                        onChange={(e) => updateFormData('if_so_with_who', e.target.value)}
+                        placeholder="Company name"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="outstanding_balance">Outstanding Balance (CAD)</Label>
+                      <Input
+                        id="outstanding_balance"
+                        type="number"
+                        value={formData.outstanding_balance}
+                        onChange={(e) => updateFormData('outstanding_balance', e.target.value)}
+                        placeholder="25000"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
-              
-              {formData.existing_advance && (
-                <>
-                  <div>
-                    <Label htmlFor="if_so_with_who" className="text-sm font-medium">If so, with who?</Label>
-                    <Input
-                      id="if_so_with_who"
-                      value={formData.if_so_with_who}
-                      onChange={(e) => updateFormData('if_so_with_who', e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="outstanding_balance" className="text-sm font-medium">Outstanding Balance</Label>
-                    <Input
-                      id="outstanding_balance"
-                      type="number"
-                      value={formData.outstanding_balance}
-                      onChange={(e) => updateFormData('outstanding_balance', e.target.value)}
-                      className="mt-1"
-                      placeholder="0"
-                      min="0"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">Amount in CAD</p>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         );
 
-      case 4:
+      case 2:
         return (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-4">
-              <User className="h-5 w-5 text-primary" />
-              <h2 className="text-xl md:text-2xl font-bold">Ownership Information</h2>
-            </div>
-            
-            <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Ownership Information
+              </CardTitle>
+              <CardDescription>Provide details about the business owners</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div className="border-b pb-4">
                 <h3 className="font-semibold mb-3">Principal Owner</h3>
                 
@@ -952,7 +727,7 @@ const CanadianApplication = () => {
                       id="principal_owner_name"
                       value={formData.principal_owner_name}
                       onChange={(e) => updateFormData('principal_owner_name', e.target.value)}
-                      className={`mt-1 ${getFieldValidationClass('principal_owner_name', currentStep)}`}
+                      className={getFieldValidationClass('principal_owner_name', getStepRequiredFields(2))}
                       required
                     />
                   </div>
@@ -967,7 +742,7 @@ const CanadianApplication = () => {
                            max="100"
                            value={formData.ownership_percentage}
                            onChange={(e) => updateFormData('ownership_percentage', e.target.value)}
-                           className={`mt-1 ${getFieldValidationClass('ownership_percentage', currentStep)}`}
+                           className={getFieldValidationClass('ownership_percentage', getStepRequiredFields(2))}
                            placeholder="%"
                            required
                          />
@@ -984,7 +759,7 @@ const CanadianApplication = () => {
                                updateFormData('ssn', formatted);
                              }
                            }}
-                           className={`mt-1 ${getFieldValidationClass('ssn', currentStep)}`}
+                           className={getFieldValidationClass('ssn', getStepRequiredFields(2))}
                            placeholder="123 456 789"
                            maxLength={11}
                            required
@@ -999,7 +774,7 @@ const CanadianApplication = () => {
                         type="date"
                         value={formData.dob}
                         onChange={(e) => updateFormData('dob', e.target.value)}
-                        className={`mt-1 ${getFieldValidationClass('dob', currentStep)}`}
+                        className={getFieldValidationClass('dob', getStepRequiredFields(2))}
                         required
                       />
                   </div>
@@ -1010,7 +785,7 @@ const CanadianApplication = () => {
                         id="home_address"
                         value={formData.home_address}
                         onChange={(e) => updateFormData('home_address', e.target.value)}
-                        className={`mt-1 ${getFieldValidationClass('home_address', currentStep)}`}
+                        className={getFieldValidationClass('home_address', getStepRequiredFields(2))}
                         required
                       />
                     </div>
@@ -1041,14 +816,14 @@ const CanadianApplication = () => {
                           id="city_owner"
                           value={formData.city_owner}
                           onChange={(e) => updateFormData('city_owner', e.target.value)}
-                          className={`mt-1 ${getFieldValidationClass('city_owner', currentStep)}`}
+                          className={getFieldValidationClass('city_owner', getStepRequiredFields(2))}
                           required
                         />
                       </div>
                       <div>
                         <Label htmlFor="state_owner" className="text-sm font-medium">Province *</Label>
                         <Select value={formData.state_owner} onValueChange={(value) => updateFormData('state_owner', value)}>
-                          <SelectTrigger className={`mt-1 ${getFieldValidationClass('state_owner', currentStep)}`}>
+                          <SelectTrigger className={getFieldValidationClass('state_owner', getStepRequiredFields(2))}>
                             <SelectValue placeholder="Select province" />
                           </SelectTrigger>
                          <SelectContent>
@@ -1075,14 +850,10 @@ const CanadianApplication = () => {
                       <Input
                         id="zip_owner"
                         value={formData.zip_owner}
-                        onChange={(e) => {
-                          const formatted = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/(\w{3})(\w{3})/, '$1 $2');
-                          updateFormData('zip_owner', formatted);
-                        }}
-                        className={`mt-1 ${getFieldValidationClass('zip_owner', currentStep)}`}
-                        placeholder="A1A 1A1"
+                        onChange={(e) => updateFormData('zip_owner', e.target.value)}
+                        className={getFieldValidationClass('zip_owner', getStepRequiredFields(2))}
+                        placeholder="M5V 3A8"
                         maxLength={7}
-                        required
                       />
                     </div>
                   
@@ -1093,13 +864,7 @@ const CanadianApplication = () => {
                          id="home_phone"
                          type="tel"
                          value={formData.home_phone}
-                         onChange={(e) => {
-                           const value = e.target.value.replace(/\D/g, '');
-                           if (value.length <= 10) {
-                             const formatted = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-                             updateFormData('home_phone', formatted);
-                           }
-                         }}
+                         onChange={(e) => updateFormData('home_phone', e.target.value)}
                          className="mt-1"
                          placeholder="(555) 123-4567"
                          maxLength={14}
@@ -1111,13 +876,7 @@ const CanadianApplication = () => {
                          id="cell_phone"
                          type="tel"
                          value={formData.cell_phone}
-                         onChange={(e) => {
-                           const value = e.target.value.replace(/\D/g, '');
-                           if (value.length <= 10) {
-                             const formatted = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-                             updateFormData('cell_phone', formatted);
-                           }
-                         }}
+                         onChange={(e) => updateFormData('cell_phone', e.target.value)}
                          className="mt-1"
                          placeholder="(555) 123-4567"
                          maxLength={14}
@@ -1132,7 +891,7 @@ const CanadianApplication = () => {
                        type="email"
                        value={formData.email_address}
                        onChange={(e) => updateFormData('email_address', e.target.value)}
-                       className={`mt-1 ${getFieldValidationClass('email_address', currentStep)}`}
+                       className={getFieldValidationClass('email_address', getStepRequiredFields(2))}
                        required
                      />
                   </div>
@@ -1246,12 +1005,9 @@ const CanadianApplication = () => {
                      <Input
                        id="zip_owner_2"
                        value={formData.zip_owner_2}
-                       onChange={(e) => {
-                         const formatted = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/(\w{3})(\w{3})/, '$1 $2');
-                         updateFormData('zip_owner_2', formatted);
-                       }}
+                       onChange={(e) => updateFormData('zip_owner_2', e.target.value)}
                        className="mt-1"
-                       placeholder="A1A 1A1"
+                       placeholder="M5V 3A8"
                        maxLength={7}
                      />
                    </div>
@@ -1263,13 +1019,7 @@ const CanadianApplication = () => {
                          id="home_phone_2"
                          type="tel"
                          value={formData.home_phone_2}
-                         onChange={(e) => {
-                           const value = e.target.value.replace(/\D/g, '');
-                           if (value.length <= 10) {
-                             const formatted = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-                             updateFormData('home_phone_2', formatted);
-                           }
-                         }}
+                         onChange={(e) => updateFormData('home_phone_2', e.target.value)}
                          className="mt-1"
                          placeholder="(555) 123-4567"
                          maxLength={14}
@@ -1281,13 +1031,7 @@ const CanadianApplication = () => {
                          id="cell_phone_2"
                          type="tel"
                          value={formData.cell_phone_2}
-                         onChange={(e) => {
-                           const value = e.target.value.replace(/\D/g, '');
-                           if (value.length <= 10) {
-                             const formatted = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-                             updateFormData('cell_phone_2', formatted);
-                           }
-                         }}
+                         onChange={(e) => updateFormData('cell_phone_2', e.target.value)}
                          className="mt-1"
                          placeholder="(555) 123-4567"
                          maxLength={14}
@@ -1456,187 +1200,128 @@ const CanadianApplication = () => {
                    </div>
                  </div>
                </div>
-             </div>
-           </div>
+             </CardContent>
+           </Card>
          );
+
+      case 3:
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Additional Information
+              </CardTitle>
+              <CardDescription>Optional details to help with your application</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {/* This step can be used for any additional optional info or left empty */}
+              <p className="text-muted-foreground">No additional required fields on this step.</p>
+            </CardContent>
+          </Card>
+        );
+
+      case 4:
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Review & Submit
+              </CardTitle>
+              <CardDescription>Review your information and submit your application</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-4">Please review all your information before submitting. You can go back to previous steps to make changes.</p>
+              {/* Optionally, display a summary or confirmation here */}
+            </CardContent>
+          </Card>
+        );
 
       default:
         return null;
     }
   };
 
-  // Show authentication form if user is not authenticated (unless we explicitly don't want to show auth)
-  if (!showAuth && (!user && !loading)) {
-    setShowAuth(true);
-  }
-  
-  if (showAuth) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        
-        <main className="flex-1 bg-gradient-to-br from-background to-secondary/20 py-6 md:py-12">
-          <div className="container mx-auto px-4">
-            <div className="max-w-2xl mx-auto">
-              {/* Header */}
-              <div className="text-center mb-6">
-                <div className="flex items-center justify-center gap-2 mb-3">
-                  <MapPin className="h-6 w-6 text-red-600" />
-                  <h1 className="text-2xl md:text-3xl font-bold">Canadian Business Application</h1>
-                </div>
-                <p className="text-sm md:text-base text-muted-foreground mb-6">
-                  Step 1 of {totalSteps}: Create Your Secure Account
-                </p>
-                {/* Progress */}
-                <div className="mb-6">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs md:text-sm font-medium">Step 1 of {totalSteps}</span>
-                    <span className="text-xs md:text-sm text-muted-foreground">
-                      {Math.round((1 / totalSteps) * 100)}% Complete
-                    </span>
-                  </div>
-                  <Progress value={(1 / totalSteps) * 100} className="h-2" />
-                </div>
-              </div>
-              
-              <ApplicationAuth
-                email={searchParams.get('email') || formData.email_address}
-                name={searchParams.get('name') || formData.principal_owner_name}
-                onAuthSuccess={() => {
-                  // Add a small delay to ensure auth state propagates
-                  setTimeout(() => setShowAuth(false), 100);
-                }}
-              />
-            </div>
-          </div>
-        </main>
-        
-        <Footer />
-      </div>
-    );
-  }
-
-  // Show loading state
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </main>
-        <Footer />
+      <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-lg">Loading...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
       <Header />
       
-      <main className="flex-1 bg-gradient-to-br from-background to-secondary/20 py-6 md:py-12">
-        <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto">
-            {/* Header */}
-            <div className="text-center mb-6">
-              <div className="flex items-center justify-center gap-2 mb-3">
-                <MapPin className="h-6 w-6 text-red-600" />
-                <h1 className="text-2xl md:text-3xl font-bold">Canadian Business Application</h1>
-              </div>
-              <p className="text-sm md:text-base text-muted-foreground">
-                Complete your funding application in {totalSteps} steps
-              </p>
+      <div className="container mx-auto px-4 py-4 md:py-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">Canadian Business Loan Application</h1>
+            <p className="text-muted-foreground">Fast, secure, and simple application process</p>
+          </div>
+
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">Step {currentStep} of {totalSteps}</span>
+              <span className="text-sm text-muted-foreground">{Math.round((currentStep / totalSteps) * 100)}% Complete</span>
             </div>
+            <Progress value={(currentStep / totalSteps) * 100} className="h-2" />
+          </div>
 
-            {/* Progress */}
-            <div className="mb-6">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-xs md:text-sm font-medium">Step {currentStep} of {totalSteps}</span>
-                <span className="text-xs md:text-sm text-muted-foreground">
-                  {Math.round((currentStep / totalSteps) * 100)}% Complete
-                </span>
-              </div>
-              <Progress value={(currentStep / totalSteps) * 100} className="h-2" />
-            </div>
+          {renderStep()}
 
-            {/* Form Card */}
-            <Card className="mb-6">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg">
-                  Step {currentStep} of {totalSteps}
-                </CardTitle>
-                <CardDescription className="text-sm">
-                  Please fill out all required fields to continue
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {renderStep()}
-              </CardContent>
-            </Card>
+          <div className="flex justify-between mt-8">
+            <Button
+              variant="outline"
+              onClick={prevStep}
+              disabled={currentStep === 1}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Previous
+            </Button>
 
-            {/* Navigation */}
-            <div className="flex justify-between gap-3">
+            {currentStep === totalSteps ? (
               <Button
-                variant="outline"
-                onClick={prevStep}
-                disabled={currentStep === 1}
-                className="flex items-center gap-2"
-                size="sm"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="min-w-[120px]"
               >
-                <ArrowLeft className="h-3 w-3" />
-                Previous
+                {isSubmitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    Submit Application
+                    <CheckCircle className="h-4 w-4 ml-2" />
+                  </>
+                )}
               </Button>
-
-              {currentStep === totalSteps ? (
-                <Button
-                  onClick={handleSubmit}
-                  disabled={isSubmitting}
-                  className="flex items-center gap-2"
-                  size="sm"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                      Submitting...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="h-3 w-3" />
-                      Submit Application
-                    </>
-                  )}
-                </Button>
-              ) : (
-                <Button
-                  onClick={nextStep}
-                  className="flex items-center gap-2"
-                  size="sm"
-                >
-                  Next
-                  <ArrowRight className="h-3 w-3" />
-                </Button>
-              )}
-            </div>
+            ) : (
+              <Button onClick={nextStep}>
+                Next
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            )}
           </div>
         </div>
-      </main>
-      
+      </div>
+
       <Footer />
 
-      {/* Resume Draft Dialog */}
-      <AlertDialog open={showResumeDialog} onOpenChange={setShowResumeDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Resume Your Application?</AlertDialogTitle>
-            <AlertDialogDescription>
-              We found a saved application from your previous session. Would you like to continue where you left off or start fresh?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleStartFresh}>Start Fresh</AlertDialogCancel>
-            <AlertDialogAction onClick={handleResumeDraft}>Resume Application</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {showAuth && (
+        <ApplicationAuth 
+          isOpen={showAuth} 
+          onClose={() => setShowAuth(false)}
+          onSuccess={() => setShowAuth(false)}
+        />
+      )}
     </div>
   );
 };
