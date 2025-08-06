@@ -443,15 +443,18 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
       <Table>
         <TableHeader>
           <TableRow>
-            <SortableHeader field="date">Date</SortableHeader>
-            <SortableHeader field="channel">Channel</SortableHeader>
-            <SortableHeader field="amount">Cost</SortableHeader>
             <SortableHeader field="campaign_name">Campaign</SortableHeader>
+            <SortableHeader field="date">Day</SortableHeader>
             <SortableHeader field="clicks">Clicks</SortableHeader>
-            <TableHead>Cost per Click</TableHead>
-            <SortableHeader field="ctr">CTR (%)</SortableHeader>
+            <TableHead>Impr.</TableHead>
+            <SortableHeader field="ctr">CTR</SortableHeader>
+            <TableHead>Currency code</TableHead>
+            <TableHead>Avg. CPC</TableHead>
+            <SortableHeader field="amount">Cost</SortableHeader>
             <SortableHeader field="conversions">Conversions</SortableHeader>
-            <TableHead>Cost per Conversion</TableHead>
+            <TableHead>Cost / conv.</TableHead>
+            <TableHead>Conv. rate</TableHead>
+            <SortableHeader field="channel">Channel</SortableHeader>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -459,6 +462,13 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
           {/* New Record Row */}
           {isAddingNew && (
             <TableRow className="bg-muted/50">
+              <TableCell>
+                <Input
+                  placeholder="Campaign name"
+                  value={newRecord.campaign_name}
+                  onChange={(e) => setNewRecord({ ...newRecord, campaign_name: e.target.value })}
+                />
+              </TableCell>
               <TableCell>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -483,36 +493,6 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
                 </Popover>
               </TableCell>
               <TableCell>
-                <Select value={newRecord.channel} onValueChange={(value) => setNewRecord({ ...newRecord, channel: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select channel" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CHANNELS.map((channel) => (
-                      <SelectItem key={channel.value} value={channel.value}>
-                        {channel.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </TableCell>
-              <TableCell>
-                <Input
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  value={newRecord.amount}
-                  onChange={(e) => setNewRecord({ ...newRecord, amount: e.target.value })}
-                />
-              </TableCell>
-              <TableCell>
-                <Input
-                  placeholder="Campaign name"
-                  value={newRecord.campaign_name}
-                  onChange={(e) => setNewRecord({ ...newRecord, campaign_name: e.target.value })}
-                />
-              </TableCell>
-              <TableCell>
                 <Input
                   type="number"
                   placeholder="0"
@@ -530,6 +510,17 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
                   onChange={(e) => setNewRecord({ ...newRecord, ctr: e.target.value })}
                 />
               </TableCell>
+              <TableCell>CAD</TableCell>
+              <TableCell>-</TableCell>
+              <TableCell>
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={newRecord.amount}
+                  onChange={(e) => setNewRecord({ ...newRecord, amount: e.target.value })}
+                />
+              </TableCell>
               <TableCell>
                 <Input
                   type="number"
@@ -538,18 +529,32 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
                   onChange={(e) => setNewRecord({ ...newRecord, conversions: e.target.value })}
                 />
               </TableCell>
-               <TableCell>-</TableCell>
-               <TableCell>
-                 <div className="flex gap-2">
-                   <Button size="sm" onClick={addNewRecord}>
-                     <Check className="h-4 w-4" />
-                   </Button>
-                   <Button size="sm" variant="outline" onClick={() => setIsAddingNew(false)}>
-                     <X className="h-4 w-4" />
-                   </Button>
-                 </div>
-               </TableCell>
-               <TableCell></TableCell>
+              <TableCell>-</TableCell>
+              <TableCell>-</TableCell>
+              <TableCell>
+                <Select value={newRecord.channel} onValueChange={(value) => setNewRecord({ ...newRecord, channel: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select channel" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CHANNELS.map((channel) => (
+                      <SelectItem key={channel.value} value={channel.value}>
+                        {channel.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </TableCell>
+              <TableCell>
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={addNewRecord}>
+                    <Check className="h-4 w-4" />
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => setIsAddingNew(false)}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TableCell>
             </TableRow>
           )}
 
@@ -564,21 +569,10 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
             return (
               <TableRow key={spend.id}>
                 <TableCell>
-                  <DateCell recordId={spend.id} date={spend.date} />
-                </TableCell>
-                <TableCell>
-                  <ChannelCell recordId={spend.id} value={spend.channel} />
-                </TableCell>
-                <TableCell>
-                  <EditableCell 
-                    recordId={spend.id} 
-                    field="amount" 
-                    value={`$${amount.toFixed(2)}`} 
-                    type="number"
-                  />
-                </TableCell>
-                <TableCell>
                   <CampaignCell recordId={spend.id} value={spend.campaign_name} />
+                </TableCell>
+                <TableCell>
+                  <DateCell recordId={spend.id} date={spend.date} />
                 </TableCell>
                 <TableCell>
                   <EditableCell 
@@ -588,14 +582,24 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
                     type="number"
                   />
                 </TableCell>
+                <TableCell>-</TableCell>
+                <TableCell>
+                  <EditableCell 
+                    recordId={spend.id} 
+                    field="ctr" 
+                    value={spend.ctr || 0} 
+                    type="number"
+                  />
+                </TableCell>
+                <TableCell>CAD</TableCell>
                 <TableCell>
                   {costPerClick > 0 ? `$${costPerClick.toFixed(2)}` : '-'}
                 </TableCell>
                 <TableCell>
                   <EditableCell 
                     recordId={spend.id} 
-                    field="ctr" 
-                    value={spend.ctr || 0} 
+                    field="amount" 
+                    value={`$${amount.toFixed(2)}`} 
                     type="number"
                   />
                 </TableCell>
@@ -609,6 +613,12 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
                 </TableCell>
                 <TableCell>
                   {costPerConversion > 0 ? `$${costPerConversion.toFixed(2)}` : '-'}
+                </TableCell>
+                <TableCell>
+                  {conversions > 0 && clicks > 0 ? `${((conversions / clicks) * 100).toFixed(2)}%` : '0%'}
+                </TableCell>
+                <TableCell>
+                  <ChannelCell recordId={spend.id} value={spend.channel} />
                 </TableCell>
                 <TableCell>
                   <Button 

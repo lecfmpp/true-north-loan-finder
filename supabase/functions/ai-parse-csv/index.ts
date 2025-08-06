@@ -268,39 +268,60 @@ function detectColumnsPattern(headers: string[]) {
     conversions: null
   };
 
+  console.log('Standardized header detection for:', headers);
+
   headers.forEach((header, index) => {
     const cleanHeader = header.toLowerCase().trim();
     
-    // Date patterns
-    if (/date|time|day|period/.test(cleanHeader) && mapping.date === null) {
+    // Exact matches for standardized headers
+    if (cleanHeader === 'campaign' && mapping.campaign_name === null) {
+      mapping.campaign_name = index;
+    }
+    else if (cleanHeader === 'day' && mapping.date === null) {
       mapping.date = index;
     }
-    // Channel patterns
+    else if (cleanHeader === 'clicks' && mapping.clicks === null) {
+      mapping.clicks = index;
+    }
+    else if (cleanHeader === 'cost' && mapping.amount === null) {
+      mapping.amount = index;
+    }
+    else if (cleanHeader === 'ctr' && mapping.ctr === null) {
+      mapping.ctr = index;
+    }
+    else if (cleanHeader === 'conversions' && mapping.conversions === null) {
+      mapping.conversions = index;
+    }
+    // Fallback patterns for other variations
+    else if (/date|time|period/.test(cleanHeader) && mapping.date === null) {
+      mapping.date = index;
+    }
     else if (/channel|platform|source|medium|network/.test(cleanHeader) && mapping.channel === null) {
       mapping.channel = index;
     }
-    // Amount patterns
-    else if (/amount|spend|cost|budget|price|value|total/.test(cleanHeader) && mapping.amount === null) {
+    else if (/amount|spend|budget|price|value|total/.test(cleanHeader) && mapping.amount === null) {
       mapping.amount = index;
     }
-    // Campaign patterns
     else if (/campaign|name|title|ad/.test(cleanHeader) && mapping.campaign_name === null) {
       mapping.campaign_name = index;
     }
-    // Clicks patterns
-    else if (/clicks?|visit/.test(cleanHeader) && mapping.clicks === null) {
+    else if (/visit/.test(cleanHeader) && mapping.clicks === null) {
       mapping.clicks = index;
     }
-    // CTR patterns
-    else if (/ctr|rate/.test(cleanHeader) && mapping.ctr === null) {
+    else if (/rate/.test(cleanHeader) && mapping.ctr === null) {
       mapping.ctr = index;
     }
-    // Conversions patterns
     else if (/conversion|conv|action/.test(cleanHeader) && mapping.conversions === null) {
       mapping.conversions = index;
     }
   });
 
+  // Set default channel if not found (infer from campaign name)
+  if (mapping.channel === null) {
+    mapping.channel = 'google'; // Default to google for standardization
+  }
+
+  console.log('Final standardized mapping:', mapping);
   return mapping;
 }
 
