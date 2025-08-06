@@ -2115,15 +2115,15 @@ const Admin = () => {
                                     <SelectTrigger className="w-40">
                                       <SelectValue placeholder="Assign to partner" />
                                     </SelectTrigger>
-                                    <SelectContent>
-                                      {partners.map(partner => (
-                                        <SelectItem key={partner.id} value={partner.id}>
-                                          <div className="flex items-center gap-2">
-                                            <UserCheck className="w-4 h-4" />
-                                            {partner.name}
-                                          </div>
-                                        </SelectItem>
-                                      ))}
+                                     <SelectContent className="bg-background border shadow-md z-50">
+                                       {partners.map(partner => (
+                                         <SelectItem key={partner.id} value={partner.id}>
+                                           <div className="flex items-center gap-2">
+                                             <UserCheck className="w-4 h-4" />
+                                             {partner.name}
+                                           </div>
+                                         </SelectItem>
+                                       ))}
                                     </SelectContent>
                                   </Select>
                                 </div>
