@@ -157,8 +157,14 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
         value = parseInt(editValue) || 0;
       } else if (field === 'ctr') {
         value = parseFloat(editValue) || 0;
-        // Cap CTR at 100% (store as percentage, not decimal)
-        value = Math.min(value, 100);
+        if (value > 100) {
+          toast({
+            variant: "destructive",
+            title: "Invalid CTR",
+            description: "CTR cannot exceed 100%",
+          });
+          return;
+        }
       }
 
       const { error } = await supabase
@@ -404,6 +410,48 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
     );
   };
 
+  const CTRCell = ({ recordId, value }: { recordId: string; value: number }) => {
+    const isEditing = editingCell?.recordId === recordId && editingCell?.field === 'ctr';
+    
+    if (isEditing) {
+      return (
+        <div className="flex items-center gap-2">
+          <Input
+            value={editValue}
+            onChange={(e) => {
+              const val = e.target.value.replace('%', '');
+              setEditValue(val);
+            }}
+            placeholder="0.00"
+            className="h-8"
+            autoFocus
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') saveEdit();
+              if (e.key === 'Escape') cancelEdit();
+            }}
+          />
+          <span className="text-sm text-muted-foreground">%</span>
+          <Button size="sm" variant="ghost" onClick={saveEdit}>
+            <Check className="h-4 w-4" />
+          </Button>
+          <Button size="sm" variant="ghost" onClick={cancelEdit}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      );
+    }
+
+    return (
+      <div 
+        className="cursor-pointer hover:bg-muted/50 p-1 rounded group flex items-center gap-2"
+        onClick={() => startEdit(recordId, 'ctr', value)}
+      >
+        <span>{value ? `${value.toFixed(2)}%` : '0.00%'}</span>
+        <Edit className="h-3 w-3 opacity-0 group-hover:opacity-100" />
+      </div>
+    );
+  };
+
   const DateCell = ({ recordId, date }: { recordId: string; date: string }) => {
     const isEditing = editingCell?.recordId === recordId && editingCell?.field === 'date';
     
@@ -630,11 +678,9 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
                   />
                 </TableCell>
                 <TableCell>
-                  <EditableCell 
+                  <CTRCell 
                     recordId={spend.id} 
-                    field="ctr" 
                     value={spend.ctr || 0} 
-                    type="number"
                   />
                 </TableCell>
                 <TableCell>CAD</TableCell>
