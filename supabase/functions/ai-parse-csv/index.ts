@@ -38,12 +38,14 @@ serve(async (req) => {
     );
 
     // Prepare prompt for Gemini
-    const analysisPrompt = `You are an expert data analyst. Analyze this CSV data for ad spend tracking.
+    const analysisPrompt = `You are an expert data analyst. Analyze this CSV data for ad spend tracking and process ALL rows.
 
 CSV Headers: ${headers.join(', ')}
 
-Sample Data Rows:
+Sample Data Rows (first 3):
 ${sampleRows.map((row, i) => `Row ${i + 1}: ${row.join(', ')}`).join('\n')}
+
+Total rows to process: ${lines.length - 1}
 
 Required Database Fields:
 - date: Date of ad spend (required)
@@ -54,41 +56,41 @@ Required Database Fields:
 - ctr: Click-through rate as percentage (optional)
 - conversions: Number of conversions (optional)
 
-Please analyze the CSV and provide:
-1. Column mapping from CSV headers to database fields
-2. Data validation and cleaning suggestions
-3. Channel name standardization (map variations to: google, meta, tiktok, linkedin)
-4. Date format standardization
-5. Amount conversion (ensure it's in dollars)
+Please analyze the CSV structure and provide a column mapping. Then process ALL ${lines.length - 1} rows and return the cleaned data for each row.
 
 Respond with JSON only in this exact format:
 {
   "mapping": {
-    "date": "CSV_HEADER_NAME",
-    "channel": "CSV_HEADER_NAME", 
-    "amount": "CSV_HEADER_NAME",
-    "campaign_name": "CSV_HEADER_NAME",
-    "clicks": "CSV_HEADER_NAME",
-    "ctr": "CSV_HEADER_NAME",
-    "conversions": "CSV_HEADER_NAME"
+    "date": "column_index_number",
+    "channel": "column_index_number", 
+    "amount": "column_index_number",
+    "campaign_name": "column_index_number_or_null",
+    "clicks": "column_index_number_or_null",
+    "ctr": "column_index_number_or_null",
+    "conversions": "column_index_number_or_null"
   },
   "validation": {
-    "date_format": "detected_format",
-    "amount_format": "detected_format",
+    "date_format": "YYYY-MM-DD or MM/DD/YYYY or DD/MM/YYYY",
+    "amount_format": "dollars with or without symbols",
     "channel_standardization": {
-      "original_value": "standardized_value"
+      "facebook": "meta",
+      "fb": "meta",
+      "instagram": "meta",
+      "adwords": "google",
+      "youtube": "google"
     }
   },
   "cleaned_data": [
-    {
-      "date": "2024-01-01",
-      "channel": "google",
-      "amount": 100.50,
-      "campaign_name": "Campaign Name",
-      "clicks": 1000,
-      "ctr": 2.5,
-      "conversions": 25
-    }
+    ${lines.slice(1).map((_, index) => `{
+      "date": "standardized_date_${index + 1}",
+      "channel": "standardized_channel_${index + 1}",
+      "amount": amount_in_dollars_${index + 1},
+      "campaign_name": "campaign_${index + 1}",
+      "clicks": clicks_${index + 1},
+      "ctr": ctr_percentage_${index + 1},
+      "conversions": conversions_${index + 1}
+    }`).slice(0, 3).join(',')}
+    // ... process all ${lines.length - 1} rows
   ],
   "suggestions": ["list of improvement suggestions"],
   "confidence": 0.95
@@ -143,16 +145,36 @@ Respond with JSON only in this exact format:
       throw new Error('Failed to parse AI analysis results');
     }
 
-    // Process and validate the cleaned data
-    const processedData = analysisResult.cleaned_data.map(row => ({
-      date: row.date,
-      channel: row.channel,
-      amount: Math.round(row.amount * 100), // Convert to cents
-      campaign_name: row.campaign_name || '',
-      clicks: row.clicks || 0,
-      ctr: row.ctr || 0,
-      conversions: row.conversions || 0
-    }));
+    // Process and validate the cleaned data from ALL rows
+    if (!analysisResult.cleaned_data || !Array.isArray(analysisResult.cleaned_data)) {
+      throw new Error('AI did not return valid cleaned data array');
+    }
+
+    // If AI didn't process all rows, manually process the remaining ones using the mapping
+    let allProcessedData = analysisResult.cleaned_data;
+    
+    if (allProcessedData.length < lines.length - 1) {
+      console.log(`AI processed ${allProcessedData.length} rows, manually processing remaining ${lines.length - 1 - allProcessedData.length} rows`);
+      
+      // Process remaining rows using the mapping
+      const dataRows = lines.slice(1 + allProcessedData.length);
+      const additionalData = dataRows.map(line => {
+        const row = line.split(',').map(cell => cell.trim().replace(/"/g, ''));
+        return processRowWithMapping(row, analysisResult.mapping, analysisResult.validation);
+      });
+      
+      allProcessedData = [...allProcessedData, ...additionalData];
+    }
+
+    const processedData = allProcessedData.map(row => ({
+      date: standardizeDate(row.date),
+      channel: standardizeChannel(row.channel),
+      amount: Math.round((parseFloat(String(row.amount)) || 0) * 100), // Convert to cents
+      campaign_name: String(row.campaign_name || ''),
+      clicks: parseInt(String(row.clicks || '0')) || 0,
+      ctr: parseFloat(String(row.ctr || '0')) || 0,
+      conversions: parseInt(String(row.conversions || '0')) || 0
+    })).filter(row => row.date && row.channel && row.amount > 0); // Filter out invalid rows
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -169,19 +191,20 @@ Respond with JSON only in this exact format:
       throw new Error(`Failed to insert data: ${insertError.message}`);
     }
 
-    console.log(`Successfully processed and inserted ${processedData.length} records`);
+    console.log(`Successfully processed and inserted ${processedData.length} records out of ${lines.length - 1} total rows`);
 
     return new Response(
       JSON.stringify({
         success: true,
         inserted: processedData.length,
+        processed: lines.length - 1,
         analysis: {
           mapping: analysisResult.mapping,
           validation: analysisResult.validation,
           suggestions: analysisResult.suggestions,
           confidence: analysisResult.confidence
         },
-        message: `Successfully processed ${processedData.length} ad spend records with AI analysis`
+        message: `Successfully processed ${processedData.length} out of ${lines.length - 1} ad spend records with AI analysis`
       }),
       {
         status: 200,
@@ -204,3 +227,64 @@ Respond with JSON only in this exact format:
     );
   }
 });
+
+// Helper function to process a single row using the mapping
+function processRowWithMapping(row: string[], mapping: any, validation: any) {
+  const getColumnValue = (field: string) => {
+    const index = mapping[field];
+    return index !== null && index !== undefined ? row[parseInt(index)] || '' : '';
+  };
+
+  return {
+    date: getColumnValue('date'),
+    channel: getColumnValue('channel'),
+    amount: parseFloat(getColumnValue('amount').replace(/[^0-9.-]/g, '')) || 0,
+    campaign_name: getColumnValue('campaign_name'),
+    clicks: parseInt(getColumnValue('clicks')) || 0,
+    ctr: parseFloat(getColumnValue('ctr').replace('%', '')) || 0,
+    conversions: parseInt(getColumnValue('conversions')) || 0
+  };
+}
+
+// Helper function to standardize dates
+function standardizeDate(dateStr: string): string {
+  if (!dateStr) return new Date().toISOString().split('T')[0];
+  
+  try {
+    // Try different date formats
+    let date = new Date(dateStr);
+    
+    // If that fails, try parsing MM/DD/YYYY or DD/MM/YYYY
+    if (isNaN(date.getTime()) && dateStr.includes('/')) {
+      const parts = dateStr.split('/');
+      if (parts.length === 3) {
+        // Try MM/DD/YYYY first
+        date = new Date(parseInt(parts[2]), parseInt(parts[0]) - 1, parseInt(parts[1]));
+        
+        // If that results in invalid date, try DD/MM/YYYY
+        if (isNaN(date.getTime())) {
+          date = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+        }
+      }
+    }
+    
+    return isNaN(date.getTime()) ? new Date().toISOString().split('T')[0] : date.toISOString().split('T')[0];
+  } catch (error) {
+    return new Date().toISOString().split('T')[0];
+  }
+}
+
+// Helper function to standardize channel names
+function standardizeChannel(channel: string): string {
+  if (!channel) return 'google';
+  
+  const cleanChannel = channel.toLowerCase().trim();
+  
+  if (cleanChannel.includes('facebook') || cleanChannel.includes('meta') || cleanChannel.includes('fb') || cleanChannel.includes('instagram')) return 'meta';
+  if (cleanChannel.includes('google') || cleanChannel.includes('adwords') || cleanChannel.includes('youtube')) return 'google';
+  if (cleanChannel.includes('tiktok') || cleanChannel.includes('tik-tok')) return 'tiktok';
+  if (cleanChannel.includes('linkedin') || cleanChannel.includes('linked-in')) return 'linkedin';
+  
+  // Default to google if unrecognized
+  return 'google';
+}

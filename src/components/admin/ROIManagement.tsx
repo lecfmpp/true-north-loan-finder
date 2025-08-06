@@ -8,9 +8,10 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { TrendingUp, DollarSign, Target, BarChart3, Plus, Upload, FileSpreadsheet, Trash2, Users, Award, FileText, CheckCircle, Calendar, Settings, Save, Banknote } from 'lucide-react';
+import { TrendingUp, DollarSign, Target, BarChart3, Plus, Upload, FileSpreadsheet, Trash2, Users, Award, FileText, CheckCircle, Calendar, Settings, Save, Banknote, Loader2 } from 'lucide-react';
 
 interface ROIMetrics {
   total_leads: number;
@@ -61,6 +62,7 @@ export default function ROIManagement() {
   const [cleanupDialog, setCleanupDialog] = useState(false);
   const [uploadingCsv, setUploadingCsv] = useState(false);
   const [deletingData, setDeletingData] = useState(false);
+  const [csvProgress, setCsvProgress] = useState({ current: 0, total: 0, stage: '' });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dateFilter, setDateFilter] = useState('last_7_days');
   const [customStartDate, setCustomStartDate] = useState('');
@@ -243,21 +245,33 @@ Provide actionable insights for campaign optimization.`);
 
     setUploadingCsv(true);
     setCsvUploadDialog(false);
+    setCsvProgress({ current: 0, total: 100, stage: 'Reading file...' });
 
     try {
       const csvContent = await file.text();
+      setCsvProgress({ current: 20, total: 100, stage: 'Analyzing CSV structure...' });
+
+      // Check file size and row count for processing strategy
+      const lines = csvContent.split('\n').filter(line => line.trim());
+      const rowCount = lines.length - 1; // Excluding header
       
-      // Process the CSV directly with AI-powered parsing
+      setCsvProgress({ current: 40, total: 100, stage: `Processing ${rowCount} records...` });
+      
+      // Process the CSV with AI-powered parsing
       const { data, error } = await supabase.functions.invoke('ai-parse-csv', {
-        body: { csvContent }
+        body: { csvContent, batchSize: rowCount > 1000 ? 100 : 50 }
       });
 
       if (error) throw error;
 
+      setCsvProgress({ current: 90, total: 100, stage: 'Finalizing import...' });
+
       if (data.success) {
+        setCsvProgress({ current: 100, total: 100, stage: 'Complete!' });
+        
         toast({
           title: "AI Analysis Complete",
-          description: `Successfully imported ${data.inserted} records. Confidence: ${(data.analysis.confidence * 100).toFixed(1)}%`
+          description: `Successfully imported ${data.inserted} records from ${data.processed} total rows. Confidence: ${(data.analysis.confidence * 100).toFixed(1)}%`
         });
         
         // Show AI suggestions if any
@@ -276,13 +290,17 @@ Provide actionable insights for campaign optimization.`);
       }
     } catch (error) {
       console.error('Error processing CSV:', error);
+      setCsvProgress({ current: 0, total: 0, stage: 'Error occurred' });
       toast({
         title: "Error",
         description: error.message || "Failed to process CSV file",
         variant: "destructive"
       });
     } finally {
-      setUploadingCsv(false);
+      setTimeout(() => {
+        setUploadingCsv(false);
+        setCsvProgress({ current: 0, total: 0, stage: '' });
+      }, 1000);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -855,6 +873,46 @@ Provide actionable insights for campaign optimization.`);
           </Table>
         </CardContent>
       </Card>
+
+      {/* Loading Modal */}
+      {uploadingCsv && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Blurred Background */}
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
+          
+          {/* Loading Modal */}
+          <div className="relative bg-card border rounded-lg shadow-lg p-8 max-w-md w-full mx-4">
+            <div className="flex flex-col items-center space-y-6">
+              <div className="relative">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                <div className="absolute inset-0 rounded-full border-2 border-primary/20" />
+              </div>
+              
+              <div className="text-center space-y-2">
+                <h3 className="text-lg font-semibold">Processing CSV File</h3>
+                <p className="text-muted-foreground text-sm">
+                  {csvProgress.stage || 'Analyzing your data...'}
+                </p>
+              </div>
+              
+              {csvProgress.total > 0 && (
+                <div className="w-full space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Progress</span>
+                    <span>{csvProgress.current}%</span>
+                  </div>
+                  <Progress value={csvProgress.current} className="w-full" />
+                </div>
+              )}
+              
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <FileSpreadsheet className="h-4 w-4" />
+                <span>AI is analyzing and importing your data</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
