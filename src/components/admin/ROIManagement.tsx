@@ -981,7 +981,6 @@ Provide actionable insights for campaign optimization.`);
                 <TableHead>CTR</TableHead>
                 <TableHead>Conversions</TableHead>
                 <TableHead>Cost per Conversion</TableHead>
-                <TableHead>Notes</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -1005,7 +1004,6 @@ Provide actionable insights for campaign optimization.`);
                     <TableCell>{spend.ctr ? `${spend.ctr}%` : '-'}</TableCell>
                     <TableCell>{conversions}</TableCell>
                     <TableCell>{costPerConversion > 0 ? `$${costPerConversion.toFixed(2)}` : '-'}</TableCell>
-                    <TableCell className="max-w-xs truncate">{spend.notes || '-'}</TableCell>
                   </TableRow>
                 );
               })}
