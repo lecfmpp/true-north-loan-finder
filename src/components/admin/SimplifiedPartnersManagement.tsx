@@ -45,6 +45,8 @@ export default function SimplifiedPartnersManagement() {
   const [partners, setPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
   const [newPartner, setNewPartner] = useState<NewPartner>({
     name: '',
     email: '',
@@ -127,6 +129,53 @@ export default function SimplifiedPartnersManagement() {
     } catch (error: any) {
       console.error('Error creating partner:', error);
       toast({ title: "Error", description: error.message || 'Failed to create partner', variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const editPartner = (partner: Partner) => {
+    setEditingPartner(partner);
+    setEditModalOpen(true);
+  };
+
+  const updatePartner = async () => {
+    if (!editingPartner) return;
+
+    if (!editingPartner.name || !editingPartner.email || !editingPartner.company_name) {
+      toast({ title: "Error", description: "Please fill in all required fields", variant: "destructive" });
+      return;
+    }
+
+    if (!editingPartner.email.includes('@')) {
+      toast({ title: "Error", description: "Please enter a valid email address", variant: "destructive" });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      const { error } = await supabase
+        .from('partners')
+        .update({
+          name: editingPartner.name,
+          email: editingPartner.email,
+          company_name: editingPartner.company_name,
+          phone: editingPartner.phone,
+          application_type: editingPartner.application_type,
+          is_active: editingPartner.is_active
+        })
+        .eq('id', editingPartner.id);
+
+      if (error) throw error;
+
+      toast({ title: "Success", description: "Partner updated successfully" });
+      setEditModalOpen(false);
+      setEditingPartner(null);
+      fetchPartners();
+    } catch (error: any) {
+      console.error('Error updating partner:', error);
+      toast({ title: "Error", description: "Failed to update partner", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -300,6 +349,14 @@ export default function SimplifiedPartnersManagement() {
                 <Button 
                   variant="outline" 
                   size="sm" 
+                  onClick={() => editPartner(partner)}
+                >
+                  <Edit3 className="w-4 h-4 mr-2" />
+                  Edit
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
                   onClick={() => resetPassword(partner)}
                   disabled={!partner.user_id}
                 >
@@ -447,6 +504,147 @@ export default function SimplifiedPartnersManagement() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Partner Modal */}
+      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Edit Partner</DialogTitle>
+          </DialogHeader>
+          {editingPartner && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-name">Name *</Label>
+                  <Input
+                    id="edit-name"
+                    value={editingPartner.name}
+                    onChange={(e) => setEditingPartner({ ...editingPartner, name: e.target.value })}
+                    placeholder="Partner name"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-email">Email *</Label>
+                  <Input
+                    id="edit-email"
+                    type="email"
+                    value={editingPartner.email}
+                    onChange={(e) => setEditingPartner({ ...editingPartner, email: e.target.value })}
+                    placeholder="partner@company.com"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="edit-company">Company Name *</Label>
+                <Input
+                  id="edit-company"
+                  value={editingPartner.company_name}
+                  onChange={(e) => setEditingPartner({ ...editingPartner, company_name: e.target.value })}
+                  placeholder="Company name"
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-phone">Phone</Label>
+                  <Input
+                    id="edit-phone"
+                    value={editingPartner.phone}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                      let formatted = '';
+                      
+                      if (value.length > 0) {
+                        if (value.length <= 10) {
+                          // US format: (xxx) xxx-xxxx
+                          if (value.length <= 3) {
+                            formatted = value;
+                          } else if (value.length <= 6) {
+                            formatted = `(${value.slice(0, 3)}) ${value.slice(3)}`;
+                          } else {
+                            formatted = `(${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6, 10)}`;
+                          }
+                        } else if (value.length === 11 && value.startsWith('1')) {
+                          // US with country code: +1 (xxx) xxx-xxxx
+                          const number = value.slice(1);
+                          if (number.length <= 3) {
+                            formatted = `+1 (${number}`;
+                          } else if (number.length <= 6) {
+                            formatted = `+1 (${number.slice(0, 3)}) ${number.slice(3)}`;
+                          } else {
+                            formatted = `+1 (${number.slice(0, 3)}) ${number.slice(3, 6)}-${number.slice(6, 10)}`;
+                          }
+                        } else {
+                          // Limit to 11 digits max
+                          formatted = value.slice(0, 11);
+                        }
+                      }
+                      
+                      setEditingPartner({ ...editingPartner, phone: formatted });
+                    }}
+                    placeholder="+1 (555) 123-4567"
+                    maxLength={17} // +1 (xxx) xxx-xxxx
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-type">Type *</Label>
+                  <Select 
+                    value={editingPartner.application_type} 
+                    onValueChange={(value: 'broker' | 'lender') => 
+                      setEditingPartner({ ...editingPartner, application_type: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border shadow-md z-50">
+                      <SelectItem value="broker">Broker</SelectItem>
+                      <SelectItem value="lender">Lender</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="edit-status">Status</Label>
+                <Select 
+                  value={editingPartner.is_active ? "active" : "inactive"} 
+                  onValueChange={(value) => 
+                    setEditingPartner({ ...editingPartner, is_active: value === "active" })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border shadow-md z-50">
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="flex justify-end gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setEditModalOpen(false);
+                    setEditingPartner(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={updatePartner}
+                  disabled={loading}
+                >
+                  {loading ? 'Updating...' : 'Update Partner'}
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
