@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Plus, Check, X, Edit } from 'lucide-react';
+import { CalendarIcon, Plus, Check, X, Edit, Copy } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -196,6 +196,19 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
     }
   };
 
+  const duplicateRecord = (record: AdSpendRecord) => {
+    setIsAddingNew(true);
+    setNewRecord({
+      date: new Date(),
+      channel: record.channel,
+      amount: (record.amount / 100).toString(), // Convert from cents to dollars
+      campaign_name: record.campaign_name,
+      clicks: record.clicks.toString(),
+      ctr: record.ctr ? (record.ctr * 100).toString() : '', // Convert to percentage
+      conversions: record.conversions.toString()
+    });
+  };
+
   const EditableCell = ({ recordId, field, value, type = 'text' }: { 
     recordId: string; 
     field: string; 
@@ -369,6 +382,7 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
             <TableHead>CTR (%)</TableHead>
             <TableHead>Conversions</TableHead>
             <TableHead>Cost per Conversion</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -454,16 +468,18 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
                   onChange={(e) => setNewRecord({ ...newRecord, conversions: e.target.value })}
                 />
               </TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  <Button size="sm" onClick={addNewRecord}>
-                    <Check className="h-4 w-4" />
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => setIsAddingNew(false)}>
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
+               <TableCell>-</TableCell>
+               <TableCell>
+                 <div className="flex gap-2">
+                   <Button size="sm" onClick={addNewRecord}>
+                     <Check className="h-4 w-4" />
+                   </Button>
+                   <Button size="sm" variant="outline" onClick={() => setIsAddingNew(false)}>
+                     <X className="h-4 w-4" />
+                   </Button>
+                 </div>
+               </TableCell>
+               <TableCell></TableCell>
             </TableRow>
           )}
 
@@ -523,6 +539,16 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
                 </TableCell>
                 <TableCell>
                   {costPerConversion > 0 ? `$${costPerConversion.toFixed(2)}` : '-'}
+                </TableCell>
+                <TableCell>
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    onClick={() => duplicateRecord(spend)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
                 </TableCell>
               </TableRow>
             );
