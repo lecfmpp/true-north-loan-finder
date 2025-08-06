@@ -749,7 +749,7 @@ Provide actionable insights for campaign optimization.`);
       </Card>
 
       {/* Overview Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -772,6 +772,24 @@ Provide actionable insights for campaign optimization.`);
                 <p className="text-xs text-muted-foreground">All channels combined</p>
               </div>
               <DollarSign className="h-8 w-8 text-red-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Cost Per Lead</p>
+                <p className="text-2xl font-bold">
+                  ${getFilteredLeadCount() > 0 
+                    ? (((metrics?.total_spend || 0) / 100) / getFilteredLeadCount()).toFixed(2)
+                    : '0.00'
+                  }
+                </p>
+                <p className="text-xs text-muted-foreground">Average acquisition cost</p>
+              </div>
+              <TrendingUp className="h-8 w-8 text-orange-600" />
             </div>
           </CardContent>
         </Card>
