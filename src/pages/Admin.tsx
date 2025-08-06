@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { supabase } from '@/integrations/supabase/client';
@@ -103,7 +104,7 @@ const Admin = () => {
             <TabsTrigger value="usa-applications">USA Apps</TabsTrigger>
             <TabsTrigger value="canadian-applications">CAN Apps</TabsTrigger>
             <TabsTrigger value="applications">Quiz Leads</TabsTrigger>
-            <TabsTrigger value="lead-simulation">Lead Sim</TabsTrigger>
+            <TabsTrigger value="lead-simulation">Pay Per Lead</TabsTrigger>
             <TabsTrigger value="partners-simple">Partners</TabsTrigger>
             <TabsTrigger value="partner-leads">Lead Assign</TabsTrigger>
             <TabsTrigger value="partner-payments">Payments</TabsTrigger>
