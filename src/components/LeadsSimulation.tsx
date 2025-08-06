@@ -314,38 +314,82 @@ export const LeadsSimulation = () => {
   };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
-    // Validation
-    if (!isValidEmail(formData.email)) {
+    try {
+      // Validation
+      if (!isValidEmail(formData.email)) {
+        toast({
+          title: "Invalid Email",
+          description: "Please enter a valid email address.",
+          variant: "destructive"
+        });
+        return;
+      }
+      if (!isValidPhone(formData.phone)) {
+        toast({
+          title: "Invalid Phone Number",
+          description: "Please enter a valid 10-digit US/Canada phone number.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Save the submission to the database first
+      const { error } = await supabase
+        .from('lender_broker_applications')
+        .insert({
+          applicant_name: formData.name,
+          applicant_email: formData.email,
+          applicant_phone: formData.phone,
+          company_name: `${formData.name} - Lead Simulation Interest`,
+          application_type: 'broker',
+          status: 'lead_simulation_interest',
+          business_description: 'Interested via lead simulation widget',
+          admin_notes: `Submitted via lead simulation on ${new Date().toLocaleDateString()}`,
+          payment_status: 'pending',
+          payment_amount: 50000 // $500
+        });
+
+      if (error) {
+        console.error('Error saving submission:', error);
+        toast({
+          title: "Error",
+          description: "Failed to save your information. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Store form data in localStorage for later use in account creation
+      localStorage.setItem('brokerFormData', JSON.stringify(formData));
+
+      // Redirect directly to Stripe payment with custom domain
+      window.open('https://buy.stripe.com/aFadR98YN9bjcJkeaaawo05?success_url=' + encodeURIComponent('https://truenorthbusinessloan.ca/broker-payment-success'), '_blank');
+
+      // Close modal and reset form
+      setShowModal(false);
+      setFormData({
+        name: "",
+        email: "",
+        phone: ""
+      });
+
       toast({
-        title: "Invalid Email",
-        description: "Please enter a valid email address.",
+        title: "Success",
+        description: "Your information has been saved. Complete payment to unlock leads.",
+      });
+
+    } catch (error) {
+      console.error('Submission error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive"
       });
-      return;
+    } finally {
+      setIsSubmitting(false);
     }
-    if (!isValidPhone(formData.phone)) {
-      toast({
-        title: "Invalid Phone Number",
-        description: "Please enter a valid 10-digit US/Canada phone number.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Store form data in localStorage for later use in account creation
-    localStorage.setItem('brokerFormData', JSON.stringify(formData));
-
-    // Redirect directly to Stripe payment with custom domain
-    window.open('https://buy.stripe.com/aFadR98YN9bjcJkeaaawo05?success_url=' + encodeURIComponent('https://truenorthbusinessloan.ca/broker-payment-success'), '_blank');
-
-    // Close modal and reset form
-    setShowModal(false);
-    setFormData({
-      name: "",
-      email: "",
-      phone: ""
-    });
   };
   return <>
       <div className="space-y-6">
