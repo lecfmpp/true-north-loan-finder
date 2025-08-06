@@ -1122,6 +1122,36 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_simulation_submissions: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          name: string
+          phone: string
+          submitted_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          name: string
+          phone: string
+          submitted_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+          submitted_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       lender_broker_applications: {
         Row: {
           additional_requirements: string | null
