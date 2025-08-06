@@ -674,12 +674,15 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Record the custom email send in the database
     try {
+      // Use a system user ID for lead emails sent via the edge function
+      const systemUserId = '00000000-0000-0000-0000-000000000001'; // System user ID for lead emails
+      
       const { error: insertError } = await supabase
         .from('lead_custom_emails')
         .insert({
           lead_id: leadId,
           recipient_emails: [recipientEmail],
-          sent_by: null, // Set to null for system-generated emails since it expects a UUID
+          sent_by: systemUserId,
           sent_at: new Date().toISOString()
         });
 

@@ -1961,10 +1961,10 @@ const Admin = () => {
                               <div className="text-sm text-muted-foreground">{lead.phone}</div>
                               <div className="text-xs text-muted-foreground">{lead.country}, {lead.city_province}</div>
                               
-                              {/* Custom emails sent tracking */}
+                              {/* Email sent status indicator */}
                               {leadCustomEmails[lead.id] && leadCustomEmails[lead.id].length > 0 && (
-                                <Badge variant="secondary" className="mt-1 text-xs bg-green-100 text-green-800">
-                                  ✉️ {leadCustomEmails[lead.id].length} custom email(s) sent
+                                <Badge variant="secondary" className="mt-1 text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+                                  ✉️ Sent ({leadCustomEmails[lead.id].length})
                                 </Badge>
                               )}
                               
