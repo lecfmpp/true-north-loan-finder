@@ -310,7 +310,7 @@ Provide actionable insights for campaign optimization.`);
       const mappedData = dataRows.map(row => {
         const record: any = {};
         Object.entries(columnMapping).forEach(([dbColumn, csvHeader]) => {
-          if (csvHeader) {
+          if (csvHeader && csvHeader !== 'none') {
             const csvIndex = headers.indexOf(csvHeader);
             if (csvIndex !== -1) {
               record[dbColumn] = row[csvIndex] || '';
@@ -322,10 +322,10 @@ Provide actionable insights for campaign optimization.`);
 
       // Process the mapped data through the existing edge function
       const csvContent = [
-        Object.values(columnMapping).filter(Boolean).join(','),
+        Object.values(columnMapping).filter(val => val && val !== 'none').join(','),
         ...mappedData.map(record => 
           Object.entries(columnMapping)
-            .filter(([_, csvHeader]) => csvHeader)
+            .filter(([_, csvHeader]) => csvHeader && csvHeader !== 'none')
             .map(([dbColumn]) => record[dbColumn] || '')
             .join(',')
         )
@@ -584,7 +584,7 @@ Provide actionable insights for campaign optimization.`);
                             <SelectValue placeholder="Select CSV column" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">None</SelectItem>
+                            <SelectItem value="none">None</SelectItem>
                             {csvData[0]?.map((header, index) => (
                               <SelectItem key={index} value={header}>
                                 {header}
