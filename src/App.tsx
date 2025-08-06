@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route, BrowserRouter } from "react-router-dom";
 import { ChatWidget } from "@/components/ChatWidget";
 import ConsentBanner from "@/components/ConsentBanner";
+import SocialProofWidget from "@/components/SocialProofWidget";
 import { lazy, Suspense } from "react";
 
 import ScrollToTop from "@/components/ScrollToTop";
@@ -65,6 +66,7 @@ const App = () => (
         <Sonner />
         <ChatWidget />
         <ConsentBanner />
+        <SocialProofWidget />
         
         <BrowserRouter>
           <ScrollToTop />
