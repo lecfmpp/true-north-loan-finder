@@ -27,6 +27,7 @@ export type Database = {
           currency: string | null
           date: string
           id: string
+          impressions: number | null
           notes: string | null
           updated_at: string
         }
@@ -42,6 +43,7 @@ export type Database = {
           currency?: string | null
           date: string
           id?: string
+          impressions?: number | null
           notes?: string | null
           updated_at?: string
         }
@@ -57,6 +59,7 @@ export type Database = {
           currency?: string | null
           date?: string
           id?: string
+          impressions?: number | null
           notes?: string | null
           updated_at?: string
         }
