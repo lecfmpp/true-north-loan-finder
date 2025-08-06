@@ -4,19 +4,49 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Max-Age': '86400',
 };
 
 serve(async (req) => {
+  console.log('Request method:', req.method);
+  console.log('Request headers:', Object.fromEntries(req.headers.entries()));
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    console.log('Handling OPTIONS request');
+    return new Response(null, { 
+      status: 200,
+      headers: corsHeaders 
+    });
+  }
+
+  if (req.method !== 'POST') {
+    return new Response('Method not allowed', { 
+      status: 405,
+      headers: corsHeaders 
+    });
   }
 
   try {
-    const { csvContent } = await req.json();
+    console.log('Starting CSV processing...');
+    const requestBody = await req.json();
+    console.log('Request body keys:', Object.keys(requestBody));
+    
+    const { csvContent, batchSize = 50 } = requestBody;
     
     if (!csvContent) {
-      throw new Error('CSV content is required');
+      console.error('No CSV content provided');
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'CSV content is required' 
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
@@ -56,10 +86,6 @@ serve(async (req) => {
      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
      const supabase = createClient(supabaseUrl, supabaseKey);
 
-     // For smaller files, use AI analysis for column detection
-     const sampleRows = lines.slice(1, Math.min(4, lines.length)).map(line => 
-       line.split(',').map(cell => cell.trim().replace(/"/g, ''))
-     );
 
 
     const analysisPrompt = `Analyze this CSV for ad spend data. Return ONLY valid JSON.
@@ -135,11 +161,12 @@ Return column indices (0-based) for mapping:
 
   } catch (error) {
     console.error('Error in ai-parse-csv function:', error);
+    
     return new Response(
-      JSON.stringify({
-        success: false,
-        error: error.message,
-        message: 'Failed to process CSV with AI analysis'
+      JSON.stringify({ 
+        success: false, 
+        error: error.message || 'Unknown error occurred',
+        details: error.stack || 'No stack trace available'
       }),
       {
         status: 500,
