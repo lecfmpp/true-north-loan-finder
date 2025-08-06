@@ -268,43 +268,21 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
 
   const CampaignCell = ({ recordId, value }: { recordId: string; value: string }) => {
     const isEditing = editingCell?.recordId === recordId && editingCell?.field === 'campaign_name';
-    const [showSuggestions, setShowSuggestions] = useState(false);
     
     if (isEditing) {
-      const filteredCampaigns = uniqueCampaigns.filter(campaign => 
-        campaign.toLowerCase().includes(editValue.toLowerCase()) && campaign !== editValue
-      );
-
       return (
         <div className="flex items-center gap-2">
-          <div className="relative">
-            <Input
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              onFocus={() => setShowSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-              placeholder="Type campaign name"
-              className="h-8"
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') saveEdit();
-                if (e.key === 'Escape') cancelEdit();
-              }}
-            />
-            {showSuggestions && filteredCampaigns.length > 0 && (
-              <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-popover border rounded-md shadow-md max-h-32 overflow-y-auto">
-                {filteredCampaigns.map((campaign) => (
-                  <div
-                    key={campaign}
-                    className="px-3 py-2 hover:bg-accent cursor-pointer text-sm"
-                    onMouseDown={() => setEditValue(campaign)}
-                  >
-                    {campaign}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <Input
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            placeholder="Campaign name"
+            className="h-8"
+            autoFocus
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') saveEdit();
+              if (e.key === 'Escape') cancelEdit();
+            }}
+          />
           <Button size="sm" variant="ghost" onClick={saveEdit}>
             <Check className="h-4 w-4" />
           </Button>
