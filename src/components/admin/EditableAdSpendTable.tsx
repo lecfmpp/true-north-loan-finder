@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Plus, Check, X, Edit, Copy, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
+import { CalendarIcon, Plus, Check, X, Edit, Copy, ChevronUp, ChevronDown, ChevronsUpDown, Trash } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -257,6 +257,31 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
       ctr: record.ctr ? record.ctr.toString() : '', // Use raw CTR value
       conversions: record.conversions.toString()
     });
+  };
+
+  const deleteRecord = async (recordId: string) => {
+    try {
+      const { error } = await supabase
+        .from('ad_spend_records')
+        .delete()
+        .eq('id', recordId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Record deleted successfully"
+      });
+
+      onDataUpdate();
+    } catch (error) {
+      console.error('Error deleting record:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete record",
+        variant: "destructive"
+      });
+    }
   };
 
   const EditableCell = ({ recordId, field, value, type = 'text' }: { 
@@ -630,14 +655,24 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
                   <ChannelCell recordId={spend.id} value={spend.channel} />
                 </TableCell>
                 <TableCell>
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    onClick={() => duplicateRecord(spend)}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      onClick={() => duplicateRecord(spend)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="destructive" 
+                      onClick={() => deleteRecord(spend.id)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             );
