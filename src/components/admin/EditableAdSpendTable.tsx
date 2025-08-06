@@ -408,18 +408,11 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
                 />
               </TableCell>
               <TableCell>
-                <Select value={newRecord.campaign_name} onValueChange={(value) => setNewRecord({ ...newRecord, campaign_name: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select campaign" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {uniqueCampaigns.map((campaign) => (
-                      <SelectItem key={campaign} value={campaign}>
-                        {campaign}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Input
+                  placeholder="Campaign name"
+                  value={newRecord.campaign_name}
+                  onChange={(e) => setNewRecord({ ...newRecord, campaign_name: e.target.value })}
+                />
               </TableCell>
               <TableCell>
                 <Input
