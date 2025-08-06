@@ -158,6 +158,28 @@ export default function SimplifiedPartnersManagement() {
     }
 
     try {
+      // First, unassign all leads from this partner
+      const { error: unassignError } = await supabase
+        .from('quiz_responses')
+        .update({ assigned_partner_id: null, assignment_date: null })
+        .eq('assigned_partner_id', partner.id);
+
+      if (unassignError) {
+        console.error('Error unassigning leads:', unassignError);
+        throw unassignError;
+      }
+
+      // Delete lead assignments
+      const { error: assignmentError } = await supabase
+        .from('lead_assignments')
+        .delete()
+        .eq('partner_id', partner.id);
+
+      if (assignmentError) {
+        console.error('Error deleting lead assignments:', assignmentError);
+        // Continue even if this fails
+      }
+
       // Delete partner record
       const { error: partnerError } = await supabase
         .from('partners')
