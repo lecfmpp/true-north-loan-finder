@@ -370,14 +370,16 @@ function parseAmount(amountStr: string): number {
   return absoluteAmount;
 }
 
-// Helper function to standardize dates with better format detection
+// Helper function to standardize dates with UTC construction to prevent timezone issues
 function standardizeDate(dateStr: string, detectedFormat?: string): string {
-  if (!dateStr) return new Date().toISOString().split('T')[0];
+  if (!dateStr) return getTodayUTC();
+  
+  console.log(`Parsing date input: "${dateStr}"`);
   
   try {
     dateStr = dateStr.trim().replace(/"/g, '');
     
-    // Handle common date formats more precisely
+    // Handle MM/DD/YYYY format
     if (dateStr.includes('/')) {
       const parts = dateStr.split('/');
       if (parts.length === 3) {
@@ -392,21 +394,22 @@ function standardizeDate(dateStr: string, detectedFormat?: string): string {
         
         // Check if format might be DD/MM/YYYY by checking if day > 12
         if (month > 12) {
-          // Swap month and day
+          console.log(`Detected DD/MM/YYYY format, swapping month ${month} and day ${day}`);
           [month, day] = [day, month];
         }
         
         // Validate the date components
-        if (year >= 1900 && year <= 2100 && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
-          const date = new Date(year, month - 1, day);
-          if (!isNaN(date.getTime()) && date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day) {
-            return date.toISOString().split('T')[0];
-          }
+        if (isValidDateComponents(year, month, day)) {
+          const result = createUTCDateString(year, month, day);
+          console.log(`Successfully parsed "${dateStr}" -> "${result}"`);
+          return result;
+        } else {
+          console.warn(`Invalid date components: year=${year}, month=${month}, day=${day}`);
         }
       }
     }
     
-    // Handle dashes and other separators
+    // Handle YYYY-MM-DD format (ISO)
     if (dateStr.includes('-')) {
       const parts = dateStr.split('-');
       if (parts.length === 3) {
@@ -416,29 +419,76 @@ function standardizeDate(dateStr: string, detectedFormat?: string): string {
           const month = parseInt(parts[1]);
           const day = parseInt(parts[2]);
           
-          if (year >= 1900 && year <= 2100 && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
-            const date = new Date(year, month - 1, day);
-            if (!isNaN(date.getTime())) {
-              return date.toISOString().split('T')[0];
-            }
+          if (isValidDateComponents(year, month, day)) {
+            const result = createUTCDateString(year, month, day);
+            console.log(`Successfully parsed ISO date "${dateStr}" -> "${result}"`);
+            return result;
           }
         }
       }
     }
     
-    // Try standard JS Date parsing as fallback
+    // Try standard JS Date parsing as fallback (but convert to UTC)
     const date = new Date(dateStr);
     if (!isNaN(date.getTime()) && date.getFullYear() >= 1900 && date.getFullYear() <= 2100) {
-      return date.toISOString().split('T')[0];
+      const result = createUTCDateString(date.getFullYear(), date.getMonth() + 1, date.getDate());
+      console.log(`Fallback parsing "${dateStr}" -> "${result}"`);
+      return result;
     }
     
     // If all parsing fails, return today's date
-    console.warn(`Could not parse date: ${dateStr}, using today's date`);
-    return new Date().toISOString().split('T')[0];
+    console.warn(`Could not parse date: "${dateStr}", using today's date`);
+    return getTodayUTC();
   } catch (error) {
     console.warn('Date parsing error:', error);
-    return new Date().toISOString().split('T')[0];
+    return getTodayUTC();
   }
+}
+
+// Helper function to validate date components
+function isValidDateComponents(year: number, month: number, day: number): boolean {
+  if (year < 1900 || year > 2100) return false;
+  if (month < 1 || month > 12) return false;
+  if (day < 1 || day > 31) return false;
+  
+  // Create a test date to ensure the date is actually valid (e.g., not Feb 30)
+  const testDate = new Date(Date.UTC(year, month - 1, day));
+  return testDate.getUTCFullYear() === year && 
+         testDate.getUTCMonth() === month - 1 && 
+         testDate.getUTCDate() === day;
+}
+
+// Helper function to create UTC date string without timezone conversion
+function createUTCDateString(year: number, month: number, day: number): string {
+  // Validate inputs one more time
+  if (!isValidDateComponents(year, month, day)) {
+    console.warn(`Invalid date components in createUTCDateString: ${year}-${month}-${day}`);
+    return getTodayUTC();
+  }
+  
+  // Create UTC date to avoid timezone issues
+  const utcDate = new Date(Date.UTC(year, month - 1, day));
+  
+  // Manual string construction to ensure exact format
+  const yearStr = year.toString().padStart(4, '0');
+  const monthStr = month.toString().padStart(2, '0');
+  const dayStr = day.toString().padStart(2, '0');
+  
+  const result = `${yearStr}-${monthStr}-${dayStr}`;
+  
+  // Verify the constructed date matches our input
+  if (utcDate.getUTCFullYear() !== year || utcDate.getUTCMonth() !== month - 1 || utcDate.getUTCDate() !== day) {
+    console.warn(`Date construction mismatch: input ${year}-${month}-${day}, UTC date ${utcDate.getUTCFullYear()}-${utcDate.getUTCMonth() + 1}-${utcDate.getUTCDate()}`);
+    return getTodayUTC();
+  }
+  
+  return result;
+}
+
+// Helper function to get today's date in UTC format
+function getTodayUTC(): string {
+  const now = new Date();
+  return createUTCDateString(now.getUTCFullYear(), now.getUTCMonth() + 1, now.getUTCDate());
 }
 
 // Helper function to standardize channel names with variation mapping
