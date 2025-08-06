@@ -37,15 +37,15 @@ serve(async (req) => {
       line.split(',').map(cell => cell.trim().replace(/"/g, ''))
     );
 
-    // Prepare prompt for Gemini
-    const analysisPrompt = `You are an expert data analyst. Analyze this CSV data for ad spend tracking and process ALL rows.
+    // Prepare prompt for Gemini - ONLY for column mapping, not data processing
+    const analysisPrompt = `You are an expert data analyst. Analyze this CSV structure for ad spend tracking.
 
 CSV Headers: ${headers.join(', ')}
 
-Sample Data Rows (first 3):
+Sample Data Rows (first 3 for format detection):
 ${sampleRows.map((row, i) => `Row ${i + 1}: ${row.join(', ')}`).join('\n')}
 
-Total rows to process: ${lines.length - 1}
+I need you to identify the column mapping ONLY. Do NOT process the actual data - I will handle that programmatically.
 
 Required Database Fields:
 - date: Date of ad spend (required)
@@ -56,23 +56,21 @@ Required Database Fields:
 - ctr: Click-through rate as percentage (optional)
 - conversions: Number of conversions (optional)
 
-Please analyze the CSV structure and provide a column mapping. Then process ALL ${lines.length - 1} rows and return the cleaned data for each row.
-
 Respond with JSON only in this exact format:
 {
   "mapping": {
-    "date": "column_index_number",
-    "channel": "column_index_number", 
-    "amount": "column_index_number",
-    "campaign_name": "column_index_number_or_null",
-    "clicks": "column_index_number_or_null",
-    "ctr": "column_index_number_or_null",
-    "conversions": "column_index_number_or_null"
+    "date": 0,
+    "channel": 1, 
+    "amount": 2,
+    "campaign_name": 3,
+    "clicks": null,
+    "ctr": null,
+    "conversions": null
   },
-  "validation": {
+  "formats": {
     "date_format": "YYYY-MM-DD or MM/DD/YYYY or DD/MM/YYYY",
-    "amount_format": "dollars with or without symbols",
-    "channel_standardization": {
+    "amount_has_currency_symbol": true,
+    "channel_variations": {
       "facebook": "meta",
       "fb": "meta",
       "instagram": "meta",
@@ -80,19 +78,7 @@ Respond with JSON only in this exact format:
       "youtube": "google"
     }
   },
-  "cleaned_data": [
-    ${lines.slice(1).map((_, index) => `{
-      "date": "standardized_date_${index + 1}",
-      "channel": "standardized_channel_${index + 1}",
-      "amount": amount_in_dollars_${index + 1},
-      "campaign_name": "campaign_${index + 1}",
-      "clicks": clicks_${index + 1},
-      "ctr": ctr_percentage_${index + 1},
-      "conversions": conversions_${index + 1}
-    }`).slice(0, 3).join(',')}
-    // ... process all ${lines.length - 1} rows
-  ],
-  "suggestions": ["list of improvement suggestions"],
+  "suggestions": ["any data quality suggestions"],
   "confidence": 0.95
 }`;
 
@@ -145,66 +131,90 @@ Respond with JSON only in this exact format:
       throw new Error('Failed to parse AI analysis results');
     }
 
-    // Process and validate the cleaned data from ALL rows
-    if (!analysisResult.cleaned_data || !Array.isArray(analysisResult.cleaned_data)) {
-      throw new Error('AI did not return valid cleaned data array');
-    }
-
-    // If AI didn't process all rows, manually process the remaining ones using the mapping
-    let allProcessedData = analysisResult.cleaned_data;
+    // Now process ALL rows using the AI-detected mapping
+    console.log('AI mapping result:', analysisResult);
     
-    if (allProcessedData.length < lines.length - 1) {
-      console.log(`AI processed ${allProcessedData.length} rows, manually processing remaining ${lines.length - 1 - allProcessedData.length} rows`);
-      
-      // Process remaining rows using the mapping
-      const dataRows = lines.slice(1 + allProcessedData.length);
-      const additionalData = dataRows.map(line => {
+    const allDataRows = lines.slice(1); // Skip header
+    console.log(`Processing all ${allDataRows.length} data rows programmatically...`);
+    
+    const processedData = allDataRows.map((line, index) => {
+      try {
         const row = line.split(',').map(cell => cell.trim().replace(/"/g, ''));
-        return processRowWithMapping(row, analysisResult.mapping, analysisResult.validation);
-      });
+        
+        const getColumnValue = (field: string) => {
+          const columnIndex = analysisResult.mapping[field];
+          return columnIndex !== null && columnIndex !== undefined ? (row[columnIndex] || '') : '';
+        };
+
+        // Extract values using the mapping
+        const dateStr = getColumnValue('date');
+        const channelStr = getColumnValue('channel');
+        const amountStr = getColumnValue('amount');
+        const campaignStr = getColumnValue('campaign_name');
+        const clicksStr = getColumnValue('clicks');
+        const ctrStr = getColumnValue('ctr');
+        const conversionsStr = getColumnValue('conversions');
+
+        // Process and validate the data
+        const processedRow = {
+          date: standardizeDate(dateStr, analysisResult.formats?.date_format),
+          channel: standardizeChannel(channelStr, analysisResult.formats?.channel_variations),
+          amount: Math.round(parseAmount(amountStr) * 100), // Convert to cents
+          campaign_name: campaignStr || `Campaign ${index + 1}`,
+          clicks: parseInt(clicksStr) || 0,
+          ctr: parseFloat(ctrStr.replace('%', '')) || 0,
+          conversions: parseInt(conversionsStr) || 0
+        };
+
+        // Validate required fields
+        if (!processedRow.date || !processedRow.channel || processedRow.amount <= 0) {
+          console.warn(`Skipping invalid row ${index + 1}:`, row);
+          return null;
+        }
+
+        return processedRow;
+      } catch (error) {
+        console.error(`Error processing row ${index + 1}:`, error);
+        return null;
+      }
+    }).filter(row => row !== null); // Remove invalid rows
+
+    console.log(`Successfully processed ${processedData.length} out of ${allDataRows.length} rows`);
+
+    // Insert all processed data in batches
+    const batchSize = 100;
+    let totalInserted = 0;
+    
+    for (let i = 0; i < processedData.length; i += batchSize) {
+      const batch = processedData.slice(i, i + batchSize);
       
-      allProcessedData = [...allProcessedData, ...additionalData];
+      const { data: insertData, error: insertError } = await supabase
+        .from('ad_spend_records')
+        .insert(batch);
+
+      if (insertError) {
+        console.error(`Database insert error for batch ${Math.floor(i / batchSize) + 1}:`, insertError);
+        throw new Error(`Failed to insert batch: ${insertError.message}`);
+      }
+      
+      totalInserted += batch.length;
+      console.log(`Inserted batch ${Math.floor(i / batchSize) + 1}: ${batch.length} records`);
     }
 
-    const processedData = allProcessedData.map(row => ({
-      date: standardizeDate(row.date),
-      channel: standardizeChannel(row.channel),
-      amount: Math.round((parseFloat(String(row.amount)) || 0) * 100), // Convert to cents
-      campaign_name: String(row.campaign_name || ''),
-      clicks: parseInt(String(row.clicks || '0')) || 0,
-      ctr: parseFloat(String(row.ctr || '0')) || 0,
-      conversions: parseInt(String(row.conversions || '0')) || 0
-    })).filter(row => row.date && row.channel && row.amount > 0); // Filter out invalid rows
-
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Insert the processed data
-    const { data: insertData, error: insertError } = await supabase
-      .from('ad_spend_records')
-      .insert(processedData);
-
-    if (insertError) {
-      console.error('Database insert error:', insertError);
-      throw new Error(`Failed to insert data: ${insertError.message}`);
-    }
-
-    console.log(`Successfully processed and inserted ${processedData.length} records out of ${lines.length - 1} total rows`);
+    console.log(`Successfully processed and inserted ${totalInserted} records out of ${allDataRows.length} total rows`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        inserted: processedData.length,
-        processed: lines.length - 1,
+        inserted: totalInserted,
+        processed: allDataRows.length,
         analysis: {
           mapping: analysisResult.mapping,
-          validation: analysisResult.validation,
+          formats: analysisResult.formats,
           suggestions: analysisResult.suggestions,
           confidence: analysisResult.confidence
         },
-        message: `Successfully processed ${processedData.length} out of ${lines.length - 1} ad spend records with AI analysis`
+        message: `Successfully processed ${totalInserted} out of ${allDataRows.length} ad spend records with AI-assisted analysis`
       }),
       {
         status: 200,
@@ -228,58 +238,94 @@ Respond with JSON only in this exact format:
   }
 });
 
-// Helper function to process a single row using the mapping
-function processRowWithMapping(row: string[], mapping: any, validation: any) {
-  const getColumnValue = (field: string) => {
-    const index = mapping[field];
-    return index !== null && index !== undefined ? row[parseInt(index)] || '' : '';
-  };
+// Initialize Supabase client at module level
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-  return {
-    date: getColumnValue('date'),
-    channel: getColumnValue('channel'),
-    amount: parseFloat(getColumnValue('amount').replace(/[^0-9.-]/g, '')) || 0,
-    campaign_name: getColumnValue('campaign_name'),
-    clicks: parseInt(getColumnValue('clicks')) || 0,
-    ctr: parseFloat(getColumnValue('ctr').replace('%', '')) || 0,
-    conversions: parseInt(getColumnValue('conversions')) || 0
-  };
+// Helper function to parse amount strings
+function parseAmount(amountStr: string): number {
+  if (!amountStr) return 0;
+  
+  // Remove currency symbols and spaces, keep only numbers, dots, and minus signs
+  const cleanAmount = amountStr.replace(/[^0-9.-]/g, '');
+  const parsed = parseFloat(cleanAmount);
+  
+  return isNaN(parsed) ? 0 : Math.abs(parsed); // Ensure positive values
 }
 
-// Helper function to standardize dates
-function standardizeDate(dateStr: string): string {
+// Helper function to standardize dates with format detection
+function standardizeDate(dateStr: string, detectedFormat?: string): string {
   if (!dateStr) return new Date().toISOString().split('T')[0];
   
   try {
-    // Try different date formats
-    let date = new Date(dateStr);
+    dateStr = dateStr.trim().replace(/"/g, '');
     
-    // If that fails, try parsing MM/DD/YYYY or DD/MM/YYYY
-    if (isNaN(date.getTime()) && dateStr.includes('/')) {
+    // Try parsing based on detected format first
+    if (detectedFormat?.includes('MM/DD/YYYY') && dateStr.includes('/')) {
+      const [month, day, year] = dateStr.split('/');
+      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      if (!isNaN(date.getTime())) {
+        return date.toISOString().split('T')[0];
+      }
+    }
+    
+    if (detectedFormat?.includes('DD/MM/YYYY') && dateStr.includes('/')) {
+      const [day, month, year] = dateStr.split('/');
+      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      if (!isNaN(date.getTime())) {
+        return date.toISOString().split('T')[0];
+      }
+    }
+    
+    // Try standard ISO format or built-in parsing
+    const date = new Date(dateStr);
+    if (!isNaN(date.getTime())) {
+      return date.toISOString().split('T')[0];
+    }
+    
+    // If all else fails, try different separators
+    if (dateStr.includes('/')) {
       const parts = dateStr.split('/');
       if (parts.length === 3) {
-        // Try MM/DD/YYYY first
-        date = new Date(parseInt(parts[2]), parseInt(parts[0]) - 1, parseInt(parts[1]));
+        // Try different arrangements
+        const arrangements = [
+          [parts[2], parts[0], parts[1]], // YYYY, MM, DD
+          [parts[2], parts[1], parts[0]], // YYYY, DD, MM
+        ];
         
-        // If that results in invalid date, try DD/MM/YYYY
-        if (isNaN(date.getTime())) {
-          date = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+        for (const [year, month, day] of arrangements) {
+          const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+          if (!isNaN(date.getTime())) {
+            return date.toISOString().split('T')[0];
+          }
         }
       }
     }
     
-    return isNaN(date.getTime()) ? new Date().toISOString().split('T')[0] : date.toISOString().split('T')[0];
+    return new Date().toISOString().split('T')[0];
   } catch (error) {
+    console.warn('Date parsing error:', error);
     return new Date().toISOString().split('T')[0];
   }
 }
 
-// Helper function to standardize channel names
-function standardizeChannel(channel: string): string {
+// Helper function to standardize channel names with variation mapping
+function standardizeChannel(channel: string, variations?: Record<string, string>): string {
   if (!channel) return 'google';
   
   const cleanChannel = channel.toLowerCase().trim();
   
+  // Use AI-detected variations first
+  if (variations) {
+    for (const [original, standardized] of Object.entries(variations)) {
+      if (cleanChannel.includes(original.toLowerCase())) {
+        return standardized;
+      }
+    }
+  }
+  
+  // Fallback to built-in mappings
   if (cleanChannel.includes('facebook') || cleanChannel.includes('meta') || cleanChannel.includes('fb') || cleanChannel.includes('instagram')) return 'meta';
   if (cleanChannel.includes('google') || cleanChannel.includes('adwords') || cleanChannel.includes('youtube')) return 'google';
   if (cleanChannel.includes('tiktok') || cleanChannel.includes('tik-tok')) return 'tiktok';
