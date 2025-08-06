@@ -61,9 +61,6 @@ export default function ROIManagement() {
   const [cleanupDialog, setCleanupDialog] = useState(false);
   const [uploadingCsv, setUploadingCsv] = useState(false);
   const [deletingData, setDeletingData] = useState(false);
-  const [columnMappingDialog, setColumnMappingDialog] = useState(false);
-  const [csvData, setCsvData] = useState<string[][]>([]);
-  const [columnMapping, setColumnMapping] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dateFilter, setDateFilter] = useState('last_7_days');
   const [customStartDate, setCustomStartDate] = useState('');
@@ -244,120 +241,13 @@ Provide actionable insights for campaign optimization.`);
       return;
     }
 
+    setUploadingCsv(true);
+    setCsvUploadDialog(false);
+
     try {
       const csvContent = await file.text();
-      const analysisResult = analyzeCsvStructure(csvContent);
       
-      if (!analysisResult.isValid) {
-        throw new Error(analysisResult.error);
-      }
-
-      setCsvData(analysisResult.data);
-      setCsvUploadDialog(false);
-      setColumnMappingDialog(true);
-      setColumnMapping(analysisResult.suggestedMapping);
-
-    } catch (error) {
-      console.error('Error parsing CSV:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to parse CSV file",
-        variant: "destructive"
-      });
-    } finally {
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }
-  };
-
-  const analyzeCsvStructure = (csvContent: string) => {
-    const lines = csvContent.split('\n').filter(line => line.trim());
-    
-    if (lines.length < 2) {
-      return {
-        isValid: false,
-        error: 'CSV must have at least a header row and one data row',
-        data: [],
-        suggestedMapping: {}
-      };
-    }
-
-    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-    const dataRows = lines.slice(1).map(line => 
-      line.split(',').map(cell => cell.trim().replace(/"/g, ''))
-    );
-
-    // Validate minimum required columns can be detected
-    const requiredFields = ['date', 'channel', 'amount'];
-    const suggestedMapping = detectColumnMapping(headers);
-    
-    const missingRequired = requiredFields.filter(field => !suggestedMapping[field]);
-    
-    if (missingRequired.length > 0) {
-      console.warn(`Could not auto-detect columns for: ${missingRequired.join(', ')}`);
-    }
-
-    return {
-      isValid: true,
-      data: [headers, ...dataRows],
-      suggestedMapping,
-      analysis: {
-        totalRows: dataRows.length,
-        totalColumns: headers.length,
-        detectedColumns: Object.keys(suggestedMapping).filter(key => suggestedMapping[key]),
-        headers: headers
-      }
-    };
-  };
-
-  const detectColumnMapping = (headers: string[]) => {
-    const mapping: Record<string, string> = {};
-    
-    // Define column detection patterns
-    const columnPatterns = {
-      date: /^(date|day|time|when|period)/i,
-      channel: /^(channel|platform|source|medium|network|site)/i,
-      amount: /^(amount|spend|cost|budget|price|value|total)/i,
-      campaign_name: /^(campaign|name|title|description|ad.?name)/i,
-      clicks: /^(clicks?|click.?count|visits?)/i,
-      ctr: /^(ctr|click.?through.?rate|rate)/i,
-      conversions: /^(conversions?|conv|actions?|goals?)/i
-    };
-
-    headers.forEach(header => {
-      const cleanHeader = header.toLowerCase().trim();
-      
-      // Find the best match for each field
-      Object.entries(columnPatterns).forEach(([field, pattern]) => {
-        if (pattern.test(cleanHeader) && !mapping[field]) {
-          mapping[field] = header;
-        }
-      });
-    });
-
-    return mapping;
-  };
-
-  const handleProcessMappedCsv = async () => {
-    if (!csvData.length || !columnMapping.date || !columnMapping.channel || !columnMapping.amount) {
-      toast({
-        title: "Error",
-        description: "Please map at least Date, Channel, and Amount columns",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setUploadingCsv(true);
-    
-    try {
-      const [headers, ...dataRows] = csvData;
-      
-      // Reconstruct the original CSV content for AI processing
-      const csvContent = csvData.map(row => row.join(',')).join('\n');
-      
-      // Process the CSV with AI-powered parsing
+      // Process the CSV directly with AI-powered parsing
       const { data, error } = await supabase.functions.invoke('ai-parse-csv', {
         body: { csvContent }
       });
@@ -380,48 +270,25 @@ Provide actionable insights for campaign optimization.`);
           });
         }
         
-        setColumnMappingDialog(false);
-        setCsvData([]);
-        setColumnMapping({});
         fetchROIData();
       } else {
         throw new Error(data.error || 'Failed to process CSV with AI');
       }
     } catch (error) {
-      console.error('Error with AI CSV processing:', error);
+      console.error('Error processing CSV:', error);
       toast({
-        title: "AI Processing Failed",
-        description: "Falling back to manual processing. " + (error.message || "Please try again."),
+        title: "Error",
+        description: error.message || "Failed to process CSV file",
         variant: "destructive"
       });
-      
-      // Fallback to original manual processing
-      try {
-        const fallbackCsvContent = csvData.map(row => row.join(',')).join('\n');
-        const { data: fallbackData, error: fallbackError } = await supabase.functions.invoke('process-csv-adspend', {
-          body: { csvContent: fallbackCsvContent }
-        });
-        
-        if (fallbackError) throw fallbackError;
-        
-        if (fallbackData.success) {
-          toast({
-            title: "Manual Processing Complete",
-            description: `Successfully imported ${fallbackData.inserted} records using manual processing`
-          });
-          setColumnMappingDialog(false);
-          setCsvData([]);
-          setColumnMapping({});
-          fetchROIData();
-        }
-      } catch (fallbackErr) {
-        console.error('Fallback processing also failed:', fallbackErr);
-        throw new Error('Both AI and manual processing failed');
-      }
     } finally {
       setUploadingCsv(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
+
 
   const handleCleanupData = async () => {
     setDeletingData(true);
@@ -619,85 +486,6 @@ Provide actionable insights for campaign optimization.`);
                     disabled={deletingData}
                   >
                     {deletingData ? 'Deleting...' : 'Delete All Data'}
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-          <Dialog open={columnMappingDialog} onOpenChange={setColumnMappingDialog}>
-            <DialogContent className="max-w-4xl">
-              <DialogHeader>
-                <DialogTitle>Map CSV Columns</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Map your CSV columns to the correct database fields. At minimum, Date, Channel, and Amount are required.
-                </p>
-                {csvData.length > 0 && (
-                  <div className="grid grid-cols-2 gap-4">
-                    {['date', 'channel', 'amount', 'campaign_name', 'clicks', 'ctr', 'conversions'].map((dbField) => (
-                      <div key={dbField} className="space-y-2">
-                        <Label className="capitalize">
-                          {dbField.replace('_', ' ')} {['date', 'channel', 'amount'].includes(dbField) && '*'}
-                        </Label>
-                        <Select 
-                          value={columnMapping[dbField] || ''} 
-                          onValueChange={(value) => setColumnMapping(prev => ({...prev, [dbField]: value}))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select CSV column" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">None</SelectItem>
-                            {csvData[0]?.map((header, index) => (
-                              <SelectItem key={index} value={header}>
-                                {header}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {csvData.length > 1 && (
-                  <div className="mt-4">
-                    <Label>Preview (First 3 rows):</Label>
-                    <div className="mt-2 border rounded-lg overflow-hidden">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            {csvData[0]?.map((header, index) => (
-                              <TableHead key={index} className="text-xs">{header}</TableHead>
-                            ))}
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {csvData.slice(1, 4).map((row, rowIndex) => (
-                            <TableRow key={rowIndex}>
-                              {row.map((cell, cellIndex) => (
-                                <TableCell key={cellIndex} className="text-xs max-w-24 truncate">{cell}</TableCell>
-                              ))}
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </div>
-                )}
-                <div className="flex gap-2 justify-end">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => {
-                      setColumnMappingDialog(false);
-                      setCsvData([]);
-                      setColumnMapping({});
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button onClick={handleProcessMappedCsv} disabled={uploadingCsv}>
-                    {uploadingCsv ? 'Processing...' : 'Import Data'}
                   </Button>
                 </div>
               </div>
