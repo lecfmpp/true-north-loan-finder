@@ -1703,44 +1703,49 @@ const Admin = () => {
             {/* Controls */}
             <Card>
               <CardContent className="pt-6">
-                <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between mb-6">
-                  <div className="flex flex-col sm:flex-row gap-2 flex-1">
-                    <div className="relative flex-1 max-w-md">
+                <div className="space-y-4 mb-6">
+                  {/* Search and Primary Filters */}
+                  <div className="flex flex-col lg:flex-row gap-4">
+                    <div className="relative flex-1 min-w-0 max-w-md">
                       <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                       <Input placeholder="Search by name, email, or phone..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-8" />
                     </div>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-full sm:w-40">
-                        <SelectValue placeholder="Filter by status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Lead Status (All)</SelectItem>
-                        <SelectItem value="New">New</SelectItem>
-                        <SelectItem value="No Answer">No Answer</SelectItem>
-                        <SelectItem value="Wrong Number">Wrong Number</SelectItem>
-                        <SelectItem value="Contacted">Contacted</SelectItem>
-                        <SelectItem value="Application Sent">Application Sent</SelectItem>
-                        <SelectItem value="Disqualified">Disqualified</SelectItem>
-                        <SelectItem value="Loan Approved">Loan Approved</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Select value={countryFilter} onValueChange={setCountryFilter}>
-                      <SelectTrigger className="w-full sm:w-40">
-                        <SelectValue placeholder="Filter by country" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Countries</SelectItem>
-                        <SelectItem value="CA">Canada</SelectItem>
-                        <SelectItem value="US">United States</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    
+                    <div className="flex flex-col sm:flex-row gap-2 lg:gap-3">
+                      <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="w-full sm:w-44">
+                          <SelectValue placeholder="Lead Status (All)" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Lead Status (All)</SelectItem>
+                          <SelectItem value="New">New</SelectItem>
+                          <SelectItem value="No Answer">No Answer</SelectItem>
+                          <SelectItem value="Wrong Number">Wrong Number</SelectItem>
+                          <SelectItem value="Contacted">Contacted</SelectItem>
+                          <SelectItem value="Application Sent">Application Sent</SelectItem>
+                          <SelectItem value="Disqualified">Disqualified</SelectItem>
+                          <SelectItem value="Loan Approved">Loan Approved</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
+                      <Select value={countryFilter} onValueChange={setCountryFilter}>
+                        <SelectTrigger className="w-full sm:w-36">
+                          <SelectValue placeholder="All Countries" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Countries</SelectItem>
+                          <SelectItem value="CA">Canada</SelectItem>
+                          <SelectItem value="US">United States</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   
-                  {/* Additional Filters Row */}
-                  <div className="flex flex-col sm:flex-row gap-2 flex-1">
+                  {/* Additional Filters in Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
                     <Select value={monthlyRevenueFilter} onValueChange={setMonthlyRevenueFilter}>
-                      <SelectTrigger className="w-full sm:w-48">
-                        <SelectValue placeholder="Monthly Revenue" />
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Monthly Revenue (All)" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">Monthly Revenue (All)</SelectItem>
@@ -1754,8 +1759,8 @@ const Admin = () => {
                     </Select>
                     
                     <Select value={loanAmountFilter} onValueChange={setLoanAmountFilter}>
-                      <SelectTrigger className="w-full sm:w-48">
-                        <SelectValue placeholder="Loan Amount" />
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Loan Required (All)" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">Loan Required (All)</SelectItem>
@@ -1769,8 +1774,8 @@ const Admin = () => {
                     </Select>
                     
                     <Select value={timeInBusinessFilter} onValueChange={setTimeInBusinessFilter}>
-                      <SelectTrigger className="w-full sm:w-48">
-                        <SelectValue placeholder="Time in Business" />
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Business Age (All)" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">Business Age (All)</SelectItem>
@@ -1783,8 +1788,8 @@ const Admin = () => {
                     </Select>
                     
                     <Select value={applicationSentFilter} onValueChange={setApplicationSentFilter}>
-                      <SelectTrigger className="w-full sm:w-48">
-                        <SelectValue placeholder="Application Sent" />
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Applications (All)" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">Applications (All)</SelectItem>
@@ -1794,14 +1799,17 @@ const Admin = () => {
                     </Select>
                   </div>
                   
-                  <div className="flex gap-2">
-                    {selectedLeads.length > 0 && isSuperAdmin && <Button variant="destructive" onClick={() => {
-                      setBulkDelete(true);
-                      setDeleteModalOpen(true);
-                    }} className="flex items-center gap-2">
+                  {/* Action Buttons */}
+                  <div className="flex flex-col sm:flex-row gap-2 justify-end">
+                    {selectedLeads.length > 0 && isSuperAdmin && (
+                      <Button variant="destructive" onClick={() => {
+                        setBulkDelete(true);
+                        setDeleteModalOpen(true);
+                      }} className="flex items-center gap-2">
                         <Trash2 className="h-4 w-4" />
                         Delete Selected ({selectedLeads.length})
-                      </Button>}
+                      </Button>
+                    )}
                     <Button onClick={exportToCSV} className="flex items-center gap-2">
                       <Download className="h-4 w-4" />
                       Export CSV
