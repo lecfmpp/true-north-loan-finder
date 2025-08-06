@@ -12,6 +12,7 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { TrendingUp, DollarSign, Target, BarChart3, Plus, Upload, FileSpreadsheet, Trash2, Users, Award, FileText, CheckCircle, Calendar, Settings, Save, Banknote, Loader2 } from 'lucide-react';
+import EditableAdSpendTable from './EditableAdSpendTable';
 
 interface ROIMetrics {
   total_leads: number;
@@ -823,52 +824,13 @@ Provide actionable insights for campaign optimization.`);
         </CardContent>
       </Card>
 
-      {/* Ad Spend Records */}
+      {/* Ad Spend Records - Editable Table */}
       <Card>
-        <CardHeader>
-          <CardTitle>Ad Spend Records</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Channel</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Campaign</TableHead>
-                <TableHead>Clicks</TableHead>
-                <TableHead>Cost per Click</TableHead>
-                <TableHead>CTR</TableHead>
-                <TableHead>Conversions</TableHead>
-                <TableHead>Cost per Conversion</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {adSpends.map((spend) => {
-                const amount = spend.amount / 100; // Convert from cents
-                const clicks = spend.clicks || 0;
-                const conversions = spend.conversions || 0;
-                const costPerClick = clicks > 0 ? amount / clicks : 0;
-                const costPerConversion = conversions > 0 ? amount / conversions : 0;
-                
-                return (
-                  <TableRow key={spend.id}>
-                    <TableCell>{new Date(spend.date).toLocaleDateString()}</TableCell>
-                    <TableCell className="capitalize">
-                      {CHANNELS.find(c => c.value === spend.channel)?.label || spend.channel}
-                    </TableCell>
-                    <TableCell>${amount.toFixed(2)}</TableCell>
-                    <TableCell>{spend.campaign_name || '-'}</TableCell>
-                    <TableCell>{clicks}</TableCell>
-                    <TableCell>{costPerClick > 0 ? `$${costPerClick.toFixed(2)}` : '-'}</TableCell>
-                    <TableCell>{spend.ctr ? `${spend.ctr}%` : '-'}</TableCell>
-                    <TableCell>{conversions}</TableCell>
-                    <TableCell>{costPerConversion > 0 ? `$${costPerConversion.toFixed(2)}` : '-'}</TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+        <CardContent className="p-6">
+          <EditableAdSpendTable 
+            adSpends={adSpends} 
+            onDataUpdate={fetchROIData}
+          />
         </CardContent>
       </Card>
 
