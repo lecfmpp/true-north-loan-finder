@@ -96,55 +96,21 @@ export default function SimplifiedPartnersManagement() {
     try {
       setLoading(true);
       
-      // Check if email already exists
-      const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers();
-      if (listError) throw listError;
-      
-      const existingUser = existingUsers.users.find((u: any) => u.email === newPartner.email);
-      if (existingUser) {
-        throw new Error('An account with this email already exists');
-      }
-
-      // Create user account
-      const { data: newUser, error: createUserError } = await supabase.auth.admin.createUser({
-        email: newPartner.email,
-        password: newPartner.password,
-        email_confirm: true,
-        user_metadata: {
-          display_name: newPartner.name,
-          company_name: newPartner.company_name,
-          phone: newPartner.phone
-        }
+      console.log('Creating partner via edge function...');
+      const { data, error } = await supabase.functions.invoke('create-partner-simplified', {
+        body: newPartner
       });
 
-      if (createUserError || !newUser.user) {
-        throw new Error(createUserError?.message || 'Failed to create user account');
+      console.log('Edge function response:', { data, error });
+
+      if (error) {
+        console.error('Error creating partner:', error);
+        throw error;
       }
 
-      // Create partner record
-      const { error: partnerError } = await supabase
-        .from('partners')
-        .insert([{
-          user_id: newUser.user.id,
-          name: newPartner.name,
-          email: newPartner.email,
-          company_name: newPartner.company_name,
-          phone: newPartner.phone,
-          application_type: newPartner.application_type,
-          is_active: true
-        }]);
-
-      if (partnerError) throw partnerError;
-
-      // Assign user role
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert([{
-          user_id: newUser.user.id,
-          role: newPartner.application_type
-        }]);
-
-      if (roleError) throw roleError;
+      if (data?.error) {
+        throw new Error(data.error);
+      }
 
       toast({ title: "Success", description: "Partner created successfully" });
       setCreateModalOpen(false);
