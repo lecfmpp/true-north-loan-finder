@@ -402,6 +402,7 @@ Provide actionable insights for campaign optimization.`);
   };
 
   const getFilteredLeadCount = () => {
+    console.log('getFilteredLeadCount called with leadTypeFilter:', leadTypeFilter, 'metrics:', metrics);
     if (!metrics) return 0;
     switch (leadTypeFilter) {
       case 'qualified': return metrics.qualified_leads;
