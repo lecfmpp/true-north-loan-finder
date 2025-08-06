@@ -27,6 +27,7 @@ interface Lead {
   assignment_status: string;
   loan_value?: number;
   partner_notes?: string;
+  attribution_channel?: string;
 }
 
 export default function PartnerLeads() {
@@ -96,7 +97,8 @@ export default function PartnerLeads() {
         assignment_id: assignment.id,
         assignment_status: assignment.status,
         loan_value: assignment.loan_value,
-        partner_notes: assignment.partner_notes
+        partner_notes: assignment.partner_notes,
+        attribution_channel: assignment.quiz_responses.attribution_channel
       })) || [];
 
       setAssignedLeads(leads);
@@ -251,6 +253,12 @@ export default function PartnerLeads() {
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium">Lead Date:</span>
                         <span>{new Date(lead.created_at).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">Lead Source:</span>
+                        <Badge variant="outline" className="text-xs">
+                          {lead.attribution_channel ? lead.attribution_channel.charAt(0).toUpperCase() + lead.attribution_channel.slice(1) : 'Direct'}
+                        </Badge>
                       </div>
                     </div>
 

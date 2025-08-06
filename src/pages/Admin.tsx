@@ -64,6 +64,7 @@ interface QuizResponse {
   created_at: string;
   country: string;
   city_province: string;
+  attribution_channel?: string;
   // Add application tracking
   has_usa_application?: boolean;
   has_canadian_application?: boolean;
@@ -1845,6 +1846,15 @@ const Admin = () => {
                           </Button>
                         </TableHead>
                         <TableHead className="min-w-[140px]">Email Sequences</TableHead>
+                        <TableHead className="min-w-[100px]">
+                          <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent hover:text-current" onClick={() => handleSort('attribution_channel')}>
+                            Lead Source
+                            {sortField === 'attribution_channel' && (
+                              sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
+                            )}
+                            {sortField !== 'attribution_channel' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
+                          </Button>
+                        </TableHead>
                         <TableHead className="min-w-[100px]">Actions</TableHead>
                         {isSuperAdmin && <TableHead className="min-w-[200px]">Send to Partner</TableHead>}
                         {isSuperAdmin && <TableHead className="min-w-[180px]">Assign Lead</TableHead>}
@@ -2002,6 +2012,11 @@ const Admin = () => {
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
                             {format(new Date(lead.created_at), 'MMM dd, yyyy HH:mm')}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="text-xs">
+                              {lead.attribution_channel ? lead.attribution_channel.charAt(0).toUpperCase() + lead.attribution_channel.slice(1) : 'Direct'}
+                            </Badge>
                           </TableCell>
                           <TableCell>
                             <div className="space-y-2">

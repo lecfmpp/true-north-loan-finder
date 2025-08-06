@@ -65,6 +65,7 @@ interface QuizData {
   website: string;
   country: string;
   stateProvince: string;
+  leadSource: string;
 }
 
 // Phone number formatting function
@@ -159,7 +160,8 @@ const Quiz = () => {
     companyName: "",
     website: "",
     country: "",
-    stateProvince: ""
+    stateProvince: "",
+    leadSource: ""
   });
   const [stateOpen, setStateOpen] = useState(false);
   const [showResults, setShowResults] = useState(false);
@@ -230,9 +232,20 @@ const Quiz = () => {
     }
   };
 
-  // Track visitor when component mounts
+  // Track visitor when component mounts and extract lead source from URL
   useEffect(() => {
     EXTERNAL_TRACKER.trackVisitor();
+    
+    // Extract lead source from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const sourceParam = urlParams.get('source');
+    
+    if (sourceParam) {
+      setQuizData(prevData => ({
+        ...prevData,
+        leadSource: sourceParam
+      }));
+    }
   }, []);
 
   const totalSteps = 6;
@@ -572,7 +585,8 @@ const Quiz = () => {
         country: data.country,
         city_province: data.stateProvince,
         score: score,
-        status: 'New'
+        status: 'New',
+        attribution_channel: data.leadSource || 'direct'
       }).select().single();
 
       if (error) throw error;
