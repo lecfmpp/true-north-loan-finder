@@ -365,8 +365,40 @@ export default function SimplifiedPartnersManagement() {
                 <Input
                   id="phone"
                   value={newPartner.phone}
-                  onChange={(e) => setNewPartner({ ...newPartner, phone: e.target.value })}
-                  placeholder="Phone number"
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                    let formatted = '';
+                    
+                    if (value.length > 0) {
+                      if (value.length <= 10) {
+                        // US format: (xxx) xxx-xxxx
+                        if (value.length <= 3) {
+                          formatted = value;
+                        } else if (value.length <= 6) {
+                          formatted = `(${value.slice(0, 3)}) ${value.slice(3)}`;
+                        } else {
+                          formatted = `(${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6, 10)}`;
+                        }
+                      } else if (value.length === 11 && value.startsWith('1')) {
+                        // US with country code: +1 (xxx) xxx-xxxx
+                        const number = value.slice(1);
+                        if (number.length <= 3) {
+                          formatted = `+1 (${number}`;
+                        } else if (number.length <= 6) {
+                          formatted = `+1 (${number.slice(0, 3)}) ${number.slice(3)}`;
+                        } else {
+                          formatted = `+1 (${number.slice(0, 3)}) ${number.slice(3, 6)}-${number.slice(6, 10)}`;
+                        }
+                      } else {
+                        // Limit to 11 digits max
+                        formatted = value.slice(0, 11);
+                      }
+                    }
+                    
+                    setNewPartner({ ...newPartner, phone: formatted });
+                  }}
+                  placeholder="+1 (555) 123-4567"
+                  maxLength={17} // +1 (xxx) xxx-xxxx
                 />
               </div>
               <div>
