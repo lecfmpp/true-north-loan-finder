@@ -2102,7 +2102,13 @@ const Admin = () => {
                           </TableCell>
                           <TableCell>
                             <Badge variant="outline" className="text-xs">
-                              {lead.attribution_channel ? lead.attribution_channel.charAt(0).toUpperCase() + lead.attribution_channel.slice(1) : 'Direct'}
+                              {lead.attribution_channel ? 
+                                lead.attribution_channel
+                                  .split('_')
+                                  .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                                  .join(' ') 
+                                : 'Direct'
+                              }
                             </Badge>
                           </TableCell>
                           <TableCell>

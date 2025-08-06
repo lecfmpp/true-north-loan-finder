@@ -232,20 +232,90 @@ const Quiz = () => {
     }
   };
 
+  // Enhanced attribution tracking function
+  const getAttributionSource = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const referrer = document.referrer;
+    
+    // Priority order for attribution
+    
+    // 1. Google Ads (highest priority)
+    if (urlParams.get('gclid')) {
+      return 'google_ads';
+    }
+    
+    // 2. Facebook Ads
+    if (urlParams.get('fbclid')) {
+      return 'facebook_ads';
+    }
+    
+    // 3. Microsoft Ads
+    if (urlParams.get('msclkid')) {
+      return 'microsoft_ads';
+    }
+    
+    // 4. UTM Source
+    if (urlParams.get('utm_source')) {
+      const source = urlParams.get('utm_source');
+      const medium = urlParams.get('utm_medium');
+      const campaign = urlParams.get('utm_campaign');
+      
+      // Create more descriptive attribution
+      if (medium && campaign) {
+        return `${source}_${medium}`;
+      }
+      return source;
+    }
+    
+    // 5. Direct source parameter
+    if (urlParams.get('source')) {
+      return urlParams.get('source');
+    }
+    
+    // 6. Referrer parameter
+    if (urlParams.get('ref') || urlParams.get('referrer')) {
+      return urlParams.get('ref') || urlParams.get('referrer');
+    }
+    
+    // 7. Document referrer
+    if (referrer) {
+      try {
+        const referrerDomain = new URL(referrer).hostname;
+        if (referrerDomain !== window.location.hostname) {
+          // Clean up common referrer domains
+          if (referrerDomain.includes('google.')) return 'google_organic';
+          if (referrerDomain.includes('facebook.') || referrerDomain.includes('fb.')) return 'facebook_organic';
+          if (referrerDomain.includes('linkedin.')) return 'linkedin';
+          if (referrerDomain.includes('twitter.') || referrerDomain.includes('t.co')) return 'twitter';
+          if (referrerDomain.includes('youtube.')) return 'youtube';
+          if (referrerDomain.includes('bing.')) return 'bing';
+          
+          // Return domain name for other referrers
+          return referrerDomain.replace('www.', '');
+        }
+      } catch (e) {
+        console.warn('Could not parse referrer URL:', referrer);
+      }
+    }
+    
+    // 8. Default fallback
+    return 'direct';
+  };
+
   // Track visitor when component mounts and extract lead source from URL
   useEffect(() => {
     EXTERNAL_TRACKER.trackVisitor();
     
-    // Extract lead source from URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const sourceParam = urlParams.get('source');
+    // Get attribution source with enhanced tracking
+    const attributionSource = getAttributionSource();
     
-    if (sourceParam) {
-      setQuizData(prevData => ({
-        ...prevData,
-        leadSource: sourceParam
-      }));
-    }
+    // Store attribution in localStorage for persistence across pages
+    localStorage.setItem('lead_attribution', attributionSource);
+    
+    setQuizData(prevData => ({
+      ...prevData,
+      leadSource: attributionSource
+    }));
   }, []);
 
   const totalSteps = 6;
@@ -570,6 +640,9 @@ const Quiz = () => {
         else timeInBusiness = 'startup';
       }
 
+      // Get the most recent attribution source (could have changed during session)
+      const finalAttribution = localStorage.getItem('lead_attribution') || data.leadSource || 'direct';
+      
       // Save to local Supabase database
       const { data: savedResponse, error } = await supabase.from('quiz_responses').insert({
         loan_amount: data.loanAmount[0],
@@ -586,7 +659,7 @@ const Quiz = () => {
         city_province: data.stateProvince,
         score: score,
         status: 'New',
-        attribution_channel: data.leadSource || 'direct'
+        attribution_channel: finalAttribution
       }).select().single();
 
       if (error) throw error;
