@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import ApplicationsManagement from '@/components/admin/ApplicationsManagement';
+import { ApplicationsManagement } from '@/components/admin/ApplicationsManagement';
 import USAApplicationsManagement from '@/components/admin/USAApplicationsManagement';
 import CanadianApplicationsManagement from '@/components/admin/CanadianApplicationsManagement';
 import PartnerManagement from '@/components/admin/PartnerManagement';
@@ -19,7 +18,7 @@ import AvailableTimesManagement from '@/components/admin/AvailableTimesManagemen
 import EmailSequenceManagement from '@/components/admin/EmailSequenceManagement';
 import NotificationEmailSettings from '@/components/admin/NotificationEmailSettings';
 import SocialProofManagement from '@/components/admin/SocialProofManagement';
-import ChatWidgetManagement from '@/components/admin/ChatWidgetManagement';
+import { ChatWidgetManagement } from '@/components/admin/ChatWidgetManagement';
 import BlogManagement from '@/components/admin/BlogManagement';
 import SEOAnalyzer from '@/components/admin/SEOAnalyzer';
 import LeadSimulationManagement from '@/components/admin/LeadSimulationManagement';
@@ -29,6 +28,12 @@ const Admin = () => {
   const { user } = useAuth();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [seoFormData, setSeoFormData] = useState({
+    title: '',
+    description: '',
+    keywords: '',
+    content: ''
+  });
 
   useEffect(() => {
     const checkUserRole = async () => {
@@ -172,7 +177,7 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="seo">
-            <SEOAnalyzer />
+            <SEOAnalyzer formData={seoFormData} setFormData={setSeoFormData} />
           </TabsContent>
 
           <TabsContent value="settings">
