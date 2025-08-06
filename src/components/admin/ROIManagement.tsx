@@ -270,21 +270,19 @@ Provide actionable insights for campaign optimization.`);
         setCsvProgress({ current: 100, total: 100, stage: 'Complete!' });
         
         toast({
-          title: "AI Analysis Complete",
-          description: `Successfully imported ${data.inserted} records from ${data.processed} total rows. Confidence: ${(data.analysis.confidence * 100).toFixed(1)}%`
+          title: "Import Successful!",
+          description: `Successfully imported ${data.inserted} records from ${data.processed} total rows.`,
+          duration: 4000
         });
         
-        // Show AI suggestions if any
-        if (data.analysis.suggestions?.length > 0) {
-          console.log('AI Suggestions:', data.analysis.suggestions);
-          toast({
-            title: "AI Recommendations",
-            description: `Check console for ${data.analysis.suggestions.length} optimization suggestions`,
-            duration: 5000
-          });
-        }
+        // Force refresh the data immediately
+        await fetchROIData();
         
-        fetchROIData();
+        // Also trigger a second refresh after a short delay to ensure data is visible
+        setTimeout(() => {
+          fetchROIData();
+        }, 1000);
+        
       } else {
         throw new Error(data.error || 'Failed to process CSV with AI');
       }

@@ -320,10 +320,16 @@ function processRow(row: string[], mapping: any, rowIndex: number) {
     channel: standardizeChannel(channelStr),
     amount: Math.round(parseAmount(amountStr) * 100), // Convert to cents
     campaign_name: getColumnValue('campaign_name') || `Campaign ${rowIndex}`,
-    clicks: parseInt(getColumnValue('clicks')) || 0,
-    ctr: parseFloat(getColumnValue('ctr').replace('%', '')) || 0,
-    conversions: parseInt(getColumnValue('conversions')) || 0
+    clicks: Math.min(parseInt(getColumnValue('clicks')) || 0, 1000000), // Cap clicks at 1M
+    ctr: Math.min(Math.max(parseFloat(getColumnValue('ctr').replace('%', '')) || 0, 0), 100), // CTR between 0-100%
+    conversions: Math.min(parseInt(getColumnValue('conversions')) || 0, 100000) // Cap conversions at 100k
   };
+
+  // Additional validation for amount overflow
+  if (processedRow.amount > 10000000) { // More than $100,000 in cents
+    console.warn(`Amount ${processedRow.amount} cents exceeds reasonable limit, capping to $100,000`);
+    processedRow.amount = 10000000; // $100,000 in cents
+  }
 
   // Validate required fields
   if (!processedRow.date || !processedRow.channel || processedRow.amount <= 0) {
@@ -333,7 +339,7 @@ function processRow(row: string[], mapping: any, rowIndex: number) {
   return processedRow;
 }
 
-// Helper function to parse amount strings
+// Helper function to parse amount strings with overflow protection
 function parseAmount(amountStr: string): number {
   if (!amountStr) return 0;
   
@@ -341,7 +347,19 @@ function parseAmount(amountStr: string): number {
   const cleanAmount = amountStr.replace(/[^0-9.-]/g, '');
   const parsed = parseFloat(cleanAmount);
   
-  return isNaN(parsed) ? 0 : Math.abs(parsed); // Ensure positive values
+  if (isNaN(parsed)) return 0;
+  
+  // Prevent numeric overflow - PostgreSQL INTEGER max is 2,147,483,647 cents (about $21M)
+  // Limit to reasonable ad spend amounts (max $100,000)
+  const maxAmount = 100000; // $100,000 max
+  const absoluteAmount = Math.abs(parsed);
+  
+  if (absoluteAmount > maxAmount) {
+    console.warn(`Amount ${absoluteAmount} exceeds maximum ${maxAmount}, capping to maximum`);
+    return maxAmount;
+  }
+  
+  return absoluteAmount;
 }
 
 // Helper function to standardize dates with format detection
