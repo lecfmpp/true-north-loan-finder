@@ -25,6 +25,9 @@ interface AdSpendRecord {
   amount: number;
   campaign_name: string;
   notes: string;
+  clicks: number;
+  ctr: number;
+  conversions: number;
 }
 
 const CHANNELS = [
@@ -47,7 +50,10 @@ export default function ROIManagement() {
     channel: '',
     amount: '',
     campaign_name: '',
-    notes: ''
+    notes: '',
+    clicks: '',
+    ctr: '',
+    conversions: ''
   });
   const { toast } = useToast();
 
@@ -106,7 +112,10 @@ export default function ROIManagement() {
           channel: newSpend.channel,
           amount: Math.round(parseFloat(newSpend.amount) * 100), // Convert to cents
           campaign_name: newSpend.campaign_name,
-          notes: newSpend.notes
+          notes: newSpend.notes,
+          clicks: parseInt(newSpend.clicks) || 0,
+          ctr: parseFloat(newSpend.ctr) || 0,
+          conversions: parseInt(newSpend.conversions) || 0
         });
 
       if (error) throw error;
@@ -122,7 +131,10 @@ export default function ROIManagement() {
         channel: '',
         amount: '',
         campaign_name: '',
-        notes: ''
+        notes: '',
+        clicks: '',
+        ctr: '',
+        conversions: ''
       });
       fetchROIData();
     } catch (error) {
@@ -226,6 +238,9 @@ export default function ROIManagement() {
                     <li><strong>Channel:</strong> google, meta, tiktok, or linkedin</li>
                     <li><strong>Amount:</strong> Spend amount in dollars</li>
                     <li><strong>Campaign Name:</strong> (Optional) Campaign identifier</li>
+                    <li><strong>Clicks:</strong> (Optional) Number of clicks</li>
+                    <li><strong>CTR:</strong> (Optional) Click-through rate as percentage</li>
+                    <li><strong>Conversions:</strong> (Optional) Number of conversions</li>
                     <li><strong>Notes:</strong> (Optional) Additional notes</li>
                   </ul>
                 </div>
@@ -306,6 +321,42 @@ export default function ROIManagement() {
                     onChange={(e) => setNewSpend({...newSpend, campaign_name: e.target.value})}
                   />
                 </div>
+                <div>
+                  <Label>Clicks (Optional)</Label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={newSpend.clicks}
+                    onChange={(e) => setNewSpend({...newSpend, clicks: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label>CTR % (Optional)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={newSpend.ctr}
+                    onChange={(e) => setNewSpend({...newSpend, ctr: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label>Conversions (Optional)</Label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={newSpend.conversions}
+                    onChange={(e) => setNewSpend({...newSpend, conversions: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label>Notes (Optional)</Label>
+                  <Input
+                    placeholder="Additional notes"
+                    value={newSpend.notes}
+                    onChange={(e) => setNewSpend({...newSpend, notes: e.target.value})}
+                  />
+                </div>
                 <Button onClick={handleAddSpend} className="w-full">
                   Add Record
                 </Button>
@@ -379,21 +430,39 @@ export default function ROIManagement() {
                 <TableHead>Channel</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>Campaign</TableHead>
+                <TableHead>Clicks</TableHead>
+                <TableHead>Cost per Click</TableHead>
+                <TableHead>CTR</TableHead>
+                <TableHead>Conversions</TableHead>
+                <TableHead>Cost per Conversion</TableHead>
                 <TableHead>Notes</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {adSpends.map((spend) => (
-                <TableRow key={spend.id}>
-                  <TableCell>{new Date(spend.date).toLocaleDateString()}</TableCell>
-                  <TableCell className="capitalize">
-                    {CHANNELS.find(c => c.value === spend.channel)?.label || spend.channel}
-                  </TableCell>
-                  <TableCell>${(spend.amount / 100).toFixed(2)}</TableCell>
-                  <TableCell>{spend.campaign_name || '-'}</TableCell>
-                  <TableCell className="max-w-xs truncate">{spend.notes || '-'}</TableCell>
-                </TableRow>
-              ))}
+              {adSpends.map((spend) => {
+                const amount = spend.amount / 100; // Convert from cents
+                const clicks = spend.clicks || 0;
+                const conversions = spend.conversions || 0;
+                const costPerClick = clicks > 0 ? amount / clicks : 0;
+                const costPerConversion = conversions > 0 ? amount / conversions : 0;
+                
+                return (
+                  <TableRow key={spend.id}>
+                    <TableCell>{new Date(spend.date).toLocaleDateString()}</TableCell>
+                    <TableCell className="capitalize">
+                      {CHANNELS.find(c => c.value === spend.channel)?.label || spend.channel}
+                    </TableCell>
+                    <TableCell>${amount.toFixed(2)}</TableCell>
+                    <TableCell>{spend.campaign_name || '-'}</TableCell>
+                    <TableCell>{clicks}</TableCell>
+                    <TableCell>{costPerClick > 0 ? `$${costPerClick.toFixed(2)}` : '-'}</TableCell>
+                    <TableCell>{spend.ctr ? `${spend.ctr}%` : '-'}</TableCell>
+                    <TableCell>{conversions}</TableCell>
+                    <TableCell>{costPerConversion > 0 ? `$${costPerConversion.toFixed(2)}` : '-'}</TableCell>
+                    <TableCell className="max-w-xs truncate">{spend.notes || '-'}</TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </CardContent>

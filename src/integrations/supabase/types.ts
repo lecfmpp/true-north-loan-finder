@@ -19,8 +19,11 @@ export type Database = {
           amount: number
           campaign_name: string | null
           channel: string
+          clicks: number | null
+          conversions: number | null
           created_at: string
           created_by: string | null
+          ctr: number | null
           currency: string | null
           date: string
           id: string
@@ -31,8 +34,11 @@ export type Database = {
           amount: number
           campaign_name?: string | null
           channel: string
+          clicks?: number | null
+          conversions?: number | null
           created_at?: string
           created_by?: string | null
+          ctr?: number | null
           currency?: string | null
           date: string
           id?: string
@@ -43,8 +49,11 @@ export type Database = {
           amount?: number
           campaign_name?: string | null
           channel?: string
+          clicks?: number | null
+          conversions?: number | null
           created_at?: string
           created_by?: string | null
+          ctr?: number | null
           currency?: string | null
           date?: string
           id?: string
