@@ -321,7 +321,7 @@ function processRow(row: string[], mapping: any, rowIndex: number) {
     amount: Math.round(parseAmount(amountStr) * 100), // Convert to cents
     campaign_name: getColumnValue('campaign_name') || `Campaign ${rowIndex}`,
     clicks: Math.min(parseInt(getColumnValue('clicks')) || 0, 1000000), // Cap clicks at 1M
-    ctr: Math.min(Math.max(parseFloat(getColumnValue('ctr').replace('%', '')) || 0, 0), 100), // CTR between 0-100%
+    ctr: Math.min(Math.max(parseFloat(getColumnValue('ctr').replace('%', '')) || 0, 0), 9.99), // CTR max 9.99%
     conversions: Math.min(parseInt(getColumnValue('conversions')) || 0, 100000) // Cap conversions at 100k
   };
 
