@@ -1935,6 +1935,10 @@ export type Database = {
           total_revenue: number
           roi_percentage: number
           channel_breakdown: Json
+          qualified_leads: number
+          funded_leads: number
+          all_leads: number
+          application_leads: number
         }[]
       }
       has_any_management_role: {

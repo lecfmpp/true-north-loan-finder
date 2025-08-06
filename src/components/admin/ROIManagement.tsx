@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { TrendingUp, DollarSign, Target, BarChart3, Plus, Upload, FileSpreadsheet, Trash2 } from 'lucide-react';
+import { TrendingUp, DollarSign, Target, BarChart3, Plus, Upload, FileSpreadsheet, Trash2, Users, Award, FileText, CheckCircle } from 'lucide-react';
 
 interface ROIMetrics {
   total_leads: number;
@@ -16,6 +16,10 @@ interface ROIMetrics {
   cost_per_lead: number;
   total_revenue: number;
   roi_percentage: number;
+  qualified_leads: number;
+  funded_leads: number;
+  all_leads: number;
+  application_leads: number;
 }
 
 interface AdSpendRecord {
@@ -230,7 +234,7 @@ export default function ROIManagement() {
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
+          {[...Array(8)].map((_, i) => (
             <Card key={i} className="animate-pulse">
               <CardContent className="p-6">
                 <div className="h-4 bg-muted rounded mb-2"></div>
@@ -483,6 +487,58 @@ export default function ROIManagement() {
                 <p className="text-2xl font-bold">{(metrics?.roi_percentage || 0).toFixed(1)}%</p>
               </div>
               <TrendingUp className={`h-8 w-8 ${(metrics?.roi_percentage || 0) > 0 ? 'text-green-600' : 'text-red-600'}`} />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Qualified Leads</p>
+                <p className="text-2xl font-bold">{metrics?.qualified_leads || 0}</p>
+                <p className="text-xs text-muted-foreground">$10k+ monthly revenue</p>
+              </div>
+              <Users className="h-8 w-8 text-emerald-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Funded Leads</p>
+                <p className="text-2xl font-bold">{metrics?.funded_leads || 0}</p>
+                <p className="text-xs text-muted-foreground">Loan approved status</p>
+              </div>
+              <Award className="h-8 w-8 text-yellow-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">All Leads</p>
+                <p className="text-2xl font-bold">{metrics?.all_leads || 0}</p>
+                <p className="text-xs text-muted-foreground">Total unfiltered</p>
+              </div>
+              <FileText className="h-8 w-8 text-purple-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Application Leads</p>
+                <p className="text-2xl font-bold">{metrics?.application_leads || 0}</p>
+                <p className="text-xs text-muted-foreground">US & Canada applications</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-indigo-600" />
             </div>
           </CardContent>
         </Card>
