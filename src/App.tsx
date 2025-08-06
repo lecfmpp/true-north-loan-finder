@@ -64,11 +64,11 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <ChatWidget />
         <ConsentBanner />
         
         <BrowserRouter>
           <ScrollToTop />
+          <ChatWidget />
           <SocialProofWidget />
           <Routes>
             <Route path="/" element={<Home />} />
