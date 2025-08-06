@@ -272,18 +272,34 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
     if (isEditing) {
       return (
         <div className="flex items-center gap-2">
-          <Select value={editValue} onValueChange={setEditValue}>
-            <SelectTrigger className="h-8">
-              <SelectValue placeholder="Select or type campaign" />
-            </SelectTrigger>
-            <SelectContent>
-              {uniqueCampaigns.map((campaign) => (
-                <SelectItem key={campaign} value={campaign}>
-                  {campaign}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="relative">
+            <Input
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              placeholder="Type or select campaign"
+              className="h-8"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') saveEdit();
+                if (e.key === 'Escape') cancelEdit();
+              }}
+            />
+            {uniqueCampaigns.length > 0 && (
+              <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-popover border rounded-md shadow-md max-h-32 overflow-y-auto">
+                {uniqueCampaigns
+                  .filter(campaign => campaign.toLowerCase().includes(editValue.toLowerCase()))
+                  .map((campaign) => (
+                    <div
+                      key={campaign}
+                      className="px-3 py-2 hover:bg-accent cursor-pointer text-sm"
+                      onClick={() => setEditValue(campaign)}
+                    >
+                      {campaign}
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
           <Button size="sm" variant="ghost" onClick={saveEdit}>
             <Check className="h-4 w-4" />
           </Button>
