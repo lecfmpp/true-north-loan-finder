@@ -1316,11 +1316,13 @@ const CanadianApplication = () => {
       <Footer />
 
       {showAuth && (
-        <ApplicationAuth 
-          isOpen={showAuth} 
-          onClose={() => setShowAuth(false)}
-          onSuccess={() => setShowAuth(false)}
-        />
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <ApplicationAuth 
+            email={formData.email_address}
+            name={formData.principal_owner_name}
+            onAuthSuccess={() => setShowAuth(false)}
+          />
+        </div>
       )}
     </div>
   );
