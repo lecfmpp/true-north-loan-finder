@@ -37,13 +37,13 @@ import USAApplicationsManagement from '@/components/admin/USAApplicationsManagem
 import CanadianApplicationsManagement from '@/components/admin/CanadianApplicationsManagement';
 import SocialProofManagement from '@/components/admin/SocialProofManagement';
 import SettingsManagement from '@/components/admin/SettingsManagement';
-import EnhancedPartnersManagement from '@/components/admin/EnhancedPartnersManagement';
+import SimplifiedPartnersManagement from '@/components/admin/SimplifiedPartnersManagement';
 import PartnerLeads from '@/components/admin/PartnerLeads';
-import PartnerApplications from '@/components/admin/PartnerApplications';
+// Removed PartnerApplications component  
 import PartnerPayments from '@/components/admin/PartnerPayments';
 import BillingManagement from '@/components/admin/BillingManagement';
 import ROIManagement from '@/components/admin/ROIManagement';
-import { PartnersManagement } from '@/components/admin/PartnersManagement';
+// Removed PartnersManagement component
 import Footer from '@/components/Footer';
 
 interface QuizResponse {
@@ -2182,9 +2182,9 @@ const Admin = () => {
               </div>}
           </div>;
       case 'applications':
-        return <EnhancedPartnersManagement />;
+        return <SimplifiedPartnersManagement />;
       case 'partners':
-        return <EnhancedPartnersManagement />;
+        return <SimplifiedPartnersManagement />;
       case 'usa-applications':
         return <USAApplicationsManagement onCountUpdate={fetchUsaApplicationsCount} />;
       case 'canadian-applications':
@@ -2202,7 +2202,7 @@ const Admin = () => {
       case 'partner-leads':
         return <PartnerLeads />;
       case 'partner-applications':
-        return <PartnerApplications />;
+        return <div className="p-6 text-center text-muted-foreground">Partner applications feature has been simplified - use Partners tab instead</div>;
       case 'partner-payments':
         return <PartnerPayments />;
       case 'billing':

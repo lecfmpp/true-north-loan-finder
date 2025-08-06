@@ -38,7 +38,7 @@ const ApplicationStatus = lazy(() => import("./pages/ApplicationStatus"));
 const CanadianApplication = lazy(() => import("./pages/CanadianApplication"));
 const BrokerSignup = lazy(() => import("./pages/BrokerSignup"));
 const BrokerPaymentSuccess = lazy(() => import("./pages/BrokerPaymentSuccess"));
-const ConfirmPartner = lazy(() => import("./pages/ConfirmPartner"));
+// Removed ConfirmPartner component
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Loading component for lazy routes
@@ -167,11 +167,7 @@ const App = () => (
                 <BrokerPaymentSuccess />
               </Suspense>
             } />
-            <Route path="/confirm-partner" element={
-              <Suspense fallback={<PageLoader />}>
-                <ConfirmPartner />
-              </Suspense>
-            } />
+            {/* Removed confirm-partner route */}
             
             <Route path="/privacy" element={
               <Suspense fallback={<PageLoader />}>
