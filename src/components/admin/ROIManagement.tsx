@@ -394,7 +394,7 @@ Provide actionable insights for campaign optimization.`);
     return adSpends
       .filter(spend => spend.channel === channel && 
         spend.date >= startDate && spend.date <= endDate)
-      .reduce((total, spend) => total + (spend.conversions || 0), 0) || 1; // Fallback to 1 to avoid division by zero
+      .reduce((total, spend) => total + (spend.conversions || 0), 0);
   };
 
   const getChannelRevenue = (channel: string) => {
