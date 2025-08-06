@@ -346,55 +346,93 @@ const Quiz = () => {
     { id: "unsure", label: "Not Sure", description: "I'll check later", icon: Target }
   ];
 
+  // Helper function to convert credit score text to number
+  const getCreditScoreValue = (creditScore: string) => {
+    switch (creditScore) {
+      case "excellent": return 775; // Average of 750+
+      case "good": return 725; // Average of 700-749
+      case "fair": return 675; // Average of 650-699
+      case "poor": return 625; // Average of below 650
+      case "unsure": return 650; // Conservative estimate
+      default: return 650;
+    }
+  };
+
   const calculateScore = () => {
-    let score = 60; // Base score
+    let score = 0; // Start from 0 for cleaner calculation
     
-    // Calculate business age from founding date
+    // 1. REVENUE ABOVE 10K/MONTH (40 points max - most important)
+    const monthlyRevenue = quizData.monthlyRevenue[0];
+    if (monthlyRevenue >= 100000) {
+      score += 40; // $100k+ = excellent
+    } else if (monthlyRevenue >= 50000) {
+      score += 35; // $50k-99k = very good
+    } else if (monthlyRevenue >= 25000) {
+      score += 30; // $25k-49k = good
+    } else if (monthlyRevenue >= 10000) {
+      score += 25; // $10k-24k = minimum threshold met
+    } else {
+      score += 0; // Below $10k = no points
+    }
+    
+    // 2. BUSINESS AGE ABOVE 6 MONTHS (35 points max - second most important)
     if (quizData.foundingMonth && quizData.foundingYear) {
       const currentDate = new Date();
       const foundingDate = new Date(parseInt(quizData.foundingYear), parseInt(quizData.foundingMonth) - 1);
       const ageInMonths = (currentDate.getFullYear() - foundingDate.getFullYear()) * 12 + 
                          (currentDate.getMonth() - foundingDate.getMonth());
       
-      // Time in business scoring based on age in months
-      if (ageInMonths >= 60) score += 25; // 5+ years
-      else if (ageInMonths >= 24) score += 20; // 2-5 years  
-      else if (ageInMonths >= 12) score += 10; // 1-2 years
-      else if (ageInMonths >= 6) score += 5; // 6-12 months
-      // Startups (< 6 months) get no bonus points
+      if (ageInMonths >= 60) {
+        score += 35; // 5+ years = excellent stability
+      } else if (ageInMonths >= 36) {
+        score += 30; // 3-5 years = very stable
+      } else if (ageInMonths >= 24) {
+        score += 25; // 2-3 years = stable
+      } else if (ageInMonths >= 12) {
+        score += 20; // 1-2 years = established
+      } else if (ageInMonths >= 6) {
+        score += 15; // 6-12 months = minimum threshold met
+      } else {
+        score += 0; // Under 6 months = no points
+      }
     }
     
-    // Revenue scoring
-    if (quizData.monthlyRevenue[0] >= 50000) score += 15;
-    else if (quizData.monthlyRevenue[0] >= 25000) score += 10;
-    else if (quizData.monthlyRevenue[0] >= 10000) score += 5;
-    
-    // Credit score scoring
-    if (quizData.creditScore === "excellent") score += 10;
-    else if (quizData.creditScore === "good") score += 5;
+    // 3. CREDIT SCORE ABOVE 600 (25 points max - third most important)
+    const creditScoreValue = getCreditScoreValue(quizData.creditScore);
+    if (creditScoreValue >= 750) {
+      score += 25; // Excellent credit
+    } else if (creditScoreValue >= 700) {
+      score += 20; // Good credit
+    } else if (creditScoreValue >= 650) {
+      score += 15; // Fair credit
+    } else if (creditScoreValue >= 600) {
+      score += 10; // Minimum threshold met
+    } else {
+      score += 0; // Below 600 = no points
+    }
     
     return Math.min(score, 100);
   };
 
   const getScoreMessage = (score: number) => {
     if (score >= 85) return {
-      title: "Excellent Match!",
-      message: "Your profile is outstanding! You're a prime candidate for multiple financing options with competitive rates.",
+      title: "Exceptional Candidate!",
+      message: "Your business profile exceeds all key criteria. You qualify for the best rates and highest approval odds with premium lenders.",
       color: "text-secondary"
     };
-    if (score >= 70) return {
-      title: "Strong Match!",
-      message: "Your consistent revenue and business history make you an attractive candidate for our top lending partners.",
+    if (score >= 65) return {
+      title: "Strong Candidate!",
+      message: "Your business meets most key qualification criteria. You have excellent chances with our top-tier lending partners.",
       color: "text-secondary"
     };
-    if (score >= 55) return {
-      title: "Good Match!",
-      message: "You have solid qualifications. Several of our lenders specialize in businesses like yours.",
+    if (score >= 45) return {
+      title: "Good Candidate!",
+      message: "Your business meets some important criteria. Several of our specialized lenders can work with your profile.",
       color: "text-accent"
     };
     return {
-      title: "Potential Match",
-      message: "While you may face some challenges, we have specialized lenders who work with businesses in your situation.",
+      title: "Potential Candidate",
+      message: "While your business may not meet all standard criteria, we have alternative lenders who specialize in unique situations.",
       color: "text-primary"
     };
   };

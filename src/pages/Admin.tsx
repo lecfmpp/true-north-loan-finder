@@ -1996,9 +1996,20 @@ const Admin = () => {
                             <div className="text-sm text-muted-foreground">{lead.time_in_business}</div>
                           </TableCell>
                           <TableCell>
-                            <div className="flex items-center gap-1">
-                              <div className={`w-2 h-2 rounded-full ${lead.score >= 80 ? 'bg-green-500' : lead.score >= 60 ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
+                            <div className="flex items-center gap-2">
+                              <div className={`w-3 h-3 rounded-full ${
+                                lead.score >= 85 ? 'bg-green-500' : 
+                                lead.score >= 65 ? 'bg-blue-500' :
+                                lead.score >= 45 ? 'bg-yellow-500' : 
+                                'bg-red-500'
+                              }`}></div>
                               <span className="font-medium">{lead.score}/100</span>
+                              <span className="text-xs text-muted-foreground">
+                                ({lead.score >= 85 ? 'Exceptional' : 
+                                  lead.score >= 65 ? 'Strong' :
+                                  lead.score >= 45 ? 'Good' : 
+                                  'Potential'})
+                              </span>
                             </div>
                           </TableCell>
                           <TableCell>
