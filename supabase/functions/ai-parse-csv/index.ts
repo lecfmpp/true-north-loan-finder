@@ -363,7 +363,7 @@ function processRow(row: string[], mapping: any, rowIndex: number) {
     amount: Math.round(parseAmount(amountStr) * 100), // Convert to cents
     campaign_name: campaignName,
     clicks: Math.min(parseInt(getColumnValue('clicks')) || 0, 1000000), // Cap clicks at 1M
-    ctr: Math.min(Math.max(parseFloat(getColumnValue('ctr')) || 0, 0), 9.9999), // Keep CTR as decimal, cap at 9.9999
+    ctr: Math.min(Math.max(parseFloat(getColumnValue('ctr')) || 0, 0), 100), // Keep CTR as percentage, cap at 100%
     conversions: Math.min(parseInt(getColumnValue('conversions')) || 0, 100000) // Cap conversions at 100k
   };
 
