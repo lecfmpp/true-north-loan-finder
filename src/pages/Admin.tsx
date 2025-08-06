@@ -30,9 +30,17 @@ const Admin = () => {
   const [loading, setLoading] = useState(true);
   const [seoFormData, setSeoFormData] = useState({
     title: '',
-    description: '',
-    keywords: '',
-    content: ''
+    slug: '',
+    excerpt: '',
+    content: '',
+    author: '',
+    status: 'draft' as const,
+    tags: [],
+    featured_image_url: '',
+    meta_title: '',
+    meta_description: '',
+    meta_keywords: [],
+    reading_time: 0
   });
 
   useEffect(() => {
