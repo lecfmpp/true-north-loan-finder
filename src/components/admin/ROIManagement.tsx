@@ -288,13 +288,11 @@ Provide actionable insights for campaign optimization.`);
       const csvContent = await pendingCsvFile.text();
       setCsvProgress({ current: 20, total: 100, stage: 'Analyzing CSV structure...' });
 
-      // Check file size and row count for processing strategy
       const lines = csvContent.split('\n').filter(line => line.trim());
-      const rowCount = lines.length - 1; // Excluding header
+      const rowCount = lines.length - 1;
       
       setCsvProgress({ current: 40, total: 100, stage: `Processing ${rowCount} records...` });
       
-      // Process the CSV with AI-powered parsing
       const { data, error } = await supabase.functions.invoke('ai-parse-csv', {
         body: { csvContent, batchSize: rowCount > 1000 ? 100 : 50, defaultChannel: selectedChannel }
       });
@@ -312,33 +310,25 @@ Provide actionable insights for campaign optimization.`);
           duration: 4000
         });
         
-        // Force refresh the data immediately
         await fetchROIData();
         
-        // Also trigger a second refresh after a short delay to ensure data is visible
         setTimeout(() => {
           fetchROIData();
         }, 1000);
-        
       } else {
-        throw new Error(data.error || 'Failed to process CSV with AI');
+        throw new Error(data.error || 'Import failed');
       }
     } catch (error) {
-      console.error('Error processing CSV:', error);
-      setCsvProgress({ current: 0, total: 0, stage: 'Error occurred' });
+      console.error('Error importing CSV:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to process CSV file",
+        title: "Import Failed",
+        description: error instanceof Error ? error.message : "Failed to import CSV",
         variant: "destructive"
       });
     } finally {
-      setTimeout(() => {
-        setUploadingCsv(false);
-        setCsvProgress({ current: 0, total: 0, stage: '' });
-      }, 1000);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      setUploadingCsv(false);
+      setPendingCsvFile(null);
+      setSelectedChannel('');
     }
   };
 
