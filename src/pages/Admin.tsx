@@ -2291,37 +2291,18 @@ const Admin = () => {
                               <div className="space-y-2">
                                 {/* Display sent emails with delivery status */}
                                 {leadCustomEmails[lead.id] && leadCustomEmails[lead.id].length > 0 && (
-                                  <div className="space-y-1">
-                                    <div className="text-xs font-medium text-muted-foreground">Emails Sent:</div>
-                                    {leadCustomEmails[lead.id].map((customEmail, index) => (
-                                      <div key={customEmail.id} className="text-xs bg-muted/50 p-2 rounded border">
-                                        <div className="flex items-center gap-2">
-                                          <div className="font-medium text-green-700">
-                                            {customEmail.recipient_emails.join(', ')}
-                                          </div>
-                                          <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                            customEmail.delivery_status === 'delivered' ? 'bg-green-100 text-green-800' :
-                                            customEmail.delivery_status === 'failed' ? 'bg-red-100 text-red-800' :
-                                            customEmail.delivery_status === 'sent' ? 'bg-blue-100 text-blue-800' :
-                                            'bg-gray-100 text-gray-800'
-                                          }`}>
-                                            {customEmail.delivery_status === 'delivered' ? '✅ Delivered' :
-                                             customEmail.delivery_status === 'failed' ? '❌ Failed' :
-                                             customEmail.delivery_status === 'sent' ? '📤 Sent' :
-                                             '⏳ Pending'}
-                                          </span>
-                                        </div>
-                                        <div className="text-muted-foreground">
-                                          {new Date(customEmail.sent_at).toLocaleDateString()} {new Date(customEmail.sent_at).toLocaleTimeString()}
-                                          {customEmail.delivered_at && (
-                                            <span className="ml-2 text-green-600">
-                                              (Delivered: {new Date(customEmail.delivered_at).toLocaleTimeString()})
-                                            </span>
-                                          )}
-                                        </div>
+                                <div className="space-y-1">
+                                  {leadCustomEmails[lead.id] && leadCustomEmails[lead.id].length > 0 && (
+                                    <div className="text-xs text-muted-foreground">
+                                      <div className="font-medium text-green-700">
+                                        {leadCustomEmails[lead.id][0].recipient_emails.join(', ')}
                                       </div>
-                                    ))}
-                                  </div>
+                                      <div className="text-muted-foreground">
+                                        {new Date(leadCustomEmails[lead.id][0].sent_at).toLocaleDateString()} {new Date(leadCustomEmails[lead.id][0].sent_at).toLocaleTimeString()}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
                                 )}
                                 
                                 {/* Input for sending new emails */}
