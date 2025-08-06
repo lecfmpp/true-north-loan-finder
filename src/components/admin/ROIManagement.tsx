@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
@@ -66,6 +66,9 @@ export default function ROIManagement() {
   const [uploadingCsv, setUploadingCsv] = useState(false);
   const [deletingData, setDeletingData] = useState(false);
   const [csvProgress, setCsvProgress] = useState({ current: 0, total: 0, stage: '' });
+  const [channelSelectionDialog, setChannelSelectionDialog] = useState(false);
+  const [selectedChannel, setSelectedChannel] = useState('');
+  const [pendingCsvFile, setPendingCsvFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dateFilter, setDateFilter] = useState('last_7_days');
   const [customStartDate, setCustomStartDate] = useState('');
@@ -251,7 +254,7 @@ Provide actionable insights for campaign optimization.`);
     }
   };
 
-  const handleCsvUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCsvFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !file.name.toLowerCase().endsWith('.csv')) {
       toast({
@@ -262,12 +265,27 @@ Provide actionable insights for campaign optimization.`);
       return;
     }
 
-    setUploadingCsv(true);
+    setPendingCsvFile(file);
     setCsvUploadDialog(false);
+    setChannelSelectionDialog(true);
+  };
+
+  const handleChannelSelection = async () => {
+    if (!pendingCsvFile || !selectedChannel) {
+      toast({
+        title: "Error",
+        description: "Please select a channel",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setUploadingCsv(true);
+    setChannelSelectionDialog(false);
     setCsvProgress({ current: 0, total: 100, stage: 'Reading file...' });
 
     try {
-      const csvContent = await file.text();
+      const csvContent = await pendingCsvFile.text();
       setCsvProgress({ current: 20, total: 100, stage: 'Analyzing CSV structure...' });
 
       // Check file size and row count for processing strategy
@@ -278,7 +296,7 @@ Provide actionable insights for campaign optimization.`);
       
       // Process the CSV with AI-powered parsing
       const { data, error } = await supabase.functions.invoke('ai-parse-csv', {
-        body: { csvContent, batchSize: rowCount > 1000 ? 100 : 50 }
+        body: { csvContent, batchSize: rowCount > 1000 ? 100 : 50, defaultChannel: selectedChannel }
       });
 
       if (error) throw error;
@@ -471,7 +489,7 @@ Provide actionable insights for campaign optimization.`);
                     ref={fileInputRef}
                     type="file"
                     accept=".csv"
-                    onChange={handleCsvUpload}
+                    onChange={handleCsvFileSelect}
                     className="hidden"
                     disabled={uploadingCsv}
                   />
@@ -850,6 +868,43 @@ Provide actionable insights for campaign optimization.`);
           />
         </CardContent>
       </Card>
+
+      {/* Channel Selection Dialog */}
+      <Dialog open={channelSelectionDialog} onOpenChange={setChannelSelectionDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Select Channel for CSV Import</DialogTitle>
+            <DialogDescription>
+              Choose the advertising channel for all records in this CSV file.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Channel</Label>
+              <Select onValueChange={setSelectedChannel} value={selectedChannel}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select channel" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CHANNELS.map((channel) => (
+                    <SelectItem key={channel.value} value={channel.value}>
+                      {channel.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setChannelSelectionDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleChannelSelection} disabled={!selectedChannel}>
+              Import CSV
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Loading Modal */}
       {uploadingCsv && (

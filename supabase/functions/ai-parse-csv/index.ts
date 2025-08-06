@@ -359,7 +359,7 @@ function processRow(row: string[], mapping: any, rowIndex: number) {
 
   const processedRow = {
     date: standardizeDate(dateStr),
-    channel: standardizeChannel(finalChannel),
+    channel: standardizeChannel(defaultChannel || finalChannel),
     amount: Math.round(parseAmount(amountStr) * 100), // Convert to cents
     campaign_name: campaignName,
     clicks: Math.min(parseInt(getColumnValue('clicks')) || 0, 1000000), // Cap clicks at 1M
