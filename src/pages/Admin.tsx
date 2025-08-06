@@ -81,6 +81,19 @@ interface QuizResponse {
   partner_loan_amount?: number;
 }
 
+interface Partner {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  company_name: string;
+  application_type: string;
+  is_active: boolean;
+  user_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 const Admin = () => {
   const [leads, setLeads] = useState<QuizResponse[]>([]);
   const [filteredLeads, setFilteredLeads] = useState<QuizResponse[]>([]);
@@ -114,7 +127,7 @@ const Admin = () => {
   const [selectedRecipients, setSelectedRecipients] = useState<{
     [key: string]: string;
   }>({});
-  const [partners, setPartners] = useState<any[]>([]);
+  const [partners, setPartners] = useState<Partner[]>([]);
   const [selectedPartner, setSelectedPartner] = useState<string>('');
   const [customEmails, setCustomEmails] = useState<Record<string, string>>({});
   const [sendingCustomEmails, setSendingCustomEmails] = useState<Record<string, boolean>>({});
@@ -519,7 +532,7 @@ const Admin = () => {
       const { data, error } = await supabase
         .from('partners')
         .select('*')
-        .eq('status', 'active')
+        .eq('is_active', true)
         .order('name', { ascending: true });
       
       if (error) throw error;
@@ -632,7 +645,7 @@ const Admin = () => {
       const {
         data: verifiedRecipient,
         error
-      } = await supabase.from('partners').select('status').eq('id', recipientId).eq('status', 'active').single();
+      } = await supabase.from('partners').select('is_active').eq('id', recipientId).eq('is_active', true).single();
       if (error || !verifiedRecipient) {
         toast({
           title: "Error",
