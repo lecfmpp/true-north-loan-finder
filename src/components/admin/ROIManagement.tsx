@@ -31,7 +31,6 @@ interface AdSpendRecord {
   channel: string;
   amount: number;
   campaign_name: string;
-  notes: string;
   clicks: number;
   ctr: number;
   conversions: number;
@@ -94,7 +93,6 @@ Provide actionable insights for campaign optimization.`);
     channel: '',
     amount: '',
     campaign_name: '',
-    notes: '',
     clicks: '',
     ctr: '',
     conversions: ''
@@ -202,7 +200,6 @@ Provide actionable insights for campaign optimization.`);
           channel: newSpend.channel,
           amount: Math.round(parseFloat(newSpend.amount) * 100), // Convert to cents
           campaign_name: newSpend.campaign_name,
-          notes: newSpend.notes,
           clicks: parseInt(newSpend.clicks) || 0,
           ctr: parseFloat(newSpend.ctr) || 0,
           conversions: parseInt(newSpend.conversions) || 0
@@ -221,7 +218,6 @@ Provide actionable insights for campaign optimization.`);
         channel: '',
         amount: '',
         campaign_name: '',
-        notes: '',
         clicks: '',
         ctr: '',
         conversions: ''
@@ -250,34 +246,16 @@ Provide actionable insights for campaign optimization.`);
 
     try {
       const csvContent = await file.text();
-      const lines = csvContent.split('\n').filter(line => line.trim());
-      if (lines.length < 2) {
-        throw new Error('CSV must have at least a header row and one data row');
+      const analysisResult = analyzeCsvStructure(csvContent);
+      
+      if (!analysisResult.isValid) {
+        throw new Error(analysisResult.error);
       }
 
-      const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-      const dataRows = lines.slice(1).map(line => 
-        line.split(',').map(cell => cell.trim().replace(/"/g, ''))
-      );
-
-      setCsvData([headers, ...dataRows]);
+      setCsvData(analysisResult.data);
       setCsvUploadDialog(false);
       setColumnMappingDialog(true);
-      
-      // Initialize column mapping with best guesses
-      const mapping: Record<string, string> = {};
-      headers.forEach(header => {
-        const lowerHeader = header.toLowerCase();
-        if (lowerHeader.includes('date')) mapping['date'] = header;
-        else if (lowerHeader.includes('channel') || lowerHeader.includes('platform')) mapping['channel'] = header;
-        else if (lowerHeader.includes('amount') || lowerHeader.includes('spend') || lowerHeader.includes('cost')) mapping['amount'] = header;
-        else if (lowerHeader.includes('campaign')) mapping['campaign_name'] = header;
-        else if (lowerHeader.includes('click')) mapping['clicks'] = header;
-        else if (lowerHeader.includes('ctr') || lowerHeader.includes('rate')) mapping['ctr'] = header;
-        else if (lowerHeader.includes('conversion')) mapping['conversions'] = header;
-        else if (lowerHeader.includes('note')) mapping['notes'] = header;
-      });
-      setColumnMapping(mapping);
+      setColumnMapping(analysisResult.suggestedMapping);
 
     } catch (error) {
       console.error('Error parsing CSV:', error);
@@ -291,6 +269,74 @@ Provide actionable insights for campaign optimization.`);
         fileInputRef.current.value = '';
       }
     }
+  };
+
+  const analyzeCsvStructure = (csvContent: string) => {
+    const lines = csvContent.split('\n').filter(line => line.trim());
+    
+    if (lines.length < 2) {
+      return {
+        isValid: false,
+        error: 'CSV must have at least a header row and one data row',
+        data: [],
+        suggestedMapping: {}
+      };
+    }
+
+    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+    const dataRows = lines.slice(1).map(line => 
+      line.split(',').map(cell => cell.trim().replace(/"/g, ''))
+    );
+
+    // Validate minimum required columns can be detected
+    const requiredFields = ['date', 'channel', 'amount'];
+    const suggestedMapping = detectColumnMapping(headers);
+    
+    const missingRequired = requiredFields.filter(field => !suggestedMapping[field]);
+    
+    if (missingRequired.length > 0) {
+      console.warn(`Could not auto-detect columns for: ${missingRequired.join(', ')}`);
+    }
+
+    return {
+      isValid: true,
+      data: [headers, ...dataRows],
+      suggestedMapping,
+      analysis: {
+        totalRows: dataRows.length,
+        totalColumns: headers.length,
+        detectedColumns: Object.keys(suggestedMapping).filter(key => suggestedMapping[key]),
+        headers: headers
+      }
+    };
+  };
+
+  const detectColumnMapping = (headers: string[]) => {
+    const mapping: Record<string, string> = {};
+    
+    // Define column detection patterns
+    const columnPatterns = {
+      date: /^(date|day|time|when|period)/i,
+      channel: /^(channel|platform|source|medium|network|site)/i,
+      amount: /^(amount|spend|cost|budget|price|value|total)/i,
+      campaign_name: /^(campaign|name|title|description|ad.?name)/i,
+      clicks: /^(clicks?|click.?count|visits?)/i,
+      ctr: /^(ctr|click.?through.?rate|rate)/i,
+      conversions: /^(conversions?|conv|actions?|goals?)/i
+    };
+
+    headers.forEach(header => {
+      const cleanHeader = header.toLowerCase().trim();
+      
+      // Find the best match for each field
+      Object.entries(columnPatterns).forEach(([field, pattern]) => {
+        if (pattern.test(cleanHeader) && !mapping[field]) {
+          mapping[field] = header;
+        }
+      });
+    });
+
+    return mapping;
   };
 
   const handleProcessMappedCsv = async () => {
@@ -485,16 +531,18 @@ Provide actionable insights for campaign optimization.`);
               </DialogHeader>
               <div className="space-y-4">
                 <div className="text-sm text-muted-foreground">
-                  <p className="mb-2">CSV should contain columns for:</p>
-                  <ul className="list-disc list-inside space-y-1">
+                  <p className="mb-2"><strong>Required CSV columns for Ad Spend Records:</strong></p>
+                  <ul className="list-disc list-inside space-y-1 mb-4">
                     <li><strong>Date:</strong> Date of ad spend (any common format)</li>
                     <li><strong>Channel:</strong> google, meta, tiktok, or linkedin</li>
                     <li><strong>Amount:</strong> Spend amount in dollars</li>
-                    <li><strong>Campaign Name:</strong> (Optional) Campaign identifier</li>
-                    <li><strong>Clicks:</strong> (Optional) Number of clicks</li>
-                    <li><strong>CTR:</strong> (Optional) Click-through rate as percentage</li>
-                    <li><strong>Conversions:</strong> (Optional) Number of conversions</li>
-                    <li><strong>Notes:</strong> (Optional) Additional notes</li>
+                  </ul>
+                  <p className="mb-2"><strong>Optional columns:</strong></p>
+                  <ul className="list-disc list-inside space-y-1">
+                    <li><strong>Campaign Name:</strong> Campaign identifier</li>
+                    <li><strong>Clicks:</strong> Number of clicks</li>
+                    <li><strong>CTR:</strong> Click-through rate as percentage</li>
+                    <li><strong>Conversions:</strong> Number of conversions</li>
                   </ul>
                 </div>
                 <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
@@ -571,7 +619,7 @@ Provide actionable insights for campaign optimization.`);
                 </p>
                 {csvData.length > 0 && (
                   <div className="grid grid-cols-2 gap-4">
-                    {['date', 'channel', 'amount', 'campaign_name', 'clicks', 'ctr', 'conversions', 'notes'].map((dbField) => (
+                    {['date', 'channel', 'amount', 'campaign_name', 'clicks', 'ctr', 'conversions'].map((dbField) => (
                       <div key={dbField} className="space-y-2">
                         <Label className="capitalize">
                           {dbField.replace('_', ' ')} {['date', 'channel', 'amount'].includes(dbField) && '*'}
@@ -718,14 +766,6 @@ Provide actionable insights for campaign optimization.`);
                     placeholder="0"
                     value={newSpend.conversions}
                     onChange={(e) => setNewSpend({...newSpend, conversions: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <Label>Notes (Optional)</Label>
-                  <Input
-                    placeholder="Additional notes"
-                    value={newSpend.notes}
-                    onChange={(e) => setNewSpend({...newSpend, notes: e.target.value})}
                   />
                 </div>
                 <Button onClick={handleAddSpend} className="w-full">
