@@ -261,6 +261,10 @@ const CanadianApplication = () => {
       'image/jpeg',
       'image/jpg', 
       'image/png',
+      'image/gif',
+      'image/webp',
+      'image/bmp',
+      'image/tiff',
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'application/vnd.ms-excel',
@@ -449,7 +453,18 @@ const CanadianApplication = () => {
       console.error('Error submitting application:', error);
       console.error('Form data that failed:', formData);
       
-      toast.error("There was an error submitting your application. Please try again.");
+      // Better error handling - show specific error message if available
+      let errorMessage = "There was an error submitting your application. Please try again.";
+      
+      if (error && typeof error === 'object' && 'message' in error) {
+        errorMessage = `Error: ${error.message}`;
+      } else if (error && typeof error === 'object' && 'error_description' in error) {
+        errorMessage = `Error: ${(error as any).error_description}`;
+      } else if (error && typeof error === 'object' && 'details' in error) {
+        errorMessage = `Error: ${(error as any).details}`;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
