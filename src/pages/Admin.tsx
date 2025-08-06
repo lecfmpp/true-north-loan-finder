@@ -1885,7 +1885,7 @@ const Admin = () => {
                         </TableHead>
                         <TableHead className="min-w-[120px]">
                           <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent hover:text-current" onClick={() => handleSort('time_in_business')}>
-                            Business Info
+                            Business Age
                             {sortField === 'time_in_business' && (
                               sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
                             )}
@@ -2001,7 +2001,14 @@ const Admin = () => {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <div className="text-sm text-muted-foreground">{lead.time_in_business}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {lead.time_in_business === 'startup' ? 'Startup' : 
+                               lead.time_in_business === '6-12' ? '6-12 months' :
+                               lead.time_in_business === '1-2' ? '1-2 years' :
+                               lead.time_in_business === '2-5' ? '2-5 years' :
+                               lead.time_in_business === '+5' ? '5+ years' :
+                               lead.time_in_business || 'N/A'}
+                            </div>
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
