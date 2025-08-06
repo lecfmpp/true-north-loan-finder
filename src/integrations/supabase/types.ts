@@ -1236,33 +1236,6 @@ export type Database = {
         }
         Relationships: []
       }
-      partner_confirmation_tokens: {
-        Row: {
-          created_at: string | null
-          email: string
-          expires_at: string
-          id: string
-          token: string
-          used: boolean | null
-        }
-        Insert: {
-          created_at?: string | null
-          email: string
-          expires_at: string
-          id?: string
-          token: string
-          used?: boolean | null
-        }
-        Update: {
-          created_at?: string | null
-          email?: string
-          expires_at?: string
-          id?: string
-          token?: string
-          used?: boolean | null
-        }
-        Relationships: []
-      }
       partner_lead_credits: {
         Row: {
           available_credits: number
@@ -1302,11 +1275,11 @@ export type Database = {
           deals_closed: number
           email: string
           id: string
+          is_active: boolean | null
           leads_contacted: number
           leads_spoken: number
           name: string
           phone: string | null
-          status: string
           total_leads_assigned: number
           updated_at: string
           user_id: string | null
@@ -1319,11 +1292,11 @@ export type Database = {
           deals_closed?: number
           email: string
           id?: string
+          is_active?: boolean | null
           leads_contacted?: number
           leads_spoken?: number
           name: string
           phone?: string | null
-          status?: string
           total_leads_assigned?: number
           updated_at?: string
           user_id?: string | null
@@ -1336,11 +1309,11 @@ export type Database = {
           deals_closed?: number
           email?: string
           id?: string
+          is_active?: boolean | null
           leads_contacted?: number
           leads_spoken?: number
           name?: string
           phone?: string | null
-          status?: string
           total_leads_assigned?: number
           updated_at?: string
           user_id?: string | null
@@ -1925,6 +1898,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_email_exists: {
+        Args: { email_address: string }
+        Returns: boolean
+      }
       generate_application_reference: {
         Args: { app_type: string }
         Returns: string
