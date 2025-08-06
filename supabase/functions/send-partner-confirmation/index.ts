@@ -70,9 +70,12 @@ serve(async (req) => {
       })
     }
 
-    // Construct confirmation URL - use the request origin if SITE_URL is not set
-    const baseUrl = Deno.env.get('SITE_URL') || req.headers.get('origin') || 'https://truenorthbusinessloan.ca'
+    // Construct confirmation URL - prioritize request origin for dynamic domain support
+    const requestOrigin = req.headers.get('origin') || req.headers.get('referer')?.split('/').slice(0, 3).join('/')
+    const baseUrl = requestOrigin || Deno.env.get('SITE_URL') || 'https://truenorthbusinessloan.ca'
     const confirmationUrl = `${baseUrl}/confirm-partner?token=${confirmationToken}`
+    
+    console.log('Generated confirmation URL:', confirmationUrl)
     
     // Create email template
     const emailHtml = `

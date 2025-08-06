@@ -33,6 +33,7 @@ export default function ConfirmPartner() {
   const verifyToken = async () => {
     try {
       setVerifying(true);
+      console.log('Verifying token:', token);
       
       // Check if token exists and is valid
       const { data: tokenData, error: tokenError } = await supabase
@@ -43,11 +44,21 @@ export default function ConfirmPartner() {
         .gte('expires_at', new Date().toISOString())
         .single();
 
+      console.log('Token verification result:', { tokenData, tokenError });
+
       if (tokenError || !tokenData) {
+        console.error('Token verification failed:', tokenError);
         setTokenValid(false);
+        
+        // More specific error messages
+        let errorMessage = "This confirmation link is invalid or has expired.";
+        if (tokenError?.code === 'PGRST116') {
+          errorMessage = "No matching confirmation token found. The link may have already been used or expired.";
+        }
+        
         toast({
           title: "Invalid Token",
-          description: "This confirmation link is invalid or has expired.",
+          description: errorMessage,
           variant: "destructive"
         });
         return;
@@ -115,7 +126,7 @@ export default function ConfirmPartner() {
         email: partnerInfo.email,
         password: password,
         options: {
-          emailRedirectTo: `https://truenorthbusinessloan.ca/admin`,
+          emailRedirectTo: `${window.location.origin}/admin`,
           data: {
             display_name: partnerInfo.name,
             company_name: partnerInfo.company_name,
@@ -130,7 +141,7 @@ export default function ConfirmPartner() {
           const { error: resetError } = await supabase.auth.resetPasswordForEmail(
             partnerInfo.email,
             {
-              redirectTo: `https://truenorthbusinessloan.ca/auth?mode=reset`
+              redirectTo: `${window.location.origin}/auth?mode=reset`
             }
           );
           
