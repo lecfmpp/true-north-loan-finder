@@ -51,6 +51,7 @@ const DATE_FILTER_OPTIONS = [
   { value: 'last_7_days', label: 'Last 7 Days' },
   { value: 'this_month', label: 'This Month' },
   { value: 'last_month', label: 'Last Month' },
+  { value: 'all_time', label: 'All Time' },
   { value: 'custom', label: 'Custom Range' }
 ];
 
@@ -133,6 +134,10 @@ Provide actionable insights for campaign optimization.`);
         const lastDayLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
         startDate = firstDayLastMonth.toISOString().split('T')[0];
         endDate = lastDayLastMonth.toISOString().split('T')[0];
+        break;
+      case 'all_time':
+        startDate = '1900-01-01'; // Very early date to capture all records
+        endDate = today.toISOString().split('T')[0];
         break;
       case 'custom':
         startDate = customStartDate || today.toISOString().split('T')[0];
@@ -313,7 +318,6 @@ Provide actionable insights for campaign optimization.`);
       }
     }
   };
-
 
   const handleCleanupData = async () => {
     setDeletingData(true);
