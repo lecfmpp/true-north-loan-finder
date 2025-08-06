@@ -52,33 +52,42 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Check if this is an admin notification or custom email (bypass partner verification)
+    // Check if this is an admin notification (bypass partner verification)
     const isAdminNotification = recipientEmail === 'lecfmpp@gmail.com';
-    const isCustomEmail = recipientName === recipientEmail.split('@')[0]; // Custom emails use email prefix as name
     
-    if (!isAdminNotification && !isCustomEmail) {
-      // Only verify partner status for approved partner recipients
-      const { data: recipient, error: recipientError } = await supabase
-        .from('lender_broker_applications')
-        .select('id, applicant_name, applicant_email, status')
-        .eq('applicant_email', recipientEmail)
-        .eq('status', 'approved')
+    if (!isAdminNotification) {
+      // Check if recipient is in the partners table (for Admin panel sends)
+      const { data: partner, error: partnerError } = await supabase
+        .from('partners')
+        .select('id, name, email, is_active')
+        .eq('email', recipientEmail)
+        .eq('is_active', true)
         .single();
 
-      if (recipientError || !recipient) {
-        console.error('Recipient is not an approved partner:', recipientError);
-        return new Response(
-          JSON.stringify({ 
-            error: 'Recipient is not an approved partner',
-            details: 'Only approved lenders and brokers can receive lead communications'
-          }),
-          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
+      // If not found in partners table, check lender_broker_applications table
+      if (partnerError || !partner) {
+        const { data: recipient, error: recipientError } = await supabase
+          .from('lender_broker_applications')
+          .select('id, applicant_name, applicant_email, status')
+          .eq('applicant_email', recipientEmail)
+          .eq('status', 'approved')
+          .single();
 
-      console.log(`Email recipient verified as approved partner: ${recipient.applicant_name}`);
-    } else if (isCustomEmail) {
-      console.log(`Sending custom lead email to: ${recipientEmail}`);
+        if (recipientError || !recipient) {
+          console.error('Recipient is not an approved partner in either table:', { partnerError, recipientError });
+          return new Response(
+            JSON.stringify({ 
+              error: 'Recipient is not an approved partner',
+              details: 'Only approved lenders and brokers can receive lead communications'
+            }),
+            { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        console.log(`Email recipient verified as approved partner from applications: ${recipient.applicant_name}`);
+      } else {
+        console.log(`Email recipient verified as active partner: ${partner.name}`);
+      }
     } else {
       console.log(`Sending admin notification to: ${recipientEmail}`);
     }
