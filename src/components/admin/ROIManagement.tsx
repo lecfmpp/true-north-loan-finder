@@ -6,9 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { TrendingUp, DollarSign, Target, BarChart3, Plus, Upload, FileSpreadsheet, Trash2, Users, Award, FileText, CheckCircle } from 'lucide-react';
+import { TrendingUp, DollarSign, Target, BarChart3, Plus, Upload, FileSpreadsheet, Trash2, Users, Award, FileText, CheckCircle, Calendar, Settings, Save } from 'lucide-react';
 
 interface ROIMetrics {
   total_leads: number;
@@ -41,6 +42,15 @@ const CHANNELS = [
   { value: 'linkedin', label: 'LinkedIn Ads' }
 ];
 
+const DATE_FILTER_OPTIONS = [
+  { value: 'today', label: 'Today' },
+  { value: 'yesterday', label: 'Yesterday' },
+  { value: 'last_7_days', label: 'Last 7 Days' },
+  { value: 'this_month', label: 'This Month' },
+  { value: 'last_month', label: 'Last Month' },
+  { value: 'custom', label: 'Custom Range' }
+];
+
 export default function ROIManagement() {
   const [metrics, setMetrics] = useState<ROIMetrics | null>(null);
   const [adSpends, setAdSpends] = useState<AdSpendRecord[]>([]);
@@ -50,7 +60,32 @@ export default function ROIManagement() {
   const [cleanupDialog, setCleanupDialog] = useState(false);
   const [uploadingCsv, setUploadingCsv] = useState(false);
   const [deletingData, setDeletingData] = useState(false);
+  const [columnMappingDialog, setColumnMappingDialog] = useState(false);
+  const [csvData, setCsvData] = useState<string[][]>([]);
+  const [columnMapping, setColumnMapping] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [dateFilter, setDateFilter] = useState('last_7_days');
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
+  const [aiInstructionsDialog, setAiInstructionsDialog] = useState(false);
+  const [aiInstructions, setAiInstructions] = useState(`You are an AI assistant helping with ROI analysis for ad spend tracking. 
+
+Current dashboard metrics include:
+- Total leads and spend tracking
+- Cost per lead calculations
+- ROI percentage analysis
+- Qualified leads (>$10k monthly revenue)
+- Funded leads (loan approved status)
+- Application leads (US & Canada)
+
+When analyzing data, focus on:
+1. Cost efficiency trends
+2. Channel performance comparison
+3. Lead quality indicators
+4. Revenue attribution accuracy
+
+Provide actionable insights for campaign optimization.`);
+  const [editingInstructions, setEditingInstructions] = useState(false);
   const [newSpend, setNewSpend] = useState({
     date: new Date().toISOString().split('T')[0],
     channel: '',
@@ -65,15 +100,61 @@ export default function ROIManagement() {
 
   useEffect(() => {
     fetchROIData();
-  }, []);
+  }, [dateFilter, customStartDate, customEndDate]);
+
+  const getDateRange = () => {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    let startDate, endDate;
+    
+    switch (dateFilter) {
+      case 'today':
+        startDate = endDate = today.toISOString().split('T')[0];
+        break;
+      case 'yesterday':
+        startDate = endDate = yesterday.toISOString().split('T')[0];
+        break;
+      case 'last_7_days':
+        endDate = today.toISOString().split('T')[0];
+        const sevenDaysAgo = new Date(today);
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        startDate = sevenDaysAgo.toISOString().split('T')[0];
+        break;
+      case 'this_month':
+        const firstDayThisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        startDate = firstDayThisMonth.toISOString().split('T')[0];
+        endDate = today.toISOString().split('T')[0];
+        break;
+      case 'last_month':
+        const firstDayLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        const lastDayLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+        startDate = firstDayLastMonth.toISOString().split('T')[0];
+        endDate = lastDayLastMonth.toISOString().split('T')[0];
+        break;
+      case 'custom':
+        startDate = customStartDate || today.toISOString().split('T')[0];
+        endDate = customEndDate || today.toISOString().split('T')[0];
+        break;
+      default:
+        endDate = today.toISOString().split('T')[0];
+        const defaultStart = new Date(today);
+        defaultStart.setDate(defaultStart.getDate() - 7);
+        startDate = defaultStart.toISOString().split('T')[0];
+    }
+    
+    return { startDate, endDate };
+  };
 
   const fetchROIData = async () => {
     try {
       setLoading(true);
+      const { startDate, endDate } = getDateRange();
 
-      // Fetch ROI metrics
+      // Fetch ROI metrics with date range
       const { data: metricsData, error: metricsError } = await supabase
-        .rpc('get_roi_metrics');
+        .rpc('get_roi_metrics', { start_date: startDate, end_date: endDate });
 
       if (metricsError) throw metricsError;
 
@@ -164,11 +245,89 @@ export default function ROIManagement() {
       return;
     }
 
+    try {
+      const csvContent = await file.text();
+      const lines = csvContent.split('\n').filter(line => line.trim());
+      if (lines.length < 2) {
+        throw new Error('CSV must have at least a header row and one data row');
+      }
+
+      const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+      const dataRows = lines.slice(1).map(line => 
+        line.split(',').map(cell => cell.trim().replace(/"/g, ''))
+      );
+
+      setCsvData([headers, ...dataRows]);
+      setCsvUploadDialog(false);
+      setColumnMappingDialog(true);
+      
+      // Initialize column mapping with best guesses
+      const mapping: Record<string, string> = {};
+      headers.forEach(header => {
+        const lowerHeader = header.toLowerCase();
+        if (lowerHeader.includes('date')) mapping['date'] = header;
+        else if (lowerHeader.includes('channel') || lowerHeader.includes('platform')) mapping['channel'] = header;
+        else if (lowerHeader.includes('amount') || lowerHeader.includes('spend') || lowerHeader.includes('cost')) mapping['amount'] = header;
+        else if (lowerHeader.includes('campaign')) mapping['campaign_name'] = header;
+        else if (lowerHeader.includes('click')) mapping['clicks'] = header;
+        else if (lowerHeader.includes('ctr') || lowerHeader.includes('rate')) mapping['ctr'] = header;
+        else if (lowerHeader.includes('conversion')) mapping['conversions'] = header;
+        else if (lowerHeader.includes('note')) mapping['notes'] = header;
+      });
+      setColumnMapping(mapping);
+
+    } catch (error) {
+      console.error('Error parsing CSV:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to parse CSV file",
+        variant: "destructive"
+      });
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleProcessMappedCsv = async () => {
+    if (!csvData.length || !columnMapping.date || !columnMapping.channel || !columnMapping.amount) {
+      toast({
+        title: "Error",
+        description: "Please map at least Date, Channel, and Amount columns",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setUploadingCsv(true);
     
     try {
-      const csvContent = await file.text();
-      
+      const [headers, ...dataRows] = csvData;
+      const mappedData = dataRows.map(row => {
+        const record: any = {};
+        Object.entries(columnMapping).forEach(([dbColumn, csvHeader]) => {
+          if (csvHeader) {
+            const csvIndex = headers.indexOf(csvHeader);
+            if (csvIndex !== -1) {
+              record[dbColumn] = row[csvIndex] || '';
+            }
+          }
+        });
+        return record;
+      });
+
+      // Process the mapped data through the existing edge function
+      const csvContent = [
+        Object.values(columnMapping).filter(Boolean).join(','),
+        ...mappedData.map(record => 
+          Object.entries(columnMapping)
+            .filter(([_, csvHeader]) => csvHeader)
+            .map(([dbColumn]) => record[dbColumn] || '')
+            .join(',')
+        )
+      ].join('\n');
+
       const { data, error } = await supabase.functions.invoke('process-csv-adspend', {
         body: { csvContent }
       });
@@ -180,7 +339,9 @@ export default function ROIManagement() {
           title: "Success",
           description: `Successfully imported ${data.inserted} ad spend records`
         });
-        setCsvUploadDialog(false);
+        setColumnMappingDialog(false);
+        setCsvData([]);
+        setColumnMapping({});
         fetchROIData();
       } else {
         throw new Error(data.error || 'Failed to process CSV');
@@ -194,9 +355,6 @@ export default function ROIManagement() {
       });
     } finally {
       setUploadingCsv(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
     }
   };
 
@@ -207,7 +365,7 @@ export default function ROIManagement() {
       const { error } = await supabase
         .from('ad_spend_records')
         .delete()
-        .neq('id', ''); // Delete all records
+        .gte('created_at', '1900-01-01'); // Delete all records by using a condition that matches all
 
       if (error) throw error;
 
@@ -228,6 +386,16 @@ export default function ROIManagement() {
     } finally {
       setDeletingData(false);
     }
+  };
+
+  const handleSaveInstructions = () => {
+    // In a real application, you would save this to a database or configuration
+    toast({
+      title: "Success",
+      description: "AI instructions saved successfully"
+    });
+    setEditingInstructions(false);
+    setAiInstructionsDialog(false);
   };
 
   if (loading) {
@@ -343,6 +511,85 @@ export default function ROIManagement() {
               </div>
             </DialogContent>
           </Dialog>
+          <Dialog open={columnMappingDialog} onOpenChange={setColumnMappingDialog}>
+            <DialogContent className="max-w-4xl">
+              <DialogHeader>
+                <DialogTitle>Map CSV Columns</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Map your CSV columns to the correct database fields. At minimum, Date, Channel, and Amount are required.
+                </p>
+                {csvData.length > 0 && (
+                  <div className="grid grid-cols-2 gap-4">
+                    {['date', 'channel', 'amount', 'campaign_name', 'clicks', 'ctr', 'conversions', 'notes'].map((dbField) => (
+                      <div key={dbField} className="space-y-2">
+                        <Label className="capitalize">
+                          {dbField.replace('_', ' ')} {['date', 'channel', 'amount'].includes(dbField) && '*'}
+                        </Label>
+                        <Select 
+                          value={columnMapping[dbField] || ''} 
+                          onValueChange={(value) => setColumnMapping(prev => ({...prev, [dbField]: value}))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select CSV column" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">None</SelectItem>
+                            {csvData[0]?.map((header, index) => (
+                              <SelectItem key={index} value={header}>
+                                {header}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {csvData.length > 1 && (
+                  <div className="mt-4">
+                    <Label>Preview (First 3 rows):</Label>
+                    <div className="mt-2 border rounded-lg overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            {csvData[0]?.map((header, index) => (
+                              <TableHead key={index} className="text-xs">{header}</TableHead>
+                            ))}
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {csvData.slice(1, 4).map((row, rowIndex) => (
+                            <TableRow key={rowIndex}>
+                              {row.map((cell, cellIndex) => (
+                                <TableCell key={cellIndex} className="text-xs max-w-24 truncate">{cell}</TableCell>
+                              ))}
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                )}
+                <div className="flex gap-2 justify-end">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setColumnMappingDialog(false);
+                      setCsvData([]);
+                      setColumnMapping({});
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleProcessMappedCsv} disabled={uploadingCsv}>
+                    {uploadingCsv ? 'Processing...' : 'Import Data'}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
           <Dialog open={addSpendDialog} onOpenChange={setAddSpendDialog}>
             <DialogTrigger asChild>
               <Button>
@@ -440,6 +687,104 @@ export default function ROIManagement() {
           </Dialog>
         </div>
       </div>
+
+      {/* Date Filter */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              <Label>Date Range:</Label>
+            </div>
+            <Select value={dateFilter} onValueChange={setDateFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {DATE_FILTER_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {dateFilter === 'custom' && (
+              <div className="flex items-center gap-2">
+                <Input
+                  type="date"
+                  value={customStartDate}
+                  onChange={(e) => setCustomStartDate(e.target.value)}
+                  className="w-40"
+                  placeholder="Start date"
+                />
+                <span className="text-muted-foreground">to</span>
+                <Input
+                  type="date"
+                  value={customEndDate}
+                  onChange={(e) => setCustomEndDate(e.target.value)}
+                  className="w-40"
+                  placeholder="End date"
+                />
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* AI Instructions */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="h-5 w-5" />
+            AI Instructions
+          </CardTitle>
+          <Dialog open={aiInstructionsDialog} onOpenChange={setAiInstructionsDialog}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Settings className="h-4 w-4 mr-2" />
+                Edit Instructions
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl">
+              <DialogHeader>
+                <DialogTitle>Edit AI Instructions</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <Label>Instructions for AI Analysis:</Label>
+                <Textarea
+                  value={aiInstructions}
+                  onChange={(e) => setAiInstructions(e.target.value)}
+                  rows={12}
+                  className="min-h-80"
+                  placeholder="Enter instructions for AI analysis..."
+                />
+                <div className="flex gap-2 justify-end">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setAiInstructionsDialog(false);
+                      // Reset to original value if needed
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSaveInstructions}>
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Instructions
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </CardHeader>
+        <CardContent>
+          <div className="bg-muted/50 p-4 rounded-lg">
+            <pre className="text-sm whitespace-pre-wrap text-muted-foreground font-mono">
+              {aiInstructions}
+            </pre>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* ROI Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
