@@ -683,7 +683,9 @@ const handler = async (req: Request): Promise<Response> => {
           lead_id: leadId,
           recipient_emails: [recipientEmail],
           sent_by: systemUserId,
-          sent_at: new Date().toISOString()
+          sent_at: new Date().toISOString(),
+          resend_email_id: emailResponse.data?.id || null,
+          delivery_status: 'sent'
         });
 
       if (insertError) {

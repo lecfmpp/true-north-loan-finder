@@ -1045,27 +1045,39 @@ export type Database = {
       lead_custom_emails: {
         Row: {
           created_at: string
+          delivered_at: string | null
+          delivery_status: string | null
+          error_message: string | null
           id: string
           lead_id: string
           recipient_emails: string[]
+          resend_email_id: string | null
           sent_at: string
           sent_by: string
           updated_at: string
         }
         Insert: {
           created_at?: string
+          delivered_at?: string | null
+          delivery_status?: string | null
+          error_message?: string | null
           id?: string
           lead_id: string
           recipient_emails: string[]
+          resend_email_id?: string | null
           sent_at?: string
           sent_by: string
           updated_at?: string
         }
         Update: {
           created_at?: string
+          delivered_at?: string | null
+          delivery_status?: string | null
+          error_message?: string | null
           id?: string
           lead_id?: string
           recipient_emails?: string[]
+          resend_email_id?: string | null
           sent_at?: string
           sent_by?: string
           updated_at?: string

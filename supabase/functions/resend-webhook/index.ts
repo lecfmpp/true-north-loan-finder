@@ -60,47 +60,61 @@ const handler = async (req: Request): Promise<Response> => {
       return new Response('OK', { status: 200, headers: corsHeaders });
     }
 
-    // Find the email send record by resend_email_id
+    // First try to find in email_sends table
     const { data: emailSend, error: findError } = await supabase
       .from('email_sends')
       .select('*')
       .eq('resend_email_id', data.email_id)
       .single();
 
-    if (findError || !emailSend) {
+    // Also try to find in lead_custom_emails table
+    const { data: leadEmail, error: leadEmailError } = await supabase
+      .from('lead_custom_emails')
+      .select('*')
+      .eq('resend_email_id', data.email_id)
+      .single();
+
+    if ((findError || !emailSend) && (leadEmailError || !leadEmail)) {
       console.log(`Email send record not found for email_id: ${data.email_id}`);
       return new Response('OK', { status: 200, headers: corsHeaders });
     }
 
-    // Update based on event type
-    const updates: any = {};
+    // Update based on event type for both tables
+    const emailSendUpdates: any = {};
+    const leadEmailUpdates: any = {};
     
     switch (type) {
       case 'email.delivered':
-        updates.delivered_at = new Date().toISOString();
-        if (emailSend.status === 'sent') {
-          updates.status = 'delivered';
+        const deliveredAt = new Date().toISOString();
+        emailSendUpdates.delivered_at = deliveredAt;
+        leadEmailUpdates.delivered_at = deliveredAt;
+        leadEmailUpdates.delivery_status = 'delivered';
+        if (emailSend?.status === 'sent') {
+          emailSendUpdates.status = 'delivered';
         }
         break;
         
       case 'email.opened':
-        updates.opened_at = new Date().toISOString();
-        updates.open_count = (emailSend.open_count || 0) + 1;
-        if (['sent', 'delivered'].includes(emailSend.status)) {
-          updates.status = 'opened';
+        emailSendUpdates.opened_at = new Date().toISOString();
+        emailSendUpdates.open_count = (emailSend?.open_count || 0) + 1;
+        if (emailSend && ['sent', 'delivered'].includes(emailSend.status)) {
+          emailSendUpdates.status = 'opened';
         }
         break;
         
       case 'email.clicked':
-        updates.clicked_at = new Date().toISOString();
-        updates.click_count = (emailSend.click_count || 0) + 1;
-        updates.status = 'clicked';
+        emailSendUpdates.clicked_at = new Date().toISOString();
+        emailSendUpdates.click_count = (emailSend?.click_count || 0) + 1;
+        emailSendUpdates.status = 'clicked';
         break;
         
       case 'email.bounced':
       case 'email.complaint':
-        updates.status = 'failed';
-        updates.error_message = `${type}: ${data.reason || 'Unknown reason'}`;
+        const errorMessage = `${type}: ${data.reason || 'Unknown reason'}`;
+        emailSendUpdates.status = 'failed';
+        emailSendUpdates.error_message = errorMessage;
+        leadEmailUpdates.delivery_status = 'failed';
+        leadEmailUpdates.error_message = errorMessage;
         break;
         
       default:
@@ -108,16 +122,31 @@ const handler = async (req: Request): Promise<Response> => {
         return new Response('OK', { status: 200, headers: corsHeaders });
     }
 
-    if (Object.keys(updates).length > 0) {
+    // Update email_sends table if record exists
+    if (emailSend && Object.keys(emailSendUpdates).length > 0) {
       const { error: updateError } = await supabase
         .from('email_sends')
-        .update(updates)
+        .update(emailSendUpdates)
         .eq('id', emailSend.id);
 
       if (updateError) {
         console.error('Error updating email send:', updateError);
       } else {
         console.log(`Updated email send ${emailSend.id} for event ${type}`);
+      }
+    }
+
+    // Update lead_custom_emails table if record exists
+    if (leadEmail && Object.keys(leadEmailUpdates).length > 0) {
+      const { error: updateLeadEmailError } = await supabase
+        .from('lead_custom_emails')
+        .update(leadEmailUpdates)
+        .eq('id', leadEmail.id);
+
+      if (updateLeadEmailError) {
+        console.error('Error updating lead custom email:', updateLeadEmailError);
+      } else {
+        console.log(`Updated lead custom email ${leadEmail.id} for event ${type}`);
       }
     }
 

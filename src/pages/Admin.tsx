@@ -76,6 +76,10 @@ interface QuizResponse {
     recipient_emails: string[];
     sent_by: string;
     sent_at: string;
+    delivery_status?: string;
+    delivered_at?: string;
+    resend_email_id?: string;
+    error_message?: string;
   }>;
   // Add partner loan amount
   partner_loan_amount?: number;
@@ -136,6 +140,10 @@ const Admin = () => {
     recipient_emails: string[];
     sent_by: string;
     sent_at: string;
+    delivery_status?: string;
+    delivered_at?: string;
+    resend_email_id?: string;
+    error_message?: string;
   }>>>({});
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [leadToDelete, setLeadToDelete] = useState<string | null>(null);
@@ -2241,17 +2249,35 @@ const Admin = () => {
                             </TableCell>}
                           {isSuperAdmin && <TableCell>
                               <div className="space-y-2">
-                                {/* Display sent emails */}
+                                {/* Display sent emails with delivery status */}
                                 {leadCustomEmails[lead.id] && leadCustomEmails[lead.id].length > 0 && (
                                   <div className="space-y-1">
                                     <div className="text-xs font-medium text-muted-foreground">Emails Sent:</div>
                                     {leadCustomEmails[lead.id].map((customEmail, index) => (
                                       <div key={customEmail.id} className="text-xs bg-muted/50 p-2 rounded border">
-                                        <div className="font-medium text-green-700">
-                                          {customEmail.recipient_emails.join(', ')}
+                                        <div className="flex items-center gap-2">
+                                          <div className="font-medium text-green-700">
+                                            {customEmail.recipient_emails.join(', ')}
+                                          </div>
+                                          <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                            customEmail.delivery_status === 'delivered' ? 'bg-green-100 text-green-800' :
+                                            customEmail.delivery_status === 'failed' ? 'bg-red-100 text-red-800' :
+                                            customEmail.delivery_status === 'sent' ? 'bg-blue-100 text-blue-800' :
+                                            'bg-gray-100 text-gray-800'
+                                          }`}>
+                                            {customEmail.delivery_status === 'delivered' ? '✅ Delivered' :
+                                             customEmail.delivery_status === 'failed' ? '❌ Failed' :
+                                             customEmail.delivery_status === 'sent' ? '📤 Sent' :
+                                             '⏳ Pending'}
+                                          </span>
                                         </div>
                                         <div className="text-muted-foreground">
                                           {new Date(customEmail.sent_at).toLocaleDateString()} {new Date(customEmail.sent_at).toLocaleTimeString()}
+                                          {customEmail.delivered_at && (
+                                            <span className="ml-2 text-green-600">
+                                              (Delivered: {new Date(customEmail.delivered_at).toLocaleTimeString()})
+                                            </span>
+                                          )}
                                         </div>
                                       </div>
                                     ))}
