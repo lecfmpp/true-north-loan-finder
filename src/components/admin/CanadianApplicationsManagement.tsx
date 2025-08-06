@@ -84,6 +84,7 @@ interface QuizResponse {
   loan_amount: number;
   status: string;
   created_at: string;
+  assigned_partner_id?: string;
 }
 interface CanadianApplicationsManagementProps {
   onCountUpdate?: () => void;
@@ -94,6 +95,7 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
   const [applications, setApplications] = useState<CanadianApplication[]>([]);
   const [filteredApplications, setFilteredApplications] = useState<CanadianApplication[]>([]);
   const [quizResponses, setQuizResponses] = useState<Record<string, QuizResponse>>({});
+  const [partners, setPartners] = useState<Record<string, { name: string; email: string }>>({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -134,6 +136,26 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
             return acc;
           }, {} as Record<string, QuizResponse>);
           setQuizResponses(quizMap);
+
+          // Fetch partner information for assigned partners
+          const partnerIds = quizData
+            .filter(quiz => quiz.assigned_partner_id)
+            .map(quiz => quiz.assigned_partner_id);
+          
+          if (partnerIds.length > 0) {
+            const { data: partnerData, error: partnerError } = await supabase
+              .from('partners')
+              .select('id, name, email')
+              .in('id', partnerIds);
+
+            if (!partnerError && partnerData) {
+              const partnerMap = partnerData.reduce((acc, partner) => {
+                acc[partner.id] = { name: partner.name, email: partner.email };
+                return acc;
+              }, {} as Record<string, { name: string; email: string }>);
+              setPartners(partnerMap);
+            }
+          }
         }
       }
     } catch (error) {
@@ -579,6 +601,15 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
                         <span className="font-medium">Linked Quiz Lead:</span> {linkedQuiz.name}
                         <span className="ml-2">
                           (Quiz Score: {linkedQuiz.monthly_revenue ? `$${linkedQuiz.monthly_revenue.toLocaleString()}/mo` : 'N/A'})
+                        </span>
+                      </div>
+                    )}
+
+                    {linkedQuiz?.assigned_partner_id && partners[linkedQuiz.assigned_partner_id] && (
+                      <div className="text-sm text-purple-600">
+                        <span className="font-medium">Assigned Partner:</span> {partners[linkedQuiz.assigned_partner_id].name}
+                        <span className="ml-2 text-muted-foreground">
+                          ({partners[linkedQuiz.assigned_partner_id].email})
                         </span>
                       </div>
                     )}
