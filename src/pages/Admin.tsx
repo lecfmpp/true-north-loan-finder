@@ -393,6 +393,31 @@ const Admin = () => {
     filterLeads();
   }, [leads, searchTerm, statusFilter, countryFilter, monthlyRevenueFilter, loanAmountFilter, timeInBusinessFilter, applicationSentFilter, sortField, sortDirection]);
 
+  // Real-time subscription for email delivery updates
+  useEffect(() => {
+    if (!user || !isAdmin) return;
+
+    const channel = supabase
+      .channel('lead_custom_emails_updates')
+      .on('postgres_changes', 
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'lead_custom_emails'
+        },
+        (payload) => {
+          console.log('Email delivery status updated:', payload);
+          // Refresh custom emails data when an email is updated
+          fetchLeads();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, isAdmin]);
+
   const fetchLeads = async () => {
     try {
       const {
@@ -520,6 +545,10 @@ const Admin = () => {
         recipient_emails: string[];
         sent_by: string;
         sent_at: string;
+        delivery_status?: string;
+        delivered_at?: string;
+        resend_email_id?: string;
+        error_message?: string;
       }>> = {};
 
       customEmailsData?.forEach(email => {
@@ -530,7 +559,11 @@ const Admin = () => {
           id: email.id,
           recipient_emails: email.recipient_emails,
           sent_by: email.sent_by,
-          sent_at: email.sent_at
+          sent_at: email.sent_at,
+          delivery_status: email.delivery_status,
+          delivered_at: email.delivered_at,
+          resend_email_id: email.resend_email_id,
+          error_message: email.error_message
         });
       });
 
