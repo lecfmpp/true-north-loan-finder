@@ -237,6 +237,60 @@ const Admin = () => {
     }
   };
 
+  const removePartnerAssignment = async (leadId: string) => {
+    try {
+      const { error } = await supabase
+        .from('lead_assignments')
+        .delete()
+        .eq('quiz_response_id', leadId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Partner assignment removed successfully",
+      });
+
+      fetchLeadAssignments(); // Refresh assignments
+    } catch (error) {
+      console.error('Error removing assignment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to remove partner assignment",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const changePartnerAssignment = async (leadId: string, newPartnerId: string) => {
+    try {
+      const { error } = await supabase
+        .from('lead_assignments')
+        .update({
+          partner_id: newPartnerId,
+          assigned_by: user?.id,
+          assigned_at: new Date().toISOString()
+        })
+        .eq('quiz_response_id', leadId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Partner assignment updated successfully",
+      });
+
+      fetchLeadAssignments(); // Refresh assignments
+    } catch (error) {
+      console.error('Error changing assignment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to change partner assignment",
+        variant: "destructive",
+      });
+    }
+  };
+
   const assignLeadsToPartner = async (leadIds: string[], partnerId: string) => {
     try {
       // Filter out already assigned leads
@@ -2101,12 +2155,44 @@ const Admin = () => {
                             </TableCell>}
                           {isSuperAdmin && <TableCell>
                               {leadAssignments[lead.id] ? (
-                                <div className="flex flex-col gap-1">
-                                  <div className="text-sm font-medium text-green-700">
-                                    Assigned to: {leadAssignments[lead.id].partners.name}
+                                <div className="flex flex-col gap-2">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex flex-col">
+                                      <div className="text-sm font-medium text-green-700">
+                                        Assigned to: {leadAssignments[lead.id].partners.name}
+                                      </div>
+                                      <div className="text-xs text-muted-foreground">
+                                        {format(new Date(leadAssignments[lead.id].assigned_at), 'MMM dd, yyyy')}
+                                      </div>
+                                    </div>
                                   </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {format(new Date(leadAssignments[lead.id].assigned_at), 'MMM dd, yyyy')}
+                                  <div className="flex items-center gap-2">
+                                    <Select 
+                                      value={leadAssignments[lead.id].partner_id} 
+                                      onValueChange={(partnerId) => changePartnerAssignment(lead.id, partnerId)}
+                                    >
+                                      <SelectTrigger className="w-32 h-8 text-xs">
+                                        <SelectValue placeholder="Change" />
+                                      </SelectTrigger>
+                                      <SelectContent className="bg-background border shadow-md z-50">
+                                        {partners.map(partner => (
+                                          <SelectItem key={partner.id} value={partner.id}>
+                                            <div className="flex items-center gap-2">
+                                              <UserCheck className="w-3 h-3" />
+                                              {partner.name}
+                                            </div>
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline" 
+                                      className="h-8 px-2 text-xs"
+                                      onClick={() => removePartnerAssignment(lead.id)}
+                                    >
+                                      <Trash2 className="w-3 h-3" />
+                                    </Button>
                                   </div>
                                 </div>
                               ) : partners.length > 0 ? (
