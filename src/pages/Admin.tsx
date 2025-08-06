@@ -1530,7 +1530,7 @@ const Admin = () => {
           title: "Partners",
           value: "partners", 
           icon: Users,
-          count: applicationsCount
+          count: partners.length
         },
         {
           title: "USA Applications",
