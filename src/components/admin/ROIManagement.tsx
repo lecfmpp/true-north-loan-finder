@@ -193,6 +193,14 @@ Provide actionable insights for campaign optimization.`);
     }
 
     try {
+      // Convert CTR from percentage to decimal (e.g., 5.5% -> 0.055)
+      let ctrValue = parseFloat(newSpend.ctr) || 0;
+      if (ctrValue > 1) {
+        ctrValue = ctrValue / 100; // Convert percentage to decimal
+      }
+      // Cap at 9.9999 to prevent overflow
+      ctrValue = Math.min(ctrValue, 9.9999);
+
       const { error } = await supabase
         .from('ad_spend_records')
         .insert({
@@ -201,7 +209,7 @@ Provide actionable insights for campaign optimization.`);
           amount: Math.round(parseFloat(newSpend.amount) * 100), // Convert to cents
           campaign_name: newSpend.campaign_name,
           clicks: parseInt(newSpend.clicks) || 0,
-          ctr: parseFloat(newSpend.ctr) || 0,
+          ctr: ctrValue,
           conversions: parseInt(newSpend.conversions) || 0
         });
 

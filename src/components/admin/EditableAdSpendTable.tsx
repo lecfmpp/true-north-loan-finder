@@ -80,6 +80,12 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
         value = parseInt(editValue) || 0;
       } else if (field === 'ctr') {
         value = parseFloat(editValue) || 0;
+        // Convert CTR from percentage to decimal if needed (e.g., 5.5% -> 0.055)
+        if (value > 1) {
+          value = value / 100;
+        }
+        // Cap at 9.9999 to prevent overflow
+        value = Math.min(value, 9.9999);
       }
 
       const { error } = await supabase
@@ -142,6 +148,14 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
     }
 
     try {
+      // Convert CTR from percentage to decimal (e.g., 5.5% -> 0.055)
+      let ctrValue = parseFloat(newRecord.ctr) || 0;
+      if (ctrValue > 1) {
+        ctrValue = ctrValue / 100; // Convert percentage to decimal
+      }
+      // Cap at 9.9999 to prevent overflow
+      ctrValue = Math.min(ctrValue, 9.9999);
+
       const { error } = await supabase
         .from('ad_spend_records')
         .insert({
@@ -150,7 +164,7 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
           amount: Math.round(parseFloat(newRecord.amount) * 100), // Convert to cents
           campaign_name: newRecord.campaign_name,
           clicks: parseInt(newRecord.clicks) || 0,
-          ctr: parseFloat(newRecord.ctr) || 0,
+          ctr: ctrValue,
           conversions: parseInt(newRecord.conversions) || 0
         });
 
@@ -495,7 +509,7 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
                   <EditableCell 
                     recordId={spend.id} 
                     field="ctr" 
-                    value={spend.ctr ? `${spend.ctr}%` : '0%'} 
+                    value={spend.ctr ? `${(spend.ctr * 100).toFixed(2)}%` : '0%'} 
                     type="number"
                   />
                 </TableCell>
