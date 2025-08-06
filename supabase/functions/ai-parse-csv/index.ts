@@ -321,7 +321,7 @@ function processRow(row: string[], mapping: any, rowIndex: number) {
     amount: Math.round(parseAmount(amountStr) * 100), // Convert to cents
     campaign_name: getColumnValue('campaign_name') || `Campaign ${rowIndex}`,
     clicks: Math.min(parseInt(getColumnValue('clicks')) || 0, 1000000), // Cap clicks at 1M
-    ctr: Math.min(Math.max(parseFloat(getColumnValue('ctr').replace('%', '')) || 0, 0), 9.99), // CTR max 9.99%
+    ctr: Math.min(Math.max(parseFloat(getColumnValue('ctr')) || 0, 0), 9.9999), // Keep CTR as decimal, cap at 9.9999
     conversions: Math.min(parseInt(getColumnValue('conversions')) || 0, 100000) // Cap conversions at 100k
   };
 
@@ -370,55 +370,70 @@ function parseAmount(amountStr: string): number {
   return absoluteAmount;
 }
 
-// Helper function to standardize dates with format detection
+// Helper function to standardize dates with better format detection
 function standardizeDate(dateStr: string, detectedFormat?: string): string {
   if (!dateStr) return new Date().toISOString().split('T')[0];
   
   try {
     dateStr = dateStr.trim().replace(/"/g, '');
     
-    // Try parsing based on detected format first
-    if (detectedFormat?.includes('MM/DD/YYYY') && dateStr.includes('/')) {
-      const [month, day, year] = dateStr.split('/');
-      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-      if (!isNaN(date.getTime())) {
-        return date.toISOString().split('T')[0];
-      }
-    }
-    
-    if (detectedFormat?.includes('DD/MM/YYYY') && dateStr.includes('/')) {
-      const [day, month, year] = dateStr.split('/');
-      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-      if (!isNaN(date.getTime())) {
-        return date.toISOString().split('T')[0];
-      }
-    }
-    
-    // Try standard ISO format or built-in parsing
-    const date = new Date(dateStr);
-    if (!isNaN(date.getTime())) {
-      return date.toISOString().split('T')[0];
-    }
-    
-    // If all else fails, try different separators
+    // Handle common date formats more precisely
     if (dateStr.includes('/')) {
       const parts = dateStr.split('/');
       if (parts.length === 3) {
-        // Try different arrangements
-        const arrangements = [
-          [parts[2], parts[0], parts[1]], // YYYY, MM, DD
-          [parts[2], parts[1], parts[0]], // YYYY, DD, MM
-        ];
+        let year = parseInt(parts[2]);
+        let month = parseInt(parts[0]);
+        let day = parseInt(parts[1]);
         
-        for (const [year, month, day] of arrangements) {
-          const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-          if (!isNaN(date.getTime())) {
+        // Handle 2-digit years
+        if (year < 100) {
+          year += year < 30 ? 2000 : 1900;
+        }
+        
+        // Check if format might be DD/MM/YYYY by checking if day > 12
+        if (month > 12) {
+          // Swap month and day
+          [month, day] = [day, month];
+        }
+        
+        // Validate the date components
+        if (year >= 1900 && year <= 2100 && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+          const date = new Date(year, month - 1, day);
+          if (!isNaN(date.getTime()) && date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day) {
             return date.toISOString().split('T')[0];
           }
         }
       }
     }
     
+    // Handle dashes and other separators
+    if (dateStr.includes('-')) {
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        // Try YYYY-MM-DD first (ISO format)
+        if (parts[0].length === 4) {
+          const year = parseInt(parts[0]);
+          const month = parseInt(parts[1]);
+          const day = parseInt(parts[2]);
+          
+          if (year >= 1900 && year <= 2100 && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+            const date = new Date(year, month - 1, day);
+            if (!isNaN(date.getTime())) {
+              return date.toISOString().split('T')[0];
+            }
+          }
+        }
+      }
+    }
+    
+    // Try standard JS Date parsing as fallback
+    const date = new Date(dateStr);
+    if (!isNaN(date.getTime()) && date.getFullYear() >= 1900 && date.getFullYear() <= 2100) {
+      return date.toISOString().split('T')[0];
+    }
+    
+    // If all parsing fails, return today's date
+    console.warn(`Could not parse date: ${dateStr}, using today's date`);
     return new Date().toISOString().split('T')[0];
   } catch (error) {
     console.warn('Date parsing error:', error);
