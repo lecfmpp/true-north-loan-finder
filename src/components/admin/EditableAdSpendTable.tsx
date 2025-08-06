@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Plus, Check, X, Edit, Copy } from 'lucide-react';
+import { CalendarIcon, Plus, Check, X, Edit, Copy, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -34,11 +34,16 @@ const CHANNELS = [
   { value: 'linkedin', label: 'LinkedIn Ads' }
 ];
 
+type SortField = 'date' | 'channel' | 'amount' | 'campaign_name' | 'clicks' | 'ctr' | 'conversions';
+type SortDirection = 'asc' | 'desc' | null;
+
 export default function EditableAdSpendTable({ adSpends, onDataUpdate }: EditableAdSpendTableProps) {
   const [editingCell, setEditingCell] = useState<{ recordId: string; field: string } | null>(null);
   const [editValue, setEditValue] = useState('');
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [uniqueCampaigns, setUniqueCampaigns] = useState<string[]>([]);
+  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [newRecord, setNewRecord] = useState({
     date: new Date(),
     channel: '',
@@ -55,6 +60,76 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
     const campaigns = [...new Set(adSpends.map(spend => spend.campaign_name).filter(Boolean))];
     setUniqueCampaigns(campaigns);
   }, [adSpends]);
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      // Cycle through: asc -> desc -> null
+      if (sortDirection === 'asc') {
+        setSortDirection('desc');
+      } else if (sortDirection === 'desc') {
+        setSortDirection(null);
+        setSortField(null);
+      }
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortedData = () => {
+    if (!sortField || !sortDirection) return adSpends;
+
+    return [...adSpends].sort((a, b) => {
+      let aValue: any = a[sortField];
+      let bValue: any = b[sortField];
+
+      // Handle special cases
+      if (sortField === 'date') {
+        aValue = new Date(aValue).getTime();
+        bValue = new Date(bValue).getTime();
+      } else if (sortField === 'amount') {
+        aValue = a.amount || 0;
+        bValue = b.amount || 0;
+      } else if (sortField === 'clicks' || sortField === 'conversions') {
+        aValue = aValue || 0;
+        bValue = bValue || 0;
+      } else if (sortField === 'ctr') {
+        aValue = aValue || 0;
+        bValue = bValue || 0;
+      } else {
+        // String fields
+        aValue = String(aValue || '').toLowerCase();
+        bValue = String(bValue || '').toLowerCase();
+      }
+
+      if (sortDirection === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+  };
+
+  const SortableHeader = ({ field, children }: { field: SortField; children: React.ReactNode }) => {
+    const isActive = sortField === field;
+    const direction = isActive ? sortDirection : null;
+
+    return (
+      <TableHead 
+        className="cursor-pointer select-none hover:bg-muted/50"
+        onClick={() => handleSort(field)}
+      >
+        <div className="flex items-center gap-2">
+          {children}
+          <div className="flex flex-col">
+            {direction === null && <ChevronsUpDown className="h-3 w-3 text-muted-foreground" />}
+            {direction === 'asc' && <ChevronUp className="h-3 w-3 text-primary" />}
+            {direction === 'desc' && <ChevronDown className="h-3 w-3 text-primary" />}
+          </div>
+        </div>
+      </TableHead>
+    );
+  };
 
   const startEdit = (recordId: string, field: string, currentValue: any) => {
     setEditingCell({ recordId, field });
@@ -368,14 +443,14 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Date</TableHead>
-            <TableHead>Channel</TableHead>
-            <TableHead>Cost</TableHead>
-            <TableHead>Campaign</TableHead>
-            <TableHead>Clicks</TableHead>
+            <SortableHeader field="date">Date</SortableHeader>
+            <SortableHeader field="channel">Channel</SortableHeader>
+            <SortableHeader field="amount">Cost</SortableHeader>
+            <SortableHeader field="campaign_name">Campaign</SortableHeader>
+            <SortableHeader field="clicks">Clicks</SortableHeader>
             <TableHead>Cost per Click</TableHead>
-            <TableHead>CTR (%)</TableHead>
-            <TableHead>Conversions</TableHead>
+            <SortableHeader field="ctr">CTR (%)</SortableHeader>
+            <SortableHeader field="conversions">Conversions</SortableHeader>
             <TableHead>Cost per Conversion</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
@@ -479,7 +554,7 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
           )}
 
           {/* Existing Records */}
-          {adSpends.map((spend) => {
+          {getSortedData().map((spend) => {
             const amount = spend.amount / 100; // Convert from cents
             const clicks = spend.clicks || 0;
             const conversions = spend.conversions || 0;
