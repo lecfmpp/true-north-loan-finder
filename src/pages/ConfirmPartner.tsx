@@ -69,6 +69,7 @@ export default function ConfirmPartner() {
         .from('partners')
         .select('*')
         .eq('email', tokenData.email)
+        .eq('status', 'unconfirmed')
         .single();
 
       if (partnerError || !partnerData) {
@@ -155,11 +156,11 @@ export default function ConfirmPartner() {
           throw authError;
         }
       } else {
-        // Update partner status to pending (awaiting admin approval)
+        // Update partner status to active and link user
         const { error: updateError } = await supabase
           .from('partners')
           .update({
-            status: 'pending',
+            status: 'active',
             user_id: authData.user?.id,
             updated_at: new Date().toISOString()
           })
