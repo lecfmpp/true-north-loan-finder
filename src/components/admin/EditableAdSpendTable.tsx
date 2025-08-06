@@ -18,6 +18,7 @@ interface AdSpendRecord {
   amount: number;
   campaign_name: string;
   clicks: number;
+  impressions: number;
   ctr: number;
   conversions: number;
 }
@@ -34,7 +35,7 @@ const CHANNELS = [
   { value: 'linkedin', label: 'LinkedIn Ads' }
 ];
 
-type SortField = 'date' | 'channel' | 'amount' | 'campaign_name' | 'clicks' | 'ctr' | 'conversions';
+type SortField = 'date' | 'channel' | 'amount' | 'campaign_name' | 'clicks' | 'impressions' | 'ctr' | 'conversions';
 type SortDirection = 'asc' | 'desc' | null;
 
 export default function EditableAdSpendTable({ adSpends, onDataUpdate }: EditableAdSpendTableProps) {
@@ -50,6 +51,7 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
     amount: '',
     campaign_name: '',
     clicks: '',
+    impressions: '',
     ctr: '',
     conversions: ''
   });
@@ -90,7 +92,7 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
       } else if (sortField === 'amount') {
         aValue = a.amount || 0;
         bValue = b.amount || 0;
-      } else if (sortField === 'clicks' || sortField === 'conversions') {
+      } else if (sortField === 'clicks' || sortField === 'conversions' || sortField === 'impressions') {
         aValue = aValue || 0;
         bValue = bValue || 0;
       } else if (sortField === 'ctr') {
@@ -151,7 +153,7 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
       // Convert value based on field type
       if (field === 'amount') {
         value = Math.round(parseFloat(editValue) * 100); // Convert to cents
-      } else if (field === 'clicks' || field === 'conversions') {
+      } else if (field === 'clicks' || field === 'conversions' || field === 'impressions') {
         value = parseInt(editValue) || 0;
       } else if (field === 'ctr') {
         value = parseFloat(editValue) || 0;
@@ -214,6 +216,7 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
           amount: Math.round(parseFloat(newRecord.amount) * 100), // Convert to cents
           campaign_name: newRecord.campaign_name,
           clicks: parseInt(newRecord.clicks) || 0,
+          impressions: parseInt(newRecord.impressions) || 0,
           ctr: ctrValue,
           conversions: parseInt(newRecord.conversions) || 0
         });
@@ -232,6 +235,7 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
         amount: '',
         campaign_name: '',
         clicks: '',
+        impressions: '',
         ctr: '',
         conversions: ''
       });
@@ -254,6 +258,7 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
       amount: (record.amount / 100).toString(), // Convert from cents to dollars
       campaign_name: record.campaign_name,
       clicks: record.clicks.toString(),
+      impressions: record.impressions.toString(),
       ctr: record.ctr ? record.ctr.toString() : '', // Use raw CTR value
       conversions: record.conversions.toString()
     });
@@ -534,7 +539,14 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
                   onChange={(e) => setNewRecord({ ...newRecord, clicks: e.target.value })}
                 />
               </TableCell>
-              <TableCell>-</TableCell>
+              <TableCell>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  value={newRecord.impressions}
+                  onChange={(e) => setNewRecord({ ...newRecord, impressions: e.target.value })}
+                />
+              </TableCell>
               <TableCell>
                 <Input
                   type="number"
@@ -616,7 +628,14 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
                     type="number"
                   />
                 </TableCell>
-                <TableCell>-</TableCell>
+                <TableCell>
+                  <EditableCell 
+                    recordId={spend.id} 
+                    field="impressions" 
+                    value={spend.impressions || 0} 
+                    type="number"
+                  />
+                </TableCell>
                 <TableCell>
                   <EditableCell 
                     recordId={spend.id} 

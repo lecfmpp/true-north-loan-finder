@@ -34,6 +34,7 @@ interface AdSpendRecord {
   amount: number;
   campaign_name: string;
   clicks: number;
+  impressions: number;
   ctr: number;
   conversions: number;
 }
@@ -95,6 +96,7 @@ Provide actionable insights for campaign optimization.`);
     amount: '',
     campaign_name: '',
     clicks: '',
+    impressions: '',
     ctr: '',
     conversions: ''
   });
@@ -174,7 +176,11 @@ Provide actionable insights for campaign optimization.`);
       if (spendsError) throw spendsError;
 
       setMetrics(metricsData?.[0] || null);
-      setAdSpends(spendsData || []);
+      // Map database data to include impressions field with default value
+      setAdSpends((spendsData || []).map(spend => ({ 
+        ...spend, 
+        impressions: (spend as any).impressions || 0 
+      }) as AdSpendRecord));
     } catch (error) {
       console.error('Error fetching ROI data:', error);
       toast({
@@ -214,6 +220,7 @@ Provide actionable insights for campaign optimization.`);
           amount: Math.round(parseFloat(newSpend.amount) * 100), // Convert to cents
           campaign_name: newSpend.campaign_name,
           clicks: parseInt(newSpend.clicks) || 0,
+          impressions: parseInt(newSpend.impressions) || 0,
           ctr: ctrValue,
           conversions: parseInt(newSpend.conversions) || 0
         });
@@ -232,6 +239,7 @@ Provide actionable insights for campaign optimization.`);
         amount: '',
         campaign_name: '',
         clicks: '',
+        impressions: '',
         ctr: '',
         conversions: ''
       });
