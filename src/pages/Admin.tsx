@@ -2157,14 +2157,17 @@ const Admin = () => {
                               {leadAssignments[lead.id] ? (
                                 <div className="flex flex-col gap-2">
                                   <div className="flex items-center justify-between">
-                                    <div className="flex flex-col">
-                                      <div className="text-sm font-medium text-green-700">
-                                        Assigned to: {leadAssignments[lead.id].partners.name}
-                                      </div>
-                                      <div className="text-xs text-muted-foreground">
-                                        {format(new Date(leadAssignments[lead.id].assigned_at), 'MMM dd, yyyy')}
-                                      </div>
-                                    </div>
+                                     <div className="flex flex-col">
+                                       <div className="text-sm font-medium text-green-700">
+                                         Assigned to: {leadAssignments[lead.id].partners.name}
+                                       </div>
+                                       <div className="text-xs text-blue-600">
+                                         📧 {leadAssignments[lead.id].partners.email}
+                                       </div>
+                                       <div className="text-xs text-muted-foreground">
+                                         {format(new Date(leadAssignments[lead.id].assigned_at), 'MMM dd, yyyy')}
+                                       </div>
+                                     </div>
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <Select 
