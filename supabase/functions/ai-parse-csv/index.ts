@@ -331,10 +331,18 @@ function processRow(row: string[], mapping: any, rowIndex: number) {
     processedRow.amount = 10000000; // $100,000 in cents
   }
 
-  // Validate required fields
-  if (!processedRow.date || !processedRow.channel || processedRow.amount <= 0) {
+  // More lenient validation - only require valid date and positive amount
+  if (!processedRow.date || processedRow.amount <= 0) {
+    console.warn(`Row ${rowIndex} skipped: date=${processedRow.date}, amount=${processedRow.amount}`);
     return null;
   }
+
+  console.log(`Row ${rowIndex} processed:`, {
+    date: processedRow.date,
+    channel: processedRow.channel,
+    amount: processedRow.amount,
+    campaign_name: processedRow.campaign_name
+  });
 
   return processedRow;
 }
