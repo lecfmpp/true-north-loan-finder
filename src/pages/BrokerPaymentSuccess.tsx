@@ -14,21 +14,24 @@ import { toast } from "sonner";
 const BrokerPaymentSuccess = () => {
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
   const [accountCreated, setAccountCreated] = useState(false);
+  const [applicationData, setApplicationData] = useState<any>(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    confirmPassword: '',
-    fullName: '',
-    companyName: '',
-    phone: ''
+    confirmPassword: ''
   });
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Track payment success event
+    const urlParams = new URLSearchParams(window.location.search);
+    const applicationId = urlParams.get('application_id');
+    const trackingId = urlParams.get('tracking_id');
+    const sessionId = urlParams.get('session_id');
+
+    // Track payment success event with all available parameters
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', 'purchase', {
-        transaction_id: new URLSearchParams(window.location.search).get('session_id'),
+        transaction_id: sessionId || trackingId,
         value: 500,
         currency: 'USD',
         items: [{
@@ -37,10 +40,52 @@ const BrokerPaymentSuccess = () => {
           category: 'Partnership',
           price: 500,
           quantity: 1
-        }]
+        }],
+        // Include UTM parameters if available
+        utm_source: urlParams.get('utm_source'),
+        utm_medium: urlParams.get('utm_medium'),
+        utm_campaign: urlParams.get('utm_campaign'),
+        tracking_id: trackingId
       });
     }
+
+    // Fetch application data if application ID is available
+    if (applicationId) {
+      fetchApplicationData(applicationId);
+    }
   }, []);
+
+  const fetchApplicationData = async (applicationId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('lender_broker_applications')
+        .select('*')
+        .eq('id', applicationId)
+        .single();
+
+      if (error) throw error;
+
+      setApplicationData(data);
+      // Pre-populate form with application data
+      setFormData(prev => ({
+        ...prev,
+        email: data.applicant_email
+      }));
+
+      // Update application status to indicate payment success
+      await supabase
+        .from('lender_broker_applications')
+        .update({
+          payment_status: 'completed',
+          status: 'approved',
+          admin_notes: (data.admin_notes || '') + ' | Payment completed successfully'
+        })
+        .eq('id', applicationId);
+
+    } catch (error) {
+      console.error('Error fetching application data:', error);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -70,34 +115,27 @@ const BrokerPaymentSuccess = () => {
         options: {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
-            full_name: formData.fullName,
-            company_name: formData.companyName,
-            phone: formData.phone
+            full_name: applicationData?.applicant_name,
+            company_name: applicationData?.company_name,
+            phone: applicationData?.applicant_phone
           }
         }
       });
 
       if (error) throw error;
 
-      if (data.user) {
-        // Create broker application record
-        const { error: applicationError } = await supabase
+      if (data.user && applicationData) {
+        // Update existing application with user ID
+        const { error: updateError } = await supabase
           .from('lender_broker_applications')
-          .insert({
+          .update({
             user_id: data.user.id,
-            applicant_name: formData.fullName,
-            applicant_email: formData.email,
-            applicant_phone: formData.phone,
-            company_name: formData.companyName,
-            application_type: 'broker',
-            status: 'approved', // Auto-approve since they paid
-            payment_status: 'completed',
-            payment_amount: 50000 // $500 in cents
-          });
+            admin_notes: (applicationData.admin_notes || '') + ` | User account created: ${data.user.id}`
+          })
+          .eq('id', applicationData.id);
 
-        if (applicationError) {
-          console.error('Error creating application:', applicationError);
-          // Don't throw error, account creation was successful
+        if (updateError) {
+          console.error('Error updating application:', updateError);
         }
 
         setAccountCreated(true);
@@ -148,56 +186,30 @@ const BrokerPaymentSuccess = () => {
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleCreateAccount} className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="fullName">Full Name *</Label>
-                        <Input
-                          id="fullName"
-                          name="fullName"
-                          value={formData.fullName}
-                          onChange={handleInputChange}
-                          required
-                          placeholder="Your full name"
-                        />
+                    {applicationData && (
+                      <div className="bg-muted/50 p-4 rounded-lg mb-4">
+                        <h4 className="font-semibold text-primary mb-2">Your Application Details</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                          <div><strong>Name:</strong> {applicationData.applicant_name}</div>
+                          <div><strong>Company:</strong> {applicationData.company_name}</div>
+                          <div><strong>Phone:</strong> {applicationData.applicant_phone}</div>
+                          <div><strong>Email:</strong> {applicationData.applicant_email}</div>
+                        </div>
                       </div>
-                      <div>
-                        <Label htmlFor="companyName">Company Name *</Label>
-                        <Input
-                          id="companyName"
-                          name="companyName"
-                          value={formData.companyName}
-                          onChange={handleInputChange}
-                          required
-                          placeholder="Your company name"
-                        />
-                      </div>
-                    </div>
+                    )}
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="email">Email Address *</Label>
-                        <Input
-                          id="email"
-                          name="email"
-                          type="email"
-                          value={formData.email}
-                          onChange={handleInputChange}
-                          required
-                          placeholder="your@email.com"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="phone">Phone Number *</Label>
-                        <Input
-                          id="phone"
-                          name="phone"
-                          type="tel"
-                          value={formData.phone}
-                          onChange={handleInputChange}
-                          required
-                          placeholder="(555) 123-4567"
-                        />
-                      </div>
+                    <div>
+                      <Label htmlFor="email">Email Address *</Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        required
+                        placeholder="your@email.com"
+                        disabled={!!applicationData?.applicant_email}
+                      />
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

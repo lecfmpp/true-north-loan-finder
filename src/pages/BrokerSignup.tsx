@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Label } from "@/components/ui/label";
 import { CheckCircle, TrendingUp, Users, DollarSign, Clock, Phone, MapPin, Building2, Info } from "lucide-react";
 import { LeadsSimulation } from "@/components/LeadsSimulation";
 import SEOHead from "@/components/SEOHead";
@@ -117,19 +118,133 @@ const BrokerSignup = () => {
     return `${diffInDays}d ago`;
   };
 
-  const handlePayment = async () => {
+  // Form state for broker application
+  const [formData, setFormData] = useState({
+    applicantName: '',
+    applicantEmail: '',
+    applicantPhone: '',
+    companyName: '',
+    companyWebsite: '',
+    yearsOfExperience: '',
+    licenseNumber: '',
+    businessDescription: '',
+    preferredIndustries: [] as string[],
+    minMonthlyRevenue: '',
+    maxMonthlyRevenue: '',
+    minTimeInBusiness: '',
+    minCreditScore: '',
+    minLoanAmount: '',
+    maxLoanAmount: '',
+    geographicAreas: [] as string[],
+    additionalRequirements: ''
+  });
+  
+  const [showForm, setShowForm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
     try {
-      // Create URL with return URL parameter for Stripe to redirect after payment
-      const currentDomain = window.location.origin;
-      const successUrl = `${currentDomain}/broker-payment-success`;
-      
-      // Direct redirect to Stripe payment link with success URL
-      const stripeUrl = `https://buy.stripe.com/aFadR98YN9bjcJkeaaawo05?success_url=${encodeURIComponent(successUrl)}`;
-      window.open(stripeUrl, '_blank');
+      // Get URL parameters for tracking
+      const urlParams = new URLSearchParams(window.location.search);
+      const trackingData = {
+        utm_source: urlParams.get('utm_source'),
+        utm_medium: urlParams.get('utm_medium'),
+        utm_campaign: urlParams.get('utm_campaign'),
+        utm_term: urlParams.get('utm_term'),
+        utm_content: urlParams.get('utm_content'),
+        ref: urlParams.get('ref'),
+        gclid: urlParams.get('gclid'),
+        fbclid: urlParams.get('fbclid')
+      };
+
+      // Generate unique tracking ID
+      const trackingId = `broker_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+
+      // Track form completion event
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'broker_form_completed', {
+          event_category: 'broker_signup',
+          tracking_id: trackingId,
+          utm_source: trackingData.utm_source,
+          utm_medium: trackingData.utm_medium,
+          utm_campaign: trackingData.utm_campaign
+        });
+      }
+
+      // Create pending broker application
+      const { data: applicationData, error: applicationError } = await supabase
+        .from('lender_broker_applications')
+        .insert({
+          applicant_name: formData.applicantName,
+          applicant_email: formData.applicantEmail,
+          applicant_phone: formData.applicantPhone,
+          company_name: formData.companyName,
+          company_website: formData.companyWebsite,
+          application_type: 'broker',
+          years_of_experience: formData.yearsOfExperience ? parseInt(formData.yearsOfExperience) : null,
+          license_number: formData.licenseNumber,
+          business_description: formData.businessDescription,
+          preferred_industries: formData.preferredIndustries,
+          min_monthly_revenue: formData.minMonthlyRevenue,
+          max_monthly_revenue: formData.maxMonthlyRevenue,
+          min_time_in_business: formData.minTimeInBusiness,
+          min_credit_score: formData.minCreditScore,
+          min_loan_amount: formData.minLoanAmount,
+          max_loan_amount: formData.maxLoanAmount,
+          geographic_areas: formData.geographicAreas,
+          additional_requirements: formData.additionalRequirements,
+          status: 'pending_payment',
+          payment_status: 'pending',
+          admin_notes: `Tracking ID: ${trackingId}, UTM: ${JSON.stringify(trackingData)}`
+        })
+        .select()
+        .single();
+
+      if (applicationError) throw applicationError;
+
+      // Track payment initiation event
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'begin_checkout', {
+          event_category: 'broker_signup',
+          tracking_id: trackingId,
+          value: 500,
+          currency: 'USD'
+        });
+      }
+
+      // Call edge function to create Stripe session
+      const { data: paymentData, error: paymentError } = await supabase.functions.invoke('create-broker-payment', {
+        body: { 
+          applicationId: applicationData.id,
+          trackingId: trackingId,
+          utmParams: trackingData
+        }
+      });
+
+      if (paymentError) throw paymentError;
+
+      // Open Stripe checkout in new tab
+      window.open(paymentData.url, '_blank');
+
+      toast.success('Redirecting to payment...');
     } catch (error) {
-      console.error('Error opening payment link:', error);
-      toast.error('Failed to open payment link. Please try again.');
+      console.error('Error submitting form:', error);
+      toast.error('Failed to submit form. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+
+  const handlePayment = () => {
+    setShowForm(true);
   };
 
   return (
@@ -159,9 +274,182 @@ const BrokerSignup = () => {
               Join our exclusive broker network and receive pre-qualified business loan leads directly to your inbox. We focus on quality over quantity - delivering genuine opportunities that convert into funded deals.
             </p>
             
-            <div className="mt-4 md:mt-8">
-              <LeadsSimulation />
-            </div>
+              <div className="mt-4 md:mt-8">
+                <LeadsSimulation />
+              </div>
+              
+              {/* Broker Application Form Modal */}
+              {showForm && (
+                <Dialog open={showForm} onOpenChange={setShowForm}>
+                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl font-bold">Complete Your Broker Application</DialogTitle>
+                      <p className="text-muted-foreground">Fill out the form below to proceed to payment and start receiving leads.</p>
+                    </DialogHeader>
+                    
+                    <form onSubmit={handleFormSubmit} className="space-y-6">
+                      {/* Basic Information */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="applicantName">Full Name *</Label>
+                          <input
+                            id="applicantName"
+                            name="applicantName"
+                            value={formData.applicantName}
+                            onChange={handleInputChange}
+                            required
+                            className="w-full px-3 py-2 border border-border rounded-md bg-background"
+                            placeholder="Your full name"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="applicantEmail">Email Address *</Label>
+                          <input
+                            id="applicantEmail"
+                            name="applicantEmail"
+                            type="email"
+                            value={formData.applicantEmail}
+                            onChange={handleInputChange}
+                            required
+                            className="w-full px-3 py-2 border border-border rounded-md bg-background"
+                            placeholder="your@email.com"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="applicantPhone">Phone Number *</Label>
+                          <input
+                            id="applicantPhone"
+                            name="applicantPhone"
+                            type="tel"
+                            value={formData.applicantPhone}
+                            onChange={handleInputChange}
+                            required
+                            className="w-full px-3 py-2 border border-border rounded-md bg-background"
+                            placeholder="(555) 123-4567"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="companyName">Company Name *</Label>
+                          <input
+                            id="companyName"
+                            name="companyName"
+                            value={formData.companyName}
+                            onChange={handleInputChange}
+                            required
+                            className="w-full px-3 py-2 border border-border rounded-md bg-background"
+                            placeholder="Your company name"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="companyWebsite">Company Website</Label>
+                          <input
+                            id="companyWebsite"
+                            name="companyWebsite"
+                            type="url"
+                            value={formData.companyWebsite}
+                            onChange={handleInputChange}
+                            className="w-full px-3 py-2 border border-border rounded-md bg-background"
+                            placeholder="https://yourcompany.com"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="yearsOfExperience">Years of Experience</Label>
+                          <input
+                            id="yearsOfExperience"
+                            name="yearsOfExperience"
+                            type="number"
+                            value={formData.yearsOfExperience}
+                            onChange={handleInputChange}
+                            className="w-full px-3 py-2 border border-border rounded-md bg-background"
+                            placeholder="5"
+                            min="0"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Business Description */}
+                      <div>
+                        <Label htmlFor="businessDescription">Business Description</Label>
+                        <textarea
+                          id="businessDescription"
+                          name="businessDescription"
+                          value={formData.businessDescription}
+                          onChange={handleInputChange}
+                          rows={3}
+                          className="w-full px-3 py-2 border border-border rounded-md bg-background"
+                          placeholder="Describe your business and experience in commercial lending..."
+                        />
+                      </div>
+
+                      {/* Lead Preferences */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="minLoanAmount">Minimum Loan Amount</Label>
+                          <input
+                            id="minLoanAmount"
+                            name="minLoanAmount"
+                            value={formData.minLoanAmount}
+                            onChange={handleInputChange}
+                            className="w-full px-3 py-2 border border-border rounded-md bg-background"
+                            placeholder="$50,000"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="maxLoanAmount">Maximum Loan Amount</Label>
+                          <input
+                            id="maxLoanAmount"
+                            name="maxLoanAmount"
+                            value={formData.maxLoanAmount}
+                            onChange={handleInputChange}
+                            className="w-full px-3 py-2 border border-border rounded-md bg-background"
+                            placeholder="$500,000"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="minMonthlyRevenue">Minimum Monthly Revenue</Label>
+                          <input
+                            id="minMonthlyRevenue"
+                            name="minMonthlyRevenue"
+                            value={formData.minMonthlyRevenue}
+                            onChange={handleInputChange}
+                            className="w-full px-3 py-2 border border-border rounded-md bg-background"
+                            placeholder="$50,000"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="minCreditScore">Minimum Credit Score</Label>
+                          <input
+                            id="minCreditScore"
+                            name="minCreditScore"
+                            value={formData.minCreditScore}
+                            onChange={handleInputChange}
+                            className="w-full px-3 py-2 border border-border rounded-md bg-background"
+                            placeholder="600"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex gap-4 pt-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setShowForm(false)}
+                          className="flex-1"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={isSubmitting}
+                          className="flex-1"
+                        >
+                          {isSubmitting ? 'Processing...' : 'Proceed to Payment ($500)'}
+                        </Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              )}
           </div>
         </div>
       </section>

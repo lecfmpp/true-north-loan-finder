@@ -14,31 +14,85 @@ serve(async (req) => {
   }
 
   try {
+    const { applicationId, trackingId, utmParams } = await req.json();
+
+    // Initialize Supabase client
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    // Get application details
+    const { data: application, error: fetchError } = await supabaseClient
+      .from('lender_broker_applications')
+      .select('*')
+      .eq('id', applicationId)
+      .single();
+
+    if (fetchError || !application) {
+      throw new Error('Application not found');
+    }
+
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16",
+    });
+
+    // Build success URL with tracking parameters
+    const origin = req.headers.get("origin");
+    const successUrl = new URL(`${origin}/broker-payment-success`);
+    successUrl.searchParams.set('application_id', applicationId);
+    successUrl.searchParams.set('tracking_id', trackingId);
+    
+    // Add UTM parameters to success URL
+    Object.entries(utmParams).forEach(([key, value]) => {
+      if (value) {
+        successUrl.searchParams.set(key, value as string);
+      }
     });
 
     // Create a checkout session with the specific price ID
     const session = await stripe.checkout.sessions.create({
       line_items: [
         {
-          price: "price_1Rr3tyFpL5FAW1TUbwSTqPxJ", // The price ID provided by the user
+          price: "price_1Rr3tyFpL5FAW1TUbwSTqPxJ",
           quantity: 1,
         },
       ],
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/broker-payment-success`,
-      cancel_url: `${req.headers.get("origin")}/broker-signup`,
+      success_url: successUrl.toString(),
+      cancel_url: `${origin}/broker-signup`,
       allow_promotion_codes: true,
+      customer_email: application.applicant_email,
       payment_intent_data: {
         metadata: {
           type: "broker_trial",
+          application_id: applicationId,
+          tracking_id: trackingId,
+          applicant_email: application.applicant_email,
+          company_name: application.company_name,
         },
+      },
+      metadata: {
+        application_id: applicationId,
+        tracking_id: trackingId,
       },
     });
 
-    return new Response(JSON.stringify({ url: session.url }), {
+    // Update application with Stripe session ID
+    const { error: updateError } = await supabaseClient
+      .from('lender_broker_applications')
+      .update({
+        stripe_payment_link_id: session.id,
+        admin_notes: application.admin_notes + ` | Stripe Session: ${session.id}`
+      })
+      .eq('id', applicationId);
+
+    if (updateError) {
+      console.error('Error updating application:', updateError);
+    }
+
+    return new Response(JSON.stringify({ url: session.url, session_id: session.id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
