@@ -80,6 +80,7 @@ interface QuizResponse {
   name: string;
   email: string;
   phone: string;
+  company_name?: string;
   monthly_revenue: number;
   loan_amount: number;
   status: string;
@@ -223,6 +224,10 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [emailRecipient, setEmailRecipient] = useState("");
   const [isEmailSending, setIsEmailSending] = useState(false);
+  const [linkQuizModalOpen, setLinkQuizModalOpen] = useState(false);
+  const [applicationToLink, setApplicationToLink] = useState<CanadianApplication | null>(null);
+  const [availableQuizResponses, setAvailableQuizResponses] = useState<QuizResponse[]>([]);
+  const [selectedQuizId, setSelectedQuizId] = useState("");
 
   const openDeleteModal = (id: string, refNumber: string) => {
     setApplicationToDelete({id, refNumber});
@@ -482,6 +487,66 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
     }
   };
 
+  // Function to fetch available quiz responses for linking
+  const fetchAvailableQuizResponses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('quiz_responses')
+        .select('*')
+        .is('assigned_partner_id', null) // Only unassigned quiz responses
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      setAvailableQuizResponses(data || []);
+    } catch (error) {
+      console.error('Error fetching quiz responses:', error);
+      toast.error("Failed to fetch quiz responses");
+    }
+  };
+
+  // Function to open link quiz modal
+  const openLinkQuizModal = (application: CanadianApplication) => {
+    setApplicationToLink(application);
+    setLinkQuizModalOpen(true);
+    fetchAvailableQuizResponses();
+  };
+
+  // Function to close link quiz modal
+  const closeLinkQuizModal = () => {
+    setLinkQuizModalOpen(false);
+    setApplicationToLink(null);
+    setSelectedQuizId("");
+    setAvailableQuizResponses([]);
+  };
+
+  // Function to link application to quiz response
+  const linkApplicationToQuiz = async () => {
+    if (!applicationToLink || !selectedQuizId) {
+      toast.error("Please select a quiz response to link");
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('canadian_applications')
+        .update({ 
+          quiz_response_id: selectedQuizId,
+          lead_source: 'quiz'
+        })
+        .eq('id', applicationToLink.id);
+
+      if (error) throw error;
+
+      toast.success("Application successfully linked to quiz response");
+      fetchApplications(); // Refresh the applications list
+      closeLinkQuizModal();
+    } catch (error) {
+      console.error('Error linking application to quiz:', error);
+      toast.error("Failed to link application to quiz response");
+    }
+  };
+
   if (loading) {
     return <div>Loading applications...</div>;
   }
@@ -639,26 +704,38 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setSelectedApplication(application)}
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      View Details
-                    </Button>
+                   <div className="flex flex-col gap-2">
+                     <Button
+                       variant="outline"
+                       size="sm"
+                       onClick={() => setSelectedApplication(application)}
+                     >
+                       <Eye className="h-4 w-4 mr-2" />
+                       View Details
+                     </Button>
 
-                    {linkedQuiz && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => window.open(`/admin?tab=quiz&id=${linkedQuiz.id}`, '_blank')}
-                      >
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        View Quiz
-                      </Button>
-                    )}
+                     {!application.quiz_response_id && (
+                       <Button
+                         variant="outline"
+                         size="sm"
+                         className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                         onClick={() => openLinkQuizModal(application)}
+                       >
+                         <ExternalLink className="h-4 w-4 mr-2" />
+                         Link to Quiz
+                       </Button>
+                     )}
+
+                     {linkedQuiz && (
+                       <Button
+                         variant="outline"
+                         size="sm"
+                         onClick={() => window.open(`/admin?tab=quiz&id=${linkedQuiz.id}`, '_blank')}
+                       >
+                         <ExternalLink className="h-4 w-4 mr-2" />
+                         View Quiz
+                       </Button>
+                     )}
 
                     <div className="flex gap-1">
                       <Button
@@ -1135,6 +1212,72 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
               disabled={deleteConfirmText !== 'DELETE APPLICATION'}
             >
               Delete Application
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Link to Quiz Modal */}
+      <Dialog open={linkQuizModalOpen} onOpenChange={setLinkQuizModalOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ExternalLink className="h-5 w-5" />
+              Link Application to Quiz Response
+            </DialogTitle>
+            <DialogDescription>
+              Connect this Canadian application to an existing quiz response to enable lead tracking and partner assignment.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {applicationToLink && (
+              <div className="p-3 bg-muted/30 rounded-lg">
+                <p className="text-sm font-medium">Application to Link:</p>
+                <p className="text-sm text-muted-foreground">
+                  {applicationToLink.application_reference_number} - {applicationToLink.legal_business_name}
+                </p>
+              </div>
+            )}
+            
+            <div className="space-y-2">
+              <span className="text-sm font-medium">Select Quiz Response:</span>
+              <Select value={selectedQuizId} onValueChange={setSelectedQuizId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a quiz response to link..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableQuizResponses.map((quiz) => (
+                    <SelectItem key={quiz.id} value={quiz.id}>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{quiz.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {quiz.email} - ${quiz.monthly_revenue?.toLocaleString()}/mo - {quiz.company_name}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {availableQuizResponses.length === 0 && (
+              <div className="text-center py-6 text-muted-foreground">
+                <p>No available quiz responses found.</p>
+                <p className="text-xs mt-1">Only quiz responses without partner assignments are shown.</p>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={closeLinkQuizModal}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={linkApplicationToQuiz} 
+              disabled={!selectedQuizId}
+            >
+              Link Application
             </Button>
           </DialogFooter>
         </DialogContent>
