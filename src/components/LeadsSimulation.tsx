@@ -345,8 +345,7 @@ export const LeadsSimulation = () => {
           company_name: `${formData.name}'s Business`,
           application_type: 'client',
           status: 'lead_simulation_interest',
-          business_description: 'Lead from simulation form',
-          lead_source: 'lead_simulation'
+          business_description: 'Lead from simulation form'
         });
 
       if (error) {
