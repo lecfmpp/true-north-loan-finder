@@ -33,10 +33,10 @@
 /rental-portfolio/ / 301
 
 # Ensure HTTPS redirects and WWW removal
-# Force WWW removal for all protocols
-https://www.truenorthbusinessloan.ca/* https://truenorthbusinessloan.ca/:splat 301
-http://www.truenorthbusinessloan.ca/* https://truenorthbusinessloan.ca/:splat 301
-http://truenorthbusinessloan.ca/* https://truenorthbusinessloan.ca/:splat 301
+# Force WWW removal for all protocols - must be at top priority
+https://www.truenorthbusinessloan.ca/* https://truenorthbusinessloan.ca/:splat 301!
+http://www.truenorthbusinessloan.ca/* https://truenorthbusinessloan.ca/:splat 301!
+http://truenorthbusinessloan.ca/* https://truenorthbusinessloan.ca/:splat 301!
 
 # Trailing slash consistency - redirect trailing slashes to non-trailing slash versions
 /how-it-works/ /how-it-works 301

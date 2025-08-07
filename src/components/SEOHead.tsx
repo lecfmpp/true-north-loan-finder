@@ -37,7 +37,7 @@ const SEOHead = ({
     // Remove trailing slash for consistency and handle edge cases
     const cleanPath = currentPath === '/' ? '/' : currentPath.replace(/\/+$/, '');
     
-    // Ensure we're using the correct domain
+    // Ensure we're using the correct domain without www
     const baseUrl = 'https://truenorthbusinessloan.ca';
     return `${baseUrl}${cleanPath}`;
   };
