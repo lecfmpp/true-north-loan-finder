@@ -1,12 +1,11 @@
+
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route, BrowserRouter } from "react-router-dom";
-import { ChatWidget } from "@/components/ChatWidget";
 import ConsentBanner from "@/components/ConsentBanner";
-import SocialProofWidget from "@/components/SocialProofWidget";
 import { lazy, Suspense } from "react";
 
 import ScrollToTop from "@/components/ScrollToTop";
@@ -39,7 +38,6 @@ const ApplicationStatus = lazy(() => import("./pages/ApplicationStatus"));
 const CanadianApplication = lazy(() => import("./pages/CanadianApplication"));
 const BrokerSignup = lazy(() => import("./pages/BrokerSignup"));
 const BrokerPaymentSuccess = lazy(() => import("./pages/BrokerPaymentSuccess"));
-// Removed ConfirmPartner component
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Loading component for lazy routes
@@ -68,8 +66,6 @@ const App = () => (
         
         <BrowserRouter>
           <ScrollToTop />
-          <ChatWidget />
-          <SocialProofWidget />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/loan-estimator" element={<Quiz />} />
@@ -169,7 +165,6 @@ const App = () => (
                 <BrokerPaymentSuccess />
               </Suspense>
             } />
-            {/* Removed confirm-partner route */}
             
             <Route path="/privacy" element={
               <Suspense fallback={<PageLoader />}>
