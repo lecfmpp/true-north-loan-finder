@@ -68,8 +68,8 @@ const App = () => (
         <ConsentBanner />
         
         <BrowserRouter>
-          <SocialProofWidget />
           <ScrollToTop />
+          <SocialProofWidget />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/loan-estimator" element={<Quiz />} />
