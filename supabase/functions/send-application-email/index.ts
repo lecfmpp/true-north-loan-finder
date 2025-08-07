@@ -67,9 +67,12 @@ const handler = async (req: Request): Promise<Response> => {
             const arrayBuffer = await fileData.arrayBuffer();
             const uint8Array = new Uint8Array(arrayBuffer);
             
+            // Convert to base64 string for Resend
+            const base64String = btoa(String.fromCharCode(...uint8Array));
+            
             attachments.push({
               filename: file.name,
-              content: Array.from(uint8Array),
+              content: base64String,
             });
           }
         } catch (error) {
