@@ -1122,6 +1122,36 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_simulation_submissions: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          name: string
+          phone: string
+          submitted_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          name: string
+          phone: string
+          submitted_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+          submitted_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       lender_broker_applications: {
         Row: {
           additional_requirements: string | null
@@ -1170,7 +1200,7 @@ export type Database = {
           applicant_email: string
           applicant_name: string
           applicant_phone?: string | null
-          application_type: string
+          application_type?: string
           business_description?: string | null
           business_types?: string[] | null
           company_name: string
@@ -1978,7 +2008,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "superadmin" | "lender" | "broker" | "user"
+      app_role: "superadmin" | "lender" | "broker" | "user" | "client"
       user_role: "superadmin" | "lender" | "broker" | "user"
     }
     CompositeTypes: {
@@ -2107,7 +2137,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["superadmin", "lender", "broker", "user"],
+      app_role: ["superadmin", "lender", "broker", "user", "client"],
       user_role: ["superadmin", "lender", "broker", "user"],
     },
   },

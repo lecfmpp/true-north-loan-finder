@@ -66,11 +66,12 @@ serve(async (req) => {
       customer_email: application.applicant_email,
       payment_intent_data: {
         metadata: {
-          type: "broker_trial",
+          type: application.application_type === 'client' ? "client_trial" : "broker_trial",
           application_id: applicationId,
           tracking_id: trackingId,
           applicant_email: application.applicant_email,
           company_name: application.company_name,
+          application_type: application.application_type,
         },
       },
       metadata: {

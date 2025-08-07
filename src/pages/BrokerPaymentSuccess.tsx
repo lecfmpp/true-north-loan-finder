@@ -138,6 +138,23 @@ const BrokerPaymentSuccess = () => {
           console.error('Error updating application:', updateError);
         }
 
+        // Assign client role to the new user
+        try {
+          const { error: roleError } = await supabase
+            .from('user_roles')
+            .insert({
+              user_id: data.user.id,
+              role: 'client',
+              assigned_by: data.user.id // Self-assigned during signup
+            });
+
+          if (roleError) {
+            console.error('Error assigning client role:', roleError);
+          }
+        } catch (roleError) {
+          console.error('Error assigning role:', roleError);
+        }
+
         setAccountCreated(true);
         toast.success("Account created successfully! Please check your email to verify your account.");
       }

@@ -65,7 +65,7 @@ serve(async (req) => {
       });
     }
 
-    // Get partner information - remove user_id filter since partners are managed by admin
+    // Get partner information - only commission-based partners, not clients
     const { data: partner, error: partnerError } = await supabaseClient
       .from('partners')
       .select('*')

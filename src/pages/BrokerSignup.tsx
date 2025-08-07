@@ -188,7 +188,7 @@ const BrokerSignup = () => {
           applicant_phone: formData.applicantPhone,
           company_name: formData.companyName,
           company_website: formData.companyWebsite,
-          application_type: 'broker',
+          application_type: 'client', // Assign client role for pay-per-lead model
           years_of_experience: formData.yearsOfExperience ? parseInt(formData.yearsOfExperience) : null,
           license_number: formData.licenseNumber,
           business_description: formData.businessDescription,

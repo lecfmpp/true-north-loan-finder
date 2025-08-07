@@ -1,3 +1,5 @@
+// Billing Management for Clients (Pay-per-lead model)
+// Partners with commission-based structure are managed separately
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -75,30 +77,32 @@ export default function BillingManagement() {
     try {
       setLoading(true);
 
-      // Fetch payment records
+      // Fetch payment records for clients only (pay-per-lead model)
       const { data: paymentsData, error: paymentsError } = await supabase
         .from('payment_records')
         .select('*')
+        .eq('payment_type', 'lead_credits')
         .order('created_at', { ascending: false });
 
       if (paymentsError) throw paymentsError;
 
-      // Fetch partner credits without join first
+      // Fetch only client applications (not commission-based partners)
+      const { data: clientApplicationsData, error: clientError } = await supabase
+        .from('lender_broker_applications')
+        .select('*')
+        .eq('application_type', 'client');
+
+      if (clientError) throw clientError;
+
+      // Fetch partner credits for clients only
       const { data: creditsData, error: creditsError } = await supabase
         .from('partner_lead_credits')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('updated_at', { ascending: false });
 
       if (creditsError) throw creditsError;
 
-      // Fetch partners separately
-      const { data: partnersData, error: partnersError } = await supabase
-        .from('partners')
-        .select('*');
-
-      if (partnersError) throw partnersError;
-
-      // Fetch recent transactions without join first
+      // Fetch recent transactions for clients only
       const { data: transactionsData, error: transactionsError } = await supabase
         .from('lead_credit_transactions')
         .select('*')
@@ -107,34 +111,34 @@ export default function BillingManagement() {
 
       if (transactionsError) throw transactionsError;
 
-      // Merge the data manually
-      const creditsWithPartners = (creditsData || []).map(credit => {
-        const partner = (partnersData || []).find(p => p.user_id === credit.user_id);
+      // Merge the data manually with client applications
+      const creditsWithClients = (creditsData || []).map(credit => {
+        const client = (clientApplicationsData || []).find(c => c.user_id === credit.user_id);
         return {
           ...credit,
-          partners: partner ? {
-            name: partner.name,
-            email: partner.email,
-            company_name: partner.company_name
+          partners: client ? {
+            name: client.applicant_name,
+            email: client.applicant_email,
+            company_name: client.company_name
           } : null
         };
       });
 
-      const transactionsWithPartners = (transactionsData || []).map(transaction => {
-        const partner = (partnersData || []).find(p => p.user_id === transaction.user_id);
+      const transactionsWithClients = (transactionsData || []).map(transaction => {
+        const client = (clientApplicationsData || []).find(c => c.user_id === transaction.user_id);
         return {
           ...transaction,
-          partners: partner ? {
-            name: partner.name,
-            email: partner.email,
-            company_name: partner.company_name
+          partners: client ? {
+            name: client.applicant_name,
+            email: client.applicant_email,
+            company_name: client.company_name
           } : null
         };
       });
 
       setPayments((paymentsData as any) || []);
-      setPartnerCredits(creditsWithPartners as any);
-      setTransactions(transactionsWithPartners as any);
+      setPartnerCredits(creditsWithClients as any);
+      setTransactions(transactionsWithClients as any);
     } catch (error) {
       console.error('Error fetching billing data:', error);
       toast({
