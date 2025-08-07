@@ -17,7 +17,7 @@ import {
   AlertCircle
 } from "lucide-react";
 
-import ApplicationsManagement from "@/components/admin/ApplicationsManagement";
+import { ApplicationsManagement } from "@/components/admin/ApplicationsManagement";
 import BlogManagement from "@/components/admin/BlogManagement";
 import ROIManagement from "@/components/admin/ROIManagement";
 import PartnerManagement from "@/components/admin/PartnerManagement";
@@ -32,10 +32,10 @@ import { useAuth } from "@/hooks/use-auth";
 
 const Admin = () => {
   const [activeTab, setActiveTab] = useState("applications");
-  const { userRoles, isAdmin, authLoading } = useAuth();
+  const { userRoles, isAdmin, loading } = useAuth();
 
   // Show loading state while authentication is in progress
-  if (authLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -81,7 +81,7 @@ const Admin = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="overflow-x-auto">
-            <TabsList className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-10 gap-1 h-auto p-1 bg-white rounded-lg shadow-sm min-w-max">
+            <TabsList className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-9 gap-1 h-auto p-1 bg-white rounded-lg shadow-sm min-w-max">
               <TabsTrigger value="applications" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap">
                 <FileText size={14} />
                 <span className="hidden sm:inline">Applications</span>
