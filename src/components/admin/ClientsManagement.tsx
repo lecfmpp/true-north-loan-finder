@@ -575,7 +575,7 @@ const ClientsManagement = () => {
                       </TableCell>
                       <TableCell>
                         <Badge variant={client.payment_status === 'paid' ? 'default' : 'destructive'}>
-                          {client.payment_status === 'paid' ? 'Paid' : 'Waiting Payment'}
+                          {client.payment_status === 'paid' ? 'Paid' : 'Pending'}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
