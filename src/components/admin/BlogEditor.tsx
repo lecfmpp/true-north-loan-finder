@@ -476,6 +476,13 @@ const BlogEditor = ({ post, onSave, onCancel }: BlogEditorProps) => {
             </p>
           </CardHeader>
           <CardContent>
+            {/* Debug info - remove in production */}
+            <div className="mb-4 p-2 bg-muted rounded text-sm">
+              <p>Content length: {formData.content?.length || 0} characters</p>
+              <p>Loading state: {isLoading ? 'Loading...' : 'Ready'}</p>
+              <p>Has content: {formData.content ? 'Yes' : 'No'}</p>
+            </div>
+            
             <div className="min-h-[500px]">
               {isLoading ? (
                 <div className="flex items-center justify-center h-[400px] border rounded-md bg-background">
