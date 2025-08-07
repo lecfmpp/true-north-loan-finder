@@ -470,18 +470,10 @@ const BlogEditor = ({ post, onSave, onCancel }: BlogEditorProps) => {
         {/* Main Content Editor */}
         <Card>
           <CardHeader>
-            <CardTitle>Main Content - Fully Editable</CardTitle>
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">
-                All content is fully editable and can be customized. Use H2 for main sections, H3 for sub-sections. Structure your content for both readers and search engines.
-              </p>
-              <div className="flex items-center gap-2 px-3 py-2 bg-primary/5 border border-primary/20 rounded-md">
-                <FileText className="w-4 h-4 text-primary" />
-                <span className="text-sm text-primary font-medium">
-                  ✨ This editor allows complete content modification - add, edit, or restructure any text, headings, or formatting.
-                </span>
-              </div>
-            </div>
+            <CardTitle>Main Content</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Use H2 for main sections, H3 for sub-sections. Structure your content for both readers and search engines.
+            </p>
           </CardHeader>
           <CardContent>
             <div className="min-h-[500px]">
@@ -503,7 +495,7 @@ const BlogEditor = ({ post, onSave, onCancel }: BlogEditorProps) => {
                   onChange={handleContentChange}
                   modules={quillModules}
                   formats={quillFormats}
-                  placeholder="Write your blog post content here. All content is fully editable - modify any text, add new sections, or restructure existing content. Use the heading tools to create H2 and H3 sections..."
+                  placeholder="Write your blog post content here. Use the heading tools to create H2 and H3 sections..."
                   style={{ height: '400px', marginBottom: '50px' }}
                 />
               )}
