@@ -30,8 +30,6 @@ interface Partner {
   leads_contacted: number;
   leads_spoken: number;
   deals_closed: number;
-  status?: string; // For lead simulation submissions
-  source?: string; // To distinguish between partners and submissions
 }
 
 interface NewPartner {
@@ -45,7 +43,6 @@ interface NewPartner {
 
 export default function SimplifiedPartnersManagement() {
   const [partners, setPartners] = useState<Partner[]>([]);
-  const [submissions, setSubmissions] = useState<Partner[]>([]); // Lead simulation submissions
   const [loading, setLoading] = useState(true);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -62,7 +59,6 @@ export default function SimplifiedPartnersManagement() {
 
   useEffect(() => {
     fetchPartners();
-    fetchSubmissions();
   }, []);
 
   const fetchPartners = async () => {
@@ -80,43 +76,6 @@ export default function SimplifiedPartnersManagement() {
       toast({ title: "Error", description: "Failed to fetch partners", variant: "destructive" });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchSubmissions = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('lender_broker_applications')
-        .select('*')
-        .eq('status', 'lead_simulation_interest')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      
-      // Transform submissions to match Partner interface
-      const transformedSubmissions = (data || []).map(submission => ({
-        id: submission.id,
-        name: submission.applicant_name,
-        email: submission.applicant_email,
-        phone: submission.applicant_phone || '',
-        company_name: submission.company_name,
-        application_type: submission.application_type,
-        is_active: false,
-        created_at: submission.created_at,
-        updated_at: submission.updated_at,
-        user_id: null,
-        total_leads_assigned: 0,
-        leads_contacted: 0,
-        leads_spoken: 0,
-        deals_closed: 0,
-        status: submission.status,
-        source: 'lead_simulation'
-      }));
-      
-      setSubmissions(transformedSubmissions);
-    } catch (error: any) {
-      console.error('Error fetching submissions:', error);
-      toast({ title: "Error", description: "Failed to fetch lead simulation submissions", variant: "destructive" });
     }
   };
 
@@ -296,9 +255,6 @@ export default function SimplifiedPartnersManagement() {
   };
 
   const getStatusBadge = (partner: Partner) => {
-    if (partner.status === 'lead_simulation_interest') {
-      return <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Lead Interest</Badge>;
-    }
     if (!partner.user_id) {
       return <Badge variant="secondary">No Account</Badge>;
     }
@@ -316,18 +272,13 @@ export default function SimplifiedPartnersManagement() {
     );
   };
 
-  if (loading && partners.length === 0 && submissions.length === 0) {
+  if (loading && partners.length === 0) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
-
-  // Combine partners and submissions for display
-  const allItems = [...submissions, ...partners].sort((a, b) => 
-    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  );
 
   return (
     <div className="space-y-6">
@@ -343,8 +294,8 @@ export default function SimplifiedPartnersManagement() {
       </div>
 
       <div className="grid gap-4">
-        {allItems.map((partner) => (
-          <Card key={partner.id} className={partner.source === 'lead_simulation' ? 'border-yellow-200' : ''}>
+        {partners.map((partner) => (
+          <Card key={partner.id}>
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-3">
@@ -395,40 +346,31 @@ export default function SimplifiedPartnersManagement() {
               </div>
               
               <div className="flex gap-2 mt-4">
-                {partner.source !== 'lead_simulation' && (
-                  <>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => editPartner(partner)}
-                    >
-                      <Edit3 className="w-4 h-4 mr-2" />
-                      Edit
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => resetPassword(partner)}
-                      disabled={!partner.user_id}
-                    >
-                      <Key className="w-4 h-4 mr-2" />
-                      Reset Password
-                    </Button>
-                    <Button 
-                      variant="destructive" 
-                      size="sm" 
-                      onClick={() => deletePartner(partner)}
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Delete
-                    </Button>
-                  </>
-                )}
-                {partner.source === 'lead_simulation' && (
-                  <Badge variant="outline" className="text-xs">
-                    Lead Simulation Submission - {new Date(partner.created_at).toLocaleDateString()}
-                  </Badge>
-                )}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => editPartner(partner)}
+                >
+                  <Edit3 className="w-4 h-4 mr-2" />
+                  Edit
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => resetPassword(partner)}
+                  disabled={!partner.user_id}
+                >
+                  <Key className="w-4 h-4 mr-2" />
+                  Reset Password
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  onClick={() => deletePartner(partner)}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete
+                </Button>
               </div>
             </CardContent>
           </Card>

@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Clock, Phone, Mail, Building2, DollarSign, AlertTriangle, CheckCircle, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-
 interface Lead {
   id: string;
   businessName: JSX.Element;
@@ -36,7 +35,6 @@ const maskText = (text: string, visibleStart: number = 3): JSX.Element => {
     </span>
   );
 };
-
 const maskEmail = (email: string): JSX.Element => {
   const [localPart, domain] = email.split('@');
   if (!domain) return <span>{email}</span>;
@@ -71,6 +69,7 @@ const maskPhone = (phone: string): JSX.Element => {
   return <span>(555) <span className="blur-sm select-none">***-****</span></span>;
 };
 
+// Helper function to derive business type from use_of_funds
 const getBusinessType = (useOfFunds: string): string => {
   const funds = useOfFunds.toLowerCase();
   if (funds.includes('inventory') || funds.includes('equipment')) return 'Equipment Financing';
@@ -80,6 +79,7 @@ const getBusinessType = (useOfFunds: string): string => {
   return 'Business Loan';
 };
 
+// Helper function to derive industry from business description or use_of_funds
 const getIndustry = (useOfFunds: string): string => {
   const funds = useOfFunds.toLowerCase();
   if (funds.includes('restaurant') || funds.includes('food')) return 'Restaurant';
@@ -91,15 +91,15 @@ const getIndustry = (useOfFunds: string): string => {
   return 'Service Business';
 };
 
+// Helper function to estimate credit score from provided range
 const getCreditScore = (creditScoreRange: string): number => {
   const range = creditScoreRange.toLowerCase();
   if (range.includes('excellent') || range.includes('750+') || range.includes('800+')) return 750 + Math.floor(Math.random() * 50);
   if (range.includes('good') || range.includes('700') || range.includes('680-750')) return 680 + Math.floor(Math.random() * 70);
   if (range.includes('fair') || range.includes('650') || range.includes('620-680')) return 620 + Math.floor(Math.random() * 60);
   if (range.includes('poor') || range.includes('below 620')) return 580 + Math.floor(Math.random() * 40);
-  return 650 + Math.floor(Math.random() * 100);
+  return 650 + Math.floor(Math.random() * 100); // Default range
 };
-
 const LiveTimer = ({
   submittedAt
 }: {
@@ -110,6 +110,7 @@ const LiveTimer = ({
     const updateElapsed = () => {
       const now = new Date();
       const diff = Math.floor((now.getTime() - submittedAt.getTime()) / 1000);
+      // Add 15 minutes (900 seconds) to create urgency
       setElapsed(diff + 900);
     };
     updateElapsed();
@@ -117,15 +118,18 @@ const LiveTimer = ({
     return () => clearInterval(interval);
   }, [submittedAt]);
   const formatTime = (seconds: number) => {
-    const days = Math.floor(seconds / 86400);
+    const days = Math.floor(seconds / 86400); // 86400 seconds in a day
     const hours = Math.floor(seconds % 86400 / 3600);
     const mins = Math.floor(seconds % 3600 / 60);
     const secs = seconds % 60;
 
+    // If more than 48 hours (2 days), show days
     if (seconds >= 172800) {
+      // 48 hours = 172800 seconds
       return `${days} day${days > 1 ? 's' : ''} ago`;
     }
 
+    // Otherwise show hours:minutes format
     return `${mins}:${secs.toString().padStart(2, '0')} min ago`;
   };
   return <div className="flex items-center space-x-2 text-xs bg-red-600 text-white px-2 py-1 rounded">
@@ -134,6 +138,7 @@ const LiveTimer = ({
     </div>;
 };
 
+// Dynamic countdown for urgency in modal
 const UrgencyCountdown = ({
   lastSubmissionTime
 }: {
@@ -160,7 +165,7 @@ const UrgencyCountdown = ({
       }
     };
     updateTime();
-    const interval = setInterval(updateTime, 30000);
+    const interval = setInterval(updateTime, 30000); // Update every 30 seconds for more accuracy
 
     return () => clearInterval(interval);
   }, [lastSubmissionTime]);
@@ -169,7 +174,6 @@ const UrgencyCountdown = ({
   }
   return <span className="font-semibold text-destructive">Lead is waiting for response</span>;
 };
-
 export const LeadsSimulation = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -187,10 +191,12 @@ export const LeadsSimulation = () => {
     toast
   } = useToast();
 
+  // Fetch real leads from database
   useEffect(() => {
     const fetchLeads = async () => {
       setLoading(true);
       try {
+        // Fix country filter to match actual data format
         const countryFilter = selectedCountry === 'US' 
           ? ['US', 'USA', 'United States'] 
           : ['CA', 'Canada', 'Canadian', 'CAN'];
@@ -198,13 +204,14 @@ export const LeadsSimulation = () => {
         const { data: quizResponses, error } = await supabase
           .from('quiz_responses')
           .select('*')
-          .eq('status', 'New')
+          .eq('status', 'New') // Fixed: 'New' with capital N, not 'new'
           .in('country', countryFilter)
           .order('created_at', { ascending: false })
-          .limit(20);
+          .limit(20); // Increased limit to show more recent leads
         if (error) throw error;
         if (quizResponses && quizResponses.length > 0) {
           const transformedLeads: Lead[] = quizResponses.map(response => {
+            // Create business name from name (first part) + industry
             const firstName = response.name.split(' ')[0];
             const industry = getIndustry(response.use_of_funds);
             const businessName = (
@@ -223,10 +230,11 @@ export const LeadsSimulation = () => {
               creditScore: getCreditScore(response.credit_score),
               industry: getIndustry(response.use_of_funds),
               loanType: getBusinessType(response.use_of_funds),
-              phoneVerified: true
+              phoneVerified: true // Assume verified for leads
             };
           });
           setLeads(transformedLeads);
+          // Set the most recent submission time for the urgency countdown
           setLastSubmissionTime(new Date(quizResponses[0].created_at));
         } else {
           setLeads([]);
@@ -234,6 +242,7 @@ export const LeadsSimulation = () => {
         }
       } catch (error) {
         console.error('Error fetching leads:', error);
+        // Fallback to empty array on error
         setLeads([]);
       } finally {
         setLoading(false);
@@ -242,6 +251,7 @@ export const LeadsSimulation = () => {
     
     fetchLeads();
     
+    // Set up real-time subscription for new leads
     const channel = supabase
       .channel('quiz-responses-changes')
       .on(
@@ -253,6 +263,7 @@ export const LeadsSimulation = () => {
         },
         (payload) => {
           console.log('New lead received:', payload);
+          // Refresh leads when new one comes in
           fetchLeads();
         }
       )
@@ -261,16 +272,19 @@ export const LeadsSimulation = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [selectedCountry]);
+  }, [selectedCountry]); // Re-fetch when country changes
 
   const handleUnlockClick = (lead: Lead) => {
     setSelectedLead(lead);
     setShowModal(true);
   };
 
+  // Phone formatting for US/Canada
   const formatPhoneNumber = (value: string) => {
+    // Remove all non-numeric characters
     const phoneNumber = value.replace(/\D/g, '');
 
+    // Format as (XXX) XXX-XXXX for US/Canada
     if (phoneNumber.length <= 3) {
       return phoneNumber;
     } else if (phoneNumber.length <= 6) {
@@ -287,85 +301,52 @@ export const LeadsSimulation = () => {
     }));
   };
 
+  // Email validation
   const isValidEmail = (email: string) => {
     const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
     return emailRegex.test(email);
   };
 
+  // Phone validation for US/Canada (10 digits)
   const isValidPhone = (phone: string) => {
     const phoneDigits = phone.replace(/\D/g, '');
     return phoneDigits.length === 10;
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
 
-    try {
-      if (!isValidEmail(formData.email)) {
-        toast({
-          title: "Invalid Email",
-          description: "Please enter a valid email address.",
-          variant: "destructive"
-        });
-        return;
-      }
-      if (!isValidPhone(formData.phone)) {
-        toast({
-          title: "Invalid Phone Number",
-          description: "Please enter a valid 10-digit US/Canada phone number.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // Save to the new simple table
-      const { error } = await supabase
-        .from('lead_simulation_submissions')
-        .insert({
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone
-        });
-
-      if (error) {
-        console.error('Error saving submission:', error);
-        toast({
-          title: "Error",
-          description: "Failed to save your information. Please try again.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      localStorage.setItem('brokerFormData', JSON.stringify(formData));
-
-      window.open('https://buy.stripe.com/aFadR98YN9bjcJkeaaawo05?success_url=' + encodeURIComponent('https://truenorthbusinessloan.ca/broker-payment-success'), '_blank');
-
-      setShowModal(false);
-      setFormData({
-        name: "",
-        email: "",
-        phone: ""
-      });
-
+    // Validation
+    if (!isValidEmail(formData.email)) {
       toast({
-        title: "Success",
-        description: "Your information has been saved. Complete payment to unlock leads.",
-      });
-
-    } catch (error) {
-      console.error('Submission error:', error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
+        title: "Invalid Email",
+        description: "Please enter a valid email address.",
         variant: "destructive"
       });
-    } finally {
-      setIsSubmitting(false);
+      return;
     }
-  };
+    if (!isValidPhone(formData.phone)) {
+      toast({
+        title: "Invalid Phone Number",
+        description: "Please enter a valid 10-digit US/Canada phone number.",
+        variant: "destructive"
+      });
+      return;
+    }
 
+    // Store form data in localStorage for later use in account creation
+    localStorage.setItem('brokerFormData', JSON.stringify(formData));
+
+    // Redirect directly to Stripe payment with custom domain
+    window.open('https://buy.stripe.com/aFadR98YN9bjcJkeaaawo05?success_url=' + encodeURIComponent('https://truenorthbusinessloan.ca/broker-payment-success'), '_blank');
+
+    // Close modal and reset form
+    setShowModal(false);
+    setFormData({
+      name: "",
+      email: "",
+      phone: ""
+    });
+  };
   return <>
       <div className="space-y-6">
         <div className="text-center mb-8">
@@ -373,6 +354,7 @@ export const LeadsSimulation = () => {
           
         </div>
 
+        {/* Country Toggle Switch */}
         <div className="flex justify-center mb-6">
           <div className="flex bg-muted rounded-lg p-1 w-fit border-2 border-border shadow-sm">
             <button onClick={() => setSelectedCountry('US')} className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-all duration-200 ${selectedCountry === 'US' ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-background text-muted-foreground'}`}>
@@ -417,6 +399,7 @@ export const LeadsSimulation = () => {
               </CardHeader>
               
               <CardContent className="relative z-20 pt-0 px-4 pb-4">
+                {/* Most Important: Cash Required */}
                 <div className="bg-accent/10 border border-accent/20 rounded-lg p-3 mb-4 text-center">
                   <div className="text-xs text-muted-foreground mb-1">Cash Required</div>
                   <div className="text-2xl font-bold text-accent flex items-center justify-center">
@@ -425,6 +408,7 @@ export const LeadsSimulation = () => {
                   </div>
                 </div>
 
+                {/* Contact Details */}
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center space-x-3">
                     <Building2 className="h-4 w-4 text-secondary flex-shrink-0" />
@@ -440,6 +424,7 @@ export const LeadsSimulation = () => {
                   </div>
                 </div>
                 
+                {/* Action Button */}
                 <Button onClick={() => handleUnlockClick(lead)} variant="cta" size="lg" className="w-full text-base bg-green-600 hover:bg-green-700 text-white">
                   🔓 Unlock Lead and Call Now
                 </Button>
