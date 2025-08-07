@@ -70,6 +70,7 @@ serve(async (req) => {
     if (!paymentLink) {
       // Create a new payment link if none exists
       try {
+        console.log(`Creating payment link for client ${client.id}`);
         const { data: paymentData, error: paymentError } = await supabaseClient.functions.invoke('create-client-payment', {
           body: {
             clientId: client.id,
@@ -78,10 +79,23 @@ serve(async (req) => {
           }
         });
 
-        if (paymentError) throw paymentError;
+        console.log('Payment creation response:', { paymentData, paymentError });
+
+        if (paymentError) {
+          console.error('Payment creation error:', paymentError);
+          throw new Error(`Payment creation failed: ${paymentError.message || JSON.stringify(paymentError)}`);
+        }
+
+        if (!paymentData || !paymentData.paymentUrl) {
+          console.error('Invalid payment response:', paymentData);
+          throw new Error(`Invalid payment response: ${JSON.stringify(paymentData)}`);
+        }
+
         paymentLink = paymentData.paymentUrl;
+        console.log(`Payment link created successfully: ${paymentLink}`);
       } catch (error) {
-        throw new Error("Unable to create payment link for this client");
+        console.error('Error in payment link creation:', error);
+        throw new Error(`Unable to create payment link for this client: ${error.message}`);
       }
     }
 
