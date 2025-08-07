@@ -468,21 +468,14 @@ const BlogEditor = ({ post, onSave, onCancel }: BlogEditorProps) => {
         </Card>
 
         {/* Main Content Editor */}
-        <Card>
+        <Card id="editor-container">
           <CardHeader>
-            <CardTitle>Main Content</CardTitle>
+            <CardTitle>Main Content - Fully Editable</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Use H2 for main sections, H3 for sub-sections. Structure your content for both readers and search engines.
+              Complete content editor with full formatting capabilities. Add text, images, videos, links, tables, and any HTML content. No restrictions or limitations.
             </p>
           </CardHeader>
           <CardContent>
-            {/* Debug info - remove in production */}
-            <div className="mb-4 p-2 bg-muted rounded text-sm">
-              <p>Content length: {formData.content?.length || 0} characters</p>
-              <p>Loading state: {isLoading ? 'Loading...' : 'Ready'}</p>
-              <p>Has content: {formData.content ? 'Yes' : 'No'}</p>
-            </div>
-            
             <div className="min-h-[500px]">
               {isLoading ? (
                 <div className="flex items-center justify-center h-[400px] border rounded-md bg-background">
@@ -500,16 +493,41 @@ const BlogEditor = ({ post, onSave, onCancel }: BlogEditorProps) => {
                   theme="snow"
                   value={formData.content || ''}
                   onChange={handleContentChange}
-                  modules={quillModules}
-                  formats={quillFormats}
-                  placeholder="Write your blog post content here. Use the heading tools to create H2 and H3 sections..."
-                  style={{ height: '400px', marginBottom: '50px' }}
+                  modules={{
+                    toolbar: [
+                      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                      ['bold', 'italic', 'underline', 'strike'],
+                      [{ 'color': [] }, { 'background': [] }],
+                      [{ 'font': [] }],
+                      [{ 'align': [] }],
+                      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                      [{ 'indent': '-1'}, { 'indent': '+1' }],
+                      ['blockquote', 'code-block'],
+                      ['link', 'image', 'video'],
+                      ['clean']
+                    ],
+                    clipboard: {
+                      matchVisual: false,
+                    }
+                  }}
+                  formats={[
+                    'header', 'font', 'size',
+                    'bold', 'italic', 'underline', 'strike', 'blockquote',
+                    'list', 'bullet', 'indent',
+                    'link', 'image', 'video',
+                    'color', 'background',
+                    'align', 'code-block'
+                  ]}
+                  placeholder="Write your blog post content here. Full editing capabilities enabled - add any content, formatting, images, links, and more..."
+                  style={{ height: '500px', marginBottom: '60px' }}
                   preserveWhitespace={true}
+                  bounds={'#editor-container'}
                 />
               )}
             </div>
-            <div className="flex justify-between text-sm text-muted-foreground mt-12 pt-4 border-t">
+            <div className="flex justify-between text-sm text-muted-foreground mt-16 pt-4 border-t">
               <p>Estimated reading time: {formData.reading_time} minute{formData.reading_time !== 1 ? 's' : ''}</p>
+              <p className="text-primary">✓ Full editing enabled - no restrictions</p>
             </div>
           </CardContent>
         </Card>
