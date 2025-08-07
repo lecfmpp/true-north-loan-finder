@@ -66,6 +66,11 @@ const ClientsManagement = () => {
   });
   const [sendingEmail, setSendingEmail] = useState(false);
 
+  // Payment reminder modal state
+  const [isPaymentReminderModalOpen, setIsPaymentReminderModalOpen] = useState(false);
+  const [reminderClient, setReminderClient] = useState<Client | null>(null);
+  const [sendingReminder, setSendingReminder] = useState(false);
+
   const { user, isSuperAdmin } = useAuth();
   const { toast } = useToast();
 
@@ -300,9 +305,20 @@ const ClientsManagement = () => {
   };
 
   const handleSendPaymentReminder = async (clientId: string) => {
+    const client = clients.find(c => c.id === clientId);
+    if (client) {
+      setReminderClient(client);
+      setIsPaymentReminderModalOpen(true);
+    }
+  };
+
+  const confirmSendPaymentReminder = async () => {
+    if (!reminderClient) return;
+
     try {
+      setSendingReminder(true);
       const { data, error } = await supabase.functions.invoke('send-payment-reminder', {
-        body: { clientId }
+        body: { clientId: reminderClient.id }
       });
 
       if (error) throw error;
@@ -311,6 +327,9 @@ const ClientsManagement = () => {
         title: 'Success',
         description: 'Payment reminder sent successfully',
       });
+      
+      setIsPaymentReminderModalOpen(false);
+      setReminderClient(null);
       fetchClients();
     } catch (error) {
       console.error('Error sending payment reminder:', error);
@@ -319,6 +338,8 @@ const ClientsManagement = () => {
         description: 'Failed to send payment reminder',
         variant: 'destructive'
       });
+    } finally {
+      setSendingReminder(false);
     }
   };
 
@@ -763,6 +784,51 @@ const ClientsManagement = () => {
               disabled={sendingEmail}
             >
               {sendingEmail ? 'Sending...' : 'Send Email'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Payment Reminder Confirmation Modal */}
+      <Dialog open={isPaymentReminderModalOpen} onOpenChange={setIsPaymentReminderModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Send Payment Reminder</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to send a payment reminder to{' '}
+              <strong>{reminderClient?.name}</strong> at{' '}
+              <strong>{reminderClient?.email}</strong>?
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="p-4 bg-muted rounded-lg">
+              <h4 className="font-medium mb-2">Email Preview:</h4>
+              <p className="text-sm text-muted-foreground">
+                <strong>Subject:</strong> Complete Your Payment - Lead Simulation Access
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">
+                This will send a professional payment reminder with their payment link.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsPaymentReminderModalOpen(false);
+                setReminderClient(null);
+              }}
+              disabled={sendingReminder}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={confirmSendPaymentReminder}
+              disabled={sendingReminder}
+            >
+              {sendingReminder ? 'Sending...' : 'Send Reminder'}
             </Button>
           </DialogFooter>
         </DialogContent>
