@@ -1,0 +1,588 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Search, Plus, Edit, Trash2, ExternalLink } from 'lucide-react';
+import { format } from 'date-fns';
+
+interface Client {
+  id: string;
+  applicant_name: string;
+  applicant_email: string;
+  applicant_phone?: string;
+  company_name: string;
+  company_website?: string;
+  application_type: string;
+  status: string;
+  created_at: string;
+  payment_status?: string;
+  admin_notes?: string;
+}
+
+interface ClientFormData {
+  applicant_name: string;
+  applicant_email: string;
+  applicant_phone: string;
+  company_name: string;
+  company_website: string;
+  admin_notes: string;
+}
+
+const ClientsManagement = () => {
+  const [clients, setClients] = useState<Client[]>([]);
+  const [filteredClients, setFilteredClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [formData, setFormData] = useState<ClientFormData>({
+    applicant_name: '',
+    applicant_email: '',
+    applicant_phone: '',
+    company_name: '',
+    company_website: '',
+    admin_notes: ''
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  const { user, isSuperAdmin } = useAuth();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (user && isSuperAdmin) {
+      fetchClients();
+    }
+  }, [user, isSuperAdmin]);
+
+  useEffect(() => {
+    filterClients();
+  }, [clients, searchTerm, statusFilter]);
+
+  const fetchClients = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('lender_broker_applications')
+        .select('*')
+        .eq('application_type', 'client')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setClients(data || []);
+    } catch (error) {
+      console.error('Error fetching clients:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch clients',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filterClients = () => {
+    let filtered = [...clients];
+
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(client =>
+        client.applicant_name.toLowerCase().includes(term) ||
+        client.applicant_email.toLowerCase().includes(term) ||
+        client.company_name.toLowerCase().includes(term) ||
+        (client.applicant_phone && client.applicant_phone.includes(term))
+      );
+    }
+
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(client => client.status === statusFilter);
+    }
+
+    setFilteredClients(filtered);
+  };
+
+  const resetForm = () => {
+    setFormData({
+      applicant_name: '',
+      applicant_email: '',
+      applicant_phone: '',
+      company_name: '',
+      company_website: '',
+      admin_notes: ''
+    });
+  };
+
+  const openCreateModal = () => {
+    resetForm();
+    setIsCreateModalOpen(true);
+  };
+
+  const openEditModal = (client: Client) => {
+    setEditingClient(client);
+    setFormData({
+      applicant_name: client.applicant_name,
+      applicant_email: client.applicant_email,
+      applicant_phone: client.applicant_phone || '',
+      company_name: client.company_name,
+      company_website: client.company_website || '',
+      admin_notes: client.admin_notes || ''
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const closeModals = () => {
+    setIsCreateModalOpen(false);
+    setIsEditModalOpen(false);
+    setEditingClient(null);
+    resetForm();
+  };
+
+  const validateForm = () => {
+    if (!formData.applicant_name.trim()) {
+      toast({
+        title: 'Validation Error',
+        description: 'Applicant name is required',
+        variant: 'destructive'
+      });
+      return false;
+    }
+
+    if (!formData.applicant_email.trim()) {
+      toast({
+        title: 'Validation Error',
+        description: 'Email is required',
+        variant: 'destructive'
+      });
+      return false;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.applicant_email)) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please enter a valid email address',
+        variant: 'destructive'
+      });
+      return false;
+    }
+
+    if (!formData.company_name.trim()) {
+      toast({
+        title: 'Validation Error',
+        description: 'Company name is required',
+        variant: 'destructive'
+      });
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleCreateClient = async () => {
+    if (!validateForm()) return;
+
+    try {
+      setSubmitting(true);
+
+      const clientData = {
+        applicant_name: formData.applicant_name.trim(),
+        applicant_email: formData.applicant_email.trim(),
+        applicant_phone: formData.applicant_phone.trim() || null,
+        company_name: formData.company_name.trim(),
+        company_website: formData.company_website.trim() || null,
+        application_type: 'client',
+        status: 'approved',
+        admin_notes: formData.admin_notes.trim() || null,
+        payment_status: 'paid'
+      };
+
+      const { error } = await supabase
+        .from('lender_broker_applications')
+        .insert(clientData);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Client created successfully',
+      });
+
+      closeModals();
+      fetchClients();
+    } catch (error) {
+      console.error('Error creating client:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create client',
+        variant: 'destructive'
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleUpdateClient = async () => {
+    if (!validateForm() || !editingClient) return;
+
+    try {
+      setSubmitting(true);
+
+      const updates = {
+        applicant_name: formData.applicant_name.trim(),
+        applicant_email: formData.applicant_email.trim(),
+        applicant_phone: formData.applicant_phone.trim() || null,
+        company_name: formData.company_name.trim(),
+        company_website: formData.company_website.trim() || null,
+        admin_notes: formData.admin_notes.trim() || null,
+      };
+
+      const { error } = await supabase
+        .from('lender_broker_applications')
+        .update(updates)
+        .eq('id', editingClient.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Client updated successfully',
+      });
+
+      closeModals();
+      fetchClients();
+    } catch (error) {
+      console.error('Error updating client:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update client',
+        variant: 'destructive'
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteClient = async (clientId: string) => {
+    if (!confirm('Are you sure you want to delete this client? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('lender_broker_applications')
+        .delete()
+        .eq('id', clientId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Client deleted successfully',
+      });
+
+      fetchClients();
+    } catch (error) {
+      console.error('Error deleting client:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete client',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return 'default';
+      case 'pending':
+        return 'secondary';
+      case 'rejected':
+        return 'destructive';
+      default:
+        return 'outline';
+    }
+  };
+
+  if (!isSuperAdmin) {
+    return (
+      <div className="p-6 text-center text-muted-foreground">
+        You don't have permission to access this section.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground">Clients Management</h2>
+          <p className="text-muted-foreground">Manage pay-per-lead clients</p>
+        </div>
+        <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={openCreateModal}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Client
+            </Button>
+          </DialogTrigger>
+        </Dialog>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Total Clients</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{filteredClients.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Active</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {filteredClients.filter(c => c.status === 'approved').length}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Pending</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-600">
+              {filteredClients.filter(c => c.status === 'pending').length}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Rejected</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">
+              {filteredClients.filter(c => c.status === 'rejected').length}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name, email, or company..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-8"
+              />
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full lg:w-48">
+                <SelectValue placeholder="All Statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Clients Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Clients ({filteredClients.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="text-center py-8 text-muted-foreground">Loading clients...</div>
+          ) : filteredClients.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              {searchTerm || statusFilter !== 'all' ? 'No clients match your filters' : 'No clients found'}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Client Info</TableHead>
+                    <TableHead>Company</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredClients.map((client) => (
+                    <TableRow key={client.id}>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{client.applicant_name}</div>
+                          <div className="text-sm text-muted-foreground">{client.applicant_email}</div>
+                          {client.applicant_phone && (
+                            <div className="text-sm text-muted-foreground">{client.applicant_phone}</div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{client.company_name}</div>
+                          {client.company_website && (
+                            <a
+                              href={client.company_website}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-blue-600 hover:underline flex items-center gap-1"
+                            >
+                              Website <ExternalLink className="w-3 h-3" />
+                            </a>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getStatusBadgeVariant(client.status)}>
+                          {client.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {format(new Date(client.created_at), 'MMM dd, yyyy')}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEditModal(client)}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteClient(client.id)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Create/Edit Modal */}
+      <Dialog open={isCreateModalOpen || isEditModalOpen} onOpenChange={closeModals}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>
+              {isCreateModalOpen ? 'Add New Client' : 'Edit Client'}
+            </DialogTitle>
+            <DialogDescription>
+              {isCreateModalOpen 
+                ? 'Create a new pay-per-lead client account.' 
+                : 'Update client information.'
+              }
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Applicant Name *</label>
+                <Input
+                  value={formData.applicant_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, applicant_name: e.target.value }))}
+                  placeholder="John Smith"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Email *</label>
+                <Input
+                  type="email"
+                  value={formData.applicant_email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, applicant_email: e.target.value }))}
+                  placeholder="john@company.com"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Phone</label>
+                <Input
+                  value={formData.applicant_phone}
+                  onChange={(e) => setFormData(prev => ({ ...prev, applicant_phone: e.target.value }))}
+                  placeholder="(555) 123-4567"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Company Name *</label>
+                <Input
+                  value={formData.company_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
+                  placeholder="Company Inc."
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Company Website</label>
+              <Input
+                value={formData.company_website}
+                onChange={(e) => setFormData(prev => ({ ...prev, company_website: e.target.value }))}
+                placeholder="https://company.com"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Admin Notes</label>
+              <Textarea
+                value={formData.admin_notes}
+                onChange={(e) => setFormData(prev => ({ ...prev, admin_notes: e.target.value }))}
+                placeholder="Internal notes about this client..."
+                className="min-h-[80px]"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={closeModals} disabled={submitting}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={isCreateModalOpen ? handleCreateClient : handleUpdateClient}
+              disabled={submitting}
+            >
+              {submitting ? 'Saving...' : (isCreateModalOpen ? 'Create Client' : 'Update Client')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default ClientsManagement;

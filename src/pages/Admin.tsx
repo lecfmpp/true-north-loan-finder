@@ -43,6 +43,7 @@ import PartnerLeads from '@/components/admin/PartnerLeads';
 import PartnerPayments from '@/components/admin/PartnerPayments';
 import BillingManagement from '@/components/admin/BillingManagement';
 import ROIManagement from '@/components/admin/ROIManagement';
+import ClientsManagement from '@/components/admin/ClientsManagement';
 // Removed PartnersManagement component
 import Footer from '@/components/Footer';
 
@@ -1574,6 +1575,11 @@ const Admin = () => {
           count: partners.length
         },
         {
+          title: "Clients",
+          value: "clients",
+          icon: Users
+        },
+        {
           title: "USA Applications",
           value: "usa-applications", 
           icon: FileText,
@@ -2379,6 +2385,8 @@ const Admin = () => {
         return <div className="p-6 text-center text-muted-foreground">Partner applications feature has been simplified - use Partners tab instead</div>;
       case 'partner-payments':
         return <PartnerPayments />;
+      case 'clients':
+        return <ClientsManagement />;
       case 'billing':
         return <BillingManagement />;
       case 'roi':
