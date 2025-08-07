@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Search, Plus, Edit, Trash2, ExternalLink } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, ExternalLink, Mail } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface Client {
@@ -54,6 +54,16 @@ const ClientsManagement = () => {
     admin_notes: ''
   });
   const [submitting, setSubmitting] = useState(false);
+  
+  // Custom email modal state
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [emailingClient, setEmailingClient] = useState<Client | null>(null);
+  const [customEmailData, setCustomEmailData] = useState({
+    subject: '',
+    message: '',
+    emailType: 'custom'
+  });
+  const [sendingEmail, setSendingEmail] = useState(false);
 
   const { user, isSuperAdmin } = useAuth();
   const { toast } = useToast();
@@ -302,6 +312,70 @@ const ClientsManagement = () => {
     }
   };
 
+  const openEmailModal = (client: Client) => {
+    setEmailingClient(client);
+    setCustomEmailData({
+      subject: '',
+      message: '',
+      emailType: 'custom'
+    });
+    setIsEmailModalOpen(true);
+  };
+
+  const closeEmailModal = () => {
+    setIsEmailModalOpen(false);
+    setEmailingClient(null);
+    setCustomEmailData({
+      subject: '',
+      message: '',
+      emailType: 'custom'
+    });
+  };
+
+  const handleSendCustomEmail = async () => {
+    if (!emailingClient || !customEmailData.subject.trim() || !customEmailData.message.trim()) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please fill in both subject and message',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    try {
+      setSendingEmail(true);
+
+      const { error } = await supabase.functions.invoke('send-custom-client-email', {
+        body: {
+          to: [emailingClient.applicant_email],
+          subject: customEmailData.subject,
+          message: customEmailData.message,
+          clientName: emailingClient.applicant_name,
+          companyName: emailingClient.company_name,
+          emailType: customEmailData.emailType
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Email sent successfully',
+      });
+
+      closeEmailModal();
+    } catch (error) {
+      console.error('Error sending email:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to send email',
+        variant: 'destructive'
+      });
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case 'approved':
@@ -475,6 +549,14 @@ const ClientsManagement = () => {
                           <Button
                             variant="outline"
                             size="sm"
+                            onClick={() => openEmailModal(client)}
+                            title="Send Custom Email"
+                          >
+                            <Mail className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => openEditModal(client)}
                           >
                             <Edit className="w-4 h-4" />
@@ -577,6 +659,62 @@ const ClientsManagement = () => {
               disabled={submitting}
             >
               {submitting ? 'Saving...' : (isCreateModalOpen ? 'Create Client' : 'Update Client')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Custom Email Modal */}
+      <Dialog open={isEmailModalOpen} onOpenChange={closeEmailModal}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Send Custom Email</DialogTitle>
+            <DialogDescription>
+              Send a custom email to {emailingClient?.applicant_name} ({emailingClient?.applicant_email})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Email Type</label>
+              <select
+                value={customEmailData.emailType}
+                onChange={(e) => setCustomEmailData(prev => ({ ...prev, emailType: e.target.value }))}
+                className="w-full px-3 py-2 border border-border rounded-md bg-background"
+              >
+                <option value="custom">Custom Email</option>
+                <option value="payment_reminder">Payment Reminder</option>
+                <option value="credit_reminder">Credit/Leads Reminder</option>
+                <option value="invoice_due">Invoice Due</option>
+                <option value="welcome">Welcome Email</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Subject *</label>
+              <Input
+                value={customEmailData.subject}
+                onChange={(e) => setCustomEmailData(prev => ({ ...prev, subject: e.target.value }))}
+                placeholder="Email subject line"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Message *</label>
+              <Textarea
+                value={customEmailData.message}
+                onChange={(e) => setCustomEmailData(prev => ({ ...prev, message: e.target.value }))}
+                placeholder="Email message content..."
+                className="min-h-[150px]"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={closeEmailModal} disabled={sendingEmail}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSendCustomEmail}
+              disabled={sendingEmail}
+            >
+              {sendingEmail ? 'Sending...' : 'Send Email'}
             </Button>
           </DialogFooter>
         </DialogContent>

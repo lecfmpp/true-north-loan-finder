@@ -179,7 +179,7 @@ const BrokerSignup = () => {
         });
       }
 
-      // Create pending broker application
+      // Create client application - all submissions are added regardless of payment status
       const { data: applicationData, error: applicationError } = await supabase
         .from('lender_broker_applications')
         .insert({
@@ -188,7 +188,7 @@ const BrokerSignup = () => {
           applicant_phone: formData.applicantPhone,
           company_name: formData.companyName,
           company_website: formData.companyWebsite,
-          application_type: 'client', // Assign client role for pay-per-lead model
+          application_type: 'client', // All broker signup users are clients
           years_of_experience: formData.yearsOfExperience ? parseInt(formData.yearsOfExperience) : null,
           license_number: formData.licenseNumber,
           business_description: formData.businessDescription,
@@ -201,7 +201,7 @@ const BrokerSignup = () => {
           max_loan_amount: formData.maxLoanAmount,
           geographic_areas: formData.geographicAreas,
           additional_requirements: formData.additionalRequirements,
-          status: 'pending_payment',
+          status: 'pending_payment', // Default status for new submissions
           payment_status: 'pending',
           admin_notes: `Tracking ID: ${trackingId}, UTM: ${JSON.stringify(trackingData)}`
         })
