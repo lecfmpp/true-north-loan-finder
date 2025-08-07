@@ -336,7 +336,7 @@ export const LeadsSimulation = () => {
       }
 
       // Create client record in database
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('clients')
         .insert({
           name: formData.name,
@@ -344,8 +344,10 @@ export const LeadsSimulation = () => {
           phone: formData.phone,
           company_name: `${formData.name}'s Business`,
           lead_source: 'lead_simulation',
-          status: 'new'
-        });
+          status: 'new',
+          payment_status: 'waiting_payment'
+        })
+        .select();
 
       if (error) {
         console.error('Error creating client record:', error);
@@ -357,16 +359,44 @@ export const LeadsSimulation = () => {
         return;
       }
 
-      // Store form data in localStorage for later use in account creation
-      localStorage.setItem('brokerFormData', JSON.stringify(formData));
+      if (data && data[0]) {
+        // Create payment link for the new client
+        try {
+          const { data: paymentData, error: paymentError } = await supabase.functions.invoke('create-client-payment', {
+            body: {
+              clientId: data[0].id,
+              amount: 5000, // $50.00 in cents
+              description: 'Lead Simulation Access'
+            }
+          });
 
-      toast({
-        title: "Success",
-        description: "Your information has been saved successfully!",
-      });
-
-      // Redirect directly to Stripe payment with custom domain
-      window.open('https://buy.stripe.com/aFadR98YN9bjcJkeaaawo05?success_url=' + encodeURIComponent('https://truenorthbusinessloan.ca/broker-payment-success'), '_blank');
+          if (paymentError) {
+            console.error('Error creating payment:', paymentError);
+            toast({
+              title: "Success",
+              description: "Your information has been saved! Please contact us to complete payment.",
+            });
+          } else {
+            toast({
+              title: "Success",
+              description: "Redirecting to payment...",
+            });
+            // Open payment link in new tab
+            window.open(paymentData.paymentUrl, '_blank');
+          }
+        } catch (paymentError) {
+          console.error('Payment creation failed:', paymentError);
+          toast({
+            title: "Success",
+            description: "Your information has been saved! Please contact us to complete payment.",
+          });
+        }
+      } else {
+        toast({
+          title: "Success",
+          description: "Your information has been saved successfully!",
+        });
+      }
 
       // Close modal and reset form
       setShowModal(false);

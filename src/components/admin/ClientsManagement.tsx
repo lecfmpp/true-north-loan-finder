@@ -23,6 +23,11 @@ interface Client {
   status: string;
   created_at: string;
   admin_notes?: string;
+  payment_status?: string;
+  stripe_payment_link_id?: string;
+  stripe_session_id?: string;
+  payment_reminder_sent_at?: string;
+  payment_completed_at?: string;
 }
 
 interface ClientFormData {
@@ -264,6 +269,59 @@ const ClientsManagement = () => {
     }
   };
 
+  const handleCheckPayment = async (clientId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('check-payment-status', {
+        body: { clientId }
+      });
+
+      if (error) throw error;
+
+      if (data.isPaid) {
+        toast({
+          title: 'Success',
+          description: 'Payment confirmed! Status updated to paid.',
+        });
+        fetchClients();
+      } else {
+        toast({
+          title: 'Info',
+          description: 'Payment not yet received.',
+        });
+      }
+    } catch (error) {
+      console.error('Error checking payment:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to check payment status',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleSendPaymentReminder = async (clientId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('send-payment-reminder', {
+        body: { clientId }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Payment reminder sent successfully',
+      });
+      fetchClients();
+    } catch (error) {
+      console.error('Error sending payment reminder:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to send payment reminder',
+        variant: 'destructive'
+      });
+    }
+  };
+
   const handleDeleteClient = async (clientId: string) => {
     if (!confirm('Are you sure you want to delete this client? This action cannot be undone.')) {
       return;
@@ -487,6 +545,7 @@ const ClientsManagement = () => {
                     <TableHead>Company</TableHead>
                     <TableHead>Lead Source</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Payment Status</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -514,11 +573,16 @@ const ClientsManagement = () => {
                           {client.status}
                         </Badge>
                       </TableCell>
+                      <TableCell>
+                        <Badge variant={client.payment_status === 'paid' ? 'default' : 'destructive'}>
+                          {client.payment_status === 'paid' ? 'Paid' : 'Waiting Payment'}
+                        </Badge>
+                      </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {format(new Date(client.created_at), 'MMM dd, yyyy')}
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <Button
                             variant="outline"
                             size="sm"
@@ -527,6 +591,26 @@ const ClientsManagement = () => {
                           >
                             <Mail className="w-4 h-4" />
                           </Button>
+                          {client.payment_status === 'waiting_payment' && (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleCheckPayment(client.id)}
+                                title="Check Payment Status"
+                              >
+                                Check Payment
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleSendPaymentReminder(client.id)}
+                                title="Send Payment Reminder"
+                              >
+                                Send Reminder
+                              </Button>
+                            </>
+                          )}
                           <Button
                             variant="outline"
                             size="sm"

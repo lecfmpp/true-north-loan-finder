@@ -702,8 +702,13 @@ export type Database = {
           id: string
           lead_source: string | null
           name: string
+          payment_completed_at: string | null
+          payment_reminder_sent_at: string | null
+          payment_status: string | null
           phone: string | null
           status: string
+          stripe_payment_link_id: string | null
+          stripe_session_id: string | null
           updated_at: string
         }
         Insert: {
@@ -714,8 +719,13 @@ export type Database = {
           id?: string
           lead_source?: string | null
           name: string
+          payment_completed_at?: string | null
+          payment_reminder_sent_at?: string | null
+          payment_status?: string | null
           phone?: string | null
           status?: string
+          stripe_payment_link_id?: string | null
+          stripe_session_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -726,8 +736,13 @@ export type Database = {
           id?: string
           lead_source?: string | null
           name?: string
+          payment_completed_at?: string | null
+          payment_reminder_sent_at?: string | null
+          payment_status?: string | null
           phone?: string | null
           status?: string
+          stripe_payment_link_id?: string | null
+          stripe_session_id?: string | null
           updated_at?: string
         }
         Relationships: []
