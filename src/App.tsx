@@ -66,9 +66,9 @@ const App = () => (
         <Sonner />
         <ChatWidget />
         <ConsentBanner />
-        <SocialProofWidget />
         
         <BrowserRouter>
+          <SocialProofWidget />
           <ScrollToTop />
           <Routes>
             <Route path="/" element={<Home />} />
