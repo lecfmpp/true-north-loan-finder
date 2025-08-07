@@ -491,12 +491,13 @@ const BlogEditor = ({ post, onSave, onCancel }: BlogEditorProps) => {
                 <ReactQuill
                   ref={setQuillRef}
                   theme="snow"
-                  value={formData.content}
+                  value={formData.content || ''}
                   onChange={handleContentChange}
                   modules={quillModules}
                   formats={quillFormats}
                   placeholder="Write your blog post content here. Use the heading tools to create H2 and H3 sections..."
                   style={{ height: '400px', marginBottom: '50px' }}
+                  preserveWhitespace={true}
                 />
               )}
             </div>
