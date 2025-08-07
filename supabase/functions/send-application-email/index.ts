@@ -57,11 +57,11 @@ const handler = async (req: Request): Promise<Response> => {
     const attachments = [];
     
     if (application.document_files && Array.isArray(application.document_files)) {
-      for (const file of application.document_files) {
+      for (const filePath of application.document_files) {
         try {
           const { data: fileData, error: fileError } = await supabase.storage
             .from('application-documents')
-            .download(file.path);
+            .download(filePath);
 
           if (!fileError && fileData) {
             const arrayBuffer = await fileData.arrayBuffer();
@@ -70,13 +70,18 @@ const handler = async (req: Request): Promise<Response> => {
             // Convert to base64 string for Resend
             const base64String = btoa(String.fromCharCode(...uint8Array));
             
+            // Extract filename from path
+            const fileName = filePath.split('/').pop() || filePath;
+            
             attachments.push({
-              filename: file.name,
+              filename: fileName,
               content: base64String,
             });
+          } else {
+            console.error(`Failed to download file ${filePath}:`, fileError);
           }
         } catch (error) {
-          console.error('File processing error:', error);
+          console.error('File processing error for', filePath, ':', error);
         }
       }
     }
