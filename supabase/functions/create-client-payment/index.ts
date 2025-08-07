@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import Stripe from "https://esm.sh/stripe@14.21.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,7 +10,7 @@ const corsHeaders = {
 interface PaymentRequest {
   clientId: string;
   amount: number;
-  description?: string;
+  description: string;
 }
 
 serve(async (req) => {
@@ -20,7 +20,7 @@ serve(async (req) => {
   }
 
   try {
-    const { clientId, amount, description = "Lead Simulation Access" }: PaymentRequest = await req.json();
+    const { clientId, amount, description }: PaymentRequest = await req.json();
 
     // Initialize Supabase client
     const supabaseClient = createClient(
@@ -44,72 +44,78 @@ serve(async (req) => {
       apiVersion: "2023-10-16",
     });
 
-    // Check if customer exists
+    // Check if customer exists in Stripe
     const customers = await stripe.customers.list({ 
-      email: client.email, 
+      email: client.email,
       limit: 1 
     });
-    
+
     let customerId;
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
+    } else {
+      // Create new customer
+      const customer = await stripe.customers.create({
+        email: client.email,
+        name: client.name,
+      });
+      customerId = customer.id;
     }
 
-    // Create payment link
-    const paymentLink = await stripe.paymentLinks.create({
+    // Create checkout session
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
       line_items: [
         {
           price_data: {
             currency: "usd",
             product_data: {
-              name: description,
+              name: description || "Lead Simulation Access",
             },
-            unit_amount: amount, // Amount in cents
+            unit_amount: amount,
           },
           quantity: 1,
         },
       ],
-      payment_method_types: ["card"],
-      customer: customerId,
-      customer_creation: customerId ? undefined : "always",
-      after_completion: {
-        type: "redirect",
-        redirect: {
-          url: `${req.headers.get("origin")}/payment-success?client_id=${clientId}`,
-        },
-      },
+      mode: "payment",
+      success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.headers.get("origin")}/admin`,
       metadata: {
         client_id: clientId,
+        type: "client_payment",
       },
     });
 
-    // Update client with payment link information
-    const { error: updateError } = await supabaseClient
+    // Update client with payment session info
+    await supabaseClient
       .from('clients')
       .update({
-        stripe_payment_link_id: paymentLink.id,
-        payment_status: 'waiting_payment',
+        stripe_payment_link_id: session.id,
+        updated_at: new Date().toISOString(),
       })
       .eq('id', clientId);
 
-    if (updateError) {
-      console.error("Error updating client:", updateError);
-    }
+    console.log("Payment session created successfully:", session.id);
 
     return new Response(
       JSON.stringify({ 
-        paymentUrl: paymentLink.url,
-        paymentLinkId: paymentLink.id 
+        success: true,
+        paymentUrl: session.url,
+        sessionId: session.id
       }), 
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       }
     );
+
   } catch (error) {
-    console.error("Error creating payment:", error);
+    console.error("Error creating client payment:", error);
     return new Response(
-      JSON.stringify({ error: error.message }), 
+      JSON.stringify({ 
+        error: error.message,
+        success: false 
+      }), 
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 500,

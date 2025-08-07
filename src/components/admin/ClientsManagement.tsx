@@ -482,7 +482,7 @@ const ClientsManagement = () => {
             <CardTitle className="text-sm font-medium">Total Clients</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{filteredClients.length}</div>
+            <div className="text-2xl font-bold">{filteredClients?.length || 0}</div>
           </CardContent>
         </Card>
         <Card>
@@ -491,7 +491,7 @@ const ClientsManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {filteredClients.filter(c => c.status === 'active').length}
+              {filteredClients?.filter(c => c.status === 'active')?.length || 0}
             </div>
           </CardContent>
         </Card>
@@ -501,7 +501,7 @@ const ClientsManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-yellow-600">
-              {filteredClients.filter(c => c.status === 'new').length}
+              {filteredClients?.filter(c => c.status === 'new')?.length || 0}
             </div>
           </CardContent>
         </Card>
@@ -511,7 +511,7 @@ const ClientsManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              {filteredClients.filter(c => c.status === 'inactive').length}
+              {filteredClients?.filter(c => c.status === 'inactive')?.length || 0}
             </div>
           </CardContent>
         </Card>
@@ -548,12 +548,12 @@ const ClientsManagement = () => {
       {/* Clients Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Clients ({filteredClients.length})</CardTitle>
+          <CardTitle>Clients ({filteredClients?.length || 0})</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
             <div className="text-center py-8 text-muted-foreground">Loading clients...</div>
-          ) : filteredClients.length === 0 ? (
+          ) : !filteredClients || filteredClients.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               {searchTerm || statusFilter !== 'all' ? 'No clients match your filters' : 'No clients found'}
             </div>
