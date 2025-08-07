@@ -337,15 +337,14 @@ export const LeadsSimulation = () => {
 
       // Create client record in database
       const { error } = await supabase
-        .from('lender_broker_applications')
+        .from('clients')
         .insert({
-          applicant_name: formData.name,
-          applicant_email: formData.email,
-          applicant_phone: formData.phone,
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
           company_name: `${formData.name}'s Business`,
-          application_type: 'client',
-          status: 'lead_simulation_interest',
-          business_description: 'Lead from simulation form'
+          lead_source: 'lead_simulation',
+          status: 'new'
         });
 
       if (error) {

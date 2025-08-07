@@ -693,6 +693,45 @@ export type Database = {
         }
         Relationships: []
       }
+      clients: {
+        Row: {
+          admin_notes: string | null
+          company_name: string | null
+          created_at: string
+          email: string
+          id: string
+          lead_source: string | null
+          name: string
+          phone: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          company_name?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          lead_source?: string | null
+          name: string
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          company_name?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          lead_source?: string | null
+          name?: string
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       content_briefs: {
         Row: {
           competitors: Json | null

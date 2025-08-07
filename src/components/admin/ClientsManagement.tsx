@@ -10,29 +10,26 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Search, Plus, Edit, Trash2, ExternalLink, Mail } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, Mail } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface Client {
   id: string;
-  applicant_name: string;
-  applicant_email: string;
-  applicant_phone?: string;
-  company_name: string;
-  company_website?: string;
-  application_type: string;
+  name: string;
+  email: string;
+  phone?: string;
+  company_name?: string;
+  lead_source: string;
   status: string;
   created_at: string;
-  payment_status?: string;
   admin_notes?: string;
 }
 
 interface ClientFormData {
-  applicant_name: string;
-  applicant_email: string;
-  applicant_phone: string;
+  name: string;
+  email: string;
+  phone: string;
   company_name: string;
-  company_website: string;
   admin_notes: string;
 }
 
@@ -46,11 +43,10 @@ const ClientsManagement = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [formData, setFormData] = useState<ClientFormData>({
-    applicant_name: '',
-    applicant_email: '',
-    applicant_phone: '',
+    name: '',
+    email: '',
+    phone: '',
     company_name: '',
-    company_website: '',
     admin_notes: ''
   });
   const [submitting, setSubmitting] = useState(false);
@@ -82,9 +78,8 @@ const ClientsManagement = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('lender_broker_applications')
+        .from('clients')
         .select('*')
-        .eq('application_type', 'client')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -108,10 +103,10 @@ const ClientsManagement = () => {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(client =>
-        client.applicant_name.toLowerCase().includes(term) ||
-        client.applicant_email.toLowerCase().includes(term) ||
-        client.company_name.toLowerCase().includes(term) ||
-        (client.applicant_phone && client.applicant_phone.includes(term))
+        client.name.toLowerCase().includes(term) ||
+        client.email.toLowerCase().includes(term) ||
+        (client.company_name && client.company_name.toLowerCase().includes(term)) ||
+        (client.phone && client.phone.includes(term))
       );
     }
 
@@ -124,11 +119,10 @@ const ClientsManagement = () => {
 
   const resetForm = () => {
     setFormData({
-      applicant_name: '',
-      applicant_email: '',
-      applicant_phone: '',
+      name: '',
+      email: '',
+      phone: '',
       company_name: '',
-      company_website: '',
       admin_notes: ''
     });
   };
@@ -141,11 +135,10 @@ const ClientsManagement = () => {
   const openEditModal = (client: Client) => {
     setEditingClient(client);
     setFormData({
-      applicant_name: client.applicant_name,
-      applicant_email: client.applicant_email,
-      applicant_phone: client.applicant_phone || '',
-      company_name: client.company_name,
-      company_website: client.company_website || '',
+      name: client.name,
+      email: client.email,
+      phone: client.phone || '',
+      company_name: client.company_name || '',
       admin_notes: client.admin_notes || ''
     });
     setIsEditModalOpen(true);
@@ -159,16 +152,16 @@ const ClientsManagement = () => {
   };
 
   const validateForm = () => {
-    if (!formData.applicant_name.trim()) {
+    if (!formData.name.trim()) {
       toast({
         title: 'Validation Error',
-        description: 'Applicant name is required',
+        description: 'Name is required',
         variant: 'destructive'
       });
       return false;
     }
 
-    if (!formData.applicant_email.trim()) {
+    if (!formData.email.trim()) {
       toast({
         title: 'Validation Error',
         description: 'Email is required',
@@ -178,19 +171,10 @@ const ClientsManagement = () => {
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.applicant_email)) {
+    if (!emailRegex.test(formData.email)) {
       toast({
         title: 'Validation Error',
         description: 'Please enter a valid email address',
-        variant: 'destructive'
-      });
-      return false;
-    }
-
-    if (!formData.company_name.trim()) {
-      toast({
-        title: 'Validation Error',
-        description: 'Company name is required',
         variant: 'destructive'
       });
       return false;
@@ -206,19 +190,17 @@ const ClientsManagement = () => {
       setSubmitting(true);
 
       const clientData = {
-        applicant_name: formData.applicant_name.trim(),
-        applicant_email: formData.applicant_email.trim(),
-        applicant_phone: formData.applicant_phone.trim() || null,
-        company_name: formData.company_name.trim(),
-        company_website: formData.company_website.trim() || null,
-        application_type: 'client',
-        status: 'approved',
-        admin_notes: formData.admin_notes.trim() || null,
-        payment_status: 'paid'
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim() || null,
+        company_name: formData.company_name.trim() || null,
+        lead_source: 'manual_entry',
+        status: 'new',
+        admin_notes: formData.admin_notes.trim() || null
       };
 
       const { error } = await supabase
-        .from('lender_broker_applications')
+        .from('clients')
         .insert(clientData);
 
       if (error) throw error;
@@ -249,16 +231,15 @@ const ClientsManagement = () => {
       setSubmitting(true);
 
       const updates = {
-        applicant_name: formData.applicant_name.trim(),
-        applicant_email: formData.applicant_email.trim(),
-        applicant_phone: formData.applicant_phone.trim() || null,
-        company_name: formData.company_name.trim(),
-        company_website: formData.company_website.trim() || null,
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim() || null,
+        company_name: formData.company_name.trim() || null,
         admin_notes: formData.admin_notes.trim() || null,
       };
 
       const { error } = await supabase
-        .from('lender_broker_applications')
+        .from('clients')
         .update(updates)
         .eq('id', editingClient.id);
 
@@ -290,7 +271,7 @@ const ClientsManagement = () => {
 
     try {
       const { error } = await supabase
-        .from('lender_broker_applications')
+        .from('clients')
         .delete()
         .eq('id', clientId);
 
@@ -347,11 +328,11 @@ const ClientsManagement = () => {
 
       const { error } = await supabase.functions.invoke('send-custom-client-email', {
         body: {
-          to: [emailingClient.applicant_email],
+          to: [emailingClient.email],
           subject: customEmailData.subject,
           message: customEmailData.message,
-          clientName: emailingClient.applicant_name,
-          companyName: emailingClient.company_name,
+          clientName: emailingClient.name,
+          companyName: emailingClient.company_name || '',
           emailType: customEmailData.emailType
         }
       });
@@ -378,11 +359,11 @@ const ClientsManagement = () => {
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
-      case 'approved':
+      case 'active':
         return 'default';
-      case 'pending':
+      case 'new':
         return 'secondary';
-      case 'rejected':
+      case 'inactive':
         return 'destructive';
       default:
         return 'outline';
@@ -403,7 +384,7 @@ const ClientsManagement = () => {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-foreground">Clients Management</h2>
-          <p className="text-muted-foreground">Manage pay-per-lead clients</p>
+          <p className="text-muted-foreground">Manage lead simulation and client contacts</p>
         </div>
         <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
           <DialogTrigger asChild>
@@ -431,27 +412,27 @@ const ClientsManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {filteredClients.filter(c => c.status === 'approved').length}
+              {filteredClients.filter(c => c.status === 'active').length}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Pending</CardTitle>
+            <CardTitle className="text-sm font-medium">New</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-yellow-600">
-              {filteredClients.filter(c => c.status === 'pending').length}
+              {filteredClients.filter(c => c.status === 'new').length}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Rejected</CardTitle>
+            <CardTitle className="text-sm font-medium">Inactive</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              {filteredClients.filter(c => c.status === 'rejected').length}
+              {filteredClients.filter(c => c.status === 'inactive').length}
             </div>
           </CardContent>
         </Card>
@@ -476,9 +457,9 @@ const ClientsManagement = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="new">New</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -504,6 +485,7 @@ const ClientsManagement = () => {
                   <TableRow>
                     <TableHead>Client Info</TableHead>
                     <TableHead>Company</TableHead>
+                    <TableHead>Lead Source</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead>Actions</TableHead>
@@ -514,27 +496,18 @@ const ClientsManagement = () => {
                     <TableRow key={client.id}>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{client.applicant_name}</div>
-                          <div className="text-sm text-muted-foreground">{client.applicant_email}</div>
-                          {client.applicant_phone && (
-                            <div className="text-sm text-muted-foreground">{client.applicant_phone}</div>
+                          <div className="font-medium">{client.name}</div>
+                          <div className="text-sm text-muted-foreground">{client.email}</div>
+                          {client.phone && (
+                            <div className="text-sm text-muted-foreground">{client.phone}</div>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div>
-                          <div className="font-medium">{client.company_name}</div>
-                          {client.company_website && (
-                            <a
-                              href={client.company_website}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm text-blue-600 hover:underline flex items-center gap-1"
-                            >
-                              Website <ExternalLink className="w-3 h-3" />
-                            </a>
-                          )}
-                        </div>
+                        <div className="font-medium">{client.company_name || 'N/A'}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{client.lead_source}</Badge>
                       </TableCell>
                       <TableCell>
                         <Badge variant={getStatusBadgeVariant(client.status)}>
@@ -589,7 +562,7 @@ const ClientsManagement = () => {
             </DialogTitle>
             <DialogDescription>
               {isCreateModalOpen 
-                ? 'Create a new pay-per-lead client account.' 
+                ? 'Create a new client contact.' 
                 : 'Update client information.'
               }
             </DialogDescription>
@@ -597,10 +570,10 @@ const ClientsManagement = () => {
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Applicant Name *</label>
+                <label className="text-sm font-medium">Name *</label>
                 <Input
-                  value={formData.applicant_name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, applicant_name: e.target.value }))}
+                  value={formData.name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                   placeholder="John Smith"
                 />
               </div>
@@ -608,8 +581,8 @@ const ClientsManagement = () => {
                 <label className="text-sm font-medium">Email *</label>
                 <Input
                   type="email"
-                  value={formData.applicant_email}
-                  onChange={(e) => setFormData(prev => ({ ...prev, applicant_email: e.target.value }))}
+                  value={formData.email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                   placeholder="john@company.com"
                 />
               </div>
@@ -618,27 +591,19 @@ const ClientsManagement = () => {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Phone</label>
                 <Input
-                  value={formData.applicant_phone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, applicant_phone: e.target.value }))}
+                  value={formData.phone}
+                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                   placeholder="(555) 123-4567"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Company Name *</label>
+                <label className="text-sm font-medium">Company Name</label>
                 <Input
                   value={formData.company_name}
                   onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
                   placeholder="Company Inc."
                 />
               </div>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Company Website</label>
-              <Input
-                value={formData.company_website}
-                onChange={(e) => setFormData(prev => ({ ...prev, company_website: e.target.value }))}
-                placeholder="https://company.com"
-              />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Admin Notes</label>
@@ -670,7 +635,7 @@ const ClientsManagement = () => {
           <DialogHeader>
             <DialogTitle>Send Custom Email</DialogTitle>
             <DialogDescription>
-              Send a custom email to {emailingClient?.applicant_name} ({emailingClient?.applicant_email})
+              Send a custom email to {emailingClient?.name} ({emailingClient?.email})
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -682,10 +647,9 @@ const ClientsManagement = () => {
                 className="w-full px-3 py-2 border border-border rounded-md bg-background"
               >
                 <option value="custom">Custom Email</option>
-                <option value="payment_reminder">Payment Reminder</option>
-                <option value="credit_reminder">Credit/Leads Reminder</option>
-                <option value="invoice_due">Invoice Due</option>
+                <option value="follow_up">Follow Up</option>
                 <option value="welcome">Welcome Email</option>
+                <option value="notification">Notification</option>
               </select>
             </div>
             <div className="space-y-2">
