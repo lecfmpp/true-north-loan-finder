@@ -1206,6 +1206,42 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_sources: {
+        Row: {
+          cost_per_lead: number | null
+          created_at: string
+          id: string
+          is_active: boolean
+          notes: string | null
+          source_category: string
+          source_name: string
+          source_type: string
+          updated_at: string
+        }
+        Insert: {
+          cost_per_lead?: number | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          source_category: string
+          source_name: string
+          source_type: string
+          updated_at?: string
+        }
+        Update: {
+          cost_per_lead?: number | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          source_category?: string
+          source_name?: string
+          source_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lender_broker_applications: {
         Row: {
           additional_requirements: string | null
@@ -2001,6 +2037,19 @@ export type Database = {
       generate_application_reference: {
         Args: { app_type: string }
         Returns: string
+      }
+      get_lead_source_analytics: {
+        Args: { start_date?: string; end_date?: string }
+        Returns: {
+          source_name: string
+          source_category: string
+          source_type: string
+          lead_count: number
+          cost_per_lead: number
+          total_estimated_cost: number
+          conversion_rate: number
+          avg_loan_amount: number
+        }[]
       }
       get_roi_metrics: {
         Args: { start_date?: string; end_date?: string }

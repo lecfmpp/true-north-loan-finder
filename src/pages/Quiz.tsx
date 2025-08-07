@@ -232,19 +232,19 @@ const Quiz = () => {
     }
   };
 
-  // Enhanced attribution tracking function
+  // Enhanced attribution tracking function with better Google Ads detection
   const getAttributionSource = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const referrer = document.referrer;
     
     // Priority order for attribution
     
-    // 1. Google Ads (highest priority)
-    if (urlParams.get('gclid')) {
+    // 1. Google Ads (highest priority) - Multiple ways to detect
+    if (urlParams.get('gclid') || urlParams.get('gbraid') || urlParams.get('wbraid')) {
       return 'google_ads';
     }
     
-    // 2. Facebook Ads
+    // 2. Facebook/Meta Ads
     if (urlParams.get('fbclid')) {
       return 'facebook_ads';
     }
@@ -254,51 +254,108 @@ const Quiz = () => {
       return 'microsoft_ads';
     }
     
-    // 4. UTM Source
+    // 4. LinkedIn Ads
+    if (urlParams.get('li_fat_id')) {
+      return 'linkedin_ads';
+    }
+    
+    // 5. Twitter Ads
+    if (urlParams.get('twclid')) {
+      return 'twitter_ads';
+    }
+    
+    // 6. UTM Source (with enhanced logic)
     if (urlParams.get('utm_source')) {
-      const source = urlParams.get('utm_source');
-      const medium = urlParams.get('utm_medium');
-      const campaign = urlParams.get('utm_campaign');
+      const source = urlParams.get('utm_source')?.toLowerCase();
+      const medium = urlParams.get('utm_medium')?.toLowerCase();
+      const campaign = urlParams.get('utm_campaign')?.toLowerCase();
       
-      // Create more descriptive attribution
-      if (medium && campaign) {
+      // Detect paid vs organic based on medium
+      if (medium) {
+        if (['cpc', 'ppc', 'paid', 'adwords', 'ads'].includes(medium)) {
+          if (source?.includes('google')) return 'google_ads';
+          if (source?.includes('facebook') || source?.includes('fb') || source?.includes('meta')) return 'facebook_ads';
+          if (source?.includes('linkedin')) return 'linkedin_ads';
+          if (source?.includes('microsoft') || source?.includes('bing')) return 'microsoft_ads';
+          if (source?.includes('twitter')) return 'twitter_ads';
+          return `${source}_ads`;
+        }
+        
+        if (['email', 'newsletter'].includes(medium)) {
+          return 'email_campaign';
+        }
+        
+        if (['referral', 'affiliate'].includes(medium)) {
+          return 'partner_referral';
+        }
+        
+        if (['social'].includes(medium)) {
+          if (source?.includes('facebook') || source?.includes('fb')) return 'facebook_organic';
+          if (source?.includes('linkedin')) return 'linkedin_organic';
+          if (source?.includes('twitter')) return 'twitter_organic';
+          if (source?.includes('youtube')) return 'youtube_organic';
+          return `${source}_organic`;
+        }
+        
+        // Create descriptive attribution with medium
         return `${source}_${medium}`;
       }
-      return source;
+      
+      // Fallback to just source
+      return source || 'unknown_utm';
     }
     
-    // 5. Direct source parameter
+    // 7. Direct source parameter
     if (urlParams.get('source')) {
-      return urlParams.get('source');
+      return urlParams.get('source') || 'unknown_source';
     }
     
-    // 6. Referrer parameter
+    // 8. Referrer parameter
     if (urlParams.get('ref') || urlParams.get('referrer')) {
-      return urlParams.get('ref') || urlParams.get('referrer');
+      return urlParams.get('ref') || urlParams.get('referrer') || 'unknown_ref';
     }
     
-    // 7. Document referrer
+    // 9. Document referrer analysis
     if (referrer) {
       try {
-        const referrerDomain = new URL(referrer).hostname;
+        const referrerDomain = new URL(referrer).hostname.toLowerCase();
         if (referrerDomain !== window.location.hostname) {
-          // Clean up common referrer domains
-          if (referrerDomain.includes('google.')) return 'google_organic';
-          if (referrerDomain.includes('facebook.') || referrerDomain.includes('fb.')) return 'facebook_organic';
-          if (referrerDomain.includes('linkedin.')) return 'linkedin';
-          if (referrerDomain.includes('twitter.') || referrerDomain.includes('t.co')) return 'twitter';
-          if (referrerDomain.includes('youtube.')) return 'youtube';
-          if (referrerDomain.includes('bing.')) return 'bing';
+          // Enhanced referrer detection
+          if (referrerDomain.includes('google.')) {
+            // Check if it's likely from Google Ads vs organic
+            const referrerUrl = new URL(referrer);
+            if (referrerUrl.pathname.includes('/aclk') || referrerUrl.search.includes('gclid')) {
+              return 'google_ads';
+            }
+            return 'google_organic';
+          }
           
-          // Return domain name for other referrers
-          return referrerDomain.replace('www.', '');
+          if (referrerDomain.includes('facebook.') || referrerDomain.includes('fb.')) {
+            return referrerDomain.includes('m.facebook') ? 'facebook_organic' : 'facebook_organic';
+          }
+          
+          if (referrerDomain.includes('linkedin.')) return 'linkedin_organic';
+          if (referrerDomain.includes('twitter.') || referrerDomain.includes('t.co')) return 'twitter_organic';
+          if (referrerDomain.includes('youtube.')) return 'youtube_organic';
+          if (referrerDomain.includes('bing.')) return 'bing_organic';
+          if (referrerDomain.includes('yahoo.')) return 'yahoo_organic';
+          if (referrerDomain.includes('duckduckgo.')) return 'duckduckgo_organic';
+          
+          // Return clean domain name for other referrers
+          return referrerDomain.replace('www.', '').replace(/\./g, '_');
         }
       } catch (e) {
         console.warn('Could not parse referrer URL:', referrer);
       }
     }
     
-    // 8. Default fallback
+    // 10. Check for internal navigation attribution stored in localStorage
+    const storedAttribution = localStorage.getItem('lead_attribution');
+    if (storedAttribution && storedAttribution !== 'direct') {
+      return storedAttribution;
+    }
+    
+    // 11. Default fallback
     return 'direct';
   };
 

@@ -38,6 +38,7 @@ import CanadianApplicationsManagement from '@/components/admin/CanadianApplicati
 import SocialProofManagement from '@/components/admin/SocialProofManagement';
 import SettingsManagement from '@/components/admin/SettingsManagement';
 import SimplifiedPartnersManagement from '@/components/admin/SimplifiedPartnersManagement';
+import LeadSourceAnalytics from '@/components/admin/LeadSourceAnalytics';
 import PartnerLeads from '@/components/admin/PartnerLeads';
 // Removed PartnerApplications component  
 import PartnerPayments from '@/components/admin/PartnerPayments';
@@ -1569,6 +1570,11 @@ const Admin = () => {
           count: leads.length
         },
         {
+          title: "Lead Analytics",
+          value: "lead-analytics",
+          icon: TrendingUp
+        },
+        {
           title: "Partners",
           value: "partners", 
           icon: Users,
@@ -2375,6 +2381,8 @@ const Admin = () => {
         return <BlogPostCreator onBlogCreated={() => setActiveTab('blog')} />;
       case 'blog':
         return <BlogManagement />;
+      case 'lead-analytics':
+        return <LeadSourceAnalytics />;
       case 'social-proof':
         return <SocialProofManagement />;
       case 'settings':
