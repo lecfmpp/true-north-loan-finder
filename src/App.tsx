@@ -2,7 +2,7 @@ import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
 import { Routes, Route, BrowserRouter } from "react-router-dom";
 import { ChatWidget } from "@/components/ChatWidget";
 import ConsentBanner from "@/components/ConsentBanner";
@@ -49,17 +49,9 @@ const PageLoader = () => (
   </div>
 );
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
+  
     <AuthProvider>
       <TooltipProvider>
         <Toaster />
@@ -191,7 +183,7 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
-  </QueryClientProvider>
+  
 );
 
 export default App;
