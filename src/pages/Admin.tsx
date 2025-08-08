@@ -85,6 +85,9 @@ interface QuizResponse {
   }>;
   // Add partner loan amount
   partner_loan_amount?: number;
+  // Add partner assignment
+  assigned_partner_id?: string;
+  partner_name?: string;
 }
 
 interface Partner {
@@ -115,6 +118,7 @@ const Admin = () => {
   const [loanAmountFilter, setLoanAmountFilter] = useState('all');
   const [timeInBusinessFilter, setTimeInBusinessFilter] = useState('all');
   const [applicationSentFilter, setApplicationSentFilter] = useState('all');
+  const [partnerFilter, setPartnerFilter] = useState('all');
   const [sortField, setSortField] = useState<string>('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [activeTab, setActiveTab] = useState('leads');
@@ -393,7 +397,7 @@ const Admin = () => {
 
   useEffect(() => {
     filterLeads();
-  }, [leads, searchTerm, statusFilter, countryFilter, monthlyRevenueFilter, loanAmountFilter, timeInBusinessFilter, applicationSentFilter, sortField, sortDirection]);
+  }, [leads, searchTerm, statusFilter, countryFilter, monthlyRevenueFilter, loanAmountFilter, timeInBusinessFilter, applicationSentFilter, partnerFilter, sortField, sortDirection]);
 
   // Real-time subscription for email delivery updates
   useEffect(() => {
@@ -425,7 +429,10 @@ const Admin = () => {
       const {
         data,
         error
-      } = await supabase.from('quiz_responses').select('*').order('created_at', {
+      } = await supabase.from('quiz_responses').select(`
+        *,
+        partners!assigned_partner_id(id, name)
+      `).order('created_at', {
         ascending: false
       });
       if (error) throw error;
@@ -453,6 +460,7 @@ const Admin = () => {
             has_canadian_application: (canadianApps && canadianApps.length > 0),
             usa_application_reference: usaApps?.[0]?.application_reference_number || null,
             canadian_application_reference: canadianApps?.[0]?.application_reference_number || null,
+            partner_name: (lead as any).partners?.name || null,
           };
         } catch (err) {
           console.error('Error enriching lead:', err);
@@ -462,6 +470,7 @@ const Admin = () => {
             has_canadian_application: false,
             usa_application_reference: null,
             canadian_application_reference: null,
+            partner_name: (lead as any).partners?.name || null,
           };
         }
       }));
@@ -1125,6 +1134,14 @@ const Admin = () => {
         }
       });
     }
+    if (partnerFilter !== 'all') {
+      filtered = filtered.filter(lead => {
+        if (partnerFilter === 'unassigned') {
+          return !lead.assigned_partner_id;
+        }
+        return lead.assigned_partner_id === partnerFilter;
+      });
+    }
     
     // Apply sorting
     if (sortField) {
@@ -1754,7 +1771,7 @@ const Admin = () => {
                   </div>
                   
                   {/* Additional Filters in Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
                     <Select value={monthlyRevenueFilter} onValueChange={setMonthlyRevenueFilter}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Monthly Revenue (All)" />
@@ -1807,6 +1824,21 @@ const Admin = () => {
                         <SelectItem value="all">Applications (All)</SelectItem>
                         <SelectItem value="yes">Yes</SelectItem>
                         <SelectItem value="no">No</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <Select value={partnerFilter} onValueChange={setPartnerFilter}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Partner (All)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Partner (All)</SelectItem>
+                        <SelectItem value="unassigned">Unassigned</SelectItem>
+                        {partners.map(partner => (
+                          <SelectItem key={partner.id} value={partner.id}>
+                            {partner.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
