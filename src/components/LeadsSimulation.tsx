@@ -452,7 +452,7 @@ export const LeadsSimulation = () => {
                 
                 <div className="text-center mb-2">
                   <div className="text-yellow-500 mb-1">★★★★★★</div>
-                  <CardTitle className="text-xl font-sans text-primary leading-tight">{lead.businessName}</CardTitle>
+                  <CardTitle className="text-xl font-sans text-primary leading-tight truncate">{lead.businessName}</CardTitle>
                   <div className="text-sm text-secondary font-medium">{lead.loanType}</div>
                 </div>
               </CardHeader>
