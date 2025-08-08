@@ -446,12 +446,11 @@ export const LeadsSimulation = () => {
                   <LiveTimer submittedAt={lead.submittedAt} />
                 </div>
                 
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-start mb-3">
                   {lead.phoneVerified && <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
                       <Shield className="h-3 w-3 mr-1" />
                       Phone Verified
                     </Badge>}
-                  <Badge variant="outline" className="text-xs">{lead.industry}</Badge>
                 </div>
                 
                 <div className="text-center mb-2">
