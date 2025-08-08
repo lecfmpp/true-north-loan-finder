@@ -442,14 +442,15 @@ export const LeadsSimulation = () => {
             </div> : leads.slice(0, 6).map(lead => <Card key={lead.id} className="border-2 border-green-500 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 relative overflow-hidden hover:border-green-600">
               
               <CardHeader className="relative z-20 pb-2 px-4 pt-4">
-                <div className="flex items-center justify-start mb-3">
+                <div className="flex items-center justify-end mb-3">
+                  <LiveTimer submittedAt={lead.submittedAt} />
+                </div>
+                
+                <div className="flex items-center justify-between mb-3">
                   {lead.phoneVerified && <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
                       <Shield className="h-3 w-3 mr-1" />
                       Phone Verified
                     </Badge>}
-                </div>
-                
-                <div className="flex items-center justify-between mb-3">
                   <Badge variant="outline" className="text-xs">{lead.industry}</Badge>
                 </div>
                 
