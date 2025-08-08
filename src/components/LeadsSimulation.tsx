@@ -443,10 +443,6 @@ export const LeadsSimulation = () => {
               
               <CardHeader className="relative z-20 pb-2 px-4 pt-4">
                 <div className="flex items-center justify-end mb-3">
-                  <LiveTimer submittedAt={lead.submittedAt} />
-                </div>
-                
-                <div className="flex items-center justify-start mb-3">
                   {lead.phoneVerified && <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
                       <Shield className="h-3 w-3 mr-1" />
                       Phone Verified
