@@ -471,7 +471,7 @@ export const LeadsSimulation = () => {
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center space-x-3">
                     <Building2 className="h-4 w-4 text-secondary flex-shrink-0" />
-                    <span className="text-sm text-foreground font-medium">{lead.contactName}</span>
+                    <span className="text-sm text-foreground font-medium truncate">{lead.contactName}</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <Phone className="h-4 w-4 text-secondary flex-shrink-0" />
