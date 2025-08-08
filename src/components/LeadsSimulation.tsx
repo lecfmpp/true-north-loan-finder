@@ -458,14 +458,16 @@ export const LeadsSimulation = () => {
               </CardHeader>
               
               <CardContent className="relative z-20 pt-0 px-4 pb-4">
-                {/* Most Important: Cash Required */}
-                <div className="bg-accent/10 border border-accent/20 rounded-lg p-3 mb-4 text-center">
-                  <div className="text-xs text-muted-foreground mb-1">Cash Required</div>
-                  <div className="text-2xl font-bold text-accent flex items-center justify-center">
-                    <DollarSign className="h-5 w-5 mr-1" />
-                    {lead.loanAmount}
+                {/* Most Important: Cash Required - only show if >= $10,000 */}
+                {parseInt(lead.loanAmount.replace(/[$,]/g, '')) >= 10000 && (
+                  <div className="bg-accent/10 border border-accent/20 rounded-lg p-3 mb-4 text-center">
+                    <div className="text-xs text-muted-foreground mb-1">Cash Required</div>
+                    <div className="text-2xl font-bold text-accent flex items-center justify-center">
+                      <DollarSign className="h-5 w-5 mr-1" />
+                      {lead.loanAmount}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Contact Details */}
                 <div className="space-y-2 mb-4">
