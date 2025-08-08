@@ -211,13 +211,9 @@ export const LeadsSimulation = () => {
         if (error) throw error;
         if (quizResponses && quizResponses.length > 0) {
           const transformedLeads: Lead[] = quizResponses.map(response => {
-            // Create business name from name (first part) + industry
-            const firstName = response.name.split(' ')[0];
-            const industry = getIndustry(response.use_of_funds);
+            // Use real business name but blur all text
             const businessName = (
-              <span>
-                <span className="blur-sm select-none">{firstName}</span> {industry}
-              </span>
+              <span className="blur-sm select-none">{response.company_name || `${response.name} Business`}</span>
             );
             return {
               id: response.id,
