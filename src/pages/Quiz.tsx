@@ -198,6 +198,7 @@ const Quiz = () => {
 
     async submitLead(formData: QuizData, quizScore: number) {
       const sessionId = localStorage.getItem('visitor_session_id');
+      const leadSource = localStorage.getItem('lead_attribution') || 'direct';
       
       try {
         const response = await fetch(`${this.apiBase}/functions/v1/submit-lead`, {
@@ -217,6 +218,7 @@ const Quiz = () => {
               credit_score: formData.creditScore,
               quiz_score: quizScore,
               source: 'business_loan_quiz',
+              lead_source: leadSource,
               submitted_at: new Date().toISOString()
             }
           })
@@ -272,12 +274,13 @@ const Quiz = () => {
       
       // Detect paid vs organic based on medium
       if (medium) {
-        if (['cpc', 'ppc', 'paid', 'adwords', 'ads'].includes(medium)) {
+        const paidMediums = ['cpc', 'ppc', 'paid', 'adwords', 'ads', 'sem', 'paid_search', 'paidsearch'];
+        if (paidMediums.includes(medium)) {
           if (source?.includes('google')) return 'google_ads';
           if (source?.includes('facebook') || source?.includes('fb') || source?.includes('meta')) return 'facebook_ads';
           if (source?.includes('linkedin')) return 'linkedin_ads';
           if (source?.includes('microsoft') || source?.includes('bing')) return 'microsoft_ads';
-          if (source?.includes('twitter')) return 'twitter_ads';
+          if (source?.includes('twitter') || source?.includes('x')) return 'twitter_ads';
           return `${source}_ads`;
         }
         
@@ -292,7 +295,7 @@ const Quiz = () => {
         if (['social'].includes(medium)) {
           if (source?.includes('facebook') || source?.includes('fb')) return 'facebook_organic';
           if (source?.includes('linkedin')) return 'linkedin_organic';
-          if (source?.includes('twitter')) return 'twitter_organic';
+          if (source?.includes('twitter') || source?.includes('x')) return 'twitter_organic';
           if (source?.includes('youtube')) return 'youtube_organic';
           return `${source}_organic`;
         }
@@ -300,6 +303,9 @@ const Quiz = () => {
         // Create descriptive attribution with medium
         return `${source}_${medium}`;
       }
+      
+      // No medium provided: avoid ambiguous "google"
+      if (source?.includes('google')) return 'google_organic';
       
       // Fallback to just source
       return source || 'unknown_utm';
