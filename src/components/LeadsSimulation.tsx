@@ -398,7 +398,7 @@ export const LeadsSimulation = () => {
                 
                 {/* Action Button */}
                 <Button onClick={() => handleUnlockClick(lead)} variant="cta" size="lg" className="w-full text-base bg-green-600 hover:bg-green-700 text-white">
-                  🔓 Unlock Lead and Call Now
+                  🔓 Unlock 10 Leads Trial
                 </Button>
               </CardContent>
             </Card>)}
@@ -451,7 +451,7 @@ export const LeadsSimulation = () => {
               <Input type="tel" placeholder="Phone Number (XXX) XXX-XXXX" value={formData.phone} onChange={handlePhoneChange} maxLength={14} required />
               
               <Button type="submit" variant="cta" size="lg" className="w-full text-lg bg-accent hover:bg-accent/90" disabled={isSubmitting}>
-                {isSubmitting ? "Processing..." : "🔓 Unlock Leads for $500"}
+                {isSubmitting ? "Processing..." : "🔓 Unlock 10 Leads Trial"}
               </Button>
             </form>
             
