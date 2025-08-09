@@ -534,6 +534,7 @@ const BrokerSignup = () => {
               <TooltipProvider>
                 <div>
                   <h4 className="text-lg font-semibold mb-4 text-primary text-center">Enter Your Numbers</h4>
+                  <p className="text-sm sm:text-base text-muted-foreground text-center mb-6 font-serif">Enter your expected leads per month, average commission per funded deal, your estimated cost per lead, and your typical conversion rate. We'll estimate your monthly profit and ROI so you can see the return from paying per qualified lead.</p>
                   <div className="grid grid-cols-1 gap-4 sm:gap-6">
                     <div>
                       <label className="flex items-center gap-2 text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">
