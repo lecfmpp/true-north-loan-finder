@@ -156,7 +156,7 @@ const BrokerSignup = () => {
       // Generate unique tracking ID
       const trackingId = `broker_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
 
-      // Track form completion event
+      // Track form completion event (optional)
       if (typeof window !== 'undefined' && (window as any).gtag) {
         (window as any).gtag('event', 'broker_form_completed', {
           event_category: 'broker_signup',
@@ -167,16 +167,14 @@ const BrokerSignup = () => {
         });
       }
 
-      // Create client record - all submissions are added regardless of payment status
-      console.log('Form data before submission:', formData);
-      
+      // Prepare data to insert into public.clients (anonymous insert allowed via RLS)
       const insertData = {
         name: formData.applicantName,
         email: formData.applicantEmail,
         phone: formData.applicantPhone || null,
         company_name: formData.companyName,
         company_website: formData.companyWebsite || null,
-        application_type: 'client', // All broker signup users are clients
+        application_type: 'client',
         years_of_experience: formData.yearsOfExperience ? parseInt(formData.yearsOfExperience) : null,
         license_number: formData.licenseNumber || null,
         business_description: formData.businessDescription || null,
@@ -196,21 +194,20 @@ const BrokerSignup = () => {
         utm_params: trackingData,
         admin_notes: `Tracking ID: ${trackingId}, UTM: ${JSON.stringify(trackingData)}`
       };
-      
-      console.log('Insert data:', insertData);
-      
-      const { data: clientData, error: clientError } = await supabase
-        .from('clients')
-        .insert(insertData)
-        .select()
-        .single();
 
-      if (clientError) {
-        console.error('Database error:', clientError);
-        throw clientError;
+      console.log('Insert data:', insertData);
+
+      // IMPORTANT: Don't chain .select() here to avoid RLS SELECT policy requirements
+      const { error: insertError } = await supabase
+        .from('clients')
+        .insert(insertData);
+
+      if (insertError) {
+        console.error('Database insert error:', insertError);
+        throw insertError;
       }
 
-      // Track payment initiation event
+      // Track payment initiation event (optional)
       if (typeof window !== 'undefined' && (window as any).gtag) {
         (window as any).gtag('event', 'begin_checkout', {
           event_category: 'broker_signup',
@@ -220,21 +217,32 @@ const BrokerSignup = () => {
         });
       }
 
-      // Call edge function to create Stripe session
-      const { data: paymentData, error: paymentError } = await supabase.functions.invoke('create-broker-payment', {
-        body: { 
-          clientId: clientData.id,
-          trackingId: trackingId,
-          utmParams: trackingData
+      // Initiate payment via Edge Function using trackingId (server finds the client)
+      const { data: paymentData, error: paymentError } = await supabase.functions.invoke('create-client-payment', {
+        body: {
+          trackingId,
+          amount: 50000, // $500 in cents
+          description: 'Broker Application Fee ($500)'
         }
       });
 
-      if (paymentError) throw paymentError;
+      if (paymentError) {
+        console.warn('Payment initiation failed, but data saved. Error:', paymentError);
+        toast.success('Application saved! We will email you a secure payment link shortly.');
+        setShowForm(false);
+        return;
+      }
 
-      // Open Stripe checkout in new tab
-      window.open(paymentData.url, '_blank');
+      // Open Stripe checkout in new tab if available
+      const url = (paymentData as any)?.paymentUrl || (paymentData as any)?.url;
+      if (url) {
+        window.open(url, '_blank');
+        toast.success('Redirecting to payment...');
+      } else {
+        toast.success('Application saved! We will email you a secure payment link shortly.');
+      }
 
-      toast.success('Redirecting to payment...');
+      setShowForm(false);
     } catch (error) {
       console.error('Error submitting form:', error);
       toast.error('Failed to submit form. Please try again.');
@@ -836,7 +844,6 @@ const BrokerSignup = () => {
         </div>
       </section>
 
-
       {/* Quality Guarantee */}
       <section className="py-20">
         <div className="container mx-auto px-4">
@@ -886,9 +893,6 @@ const BrokerSignup = () => {
           </div>
         </div>
       </section>
-
-
-
 
       <Footer />
     </div>
