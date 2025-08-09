@@ -69,15 +69,14 @@ const App = () => {
           <ConsentBanner />
           
           {/* Defer non-critical widgets until after load */}
-          <Suspense fallback={null}>
-            {widgetsReady && <LazySocialProofWidget />}
-          </Suspense>
-          <Suspense fallback={null}>
-            {widgetsReady && <LazyChatWidget />}
-          </Suspense>
-          
           <BrowserRouter>
             <ScrollToTop />
+            <Suspense fallback={null}>
+              {widgetsReady && <LazySocialProofWidget />}
+            </Suspense>
+            <Suspense fallback={null}>
+              {widgetsReady && <LazyChatWidget />}
+            </Suspense>
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/loan-estimator" element={<Quiz />} />
