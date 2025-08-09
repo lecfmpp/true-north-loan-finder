@@ -695,55 +695,103 @@ export type Database = {
       }
       clients: {
         Row: {
+          additional_requirements: string | null
           admin_notes: string | null
+          application_type: string | null
+          business_description: string | null
           company_name: string | null
+          company_website: string | null
           created_at: string
           email: string
+          geographic_areas: string[] | null
           id: string
           lead_source: string | null
+          license_number: string | null
+          max_loan_amount: string | null
+          max_monthly_revenue: string | null
+          min_credit_score: string | null
+          min_loan_amount: string | null
+          min_monthly_revenue: string | null
+          min_time_in_business: string | null
           name: string
           payment_completed_at: string | null
           payment_reminder_sent_at: string | null
           payment_status: string | null
           phone: string | null
+          preferred_industries: string[] | null
           status: string
           stripe_payment_link_id: string | null
           stripe_session_id: string | null
+          tracking_id: string | null
           updated_at: string
+          utm_params: Json | null
+          years_of_experience: number | null
         }
         Insert: {
+          additional_requirements?: string | null
           admin_notes?: string | null
+          application_type?: string | null
+          business_description?: string | null
           company_name?: string | null
+          company_website?: string | null
           created_at?: string
           email: string
+          geographic_areas?: string[] | null
           id?: string
           lead_source?: string | null
+          license_number?: string | null
+          max_loan_amount?: string | null
+          max_monthly_revenue?: string | null
+          min_credit_score?: string | null
+          min_loan_amount?: string | null
+          min_monthly_revenue?: string | null
+          min_time_in_business?: string | null
           name: string
           payment_completed_at?: string | null
           payment_reminder_sent_at?: string | null
           payment_status?: string | null
           phone?: string | null
+          preferred_industries?: string[] | null
           status?: string
           stripe_payment_link_id?: string | null
           stripe_session_id?: string | null
+          tracking_id?: string | null
           updated_at?: string
+          utm_params?: Json | null
+          years_of_experience?: number | null
         }
         Update: {
+          additional_requirements?: string | null
           admin_notes?: string | null
+          application_type?: string | null
+          business_description?: string | null
           company_name?: string | null
+          company_website?: string | null
           created_at?: string
           email?: string
+          geographic_areas?: string[] | null
           id?: string
           lead_source?: string | null
+          license_number?: string | null
+          max_loan_amount?: string | null
+          max_monthly_revenue?: string | null
+          min_credit_score?: string | null
+          min_loan_amount?: string | null
+          min_monthly_revenue?: string | null
+          min_time_in_business?: string | null
           name?: string
           payment_completed_at?: string | null
           payment_reminder_sent_at?: string | null
           payment_status?: string | null
           phone?: string | null
+          preferred_industries?: string[] | null
           status?: string
           stripe_payment_link_id?: string | null
           stripe_session_id?: string | null
+          tracking_id?: string | null
           updated_at?: string
+          utm_params?: Json | null
+          years_of_experience?: number | null
         }
         Relationships: []
       }

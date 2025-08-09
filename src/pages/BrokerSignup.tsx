@@ -167,13 +167,13 @@ const BrokerSignup = () => {
         });
       }
 
-      // Create client application - all submissions are added regardless of payment status
+      // Create client record - all submissions are added regardless of payment status
       console.log('Form data before submission:', formData);
       
       const insertData = {
-        applicant_name: formData.applicantName,
-        applicant_email: formData.applicantEmail,
-        applicant_phone: formData.applicantPhone,
+        name: formData.applicantName,
+        email: formData.applicantEmail,
+        phone: formData.applicantPhone || null,
         company_name: formData.companyName,
         company_website: formData.companyWebsite || null,
         application_type: 'client', // All broker signup users are clients
@@ -189,22 +189,25 @@ const BrokerSignup = () => {
         max_loan_amount: formData.maxLoanAmount || null,
         geographic_areas: formData.geographicAreas.length > 0 ? formData.geographicAreas : null,
         additional_requirements: formData.additionalRequirements || null,
-        status: 'pending_payment', // Default status for new submissions
-        payment_status: 'pending',
+        status: 'new',
+        payment_status: 'waiting_payment',
+        lead_source: 'broker_signup',
+        tracking_id: trackingId,
+        utm_params: trackingData,
         admin_notes: `Tracking ID: ${trackingId}, UTM: ${JSON.stringify(trackingData)}`
       };
       
       console.log('Insert data:', insertData);
       
-      const { data: applicationData, error: applicationError } = await supabase
-        .from('lender_broker_applications')
+      const { data: clientData, error: clientError } = await supabase
+        .from('clients')
         .insert(insertData)
         .select()
         .single();
 
-      if (applicationError) {
-        console.error('Database error:', applicationError);
-        throw applicationError;
+      if (clientError) {
+        console.error('Database error:', clientError);
+        throw clientError;
       }
 
       // Track payment initiation event
@@ -220,7 +223,7 @@ const BrokerSignup = () => {
       // Call edge function to create Stripe session
       const { data: paymentData, error: paymentError } = await supabase.functions.invoke('create-broker-payment', {
         body: { 
-          applicationId: applicationData.id,
+          clientId: clientData.id,
           trackingId: trackingId,
           utmParams: trackingData
         }
