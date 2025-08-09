@@ -1,9 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Clock, Phone, Mail, Building2, DollarSign, AlertTriangle, CheckCircle, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -188,6 +186,8 @@ export const LeadsSimulation = () => {
     email: "",
     phone: ""
   });
+  const calendlyRef = useRef<HTMLDivElement>(null);
+
   const {
     toast
   } = useToast();
@@ -287,7 +287,7 @@ export const LeadsSimulation = () => {
   const CALENDLY_URL = 'https://calendly.com/leandro-truenorth-businessloan/30min';
   const handleUnlockClick = (lead: Lead) => {
     setSelectedLead(lead);
-    setShowModal(true);
+    calendlyRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
   // Phone formatting for US/Canada
   const formatPhoneNumber = (value: string) => {
@@ -406,48 +406,14 @@ export const LeadsSimulation = () => {
         </div>
       </div>
 
-      <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle className="text-center text-xl font-bold text-primary">
-              🚨 New Qualified Lead!
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 mb-4">
-                 <div className="flex items-center justify-center space-x-2 mb-2">
-                   <Clock className="h-5 w-5 text-destructive" />
-                   <UrgencyCountdown lastSubmissionTime={lastSubmissionTime} />
-                 </div>
-                <p className="text-sm text-muted-foreground">
-                  This lead submitted their application and needs immediate response
-                </p>
-              </div>
-              
-              <Card className="bg-gradient-to-r from-accent/10 to-secondary/10 border-accent/20">
-                <CardContent className="p-6">
-                  <div className="text-2xl font-bold text-accent mb-2">Trial Package</div>
-                  <div className="text-4xl font-bold text-primary mb-2">$500</div>
-                  <div className="text-muted-foreground mb-4">10 Premium Leads</div>
-                  <ul className="text-sm space-y-1 text-left">
-                    <li>✅ Complete contact information</li>
-                    <li>✅ Pre-qualified prospects</li>
-                    <li>✅ Same-day response expected</li>
-                  </ul>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="rounded-md border border-border p-2">
-              <CalendlyInline 
-                url="https://calendly.com/leandro-truenorth-businessloan/30min?hide_gdpr_banner=1&primary_color=29df77" 
-                height={700}
-              />
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <section ref={calendlyRef} id="schedule-demo" aria-label="Schedule your 10 Leads Trial" className="max-w-3xl mx-auto mt-8">
+        <div className="text-center mb-4">
+          <h2 className="text-2xl font-bold text-primary">Schedule Your 10 Leads Trial</h2>
+          <p className="text-sm text-muted-foreground">Pick a time to chat and activate your trial.</p>
+        </div>
+        <div className="rounded-md border border-border p-2">
+          <CalendlyInline url="https://calendly.com/leandro-truenorth-businessloan/30min?hide_gdpr_banner=1&primary_color=29df77" height={700} />
+        </div>
+      </section>
     </>;
 };
