@@ -210,28 +210,41 @@ export const LeadsSimulation = () => {
           .limit(20); // Increased limit to show more recent leads
         if (error) throw error;
         if (quizResponses && quizResponses.length > 0) {
-          const transformedLeads: Lead[] = quizResponses.map(response => {
-            // Use real business name but blur all text
-            const businessName = (
-              <span className="blur-sm select-none">{response.company_name || `${response.name} Business`}</span>
-            );
-            return {
-              id: response.id,
-              businessName,
-              contactName: maskText(response.name),
-              email: maskEmail(response.email),
-              phone: maskPhone(response.phone),
-              loanAmount: `$${response.loan_amount.toLocaleString()}`,
-              submittedAt: new Date(response.created_at),
-              creditScore: getCreditScore(response.credit_score),
-              industry: getIndustry(response.use_of_funds),
-              loanType: getBusinessType(response.use_of_funds),
-              phoneVerified: true // Assume verified for leads
-            };
+          // Filter out leads with loan amount less than 10,000
+          const filtered = quizResponses.filter((response: any) => {
+            const amount = typeof response.loan_amount === 'number'
+              ? response.loan_amount
+              : parseFloat(String(response.loan_amount).replace(/[^0-9.-]/g, '')) || 0;
+            return amount >= 10000;
           });
-          setLeads(transformedLeads);
-          // Set the most recent submission time for the urgency countdown
-          setLastSubmissionTime(new Date(quizResponses[0].created_at));
+
+          if (filtered.length > 0) {
+            const transformedLeads: Lead[] = filtered.map(response => {
+              // Use real business name but blur all text
+              const businessName = (
+                <span className="blur-sm select-none">{response.company_name || `${response.name} Business`}</span>
+              );
+              return {
+                id: response.id,
+                businessName,
+                contactName: maskText(response.name),
+                email: maskEmail(response.email),
+                phone: maskPhone(response.phone),
+                loanAmount: `$${Number(response.loan_amount).toLocaleString()}`,
+                submittedAt: new Date(response.created_at),
+                creditScore: getCreditScore(response.credit_score),
+                industry: getIndustry(response.use_of_funds),
+                loanType: getBusinessType(response.use_of_funds),
+                phoneVerified: true // Assume verified for leads
+              };
+            });
+            setLeads(transformedLeads);
+            // Set the most recent submission time for the urgency countdown
+            setLastSubmissionTime(new Date(filtered[0].created_at));
+          } else {
+            setLeads([]);
+            setLastSubmissionTime(null);
+          }
         } else {
           setLeads([]);
           setLastSubmissionTime(null);
