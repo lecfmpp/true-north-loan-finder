@@ -653,9 +653,26 @@ const Admin = () => {
     }
   };
 
-  // Removed fetchApprovedPartners function - using fetchPartners for consistency
+  // Real-time subscription: refresh partners list on insert/update/delete so dropdowns stay in sync
+  useEffect(() => {
+    if (!user || !isAdmin) return;
 
-  // Removed real-time subscription for approved partners - using partners table now
+    const channel = supabase
+      .channel('partners_changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'partners' },
+        () => {
+          // Re-fetch active partners when partners table changes
+          fetchPartners();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, isAdmin]);
 
   const sendCustomLeadEmail = async (leadId: string, recipientEmails: string) => {
     // Parse and validate multiple email addresses
