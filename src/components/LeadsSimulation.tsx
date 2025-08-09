@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Clock, Phone, Mail, Building2, DollarSign, AlertTriangle, CheckCircle, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import CalendlyInline from "@/components/CalendlyInline";
 interface Lead {
   id: string;
   businessName: JSX.Element;
@@ -285,9 +286,9 @@ export const LeadsSimulation = () => {
 
   const CALENDLY_URL = 'https://calendly.com/leandro-truenorth-businessloan/30min';
   const handleUnlockClick = (lead: Lead) => {
-    window.open(CALENDLY_URL, '_blank');
+    setSelectedLead(lead);
+    setShowModal(true);
   };
-
   // Phone formatting for US/Canada
   const formatPhoneNumber = (value: string) => {
     // Remove all non-numeric characters
@@ -406,7 +407,7 @@ export const LeadsSimulation = () => {
       </div>
 
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle className="text-center text-xl font-bold text-primary">
               🚨 New Qualified Lead!
@@ -439,24 +440,11 @@ export const LeadsSimulation = () => {
               </Card>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <Input placeholder="Your Full Name" value={formData.name} onChange={e => setFormData(prev => ({
-              ...prev,
-              name: e.target.value
-            }))} required />
-              <Input type="email" placeholder="Email Address" value={formData.email} onChange={e => setFormData(prev => ({
-              ...prev,
-              email: e.target.value
-            }))} required />
-              <Input type="tel" placeholder="Phone Number (XXX) XXX-XXXX" value={formData.phone} onChange={handlePhoneChange} maxLength={14} required />
-              
-              <Button type="submit" variant="cta" size="lg" className="w-full text-lg bg-accent hover:bg-accent/90" disabled={isSubmitting}>
-                {isSubmitting ? "Processing..." : "🔓 Unlock 10 Leads Trial"}
-              </Button>
-            </form>
-            
-            <div className="text-center text-xs text-muted-foreground">
-              Secure payment processed by Stripe • Cancel anytime
+            <div className="rounded-md border border-border p-2">
+              <CalendlyInline 
+                url="https://calendly.com/leandro-truenorth-businessloan/30min?hide_gdpr_banner=1&primary_color=29df77" 
+                height={700}
+              />
             </div>
           </div>
         </DialogContent>
