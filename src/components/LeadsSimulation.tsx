@@ -27,43 +27,31 @@ const maskText = (text: string, visibleStart: number = 3): JSX.Element => {
   }
   const start = text.substring(0, visibleStart);
   const rest = text.substring(visibleStart);
-  return (
-    <span>
+  return <span>
       {start}
       <span className="blur-sm select-none">{rest}</span>
-    </span>
-  );
+    </span>;
 };
 const maskEmail = (email: string): JSX.Element => {
   const [localPart, domain] = email.split('@');
   if (!domain) return <span>{email}</span>;
-  
-  const maskedLocal = localPart.length > 3 ? (
-    <span>
+  const maskedLocal = localPart.length > 3 ? <span>
       {localPart.substring(0, 3)}
       <span className="blur-sm select-none">{localPart.substring(3)}</span>
-    </span>
-  ) : <span>{localPart}</span>;
-  
-  const maskedDomain = domain.length > 4 ? (
-    <span>
+    </span> : <span>{localPart}</span>;
+  const maskedDomain = domain.length > 4 ? <span>
       <span className="blur-sm select-none">{domain.substring(0, domain.length - 4)}</span>
       {domain.substring(domain.length - 4)}
-    </span>
-  ) : <span>{domain}</span>;
-  
+    </span> : <span>{domain}</span>;
   return <span>{maskedLocal}@{maskedDomain}</span>;
 };
-
 const maskPhone = (phone: string): JSX.Element => {
   const cleanPhone = phone.replace(/\D/g, '');
   if (cleanPhone.length >= 10) {
-    return (
-      <span>
+    return <span>
         ({cleanPhone.substring(0, 3)}) 
         <span className="blur-sm select-none">***-****</span>
-      </span>
-    );
+      </span>;
   }
   return <span>(555) <span className="blur-sm select-none">***-****</span></span>;
 };
@@ -187,7 +175,6 @@ export const LeadsSimulation = () => {
     phone: ""
   });
   const calendlyRef = useRef<HTMLDivElement>(null);
-
   const {
     toast
   } = useToast();
@@ -198,33 +185,25 @@ export const LeadsSimulation = () => {
       setLoading(true);
       try {
         // Fix country filter to match actual data format
-        const countryFilter = selectedCountry === 'US' 
-          ? ['US', 'USA', 'United States'] 
-          : ['CA', 'Canada', 'Canadian', 'CAN'];
-        
-        const { data: quizResponses, error } = await supabase
-          .from('quiz_responses')
-          .select('*')
-          .eq('status', 'New') // Fixed: 'New' with capital N, not 'new'
-          .in('country', countryFilter)
-          .order('created_at', { ascending: false })
-          .limit(20); // Increased limit to show more recent leads
+        const countryFilter = selectedCountry === 'US' ? ['US', 'USA', 'United States'] : ['CA', 'Canada', 'Canadian', 'CAN'];
+        const {
+          data: quizResponses,
+          error
+        } = await supabase.from('quiz_responses').select('*').eq('status', 'New') // Fixed: 'New' with capital N, not 'new'
+        .in('country', countryFilter).order('created_at', {
+          ascending: false
+        }).limit(20); // Increased limit to show more recent leads
         if (error) throw error;
         if (quizResponses && quizResponses.length > 0) {
           // Filter out leads with loan amount less than 10,000
           const filtered = quizResponses.filter((response: any) => {
-            const amount = typeof response.loan_amount === 'number'
-              ? response.loan_amount
-              : parseFloat(String(response.loan_amount).replace(/[^0-9.-]/g, '')) || 0;
+            const amount = typeof response.loan_amount === 'number' ? response.loan_amount : parseFloat(String(response.loan_amount).replace(/[^0-9.-]/g, '')) || 0;
             return amount >= 10000;
           });
-
           if (filtered.length > 0) {
             const transformedLeads: Lead[] = filtered.map(response => {
               // Use real business name but blur all text
-              const businessName = (
-                <span className="blur-sm select-none">{response.company_name || `${response.name} Business`}</span>
-              );
+              const businessName = <span className="blur-sm select-none">{response.company_name || `${response.name} Business`}</span>;
               return {
                 id: response.id,
                 businessName,
@@ -258,27 +237,18 @@ export const LeadsSimulation = () => {
         setLoading(false);
       }
     };
-    
     fetchLeads();
-    
-    // Set up real-time subscription for new leads
-    const channel = supabase
-      .channel('quiz-responses-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'quiz_responses'
-        },
-        (payload) => {
-          console.log('New lead received:', payload);
-          // Refresh leads when new one comes in
-          fetchLeads();
-        }
-      )
-      .subscribe();
 
+    // Set up real-time subscription for new leads
+    const channel = supabase.channel('quiz-responses-changes').on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'quiz_responses'
+    }, payload => {
+      console.log('New lead received:', payload);
+      // Refresh leads when new one comes in
+      fetchLeads();
+    }).subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
@@ -287,7 +257,10 @@ export const LeadsSimulation = () => {
   const CALENDLY_URL = 'https://calendly.com/leandro-truenorth-businessloan/30min';
   const handleUnlockClick = (lead: Lead) => {
     setSelectedLead(lead);
-    calendlyRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    calendlyRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
   };
   // Phone formatting for US/Canada
   const formatPhoneNumber = (value: string) => {
@@ -408,7 +381,7 @@ export const LeadsSimulation = () => {
 
       <section ref={calendlyRef} id="schedule-demo" aria-label="Schedule your 10 Leads Trial" className="max-w-3xl mx-auto mt-8">
         <div className="text-center mb-4">
-          <h2 className="text-2xl font-bold text-primary">Schedule Your 10 Leads Trial</h2>
+          <h2 className="text-2xl font-bold text-primary">Book your ‘10 Leads’ trial call and find out if we can start filling your pipeline this week.</h2>
           <p className="text-sm text-muted-foreground">Pick a time to chat and activate your trial.</p>
         </div>
         <div className="rounded-md border border-border p-2">
