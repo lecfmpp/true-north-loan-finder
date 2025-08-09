@@ -167,14 +167,13 @@ const BrokerSignup = () => {
         });
       }
 
-      // Prepare data to insert into public.clients (anonymous insert allowed via RLS)
+      // Prepare data to insert into public.broker_signups (anonymous insert allowed via RLS)
       const insertData = {
-        name: formData.applicantName,
-        email: formData.applicantEmail,
-        phone: formData.applicantPhone || null,
+        applicant_name: formData.applicantName,
+        applicant_email: formData.applicantEmail,
+        applicant_phone: formData.applicantPhone || null,
         company_name: formData.companyName,
         company_website: formData.companyWebsite || null,
-        application_type: 'client',
         years_of_experience: formData.yearsOfExperience ? parseInt(formData.yearsOfExperience) : null,
         license_number: formData.licenseNumber || null,
         business_description: formData.businessDescription || null,
@@ -187,19 +186,16 @@ const BrokerSignup = () => {
         max_loan_amount: formData.maxLoanAmount || null,
         geographic_areas: formData.geographicAreas.length > 0 ? formData.geographicAreas : null,
         additional_requirements: formData.additionalRequirements || null,
-        status: 'new',
-        payment_status: 'waiting_payment',
-        lead_source: 'broker_signup',
         tracking_id: trackingId,
         utm_params: trackingData,
-        admin_notes: `Tracking ID: ${trackingId}, UTM: ${JSON.stringify(trackingData)}`
+        status: 'new',
       };
 
-      console.log('Insert data:', insertData);
+      console.log('Insert data (broker_signups):', insertData);
 
       // IMPORTANT: Don't chain .select() here to avoid RLS SELECT policy requirements
-      const { error: insertError } = await supabase
-        .from('clients')
+      const { error: insertError } = await (supabase as any)
+        .from('broker_signups')
         .insert(insertData);
 
       if (insertError) {
