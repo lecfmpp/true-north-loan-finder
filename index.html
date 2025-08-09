@@ -16,11 +16,15 @@
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     <link rel="dns-prefetch" href="https://www.googletagmanager.com">
     <link rel="dns-prefetch" href="https://spyme.ca">
+    <link rel="dns-prefetch" href="https://analytics.tiktok.com">
+    <link rel="dns-prefetch" href="https://connect.facebook.net">
     
     <!-- Optimized Font Loading -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://kgwcogltpsmapxnjzjhm.supabase.co" crossorigin>
+    <link rel="preconnect" href="https://analytics.tiktok.com" crossorigin>
+    <link rel="preconnect" href="https://connect.facebook.net" crossorigin>
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Merriweather:wght@400;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Merriweather:wght@400;700&display=swap"></noscript>
     
@@ -29,18 +33,29 @@
     <link rel="preload" href="/lovable-uploads/eae8a3b3-6d86-4fe4-9e17-17b808de0d2e.png" as="image">
     <link rel="modulepreload" href="/src/main.tsx">
     <style>
-      /* Critical CSS for first paint optimization */
-      * { box-sizing: border-box; }
-      html, body { 
-        margin: 0; 
-        padding: 0; 
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      /* Critical CSS - Inline this for fastest rendering */
+      
+      /* Base layout and typography that prevents layout shift */
+      * {
+        box-sizing: border-box;
+      }
+      
+      html, body {
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
         line-height: 1.5;
         -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
-      .font-serif { font-family: Georgia, 'Times New Roman', serif; }
       
-      /* Loading spinner */
+      /* Prevent layout shifts with proper dimensions */
+      .hero-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+      }
+      
       .loading-spinner {
         display: inline-block;
         width: 32px;
@@ -50,16 +65,13 @@
         border-radius: 50%;
         animation: spin 1s linear infinite;
       }
+      
       @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
       }
       
-      /* Prevent layout shifts */
-      img { max-width: 100%; height: auto; display: block; }
-      .hero-container { min-height: 100vh; display: flex; align-items: center; }
-      
-      /* Critical button styles */
+      /* Critical button styles to prevent CLS */
       .btn-primary {
         display: inline-flex;
         align-items: center;
@@ -71,7 +83,27 @@
         transition: all 150ms ease-in-out;
         border: none;
         cursor: pointer;
+        text-decoration: none;
       }
+      
+      /* Image placeholders to prevent layout shift */
+      img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+      }
+      
+      /* Navigation critical styles */
+      .nav-header {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+      }
+      
+      /* Optional utility preserved */
+      .font-serif { font-family: Georgia, 'Times New Roman', serif; }
     </style>
 
     <!-- Defer Analytics for Performance -->
