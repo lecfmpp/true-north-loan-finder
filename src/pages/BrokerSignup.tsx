@@ -168,35 +168,44 @@ const BrokerSignup = () => {
       }
 
       // Create client application - all submissions are added regardless of payment status
+      console.log('Form data before submission:', formData);
+      
+      const insertData = {
+        applicant_name: formData.applicantName,
+        applicant_email: formData.applicantEmail,
+        applicant_phone: formData.applicantPhone,
+        company_name: formData.companyName,
+        company_website: formData.companyWebsite || null,
+        application_type: 'client', // All broker signup users are clients
+        years_of_experience: formData.yearsOfExperience ? parseInt(formData.yearsOfExperience) : null,
+        license_number: formData.licenseNumber || null,
+        business_description: formData.businessDescription || null,
+        preferred_industries: formData.preferredIndustries.length > 0 ? formData.preferredIndustries : null,
+        min_monthly_revenue: formData.minMonthlyRevenue || null,
+        max_monthly_revenue: formData.maxMonthlyRevenue || null,
+        min_time_in_business: formData.minTimeInBusiness || null,
+        min_credit_score: formData.minCreditScore || null,
+        min_loan_amount: formData.minLoanAmount || null,
+        max_loan_amount: formData.maxLoanAmount || null,
+        geographic_areas: formData.geographicAreas.length > 0 ? formData.geographicAreas : null,
+        additional_requirements: formData.additionalRequirements || null,
+        status: 'pending_payment', // Default status for new submissions
+        payment_status: 'pending',
+        admin_notes: `Tracking ID: ${trackingId}, UTM: ${JSON.stringify(trackingData)}`
+      };
+      
+      console.log('Insert data:', insertData);
+      
       const { data: applicationData, error: applicationError } = await supabase
         .from('lender_broker_applications')
-        .insert({
-          applicant_name: formData.applicantName,
-          applicant_email: formData.applicantEmail,
-          applicant_phone: formData.applicantPhone,
-          company_name: formData.companyName,
-          company_website: formData.companyWebsite,
-          application_type: 'client', // All broker signup users are clients
-          years_of_experience: formData.yearsOfExperience ? parseInt(formData.yearsOfExperience) : null,
-          license_number: formData.licenseNumber,
-          business_description: formData.businessDescription,
-          preferred_industries: formData.preferredIndustries,
-          min_monthly_revenue: formData.minMonthlyRevenue,
-          max_monthly_revenue: formData.maxMonthlyRevenue,
-          min_time_in_business: formData.minTimeInBusiness,
-          min_credit_score: formData.minCreditScore,
-          min_loan_amount: formData.minLoanAmount,
-          max_loan_amount: formData.maxLoanAmount,
-          geographic_areas: formData.geographicAreas,
-          additional_requirements: formData.additionalRequirements,
-          status: 'pending_payment', // Default status for new submissions
-          payment_status: 'pending',
-          admin_notes: `Tracking ID: ${trackingId}, UTM: ${JSON.stringify(trackingData)}`
-        })
+        .insert(insertData)
         .select()
         .single();
 
-      if (applicationError) throw applicationError;
+      if (applicationError) {
+        console.error('Database error:', applicationError);
+        throw applicationError;
+      }
 
       // Track payment initiation event
       if (typeof window !== 'undefined' && (window as any).gtag) {
