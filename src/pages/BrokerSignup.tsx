@@ -22,33 +22,21 @@ const BrokerSignup = () => {
   const [avgCommission, setAvgCommission] = useState<number | ''>('');
   const [costPerLead, setCostPerLead] = useState<number | ''>('');
   const [conversionRate, setConversionRate] = useState<number | ''>('');
-  const [selectedPackage, setSelectedPackage] = useState(100); // Default to 100 leads
-  
-  // Package options with pricing (15% discount progression)
-  const packages = [
-    { leads: 50, name: "Starter", description: "Perfect for testing", costPerLead: 70 },
-    { leads: 100, name: "Professional", description: "Most popular choice", costPerLead: 60 }, // 15% discount
-    { leads: 200, name: "Enterprise", description: "Maximum volume", costPerLead: 51 } // 15% discount from previous
-  ];
+  const [leadsPerMonth, setLeadsPerMonth] = useState<number | ''>('');
   
   // Calculate ROI values - convert empty strings to 0 for calculations
   const avgCommNum = typeof avgCommission === 'number' ? avgCommission : 0;
   const costPerLeadNum = typeof costPerLead === 'number' ? costPerLead : 0;
   const conversionRateNum = typeof conversionRate === 'number' ? conversionRate : 0;
+  const leadsPerMonthNum = typeof leadsPerMonth === 'number' ? leadsPerMonth : 0;
   
-  const totalMonthlySpend = selectedPackage * costPerLeadNum;
-  const totalMonthlyDeals = selectedPackage * (conversionRateNum / 100);
+  const totalMonthlySpend = leadsPerMonthNum * costPerLeadNum;
+  const totalMonthlyDeals = leadsPerMonthNum * (conversionRateNum / 100);
   const totalMonthlyCommission = totalMonthlyDeals * avgCommNum;
   const monthlyProfit = totalMonthlyCommission - totalMonthlySpend;
   const calculatedROI = totalMonthlySpend > 0 ? Math.round((monthlyProfit / totalMonthlySpend) * 100) : 0;
 
-  // Auto-fill cost per lead when package is selected
-  useEffect(() => {
-    const selectedPkg = packages.find(pkg => pkg.leads === selectedPackage);
-    if (selectedPkg) {
-      setCostPerLead(selectedPkg.costPerLead);
-    }
-  }, [selectedPackage]);
+  // Removed package auto-fill per request
 
   useEffect(() => {
     const fetchRecentLeads = async () => {
@@ -541,42 +529,35 @@ const BrokerSignup = () => {
               <p className="text-muted-foreground font-serif">Calculate your potential monthly return on investment</p>
             </CardHeader>
             <CardContent className="space-y-8">
-              {/* Step 1: Package Selection */}
-              <div>
-                <h4 className="text-lg font-semibold mb-4 text-primary text-center">Step 1: Choose Your Lead Package</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {packages.map((pkg) => (
-                    <Card 
-                      key={pkg.leads}
-                      className={`cursor-pointer border-2 transition-all duration-300 hover:shadow-lg ${
-                        selectedPackage === pkg.leads 
-                          ? 'border-secondary bg-secondary/10' 
-                          : 'border-border hover:border-secondary/50'
-                      }`}
-                      onClick={() => setSelectedPackage(pkg.leads)}
-                    >
-                      <CardContent className="p-4 text-center">
-                        <div className="text-2xl font-bold text-secondary mb-1">{pkg.leads} leads</div>
-                        <div className="text-sm font-medium text-primary mb-1">{pkg.name}</div>
-                        <div className="text-lg font-bold text-green-600 mb-1">${pkg.costPerLead}/lead</div>
-                        <div className="text-xs text-muted-foreground mb-2">{pkg.description}</div>
-                        {pkg.leads === 100 && (
-                          <Badge variant="secondary" className="mt-1 text-xs">Most Popular</Badge>
-                        )}
-                        {pkg.leads === 200 && (
-                          <Badge variant="outline" className="mt-1 text-xs text-green-600 border-green-600">Best Value</Badge>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
 
               {/* Step 2: Financial Inputs */}
               <TooltipProvider>
                 <div>
-                  <h4 className="text-lg font-semibold mb-4 text-primary text-center">Step 2: Enter Your Financial Details</h4>
+                  <h4 className="text-lg font-semibold mb-4 text-primary text-center">Enter Your Numbers</h4>
                   <div className="grid grid-cols-1 gap-4 sm:gap-6">
+                    <div>
+                      <label className="flex items-center gap-2 text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">
+                        Leads per Month
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">How many qualified leads you expect to handle monthly</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </label>
+                      <input 
+                        type="text" 
+                        className="w-full px-4 py-4 text-xl border border-border rounded-none bg-background"
+                        placeholder="e.g. 100"
+                        value={leadsPerMonth === '' ? '' : leadsPerMonth.toString()}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/,/g, '');
+                          setLeadsPerMonth(value === '' ? '' : Number(value) || 0);
+                        }}
+                      />
+                    </div>
                     <div>
                       <label className="flex items-center gap-2 text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">
                         Average Commission Per Deal ($)
@@ -585,14 +566,14 @@ const BrokerSignup = () => {
                             <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p className="max-w-xs">The average amount you earn in commission when you successfully close a business loan deal</p>
+                            <p className="max-w-xs">The average amount you earn when you successfully fund a deal</p>
                           </TooltipContent>
                         </Tooltip>
                       </label>
                       <input 
                         type="text" 
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg border border-border rounded-md bg-background"
-                        placeholder="5,000"
+                        className="w-full px-4 py-4 text-xl border border-border rounded-none bg-background"
+                        placeholder="e.g. 5,000"
                         value={formatCurrency(avgCommission)}
                         onChange={(e) => {
                           const value = e.target.value.replace(/,/g, '');
@@ -602,20 +583,20 @@ const BrokerSignup = () => {
                     </div>
                     <div>
                       <label className="flex items-center gap-2 text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">
-                        Cost Per Lead ($)
+                        Estimated Cost Per Lead ($)
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p className="max-w-xs">How much you pay for each qualified lead. This is automatically filled based on your selected package</p>
+                            <p className="max-w-xs">Your internal estimate of cost per qualified lead</p>
                           </TooltipContent>
                         </Tooltip>
                       </label>
                       <input 
                         type="text" 
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg border border-border rounded-md bg-background"
-                        placeholder="70"
+                        className="w-full px-4 py-4 text-xl border border-border rounded-none bg-background"
+                        placeholder="Enter your estimate"
                         value={formatCurrency(costPerLead)}
                         onChange={(e) => {
                           const value = e.target.value.replace(/,/g, '');
@@ -631,14 +612,14 @@ const BrokerSignup = () => {
                             <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p className="max-w-xs">What percentage of leads you typically convert into funded deals. Industry average is 10-20%</p>
+                            <p className="max-w-xs">Percent of leads you typically convert to funded deals</p>
                           </TooltipContent>
                         </Tooltip>
                       </label>
                       <input 
                         type="text" 
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-base sm:text-lg border border-border rounded-md bg-background"
-                        placeholder="15"
+                        className="w-full px-4 py-4 text-xl border border-border rounded-none bg-background"
+                        placeholder="e.g. 15"
                         value={conversionRate === '' ? '' : conversionRate.toString()}
                         onChange={(e) => {
                           const value = e.target.value;
@@ -650,37 +631,42 @@ const BrokerSignup = () => {
                 </div>
               </TooltipProvider>
               
-              {/* Step 3: Results */}
-              {(avgCommNum > 0 && costPerLeadNum > 0 && conversionRateNum > 0) && (
+              {/* Results */}
+              {(avgCommNum > 0 && costPerLeadNum > 0 && conversionRateNum > 0 && leadsPerMonthNum > 0) && (
                 <div>
-                  <h4 className="text-lg font-semibold mb-4 text-primary text-center">Step 3: Your Monthly Profit Projection</h4>
-                  <div className="mt-8 p-4 sm:p-6 bg-gradient-to-br from-secondary/10 via-background to-secondary/20 rounded-xl border-2 border-secondary/30">
+                  <h4 className="text-lg font-semibold mb-4 text-primary text-center">Your Monthly Profit Projection</h4>
+                  <div className="mt-8 p-6 sm:p-8 bg-gradient-to-br from-secondary/10 via-background to-secondary/20 rounded-xl border-2 border-secondary/30">
                     <div className="text-center space-y-4">
-                      <div className="text-xs sm:text-sm text-muted-foreground uppercase tracking-wide">Monthly Profit Calculation</div>
+                      <div className="text-sm text-muted-foreground uppercase tracking-wide">Monthly Profit Calculation</div>
                       
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 mb-8">
                         <div className="text-center">
-                          <div className="text-xs sm:text-sm text-muted-foreground mb-1">Monthly Lead Cost</div>
-                          <div className="text-xl sm:text-2xl font-bold text-red-600">-${totalMonthlySpend.toLocaleString()}</div>
-                          <div className="text-xs text-muted-foreground">{selectedPackage} leads × ${costPerLeadNum}</div>
+                          <div className="text-sm text-muted-foreground mb-1">Monthly Lead Cost</div>
+                          <div className="text-3xl sm:text-4xl font-bold text-red-600">-${totalMonthlySpend.toLocaleString()}</div>
+                          <div className="text-sm text-muted-foreground">{leadsPerMonthNum} leads × ${costPerLeadNum}</div>
                         </div>
                         <div className="text-center">
-                          <div className="text-xs sm:text-sm text-muted-foreground mb-1">Monthly Commission</div>
-                          <div className="text-xl sm:text-2xl font-bold text-green-600">+${totalMonthlyCommission.toLocaleString()}</div>
-                          <div className="text-xs text-muted-foreground">{totalMonthlyDeals.toFixed(1)} deals × ${avgCommNum.toLocaleString()}</div>
+                          <div className="text-sm text-muted-foreground mb-1">Monthly Commission</div>
+                          <div className="text-3xl sm:text-4xl font-bold text-green-600">+${totalMonthlyCommission.toLocaleString()}</div>
+                          <div className="text-sm text-muted-foreground">{totalMonthlyDeals.toFixed(1)} deals × ${avgCommNum.toLocaleString()}</div>
                         </div>
                       </div>
                       
-                      <div className="border-t pt-4">
-                        <div className="text-base sm:text-lg text-muted-foreground mb-2">Your Monthly Extra Income</div>
-                        <div className="text-4xl sm:text-5xl lg:text-7xl font-black text-secondary mb-2">
+                      <div className="border-t pt-6">
+                        <div className="text-lg text-muted-foreground mb-2">Your Monthly Extra Income</div>
+                        <div className="text-6xl sm:text-7xl lg:text-8xl font-black text-secondary mb-2">
                           ${monthlyProfit.toLocaleString()}
                         </div>
-                        <div className="text-base sm:text-lg text-muted-foreground">
+                        <div className="text-lg text-muted-foreground">
                           ROI: <span className="font-bold text-secondary">{calculatedROI}%</span>
                         </div>
-                        <div className="text-xs sm:text-sm text-muted-foreground mt-2">
-                          Based on {selectedPackage} leads per month with {conversionRateNum}% conversion rate
+                        <div className="text-sm text-muted-foreground mt-2">
+                          Based on {leadsPerMonthNum} leads per month with {conversionRateNum}% conversion rate
+                        </div>
+                        <div className="mt-6">
+                          <Button size="lg" className="w-full sm:w-auto" asChild>
+                            <a href="/#book-call">Book a call to get started</a>
+                          </Button>
                         </div>
                       </div>
                     </div>
