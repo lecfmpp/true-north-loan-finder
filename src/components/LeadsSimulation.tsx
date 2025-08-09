@@ -381,7 +381,7 @@ export const LeadsSimulation = () => {
 
       <section ref={calendlyRef} id="schedule-demo" aria-label="Schedule your 10 Leads Trial" className="max-w-3xl mx-auto mt-8">
         <div className="text-center mb-4">
-          <h2 className="text-2xl font-bold text-primary">Book your ‘10 Leads’ trial call and find out if we can start filling your pipeline this week.</h2>
+          <h2 className="font-bold text-primary text-4xl">Book your ‘10 Leads’ trial call and find out if we can start filling your pipeline this week.</h2>
           <p className="text-sm text-muted-foreground">Pick a time to chat and activate your trial.</p>
         </div>
         <div className="rounded-md border border-border p-2">
