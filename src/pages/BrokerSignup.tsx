@@ -681,8 +681,11 @@ const BrokerSignup = () => {
                           Based on {leadsPerMonthNum} leads per month with {conversionRateNum}% conversion rate
                         </div>
                         <div className="mt-6">
-                          <Button size="lg" className="w-full sm:w-auto" asChild>
-                            <a href="/#book-call">Book a call to get started</a>
+                          <Button size="lg" className="w-full sm:w-auto" onClick={() => {
+                            const el = document.getElementById('schedule-demo');
+                            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }}>
+                            Book a call to get started
                           </Button>
                         </div>
                       </div>
