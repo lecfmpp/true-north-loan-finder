@@ -283,9 +283,9 @@ export const LeadsSimulation = () => {
     };
   }, [selectedCountry]); // Re-fetch when country changes
 
+  const CALENDLY_URL = 'https://calendly.com/leandro-truenorth-businessloan/30min';
   const handleUnlockClick = (lead: Lead) => {
-    setSelectedLead(lead);
-    setShowModal(true);
+    window.open(CALENDLY_URL, '_blank');
   };
 
   // Phone formatting for US/Canada
@@ -323,108 +323,8 @@ export const LeadsSimulation = () => {
   };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      // Validation
-      if (!isValidEmail(formData.email)) {
-        toast({
-          title: "Invalid Email",
-          description: "Please enter a valid email address.",
-          variant: "destructive"
-        });
-        return;
-      }
-      if (!isValidPhone(formData.phone)) {
-        toast({
-          title: "Invalid Phone Number",
-          description: "Please enter a valid 10-digit US/Canada phone number.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // Create client record in database
-      const { data, error } = await supabase
-        .from('clients')
-        .insert({
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          company_name: `${formData.name}'s Business`,
-          lead_source: 'lead_simulation',
-          status: 'new',
-          payment_status: 'waiting_payment'
-        })
-        .select();
-
-      if (error) {
-        console.error('Error creating client record:', error);
-        toast({
-          title: "Error",
-          description: "Failed to save your information. Please try again.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      if (data && data[0]) {
-        // Create payment link for the new client
-        try {
-          const { data: paymentData, error: paymentError } = await supabase.functions.invoke('create-client-payment', {
-            body: {
-              clientId: data[0].id,
-              amount: 5000, // $50.00 in cents
-              description: 'Lead Simulation Access'
-            }
-          });
-
-          if (paymentError) {
-            console.error('Error creating payment:', paymentError);
-            toast({
-              title: "Success",
-              description: "Your information has been saved! Please contact us to complete payment.",
-            });
-          } else {
-            toast({
-              title: "Success",
-              description: "Redirecting to payment...",
-            });
-            // Open payment link in new tab
-            window.open(paymentData.paymentUrl, '_blank');
-          }
-        } catch (paymentError) {
-          console.error('Payment creation failed:', paymentError);
-          toast({
-            title: "Success",
-            description: "Your information has been saved! Please contact us to complete payment.",
-          });
-        }
-      } else {
-        toast({
-          title: "Success",
-          description: "Your information has been saved successfully!",
-        });
-      }
-
-      // Close modal and reset form
-      setShowModal(false);
-      setFormData({
-        name: "",
-        email: "",
-        phone: ""
-      });
-
-    } catch (error) {
-      console.error('Error in form submission:', error);
-      toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    window.open(CALENDLY_URL, '_blank');
+    setShowModal(false);
   };
   return <>
       <div className="space-y-6">
