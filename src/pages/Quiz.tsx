@@ -743,6 +743,21 @@ const Quiz = () => {
 
       // Get the most recent attribution source (could have changed during session)
       const finalAttribution = localStorage.getItem('lead_attribution') || data.leadSource || 'direct';
+
+      // Compute a full source URL for auditing
+      const urlParams = new URLSearchParams(window.location.search);
+      const referrerFull = document.referrer || '';
+      let sourceUrl: string | null = null;
+      try {
+        sourceUrl = referrerFull ? new URL(referrerFull).toString() : null;
+      } catch (e) {
+        sourceUrl = referrerFull || null;
+      }
+      if (!sourceUrl) {
+        const hasSourceParams = ['utm_source','gclid','gbraid','wbraid','fbclid','msclkid','li_fat_id','twclid','ref','referrer','source']
+          .some((p) => urlParams.get(p));
+        if (hasSourceParams) sourceUrl = window.location.href;
+      }
       
       // Save to local Supabase database
       const { data: savedResponse, error } = await supabase.from('quiz_responses').insert({
@@ -760,7 +775,8 @@ const Quiz = () => {
         city_province: data.stateProvince,
         score: score,
         status: 'New',
-        attribution_channel: finalAttribution
+        attribution_channel: finalAttribution,
+        attribution_url: sourceUrl
       }).select().single();
 
       if (error) throw error;
