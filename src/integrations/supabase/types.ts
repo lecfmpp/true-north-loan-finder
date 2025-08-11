@@ -1668,9 +1668,6 @@ export type Database = {
           created_at: string
           credit_score: string
           email: string
-          founding_day: number | null
-          founding_month: number | null
-          founding_year: number | null
           id: string
           lead_value: number | null
           loan_amount: number
@@ -1699,9 +1696,6 @@ export type Database = {
           created_at?: string
           credit_score: string
           email: string
-          founding_day?: number | null
-          founding_month?: number | null
-          founding_year?: number | null
           id?: string
           lead_value?: number | null
           loan_amount: number
@@ -1730,9 +1724,6 @@ export type Database = {
           created_at?: string
           credit_score?: string
           email?: string
-          founding_day?: number | null
-          founding_month?: number | null
-          founding_year?: number | null
           id?: string
           lead_value?: number | null
           loan_amount?: number

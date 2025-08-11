@@ -13,7 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { format, addYears, addMonths, differenceInYears, differenceInMonths, differenceInDays } from 'date-fns';
+import { format } from 'date-fns';
 
 // Helper function to get credit score number from classification
 const getCreditScoreNumber = (creditScore: string) => {
@@ -93,12 +93,6 @@ interface QuizResponse {
   city_province: string;
   attribution_channel?: string;
   attribution_url?: string | null;
-  // Exact founding date parts captured at quiz time
-  founding_month?: number | null;
-  founding_year?: number | null;
-  founding_day?: number | null;
-  // Derived from linked application dates when available
-  application_start_date?: string | null;
   // Add application tracking
   has_usa_application?: boolean;
   has_canadian_application?: boolean;
@@ -211,48 +205,13 @@ const Admin = () => {
     PRE_CALL: 'a4eb9d81-6602-4e99-959d-1a1b8e5592a5'
   };
 
-  // Helpers to format exact business age
-  const computeExactAge = (startDate: Date) => {
-    const now = new Date();
-    const years = differenceInYears(now, startDate);
-    const afterYears = addYears(startDate, years);
-    const months = differenceInMonths(now, afterYears);
-    const afterMonths = addMonths(afterYears, months);
-    const days = differenceInDays(now, afterMonths);
-    return { years, months, days };
-  };
-
-  const getBusinessAgeInfo = (lead: QuizResponse) => {
-    // Prefer explicit founding date from quiz
-    if (lead.founding_year && lead.founding_month) {
-      const day = lead.founding_day || 1;
-      const start = new Date(Number(lead.founding_year), Number(lead.founding_month) - 1, Number(day));
-      const { years, months, days } = computeExactAge(start);
-      return {
-        dateText: format(start, lead.founding_day ? 'MMM d, yyyy' : 'MMM yyyy'),
-        ageText: `${years}y ${months}m ${days}d`,
-      };
-    }
-    // Fallback to application-provided start date
-    if (lead.application_start_date) {
-      const start = new Date(lead.application_start_date);
-      if (!isNaN(start.getTime())) {
-        const { years, months, days } = computeExactAge(start);
-        return {
-          dateText: format(start, 'MMM d, yyyy'),
-          ageText: `${years}y ${months}m ${days}d`,
-        };
-      }
-    }
-    return null;
-  };
-
   const toggleExpandedLead = (leadId: string) => {
     setExpandedLeads(prev => ({
       ...prev,
       [leadId]: !prev[leadId]
     }));
   };
+
   const handleCallNow = (phone: string) => {
     window.open(`tel:${phone}`, '_self');
   };
@@ -597,20 +556,19 @@ const Admin = () => {
       // Fetch application status for each lead
       const enrichedLeads = await Promise.all((data || []).map(async (lead) => {
         try {
+          // Check for USA applications
           const { data: usaApps } = await supabase
             .from('usa_applications')
-            .select('application_reference_number, date_incorporated')
+            .select('application_reference_number')
             .eq('quiz_response_id', lead.id)
             .limit(1);
 
           // Check for Canadian applications  
           const { data: canadianApps } = await supabase
             .from('canadian_applications')
-            .select('application_reference_number, business_start_date')
+            .select('application_reference_number')
             .eq('quiz_response_id', lead.id)
             .limit(1);
-
-          const application_start_date = (usaApps?.[0]?.date_incorporated as string) || (canadianApps?.[0]?.business_start_date as string) || null;
 
           return {
             ...lead,
@@ -619,7 +577,6 @@ const Admin = () => {
             usa_application_reference: usaApps?.[0]?.application_reference_number || null,
             canadian_application_reference: canadianApps?.[0]?.application_reference_number || null,
             partner_name: (lead as any).partners?.name || null,
-            application_start_date,
           };
         } catch (err) {
           console.error('Error enriching lead:', err);
@@ -684,17 +641,15 @@ const Admin = () => {
         try {
           const { data: usaApps } = await supabase
             .from('usa_applications')
-            .select('application_reference_number, date_incorporated')
+            .select('application_reference_number')
             .eq('quiz_response_id', lead.id)
             .limit(1);
 
           const { data: canadianApps } = await supabase
             .from('canadian_applications')
-            .select('application_reference_number, business_start_date')
+            .select('application_reference_number')
             .eq('quiz_response_id', lead.id)
             .limit(1);
-
-          const application_start_date = (usaApps?.[0]?.date_incorporated as string) || (canadianApps?.[0]?.business_start_date as string) || null;
 
           return {
             ...lead,
@@ -702,7 +657,6 @@ const Admin = () => {
             has_canadian_application: (canadianApps && canadianApps.length > 0),
             usa_application_reference: usaApps?.[0]?.application_reference_number || null,
             canadian_application_reference: canadianApps?.[0]?.application_reference_number || null,
-            application_start_date,
           };
         } catch (err) {
           console.error('Error enriching assigned lead:', err);
@@ -2361,27 +2315,14 @@ const Admin = () => {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            {(() => {
-                              const info = getBusinessAgeInfo(lead);
-                              if (info) {
-                                return (
-                                  <div>
-                                    <div className="text-sm font-medium">{info.dateText}</div>
-                                    <div className="text-xs text-muted-foreground">{info.ageText}</div>
-                                  </div>
-                                );
-                              }
-                              return (
-                                <div className="text-sm text-muted-foreground">
-                                  {lead.time_in_business === 'startup' ? 'Startup' : 
-                                   lead.time_in_business === '6-12' ? '6-12 months' :
-                                   lead.time_in_business === '1-2' ? '1-2 years' :
-                                   lead.time_in_business === '2-5' ? '2-5 years' :
-                                   lead.time_in_business === '+5' ? '5+ years' :
-                                   lead.time_in_business || 'N/A'}
-                                </div>
-                              );
-                            })()}
+                            <div className="text-sm text-muted-foreground">
+                              {lead.time_in_business === 'startup' ? 'Startup' : 
+                               lead.time_in_business === '6-12' ? '6-12 months' :
+                               lead.time_in_business === '1-2' ? '1-2 years' :
+                               lead.time_in_business === '2-5' ? '2-5 years' :
+                               lead.time_in_business === '+5' ? '5+ years' :
+                               lead.time_in_business || 'N/A'}
+                            </div>
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
