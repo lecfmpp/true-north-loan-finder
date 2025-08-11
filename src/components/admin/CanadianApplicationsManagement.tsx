@@ -394,19 +394,47 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
   };
 
   // Lead/Application status sync helpers
-  const LEAD_STATUSES = ['new','assigned','contacted','spoken','loan_approved','closed'] as const;
-  type LeadStatus = typeof LEAD_STATUSES[number];
+  const LEAD_STATUS_OPTIONS = ['New','No Answer','Wrong Number','Contacted','Application Sent','Disqualified','Loan Approved'] as const;
+  type LeadStatus = typeof LEAD_STATUS_OPTIONS[number];
 
-  const leadStatusToAppStatus = (s: string): 'applicant' | 'in_review' | 'approved' | 'rejected' => {
-    switch (s) {
-      case 'loan_approved':
-      case 'closed':
-        return 'approved';
-      case 'contacted':
-      case 'spoken':
-      case 'assigned':
-        return 'in_review';
+  const normalizeLeadStatus = (s?: string | null): LeadStatus => {
+    switch ((s || '').toLowerCase()) {
       case 'new':
+        return 'New';
+      case 'no answer':
+        return 'No Answer';
+      case 'wrong number':
+        return 'Wrong Number';
+      case 'contacted':
+      case 'assigned':
+      case 'spoken':
+        return 'Contacted';
+      case 'application sent':
+      case 'application_sent':
+        return 'Application Sent';
+      case 'disqualified':
+      case 'closed':
+        return 'Disqualified';
+      case 'loan approved':
+      case 'loan_approved':
+        return 'Loan Approved';
+      default:
+        return 'New';
+    }
+  };
+
+  const leadStatusToAppStatus = (s: LeadStatus): 'applicant' | 'in_review' | 'approved' | 'rejected' => {
+    switch (s) {
+      case 'Loan Approved':
+        return 'approved';
+      case 'Disqualified':
+        return 'rejected';
+      case 'Application Sent':
+      case 'Contacted':
+      case 'No Answer':
+      case 'Wrong Number':
+        return 'in_review';
+      case 'New':
       default:
         return 'applicant';
     }
@@ -415,14 +443,14 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
   const appStatusToLeadStatus = (s: string): LeadStatus => {
     switch (s) {
       case 'approved':
-        return 'loan_approved';
+        return 'Loan Approved';
       case 'rejected':
-        return 'closed';
+        return 'Disqualified';
       case 'in_review':
-        return 'contacted';
+        return 'Application Sent';
       case 'applicant':
       default:
-        return 'new';
+        return 'New';
     }
   };
 
@@ -850,20 +878,21 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium">Lead Status:</span>
                           <Select
-                            value={quizResponses[application.quiz_response_id!]?.status || 'new'}
+                            value={normalizeLeadStatus(quizResponses[application.quiz_response_id!]?.status)}
                             onValueChange={(val) => updateLeadStatusAndSync(application, val as any)}
                           >
                             <SelectTrigger className="h-8 w-[160px]">
                               <SelectValue placeholder="Set status" />
                             </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="new">New</SelectItem>
-                              <SelectItem value="assigned">Assigned</SelectItem>
-                              <SelectItem value="contacted">Contacted</SelectItem>
-                              <SelectItem value="spoken">Spoken</SelectItem>
-                              <SelectItem value="loan_approved">Loan Approved</SelectItem>
-                              <SelectItem value="closed">Closed</SelectItem>
-                            </SelectContent>
+                             <SelectContent>
+                               <SelectItem value="New">New</SelectItem>
+                               <SelectItem value="No Answer">No Answer</SelectItem>
+                               <SelectItem value="Wrong Number">Wrong Number</SelectItem>
+                               <SelectItem value="Contacted">Contacted</SelectItem>
+                               <SelectItem value="Application Sent">Application Sent</SelectItem>
+                               <SelectItem value="Disqualified">Disqualified</SelectItem>
+                               <SelectItem value="Loan Approved">Loan Approved</SelectItem>
+                             </SelectContent>
                           </Select>
                         </div>
                       )}
@@ -1236,19 +1265,20 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
                     <span className="text-sm font-medium">Lead Status:</span>
                     <div className="mt-1">
                       <Select
-                        value={quizResponses[selectedApplication.quiz_response_id!]?.status || 'new'}
+                        value={normalizeLeadStatus(quizResponses[selectedApplication.quiz_response_id!]?.status)}
                         onValueChange={(val) => updateLeadStatusAndSync(selectedApplication, val as any)}
                       >
                         <SelectTrigger className="w-[200px]">
                           <SelectValue placeholder="Set status" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="new">New</SelectItem>
-                          <SelectItem value="assigned">Assigned</SelectItem>
-                          <SelectItem value="contacted">Contacted</SelectItem>
-                          <SelectItem value="spoken">Spoken</SelectItem>
-                          <SelectItem value="loan_approved">Loan Approved</SelectItem>
-                          <SelectItem value="closed">Closed</SelectItem>
+                           <SelectItem value="New">New</SelectItem>
+                           <SelectItem value="No Answer">No Answer</SelectItem>
+                           <SelectItem value="Wrong Number">Wrong Number</SelectItem>
+                           <SelectItem value="Contacted">Contacted</SelectItem>
+                           <SelectItem value="Application Sent">Application Sent</SelectItem>
+                           <SelectItem value="Disqualified">Disqualified</SelectItem>
+                           <SelectItem value="Loan Approved">Loan Approved</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
