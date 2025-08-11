@@ -173,8 +173,9 @@ Provide actionable insights for campaign optimization.`);
       const { data: spendsData, error: spendsError } = await supabase
         .from('ad_spend_records')
         .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
+        .gte('date', startDate)
+        .lte('date', endDate)
+        .order('date', { ascending: false });
 
       if (spendsError) throw spendsError;
 

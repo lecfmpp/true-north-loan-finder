@@ -78,7 +78,7 @@ serve(async (req) => {
        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
        const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
        const supabase = createClient(supabaseUrl, supabaseKey);
-       return await processLargeFileDirectly(lines, supabase);
+       return await processLargeFileDirectly(lines, supabase, defaultChannel);
      }
  
      // Initialize Supabase client for smaller files too
@@ -157,7 +157,7 @@ Return column indices (0-based) for mapping:
     }
 
     // Process with AI-detected mapping
-    return await processWithMapping(lines, analysisResult.mapping, supabase);
+    return await processWithMapping(lines, analysisResult.mapping, supabase, defaultChannel);
 
   } catch (error) {
     console.error('Error in ai-parse-csv function:', error);
@@ -177,7 +177,7 @@ Return column indices (0-based) for mapping:
 });
 
 // Function to handle large files without AI analysis
-async function processLargeFileDirectly(lines: string[], supabase: any) {
+async function processLargeFileDirectly(lines: string[], supabase: any, defaultChannel?: string) {
   try {
     const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
     const dataRows = lines.slice(1);
@@ -186,14 +186,14 @@ async function processLargeFileDirectly(lines: string[], supabase: any) {
     const mapping = detectColumnsPattern(headers);
     console.log('Pattern-detected mapping:', mapping);
     
-    return await processWithMapping(lines, mapping, supabase);
+    return await processWithMapping(lines, mapping, supabase, defaultChannel);
   } catch (error) {
     throw new Error(`Large file processing failed: ${error.message}`);
   }
 }
 
 // Function to process data with given mapping
-async function processWithMapping(lines: string[], mapping: any, supabase: any) {
+async function processWithMapping(lines: string[], mapping: any, supabase: any, defaultChannel?: string) {
   try {
     const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
     const allDataRows = lines.slice(1);
@@ -212,7 +212,7 @@ async function processWithMapping(lines: string[], mapping: any, supabase: any) 
       const batchData = batch.map((line, index) => {
         try {
           const row = line.split(',').map(cell => cell.trim().replace(/"/g, ''));
-          return processRow(row, mapping, i + index + 1);
+          return processRow(row, mapping, i + index + 1, defaultChannel);
         } catch (error) {
           console.warn(`Error processing row ${i + index + 1}:`, error);
           return null;
@@ -326,7 +326,7 @@ function detectColumnsPattern(headers: string[]) {
 }
 
 // Process a single row with mapping
-function processRow(row: string[], mapping: any, rowIndex: number) {
+function processRow(row: string[], mapping: any, rowIndex: number, defaultChannel?: string) {
   const getColumnValue = (field: string) => {
     const index = mapping[field];
     return index !== null && index !== undefined ? (row[index] || '') : '';
