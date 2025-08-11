@@ -92,6 +92,7 @@ interface QuizResponse {
   country: string;
   city_province: string;
   attribution_channel?: string;
+  attribution_url?: string | null;
   // Add application tracking
   has_usa_application?: boolean;
   has_canadian_application?: boolean;

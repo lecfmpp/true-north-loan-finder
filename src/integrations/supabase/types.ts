@@ -282,6 +282,84 @@ export type Database = {
           },
         ]
       }
+      broker_signups: {
+        Row: {
+          additional_requirements: string | null
+          applicant_email: string
+          applicant_name: string
+          applicant_phone: string | null
+          business_description: string | null
+          company_name: string
+          company_website: string | null
+          created_at: string
+          geographic_areas: string[] | null
+          id: string
+          license_number: string | null
+          max_loan_amount: string | null
+          max_monthly_revenue: string | null
+          min_credit_score: string | null
+          min_loan_amount: string | null
+          min_monthly_revenue: string | null
+          min_time_in_business: string | null
+          preferred_industries: string[] | null
+          status: string
+          tracking_id: string | null
+          updated_at: string
+          utm_params: Json
+          years_of_experience: number | null
+        }
+        Insert: {
+          additional_requirements?: string | null
+          applicant_email: string
+          applicant_name: string
+          applicant_phone?: string | null
+          business_description?: string | null
+          company_name: string
+          company_website?: string | null
+          created_at?: string
+          geographic_areas?: string[] | null
+          id?: string
+          license_number?: string | null
+          max_loan_amount?: string | null
+          max_monthly_revenue?: string | null
+          min_credit_score?: string | null
+          min_loan_amount?: string | null
+          min_monthly_revenue?: string | null
+          min_time_in_business?: string | null
+          preferred_industries?: string[] | null
+          status?: string
+          tracking_id?: string | null
+          updated_at?: string
+          utm_params?: Json
+          years_of_experience?: number | null
+        }
+        Update: {
+          additional_requirements?: string | null
+          applicant_email?: string
+          applicant_name?: string
+          applicant_phone?: string | null
+          business_description?: string | null
+          company_name?: string
+          company_website?: string | null
+          created_at?: string
+          geographic_areas?: string[] | null
+          id?: string
+          license_number?: string | null
+          max_loan_amount?: string | null
+          max_monthly_revenue?: string | null
+          min_credit_score?: string | null
+          min_loan_amount?: string | null
+          min_monthly_revenue?: string | null
+          min_time_in_business?: string | null
+          preferred_industries?: string[] | null
+          status?: string
+          tracking_id?: string | null
+          updated_at?: string
+          utm_params?: Json
+          years_of_experience?: number | null
+        }
+        Relationships: []
+      }
       call_bookings: {
         Row: {
           booking_status: string
@@ -1582,6 +1660,7 @@ export type Database = {
           assigned_to: string | null
           assignment_date: string | null
           attribution_channel: string | null
+          attribution_url: string | null
           city_province: string | null
           company_name: string | null
           conversion_status: string | null
@@ -1609,6 +1688,7 @@ export type Database = {
           assigned_to?: string | null
           assignment_date?: string | null
           attribution_channel?: string | null
+          attribution_url?: string | null
           city_province?: string | null
           company_name?: string | null
           conversion_status?: string | null
@@ -1636,6 +1716,7 @@ export type Database = {
           assigned_to?: string | null
           assignment_date?: string | null
           attribution_channel?: string | null
+          attribution_url?: string | null
           city_province?: string | null
           company_name?: string | null
           conversion_status?: string | null
