@@ -286,6 +286,16 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
 
       if (error) throw error;
 
+      // Sync lead status from application status when possible
+      const app = applications.find(a => a.id === id);
+      if (app?.quiz_response_id) {
+        const newLeadStatus = appStatusToLeadStatus(status);
+        await supabase
+          .from('quiz_responses')
+          .update({ status: newLeadStatus })
+          .eq('id', app.quiz_response_id);
+      }
+
       toast.success("Application status updated successfully");
       fetchApplications();
       setSelectedApplication(null);
@@ -381,6 +391,68 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
     ) : (
       <Badge variant="outline">Direct</Badge>
     );
+  };
+
+  // Lead/Application status sync helpers
+  const LEAD_STATUSES = ['new','assigned','contacted','spoken','loan_approved','closed'] as const;
+  type LeadStatus = typeof LEAD_STATUSES[number];
+
+  const leadStatusToAppStatus = (s: string): 'applicant' | 'in_review' | 'approved' | 'rejected' => {
+    switch (s) {
+      case 'loan_approved':
+      case 'closed':
+        return 'approved';
+      case 'contacted':
+      case 'spoken':
+      case 'assigned':
+        return 'in_review';
+      case 'new':
+      default:
+        return 'applicant';
+    }
+  };
+
+  const appStatusToLeadStatus = (s: string): LeadStatus => {
+    switch (s) {
+      case 'approved':
+        return 'loan_approved';
+      case 'rejected':
+        return 'closed';
+      case 'in_review':
+        return 'contacted';
+      case 'applicant':
+      default:
+        return 'new';
+    }
+  };
+
+  const updateLeadStatusAndSync = async (application: CanadianApplication, newStatus: LeadStatus) => {
+    if (!application.quiz_response_id) {
+      toast.error('No linked lead to update');
+      return;
+    }
+    try {
+      const { error: qErr } = await supabase
+        .from('quiz_responses')
+        .update({ status: newStatus })
+        .eq('id', application.quiz_response_id);
+      if (qErr) throw qErr;
+
+      const newAppStatus = leadStatusToAppStatus(newStatus);
+      await supabase
+        .from('canadian_applications')
+        .update({
+          status: newAppStatus,
+          conversion_stage: newAppStatus === 'approved' ? 'approved' : newAppStatus === 'rejected' ? 'rejected' : 'in_review'
+        })
+        .eq('id', application.id);
+
+      toast.success('Lead status updated');
+      fetchApplications();
+    } catch (e) {
+      console.error('Error updating lead status:', e);
+      toast.error('Failed to update lead status');
+    }
   };
 
   const downloadApplicationPDF = (application: any) => {
@@ -773,12 +845,33 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
                         <span className="text-sm font-medium">Source:</span>
                         {getSourceBadge(application.lead_source)}
                       </div>
-                    </div>
 
-                    <div className="text-xs text-muted-foreground">
-                      <div>Applied: {new Date(application.created_at).toLocaleDateString()}</div>
-                      <div>Updated: {new Date(application.updated_at).toLocaleDateString()}</div>
-                    </div>
+                      {linkedQuiz && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">Lead Status:</span>
+                          <Select
+                            value={quizResponses[application.quiz_response_id!]?.status || 'new'}
+                            onValueChange={(val) => updateLeadStatusAndSync(application, val as any)}
+                          >
+                            <SelectTrigger className="h-8 w-[160px]">
+                              <SelectValue placeholder="Set status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="new">New</SelectItem>
+                              <SelectItem value="assigned">Assigned</SelectItem>
+                              <SelectItem value="contacted">Contacted</SelectItem>
+                              <SelectItem value="spoken">Spoken</SelectItem>
+                              <SelectItem value="loan_approved">Loan Approved</SelectItem>
+                              <SelectItem value="closed">Closed</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+
+                      <div className="text-xs text-muted-foreground">
+                        <div>Applied: {new Date(application.created_at).toLocaleDateString()}</div>
+                        <div>Updated: {new Date(application.updated_at).toLocaleDateString()}</div>
+                      </div>
                   </div>
 
                    <div className="flex flex-col gap-2">
@@ -803,37 +896,7 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
                        </Button>
                      )}
 
-                     {linkedQuiz && (
-                       <Button
-                         variant="outline"
-                         size="sm"
-                         onClick={() => window.open(`/admin?tab=quiz&id=${linkedQuiz.id}`, '_blank')}
-                       >
-                         <ExternalLink className="h-4 w-4 mr-2" />
-                         View Quiz
-                       </Button>
-                     )}
 
-                    <div className="flex gap-1">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-green-600 border-green-600 hover:bg-green-50"
-                        onClick={() => updateApplicationStatus(application.id, 'approved')}
-                        disabled={application.status === 'approved'}
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-red-600 border-red-600 hover:bg-red-50"
-                        onClick={() => updateApplicationStatus(application.id, 'rejected')}
-                        disabled={application.status === 'rejected'}
-                      >
-                        Reject
-                      </Button>
-                    </div>
 
                     {isSuperAdmin && (
                       <Button
@@ -1167,6 +1230,30 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
               <div className="border-t pt-4">
                 <h3 className="text-lg font-semibold mb-4">Admin Section</h3>
                 
+                {selectedApplication?.quiz_response_id && (
+                  <div className="mb-4">
+                    <span className="text-sm font-medium">Lead Status:</span>
+                    <div className="mt-1">
+                      <Select
+                        value={quizResponses[selectedApplication.quiz_response_id!]?.status || 'new'}
+                        onValueChange={(val) => updateLeadStatusAndSync(selectedApplication, val as any)}
+                      >
+                        <SelectTrigger className="w-[200px]">
+                          <SelectValue placeholder="Set status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="new">New</SelectItem>
+                          <SelectItem value="assigned">Assigned</SelectItem>
+                          <SelectItem value="contacted">Contacted</SelectItem>
+                          <SelectItem value="spoken">Spoken</SelectItem>
+                          <SelectItem value="loan_approved">Loan Approved</SelectItem>
+                          <SelectItem value="closed">Closed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+
                 {selectedApplication.admin_notes && (
                   <div className="mb-4 p-3 bg-yellow-50 rounded-lg">
                     <span className="text-sm font-medium">Existing Admin Notes:</span>
@@ -1225,18 +1312,6 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
                 </div>
 
                 <div className="flex flex-wrap gap-2 mt-6">
-                  <Button
-                    onClick={() => updateApplicationStatus(selectedApplication.id, 'approved', notes)}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    Approve Application
-                  </Button>
-                  <Button
-                    onClick={() => updateApplicationStatus(selectedApplication.id, 'rejected', notes)}
-                    variant="destructive"
-                  >
-                    Reject Application
-                  </Button>
                   <Button
                     onClick={() => updateApplicationStatus(selectedApplication.id, 'in_review', notes)}
                     variant="outline"
