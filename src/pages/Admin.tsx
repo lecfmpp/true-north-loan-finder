@@ -389,34 +389,51 @@ const Admin = () => {
     }
   };
 
-  // Auto-assign unassigned leads by matching custom email recipients to partner emails
+  // Auto-assign leads by matching the MOST RECENT custom email recipient to partner emails
   const autoAssignLeadsFromEmailHistory = async () => {
     try {
-      let assigned = 0;
-      for (const lead of leads) {
-        if (leadAssignments[lead.id]) continue; // already assigned
-        const emails = leadCustomEmails[lead.id];
-        if (!emails || emails.length === 0) continue;
+      let created = 0;
+      let updated = 0;
 
-        // Emails are ordered by sent_at desc when fetched
+      // Helper to normalize/parse addresses like "Name <email@domain>"
+      const extractEmail = (addr: string) => {
+        const match = addr.match(/<([^>]+)>/);
+        const email = (match ? match[1] : addr).trim().toLowerCase();
+        return email;
+      };
+
+      for (const lead of leads) {
+        const emails = (leadCustomEmails[lead.id] || []).slice().sort((a, b) =>
+          new Date(b.sent_at).getTime() - new Date(a.sent_at).getTime()
+        );
+        if (emails.length === 0) continue;
+
+        // Find the first partner that matches recipients in the latest emails (descending by time)
         let matchedPartnerId: string | undefined;
         for (const email of emails) {
-          for (const recipient of email.recipient_emails || []) {
-            const partner = partners.find(p => p.email?.toLowerCase() === recipient.toLowerCase());
+          for (const recipientRaw of email.recipient_emails || []) {
+            const recipient = extractEmail(recipientRaw);
+            const partner = partners.find(p => p.email && p.email.trim().toLowerCase() === recipient);
             if (partner) { matchedPartnerId = partner.id; break; }
           }
           if (matchedPartnerId) break;
         }
 
-        if (matchedPartnerId) {
+        if (!matchedPartnerId) continue;
+
+        const existing = leadAssignments[lead.id];
+        if (!existing) {
           await assignLeadToPartner(lead.id, matchedPartnerId);
-          assigned += 1;
+          created += 1;
+        } else if (existing.partner_id !== matchedPartnerId) {
+          await changePartnerAssignment(lead.id, matchedPartnerId);
+          updated += 1;
         }
       }
 
       toast({
         title: "Auto-assignment complete",
-        description: `${assigned} lead(s) assigned from email history`,
+        description: `${created} new assignment(s), ${updated} reassignment(s) based on latest emails`,
       });
 
       fetchLeadAssignments();
