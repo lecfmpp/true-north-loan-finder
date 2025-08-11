@@ -39,10 +39,6 @@ import SocialProofManagement from '@/components/admin/SocialProofManagement';
 import SettingsManagement from '@/components/admin/SettingsManagement';
 import SimplifiedPartnersManagement from '@/components/admin/SimplifiedPartnersManagement';
 import LeadSourceAnalytics from '@/components/admin/LeadSourceAnalytics';
-import PartnerLeads from '@/components/admin/PartnerLeads';
-import PartnerApplications from '@/components/admin/PartnerApplications';
-// Removed PartnerApplications component  
-import PartnerPayments from '@/components/admin/PartnerPayments';
 import BillingManagement from '@/components/admin/BillingManagement';
 import ROIManagement from '@/components/admin/ROIManagement';
 import ClientsManagement from '@/components/admin/ClientsManagement';
@@ -381,9 +377,8 @@ const Admin = () => {
       const isPartner = userRoles.includes('lender') || userRoles.includes('broker');
       if (isPartner && !isSuperAdmin) {
         setActiveTab('partner-leads');
-        // Partners don't rely on the global leads loading state; their views load independently
-        setLoading(false);
-      } else {
+        // Load only leads assigned to this partner
+        fetchPartnerAssignedLeads();
         // Superadmins load full data
         fetchLeads();
         fetchPartners();
@@ -495,6 +490,79 @@ const Admin = () => {
     }
   };
 
+  const fetchPartnerAssignedLeads = async () => {
+    try {
+      setLoading(true);
+      // Find partner id for current user
+      const { data: partner, error: pErr } = await supabase
+        .from('partners')
+        .select('id')
+        .eq('user_id', user?.id!)
+        .maybeSingle();
+      if (pErr || !partner) {
+        setLeads([]);
+        setFilteredLeads([]);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch assigned leads with full quiz response
+      const { data: assignments, error: aErr } = await supabase
+        .from('lead_assignments')
+        .select('quiz_responses(*)')
+        .eq('partner_id', partner.id);
+      if (aErr) throw aErr;
+
+      const baseLeads = (assignments || [])
+        .map((row: any) => row.quiz_responses)
+        .filter(Boolean);
+
+      // Enrich with application info (same as fetchLeads)
+      const enrichedLeads = await Promise.all(baseLeads.map(async (lead: any) => {
+        try {
+          const { data: usaApps } = await supabase
+            .from('usa_applications')
+            .select('application_reference_number')
+            .eq('quiz_response_id', lead.id)
+            .limit(1);
+
+          const { data: canadianApps } = await supabase
+            .from('canadian_applications')
+            .select('application_reference_number')
+            .eq('quiz_response_id', lead.id)
+            .limit(1);
+
+          return {
+            ...lead,
+            has_usa_application: (usaApps && usaApps.length > 0),
+            has_canadian_application: (canadianApps && canadianApps.length > 0),
+            usa_application_reference: usaApps?.[0]?.application_reference_number || null,
+            canadian_application_reference: canadianApps?.[0]?.application_reference_number || null,
+          };
+        } catch (err) {
+          console.error('Error enriching assigned lead:', err);
+          return {
+            ...lead,
+            has_usa_application: false,
+            has_canadian_application: false,
+            usa_application_reference: null,
+            canadian_application_reference: null,
+          };
+        }
+      }));
+
+      setLeads(enrichedLeads);
+      // Reuse existing filters pipeline
+      // filterLeads will run via the effect listening to leads + filters
+    } catch (error) {
+      console.error('Error fetching partner assigned leads:', error);
+      toast({ title: 'Error', description: 'Failed to load your leads', variant: 'destructive' });
+      setLeads([]);
+      setFilteredLeads([]);
+    } finally {
+      setLoading(false);
+    }
+  };
   const fetchEmailEnrollments = async (leadsData: QuizResponse[]) => {
     try {
       console.log('Fetching email enrollments for leads:', leadsData.length);
@@ -1709,11 +1777,19 @@ const Admin = () => {
     const item: any = (menuItems as any[]).find((mi: any) => mi.value === value);
     if (item && item.disabled) return;
     setActiveTab(value);
+    // Auto-filter for partner applications to show only leads with applications
+    if (value === 'partner-applications') {
+      setApplicationSentFilter('yes');
+    } else if (value === 'leads' || value === 'partner-leads') {
+      setApplicationSentFilter('all');
+    }
   };
 
   const renderContent = () => {
     switch (activeTab) {
       case 'leads':
+      case 'partner-leads':
+      case 'partner-applications':
         return <div className="space-y-6">
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -2447,10 +2523,6 @@ const Admin = () => {
         return <SocialProofManagement />;
       case 'settings':
         return <SettingsManagement />;
-      case 'partner-leads':
-        return <PartnerLeads />;
-      case 'partner-applications':
-        return <PartnerApplications />;
       case 'partner-payments':
         return <div className="p-6 text-center text-muted-foreground">Payment & Access is temporarily disabled.</div>;
       case 'clients':
