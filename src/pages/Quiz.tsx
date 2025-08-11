@@ -776,7 +776,10 @@ const Quiz = () => {
         score: score,
         status: 'New',
         attribution_channel: finalAttribution,
-        attribution_url: sourceUrl
+        attribution_url: sourceUrl,
+        founding_month: data.foundingMonth ? parseInt(data.foundingMonth) : null,
+        founding_year: data.foundingYear ? parseInt(data.foundingYear) : null,
+        founding_day: null
       }).select().single();
 
       if (error) throw error;
