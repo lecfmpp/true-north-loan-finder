@@ -61,6 +61,8 @@ export default function SimplifiedPartnersManagement() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [pwLoading, setPwLoading] = useState(false);
+  const isStrongPassword = (pwd: string) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/.test(pwd);
+  const passwordRequirements = "Min 8 chars with uppercase, lowercase, number and symbol.";
 
   useEffect(() => {
     fetchPartners();
@@ -220,8 +222,8 @@ export default function SimplifiedPartnersManagement() {
       toast({ title: "Unauthorized", description: "Only superadmins can change passwords", variant: "destructive" });
       return;
     }
-    if (newPassword.length < 6) {
-      toast({ title: "Error", description: "Password must be at least 6 characters", variant: "destructive" });
+    if (!isStrongPassword(newPassword)) {
+      toast({ title: "Error", description: "Password must be at least 8 chars and include uppercase, lowercase, number and symbol", variant: "destructive" });
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -683,8 +685,11 @@ export default function SimplifiedPartnersManagement() {
                         type="password"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
-                        placeholder="Minimum 6 characters"
+                        placeholder="Min 8 chars, include upper, lower, number, symbol"
                       />
+                      <p className={`mt-1 text-xs ${newPassword && !isStrongPassword(newPassword) ? 'text-destructive' : 'text-muted-foreground'}`}>
+                        {passwordRequirements}
+                      </p>
                     </div>
                     <div>
                       <Label htmlFor="confirm-password">Confirm Password</Label>
@@ -695,13 +700,16 @@ export default function SimplifiedPartnersManagement() {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Re-enter new password"
                       />
+                      {confirmPassword && newPassword !== confirmPassword && (
+                        <p className="mt-1 text-xs text-destructive">Passwords do not match.</p>
+                      )}
                     </div>
                   </div>
                   <div className="flex justify-end">
                     <Button
                       size="sm"
                       onClick={changePassword}
-                      disabled={pwLoading || newPassword.length < 6 || newPassword !== confirmPassword}
+                      disabled={pwLoading || !isStrongPassword(newPassword) || newPassword !== confirmPassword}
                     >
                       {pwLoading ? 'Updating…' : 'Update Password'}
                     </Button>
