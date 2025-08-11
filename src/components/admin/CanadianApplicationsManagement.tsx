@@ -859,20 +859,6 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
 
                   <div className="space-y-2">
                     <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">Status:</span>
-                        {getStatusBadge(application.status)}
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">Stage:</span>
-                        {getStageBadge(application.conversion_stage)}
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">Source:</span>
-                        {getSourceBadge(application.lead_source)}
-                      </div>
 
                       {linkedQuiz && (
                         <div className="flex items-center gap-2">
@@ -885,13 +871,13 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
                               <SelectValue placeholder="Set status" />
                             </SelectTrigger>
                              <SelectContent>
-                               <SelectItem value="New">New</SelectItem>
-                               <SelectItem value="No Answer">No Answer</SelectItem>
-                               <SelectItem value="Wrong Number">Wrong Number</SelectItem>
-                               <SelectItem value="Contacted">Contacted</SelectItem>
-                               <SelectItem value="Application Sent">Application Sent</SelectItem>
-                               <SelectItem value="Disqualified">Disqualified</SelectItem>
-                               <SelectItem value="Loan Approved">Loan Approved</SelectItem>
+                               <SelectItem value="New"><Badge className="bg-blue-100 text-blue-800">New</Badge></SelectItem>
+                               <SelectItem value="No Answer"><Badge className="bg-gray-100 text-gray-800">No Answer</Badge></SelectItem>
+                               <SelectItem value="Wrong Number"><Badge className="bg-red-100 text-red-800">Wrong Number</Badge></SelectItem>
+                               <SelectItem value="Contacted"><Badge className="bg-yellow-100 text-yellow-800">Contacted</Badge></SelectItem>
+                               <SelectItem value="Application Sent"><Badge className="bg-purple-100 text-purple-800">Application Sent</Badge></SelectItem>
+                               <SelectItem value="Disqualified"><Badge className="bg-red-100 text-red-800">Disqualified</Badge></SelectItem>
+                               <SelectItem value="Loan Approved"><Badge className="bg-green-100 text-green-800">Loan Approved</Badge></SelectItem>
                              </SelectContent>
                           </Select>
                         </div>
@@ -1272,13 +1258,13 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
                           <SelectValue placeholder="Set status" />
                         </SelectTrigger>
                         <SelectContent>
-                           <SelectItem value="New">New</SelectItem>
-                           <SelectItem value="No Answer">No Answer</SelectItem>
-                           <SelectItem value="Wrong Number">Wrong Number</SelectItem>
-                           <SelectItem value="Contacted">Contacted</SelectItem>
-                           <SelectItem value="Application Sent">Application Sent</SelectItem>
-                           <SelectItem value="Disqualified">Disqualified</SelectItem>
-                           <SelectItem value="Loan Approved">Loan Approved</SelectItem>
+                           <SelectItem value="New"><Badge className="bg-blue-100 text-blue-800">New</Badge></SelectItem>
+                           <SelectItem value="No Answer"><Badge className="bg-gray-100 text-gray-800">No Answer</Badge></SelectItem>
+                           <SelectItem value="Wrong Number"><Badge className="bg-red-100 text-red-800">Wrong Number</Badge></SelectItem>
+                           <SelectItem value="Contacted"><Badge className="bg-yellow-100 text-yellow-800">Contacted</Badge></SelectItem>
+                           <SelectItem value="Application Sent"><Badge className="bg-purple-100 text-purple-800">Application Sent</Badge></SelectItem>
+                           <SelectItem value="Disqualified"><Badge className="bg-red-100 text-red-800">Disqualified</Badge></SelectItem>
+                           <SelectItem value="Loan Approved"><Badge className="bg-green-100 text-green-800">Loan Approved</Badge></SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
