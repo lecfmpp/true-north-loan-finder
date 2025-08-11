@@ -2022,16 +2022,18 @@ const Admin = () => {
                             {sortField !== 'created_at' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
                           </Button>
                         </TableHead>
-                        <TableHead className="min-w-[140px]">Email Sequences</TableHead>
-                        <TableHead className="min-w-[100px]">
-                          <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent hover:text-current" onClick={() => handleSort('attribution_channel')}>
-                            Lead Source
-                            {sortField === 'attribution_channel' && (
-                              sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
-                            )}
-                            {sortField !== 'attribution_channel' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
-                          </Button>
-                        </TableHead>
+                        {isSuperAdmin && <TableHead className="min-w-[140px]">Email Sequences</TableHead>}
+                        {isSuperAdmin && (
+                          <TableHead className="min-w-[100px]">
+                            <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent hover:text-current" onClick={() => handleSort('attribution_channel')}>
+                              Lead Source
+                              {sortField === 'attribution_channel' && (
+                                sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
+                              )}
+                              {sortField !== 'attribution_channel' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
+                            </Button>
+                          </TableHead>
+                        )}
                         <TableHead className="min-w-[100px]">Actions</TableHead>
                         {isSuperAdmin && <TableHead className="min-w-[200px]">Send to Partner</TableHead>}
                         {isSuperAdmin && <TableHead className="min-w-[180px]">Assign Lead</TableHead>}
@@ -2208,37 +2210,41 @@ const Admin = () => {
                           <TableCell className="text-sm text-muted-foreground">
                             {format(new Date(lead.created_at), 'MMM dd, yyyy HH:mm')}
                           </TableCell>
-                          <TableCell>
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2">
-                                <Switch 
-                                  key={`follow-up-${lead.email}-${emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.FOLLOW_UP] || false}`}
-                                  checked={emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.FOLLOW_UP] || false} 
-                                  onCheckedChange={checked => toggleEmailSequence(lead.email, lead.name, EMAIL_SEQUENCES.FOLLOW_UP, checked)} 
-                                />
-                                <span className="text-sm text-muted-foreground">Follow-up</span>
+                          {isSuperAdmin && (
+                            <TableCell>
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <Switch 
+                                    key={`follow-up-${lead.email}-${emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.FOLLOW_UP] || false}`}
+                                    checked={emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.FOLLOW_UP] || false} 
+                                    onCheckedChange={checked => toggleEmailSequence(lead.email, lead.name, EMAIL_SEQUENCES.FOLLOW_UP, checked)} 
+                                  />
+                                  <span className="text-sm text-muted-foreground">Follow-up</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Switch 
+                                    key={`pre-call-${lead.email}-${emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.PRE_CALL] || false}`}
+                                    checked={emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.PRE_CALL] || false} 
+                                    onCheckedChange={checked => toggleEmailSequence(lead.email, lead.name, EMAIL_SEQUENCES.PRE_CALL, checked)} 
+                                  />
+                                  <span className="text-sm text-muted-foreground">Pre-Call</span>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <Switch 
-                                  key={`pre-call-${lead.email}-${emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.PRE_CALL] || false}`}
-                                  checked={emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.PRE_CALL] || false} 
-                                  onCheckedChange={checked => toggleEmailSequence(lead.email, lead.name, EMAIL_SEQUENCES.PRE_CALL, checked)} 
-                                />
-                                <span className="text-sm text-muted-foreground">Pre-Call</span>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="text-xs">
-                              {lead.attribution_channel ? 
-                                lead.attribution_channel
-                                  .split('_')
-                                  .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                                  .join(' ') 
-                                : 'Direct'
-                              }
-                            </Badge>
-                          </TableCell>
+                            </TableCell>
+                          )}
+                          {isSuperAdmin && (
+                            <TableCell>
+                              <Badge variant="outline" className="text-xs">
+                                {lead.attribution_channel ? 
+                                  lead.attribution_channel
+                                    .split('_')
+                                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                                    .join(' ') 
+                                  : 'Direct'
+                                }
+                              </Badge>
+                            </TableCell>
+                          )}
                           <TableCell>
                             <Button size="sm" onClick={() => handleCallNow(lead.phone)} disabled={!lead.phone} className="bg-green-600 hover:bg-green-700 text-white">
                               <Phone className="w-4 h-4 mr-2" />
