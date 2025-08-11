@@ -911,6 +911,7 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
                     )}
                   </div>
                 </div>
+                </div>
 
                 {application.admin_notes && (
                   <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
