@@ -87,9 +87,11 @@ interface QuizResponse {
 
 interface USAApplicationsManagementProps {
   onCountUpdate?: () => void;
+  restrictToQuizIds?: string[];
+  partnerMode?: boolean;
 }
 
-export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps> = ({ onCountUpdate }) => {
+export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps> = ({ onCountUpdate, restrictToQuizIds, partnerMode }) => {
   const { isSuperAdmin } = useAuth();
   const [applications, setApplications] = useState<USAApplication[]>([]);
   const [filteredApplications, setFilteredApplications] = useState<USAApplication[]>([]);
@@ -158,6 +160,7 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
   };
 
   useEffect(() => {
+    if (partnerMode) return; // Skip auto-linking in partner mode
     let cancelled = false;
     const run = async () => {
       const missing = applications.filter((a) => !a.quiz_response_id);
@@ -169,14 +172,27 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
     };
     run();
     return () => { cancelled = true; };
-  }, [applications]);
+  }, [applications, partnerMode]);
 
   const fetchApplications = async () => {
     try {
-      const { data, error } = await supabase
+      // Partner mode: if we have explicit restrictions and none found, return empty
+      if (partnerMode && restrictToQuizIds && restrictToQuizIds.length === 0) {
+        setApplications([]);
+        setLoading(false);
+        return;
+      }
+
+      let query = supabase
         .from('usa_applications')
         .select('*')
         .order('created_at', { ascending: false });
+
+      if (restrictToQuizIds && restrictToQuizIds.length > 0) {
+        query = query.in('quiz_response_id', restrictToQuizIds);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 

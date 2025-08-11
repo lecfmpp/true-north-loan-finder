@@ -89,9 +89,11 @@ interface QuizResponse {
 }
 interface CanadianApplicationsManagementProps {
   onCountUpdate?: () => void;
+  restrictToQuizIds?: string[];
+  partnerMode?: boolean;
 }
 
-const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementProps> = ({ onCountUpdate }) => {
+const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementProps> = ({ onCountUpdate, restrictToQuizIds, partnerMode }) => {
   const { isSuperAdmin } = useAuth();
   const [applications, setApplications] = useState<CanadianApplication[]>([]);
   const [filteredApplications, setFilteredApplications] = useState<CanadianApplication[]>([]);
@@ -161,23 +163,38 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
 
   const fetchApplications = async () => {
     try {
-      const { data, error } = await supabase
+      // Partner mode: if restricted and empty, return nothing
+      if (partnerMode && restrictToQuizIds && restrictToQuizIds.length === 0) {
+        setApplications([]);
+        setLoading(false);
+        return;
+      }
+
+      let query = supabase
         .from('canadian_applications')
         .select('*')
         .order('created_at', { ascending: false });
+
+      if (restrictToQuizIds && restrictToQuizIds.length > 0) {
+        query = query.in('quiz_response_id', restrictToQuizIds);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
       let apps = data || [];
 
-      // Try to auto-link missing apps to quizzes by email
-      const linked = await autoLinkMissingApplications(apps);
-      if (linked > 0) {
-        const { data: refetched } = await supabase
-          .from('canadian_applications')
-          .select('*')
-          .order('created_at', { ascending: false });
-        apps = refetched || apps;
+      // Try to auto-link missing apps to quizzes by email (superadmin mode only)
+      if (!partnerMode) {
+        const linked = await autoLinkMissingApplications(apps);
+        if (linked > 0) {
+          const { data: refetched } = await supabase
+            .from('canadian_applications')
+            .select('*')
+            .order('created_at', { ascending: false });
+          apps = refetched || apps;
+        }
       }
 
       setApplications(apps);
