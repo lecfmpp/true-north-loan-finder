@@ -454,18 +454,19 @@ const Admin = () => {
 
   useEffect(() => {
     if (user && isAdmin) {
-      // Set default tab based on user role
       const isPartner = userRoles.includes('lender') || userRoles.includes('broker');
+
       if (isPartner && !isSuperAdmin) {
+        // Partner (non-superadmin): show only their assigned leads
         setActiveTab('partner-leads');
-        // Load only leads assigned to this partner
         fetchPartnerAssignedLeads();
-        // Superadmins load full data
+      } else {
+        // Superadmin or non-partner admin: load full data
         fetchLeads();
         fetchPartners();
         fetchLeadAssignments();
       }
-      
+
       // All admins need application counts for menu items
       fetchApplicationsCount();
       fetchUsaApplicationsCount();
