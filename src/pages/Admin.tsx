@@ -40,6 +40,7 @@ import SettingsManagement from '@/components/admin/SettingsManagement';
 import SimplifiedPartnersManagement from '@/components/admin/SimplifiedPartnersManagement';
 import LeadSourceAnalytics from '@/components/admin/LeadSourceAnalytics';
 import PartnerLeads from '@/components/admin/PartnerLeads';
+import PartnerApplications from '@/components/admin/PartnerApplications';
 // Removed PartnerApplications component  
 import PartnerPayments from '@/components/admin/PartnerPayments';
 import BillingManagement from '@/components/admin/BillingManagement';
@@ -2449,7 +2450,7 @@ const Admin = () => {
       case 'partner-leads':
         return <PartnerLeads />;
       case 'partner-applications':
-        return <div className="p-6 text-center text-muted-foreground">Partner applications feature has been simplified - use Partners tab instead</div>;
+        return <PartnerApplications />;
       case 'partner-payments':
         return <div className="p-6 text-center text-muted-foreground">Payment & Access is temporarily disabled.</div>;
       case 'clients':
