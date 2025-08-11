@@ -39,14 +39,15 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-    // Client with service role that can also read the invoking user's JWT
-    const supabaseForAuth = createClient(supabaseUrl, serviceRoleKey, {
+    // Use anon key client with caller's JWT to identify the invoking user
+    const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
 
     // Verify caller and ensure superadmin role
-    const { data: authData, error: getUserErr } = await supabaseForAuth.auth.getUser();
+    const { data: authData, error: getUserErr } = await userClient.auth.getUser();
     if (getUserErr || !authData?.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
@@ -54,7 +55,7 @@ serve(async (req) => {
       });
     }
 
-    const { data: isSuperadmin, error: roleErr } = await supabaseForAuth.rpc(
+    const { data: isSuperadmin, error: roleErr } = await userClient.rpc(
       "is_user_superadmin",
       { _user_id: authData.user.id },
     );

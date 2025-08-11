@@ -206,7 +206,8 @@ export default function SimplifiedPartnersManagement() {
       }
     } catch (error: any) {
       console.error('Error generating reset link:', error);
-      toast({ title: "Error", description: "Failed to generate reset link", variant: "destructive" });
+      const msg = error?.message || error?.error || 'Failed to generate reset link';
+      toast({ title: "Error", description: msg, variant: "destructive" });
     }
   };
 
@@ -239,7 +240,8 @@ export default function SimplifiedPartnersManagement() {
       setConfirmPassword('');
     } catch (error: any) {
       console.error('Error updating password:', error);
-      toast({ title: "Error", description: "Failed to update password", variant: "destructive" });
+      const msg = error?.message || error?.error || 'Failed to update password';
+      toast({ title: "Error", description: msg, variant: "destructive" });
     } finally {
       setPwLoading(false);
     }

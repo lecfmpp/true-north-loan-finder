@@ -33,13 +33,14 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-    const supabaseForAuth = createClient(supabaseUrl, serviceRoleKey, {
+    const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
 
     // Verify caller & role
-    const { data: authData, error: getUserErr } = await supabaseForAuth.auth.getUser();
+    const { data: authData, error: getUserErr } = await userClient.auth.getUser();
     if (getUserErr || !authData?.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
@@ -47,7 +48,7 @@ serve(async (req) => {
       });
     }
 
-    const { data: isSuperadmin, error: roleErr } = await supabaseForAuth.rpc(
+    const { data: isSuperadmin, error: roleErr } = await userClient.rpc(
       "is_user_superadmin",
       { _user_id: authData.user.id },
     );
@@ -69,10 +70,6 @@ serve(async (req) => {
     const { data, error } = await adminClient.auth.admin.generateLink({
       type: "recovery",
       email,
-      options: {
-        // Redirect back to app root after password reset
-        emailRedirectTo: `${supabaseUrl.replace(".co", ".co").replace(/\/$/, "")}`,
-      } as any,
     } as any);
 
     if (error) {
