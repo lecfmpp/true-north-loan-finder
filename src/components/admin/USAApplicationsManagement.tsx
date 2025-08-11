@@ -82,6 +82,7 @@ interface QuizResponse {
   loan_amount: number;
   status: string;
   created_at: string;
+  assigned_partner_id?: string;
 }
 
 interface USAApplicationsManagementProps {
@@ -93,6 +94,7 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
   const [applications, setApplications] = useState<USAApplication[]>([]);
   const [filteredApplications, setFilteredApplications] = useState<USAApplication[]>([]);
   const [quizResponses, setQuizResponses] = useState<Record<string, QuizResponse>>({});
+  const [partners, setPartners] = useState<Record<string, { name: string; email: string }>>({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -119,7 +121,7 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
 
       setApplications(data || []);
 
-      // Fetch related quiz responses
+      // Fetch related quiz responses and assigned partners
       const quizIds = data?.filter(app => app.quiz_response_id).map(app => app.quiz_response_id) || [];
       if (quizIds.length > 0) {
         const { data: quizData, error: quizError } = await supabase
@@ -133,6 +135,22 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
             return acc;
           }, {} as Record<string, QuizResponse>);
           setQuizResponses(quizMap);
+
+          const partnerIds = Array.from(new Set(
+            quizData.filter(q => (q as any).assigned_partner_id).map(q => (q as any).assigned_partner_id as string)
+          ));
+          if (partnerIds.length > 0) {
+            const { data: partnerResp, error: partnerErr } = await supabase.functions.invoke('get-partners-basic', {
+              body: { ids: partnerIds }
+            });
+            if (!partnerErr && partnerResp?.partners) {
+              const partnerMap = (partnerResp.partners as Array<{ id: string; name: string; email: string }>).reduce((acc, p) => {
+                acc[p.id] = { name: p.name, email: p.email };
+                return acc;
+              }, {} as Record<string, { name: string; email: string }>);
+              setPartners(partnerMap);
+            }
+          }
         }
       }
     } catch (error) {
@@ -560,6 +578,15 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
                         <span className="font-medium">Linked Quiz Lead:</span> {linkedQuiz.name}
                         <span className="ml-2">
                           (Quiz Score: {linkedQuiz.monthly_revenue ? `$${linkedQuiz.monthly_revenue.toLocaleString()}/mo` : 'N/A'})
+                        </span>
+                      </div>
+                    )}
+
+                    {linkedQuiz?.assigned_partner_id && partners[linkedQuiz.assigned_partner_id as any] && (
+                      <div className="text-sm text-purple-600">
+                        <span className="font-medium">Assigned Partner:</span> {partners[linkedQuiz.assigned_partner_id as any].name}
+                        <span className="ml-2 text-muted-foreground">
+                          ({partners[linkedQuiz.assigned_partner_id as any].email})
                         </span>
                       </div>
                     )}

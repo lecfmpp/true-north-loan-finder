@@ -138,20 +138,21 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
           }, {} as Record<string, QuizResponse>);
           setQuizResponses(quizMap);
 
-          // Fetch partner information for assigned partners
-          const partnerIds = quizData
-            .filter(quiz => quiz.assigned_partner_id)
-            .map(quiz => quiz.assigned_partner_id);
+          // Fetch partner information for assigned partners using edge function to bypass RLS
+          const partnerIds = Array.from(new Set(
+            quizData
+              .filter(quiz => quiz.assigned_partner_id)
+              .map(quiz => quiz.assigned_partner_id as string)
+          ));
           
           if (partnerIds.length > 0) {
-            const { data: partnerData, error: partnerError } = await supabase
-              .from('partners')
-              .select('id, name, email')
-              .in('id', partnerIds);
+            const { data: partnerResp, error: partnerErr } = await supabase.functions.invoke('get-partners-basic', {
+              body: { ids: partnerIds }
+            });
 
-            if (!partnerError && partnerData) {
-              const partnerMap = partnerData.reduce((acc, partner) => {
-                acc[partner.id] = { name: partner.name, email: partner.email };
+            if (!partnerErr && partnerResp?.partners) {
+              const partnerMap = (partnerResp.partners as Array<{ id: string; name: string; email: string }>).reduce((acc, p) => {
+                acc[p.id] = { name: p.name, email: p.email };
                 return acc;
               }, {} as Record<string, { name: string; email: string }>);
               setPartners(partnerMap);
