@@ -25,6 +25,34 @@ const getCreditScoreNumber = (creditScore: string) => {
     default: return creditScore;
   }
 };
+
+// Helper to map credit score category to an approximate numeric value
+const getCreditScoreApprox = (creditScore: string) => {
+  switch (creditScore) {
+    case "excellent": return 775;
+    case "good": return 725;
+    case "fair": return 675;
+    case "poor": return 625;
+    case "unsure": return 650;
+    default: {
+      const n = parseInt(creditScore, 10);
+      return isNaN(n) ? 0 : n;
+    }
+  }
+};
+
+// Qualified rule: revenue >= $10k, business age >= 6 months, credit score >= 600
+const isTimeInBusinessAtLeast6Months = (tib?: string) => {
+  if (!tib) return false;
+  return tib === '6-12' || tib === '1-2' || tib === '2-5' || tib === '5+' || tib === '+5';
+};
+
+const isQualifiedLead = (lead: any) => {
+  const revenueOk = (lead.monthly_revenue || 0) >= 10000;
+  const tibOk = isTimeInBusinessAtLeast6Months(lead.time_in_business);
+  const creditOk = getCreditScoreApprox(lead.credit_score) >= 600;
+  return revenueOk && tibOk && creditOk;
+};
 import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Trash2, Phone, ChevronDown, ChevronRight, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign, Settings as SettingsIcon, ExternalLink, TrendingUp, ChevronUp, ArrowUpDown } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
@@ -1806,7 +1834,7 @@ const Admin = () => {
                   <CardTitle className="text-sm font-medium">New Leads</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{filteredLeads.filter(l => l.status === 'new').length}</div>
+                  <div className="text-2xl font-bold">{filteredLeads.filter(l => l.status === 'new' && !isQualifiedLead(l)).length}</div>
                 </CardContent>
               </Card>
               <Card>
@@ -1814,7 +1842,7 @@ const Admin = () => {
                   <CardTitle className="text-sm font-medium">Qualified</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{filteredLeads.filter(l => l.status === 'qualified').length}</div>
+                  <div className="text-2xl font-bold">{filteredLeads.filter(l => isQualifiedLead(l)).length}</div>
                 </CardContent>
               </Card>
               <Card>
@@ -1822,7 +1850,7 @@ const Admin = () => {
                   <CardTitle className="text-sm font-medium">Closed</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{filteredLeads.filter(l => l.status === 'closed').length}</div>
+                  <div className="text-2xl font-bold">{filteredLeads.filter(l => (l.status === 'closed' || l.status === 'loan_approved') && !isQualifiedLead(l)).length}</div>
                 </CardContent>
               </Card>
             </div>

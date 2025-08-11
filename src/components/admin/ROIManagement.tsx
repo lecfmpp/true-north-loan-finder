@@ -386,7 +386,7 @@ Provide actionable insights for campaign optimization.`);
 
   const getLeadTypeDescription = () => {
     switch (leadTypeFilter) {
-      case 'qualified': return 'Qualified leads ($10k+ monthly revenue)';
+      case 'qualified': return 'Qualified leads (>= $10k revenue, >= 6 months, credit >= 600)';
       case 'funded': return 'Funded leads (loan approved)';
       case 'application': return 'Application leads (US & Canada)';
       default: return 'All leads';
@@ -740,7 +740,7 @@ Provide actionable insights for campaign optimization.`);
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Leads</SelectItem>
-                <SelectItem value="qualified">Qualified Leads ($10k+)</SelectItem>
+                <SelectItem value="qualified">Qualified Leads (>= $10k, >= 6mo, credit >= 600)</SelectItem>
                 <SelectItem value="funded">Funded Leads</SelectItem>
                 <SelectItem value="application">Application Leads</SelectItem>
               </SelectContent>
