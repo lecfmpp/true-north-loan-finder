@@ -380,9 +380,10 @@ const Admin = () => {
       const isPartner = userRoles.includes('lender') || userRoles.includes('broker');
       if (isPartner && !isSuperAdmin) {
         setActiveTab('partner-leads');
-      }
-      
-      if (isSuperAdmin) {
+        // Partners don't rely on the global leads loading state; their views load independently
+        setLoading(false);
+      } else {
+        // Superadmins load full data
         fetchLeads();
         fetchPartners();
         fetchLeadAssignments();
