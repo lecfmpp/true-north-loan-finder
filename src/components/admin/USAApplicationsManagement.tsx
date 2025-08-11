@@ -110,6 +110,67 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
     filterApplications();
   }, [applications, searchTerm, statusFilter, stageFilter]);
 
+  // Auto-link applications without quiz by matching applicant email to quiz response email
+  const autoLinkMissingApplications = async (apps: USAApplication[]) => {
+    try {
+      const missing = apps.filter((a) => !a.quiz_response_id);
+      if (missing.length === 0) return 0;
+
+      const emails = Array.from(new Set(missing.map((a) => a.email_address).filter(Boolean)));
+      if (emails.length === 0) return 0;
+
+      const { data: qr, error: qrErr } = await supabase
+        .from('quiz_responses')
+        .select('id,email,assigned_partner_id')
+        .in('email', emails);
+
+      if (qrErr || !qr) return 0;
+
+      const emailToQuiz = new Map<string, string>();
+      const duplicates = new Set<string>();
+      qr.forEach((q: any) => {
+        const e = q.email as string;
+        if (!e) return;
+        if (emailToQuiz.has(e)) duplicates.add(e);
+        else emailToQuiz.set(e, q.id as string);
+      });
+
+      const updates = missing
+        .filter((a) => emailToQuiz.has(a.email_address) && !duplicates.has(a.email_address))
+        .map(async (a) => {
+          const quizId = emailToQuiz.get(a.email_address)!;
+          const { error } = await supabase
+            .from('usa_applications')
+            .update({ quiz_response_id: quizId, lead_source: 'quiz' })
+            .eq('id', a.id);
+          if (error) console.error('Auto-link (USA) error', a.id, error);
+          return !error;
+        });
+
+      const results = await Promise.all(updates);
+      const successCount = results.filter(Boolean).length;
+      if (successCount > 0) toast.success(`Auto-linked ${successCount} USA application(s) to quiz responses`);
+      return successCount;
+    } catch (e) {
+      console.error('Auto-link (USA) exception', e);
+      return 0;
+    }
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      const missing = applications.filter((a) => !a.quiz_response_id);
+      if (missing.length === 0) return;
+      const linked = await autoLinkMissingApplications(applications);
+      if (!cancelled && linked > 0) {
+        fetchApplications();
+      }
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [applications]);
+
   const fetchApplications = async () => {
     try {
       const { data, error } = await supabase

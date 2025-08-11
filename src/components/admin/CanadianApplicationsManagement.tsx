@@ -112,6 +112,53 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
     filterApplications();
   }, [applications, searchTerm, statusFilter, stageFilter]);
 
+  // Auto-link applications without quiz by matching applicant email to quiz response email
+  const autoLinkMissingApplications = async (apps: CanadianApplication[]) => {
+    try {
+      const missing = apps.filter((a) => !a.quiz_response_id);
+      if (missing.length === 0) return 0;
+
+      const emails = Array.from(new Set(missing.map((a) => a.email_address).filter(Boolean)));
+      if (emails.length === 0) return 0;
+
+      const { data: qr, error: qrErr } = await supabase
+        .from('quiz_responses')
+        .select('id,email,assigned_partner_id')
+        .in('email', emails);
+
+      if (qrErr || !qr) return 0;
+
+      const emailToQuiz = new Map<string, string>();
+      const duplicates = new Set<string>();
+      qr.forEach((q: any) => {
+        const e = q.email as string;
+        if (!e) return;
+        if (emailToQuiz.has(e)) duplicates.add(e);
+        else emailToQuiz.set(e, q.id as string);
+      });
+
+      const updates = missing
+        .filter((a) => emailToQuiz.has(a.email_address) && !duplicates.has(a.email_address))
+        .map(async (a) => {
+          const quizId = emailToQuiz.get(a.email_address)!;
+          const { error } = await supabase
+            .from('canadian_applications')
+            .update({ quiz_response_id: quizId, lead_source: 'quiz' })
+            .eq('id', a.id);
+          if (error) console.error('Auto-link (CAN) error', a.id, error);
+          return !error;
+        });
+
+      const results = await Promise.all(updates);
+      const successCount = results.filter(Boolean).length;
+      if (successCount > 0) toast.success(`Auto-linked ${successCount} Canadian application(s) to quiz responses`);
+      return successCount;
+    } catch (e) {
+      console.error('Auto-link (CAN) exception', e);
+      return 0;
+    }
+  };
+
   const fetchApplications = async () => {
     try {
       const { data, error } = await supabase
@@ -121,10 +168,22 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
 
       if (error) throw error;
 
-      setApplications(data || []);
+      let apps = data || [];
+
+      // Try to auto-link missing apps to quizzes by email
+      const linked = await autoLinkMissingApplications(apps);
+      if (linked > 0) {
+        const { data: refetched } = await supabase
+          .from('canadian_applications')
+          .select('*')
+          .order('created_at', { ascending: false });
+        apps = refetched || apps;
+      }
+
+      setApplications(apps);
 
       // Fetch related quiz responses
-      const quizIds = data?.filter(app => app.quiz_response_id).map(app => app.quiz_response_id) || [];
+      const quizIds = apps.filter(app => app.quiz_response_id).map(app => app.quiz_response_id) as string[];
       if (quizIds.length > 0) {
         const { data: quizData, error: quizError } = await supabase
           .from('quiz_responses')
@@ -141,8 +200,8 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
           // Fetch partner information for assigned partners using edge function to bypass RLS
           const partnerIds = Array.from(new Set(
             quizData
-              .filter(quiz => quiz.assigned_partner_id)
-              .map(quiz => quiz.assigned_partner_id as string)
+              .filter(quiz => (quiz as any).assigned_partner_id)
+              .map(quiz => (quiz as any).assigned_partner_id as string)
           ));
           
           if (partnerIds.length > 0) {
