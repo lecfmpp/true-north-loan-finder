@@ -1679,7 +1679,8 @@ const Admin = () => {
         {
           title: "Payment & Access",
           value: "partner-payments",
-          icon: DollarSign
+          icon: DollarSign,
+          disabled: true
         }
       ];
     } else {
@@ -1704,6 +1705,8 @@ const Admin = () => {
   const menuItems = getMenuItems();
 
   const handleMenuItemClick = (value: string) => {
+    const item: any = (menuItems as any[]).find((mi: any) => mi.value === value);
+    if (item && item.disabled) return;
     setActiveTab(value);
   };
 
@@ -2448,7 +2451,7 @@ const Admin = () => {
       case 'partner-applications':
         return <div className="p-6 text-center text-muted-foreground">Partner applications feature has been simplified - use Partners tab instead</div>;
       case 'partner-payments':
-        return <PartnerPayments />;
+        return <div className="p-6 text-center text-muted-foreground">Payment & Access is temporarily disabled.</div>;
       case 'clients':
         return <ClientsManagement />;
       case 'billing':
@@ -2486,21 +2489,34 @@ const Admin = () => {
               <SidebarGroupLabel>Navigation</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {menuItems.map(item => {
-                  const Icon = item.icon;
-                  const isActive = activeTab === item.value;
-                  return <SidebarMenuItem key={item.value}>
-                        <SidebarMenuButton asChild isActive={isActive} onClick={() => handleMenuItemClick(item.value)}>
-                          <button className="flex items-center gap-2 w-full">
+                  {menuItems.map((item: any) => {
+                    const Icon = item.icon;
+                    const isActive = activeTab === item.value;
+                    const disabled = !!item.disabled;
+                    return (
+                      <SidebarMenuItem key={item.value}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={!disabled && isActive}
+                          onClick={disabled ? undefined : () => handleMenuItemClick(item.value)}
+                        >
+                          <button
+                            className={`flex items-center gap-2 w-full ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            disabled={disabled}
+                            aria-disabled={disabled}
+                          >
                             <Icon className="h-4 w-4" />
                             <span>{item.title}</span>
-                            {item.count !== undefined && <div className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-blue-900 bg-green-500 rounded">
+                            {item.count !== undefined && (
+                              <div className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-blue-900 bg-green-500 rounded">
                                 {item.count}
-                              </div>}
+                              </div>
+                            )}
                           </button>
                         </SidebarMenuButton>
-                      </SidebarMenuItem>;
-                })}
+                      </SidebarMenuItem>
+                    );
+                  })}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
