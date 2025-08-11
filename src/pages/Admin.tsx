@@ -260,6 +260,18 @@ const Admin = () => {
 
       if (error) throw error;
 
+      // Also reflect assignment on quiz_responses for cross-page consistency
+      const { error: qrError } = await supabase
+        .from('quiz_responses')
+        .update({
+          assigned_partner_id: partnerId
+        })
+        .eq('id', leadId);
+
+      if (qrError) {
+        console.warn('quiz_responses update failed (non-blocking):', qrError);
+      }
+
       toast({
         title: "Success",
         description: "Lead assigned to partner successfully",
@@ -372,6 +384,47 @@ const Admin = () => {
       toast({
         title: "Error",
         description: "Failed to assign leads to partner",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Auto-assign unassigned leads by matching custom email recipients to partner emails
+  const autoAssignLeadsFromEmailHistory = async () => {
+    try {
+      let assigned = 0;
+      for (const lead of leads) {
+        if (leadAssignments[lead.id]) continue; // already assigned
+        const emails = leadCustomEmails[lead.id];
+        if (!emails || emails.length === 0) continue;
+
+        // Emails are ordered by sent_at desc when fetched
+        let matchedPartnerId: string | undefined;
+        for (const email of emails) {
+          for (const recipient of email.recipient_emails || []) {
+            const partner = partners.find(p => p.email?.toLowerCase() === recipient.toLowerCase());
+            if (partner) { matchedPartnerId = partner.id; break; }
+          }
+          if (matchedPartnerId) break;
+        }
+
+        if (matchedPartnerId) {
+          await assignLeadToPartner(lead.id, matchedPartnerId);
+          assigned += 1;
+        }
+      }
+
+      toast({
+        title: "Auto-assignment complete",
+        description: `${assigned} lead(s) assigned from email history`,
+      });
+
+      fetchLeadAssignments();
+    } catch (err) {
+      console.error('Error during auto-assign:', err);
+      toast({
+        title: "Error",
+        description: "Failed to auto-assign leads from emails",
         variant: "destructive",
       });
     }
@@ -2011,6 +2064,13 @@ const Admin = () => {
                           className="text-xs"
                         >
                           Enable Pre-Call for All
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={autoAssignLeadsFromEmailHistory}
+                          className="text-xs"
+                        >
+                          Auto-assign from Emails
                         </Button>
                       </div>
                       
