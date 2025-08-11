@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useAuth } from "@/hooks/use-auth";
 
 interface Partner {
   id: string;
@@ -56,6 +57,10 @@ export default function SimplifiedPartnersManagement() {
     password: ''
   });
   const { toast } = useToast();
+  const { isSuperAdmin } = useAuth();
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [pwLoading, setPwLoading] = useState(false);
 
   useEffect(() => {
     fetchPartners();
@@ -182,22 +187,61 @@ export default function SimplifiedPartnersManagement() {
   };
 
   const resetPassword = async (partner: Partner) => {
-    if (!partner.user_id) {
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-password-reset-link', {
+        body: { email: partner.email },
+      });
+
+      if (error) throw error;
+
+      if (data?.action_link) {
+        try {
+          await navigator.clipboard.writeText(data.action_link);
+          toast({ title: "Success", description: "Reset link generated and copied to clipboard." });
+        } catch (_) {
+          toast({ title: "Success", description: "Reset link generated." });
+        }
+      } else {
+        toast({ title: "Success", description: "Password reset link generated." });
+      }
+    } catch (error: any) {
+      console.error('Error generating reset link:', error);
+      toast({ title: "Error", description: "Failed to generate reset link", variant: "destructive" });
+    }
+  };
+
+  const changePassword = async () => {
+    if (!editingPartner?.user_id) {
       toast({ title: "Error", description: "No user account associated with this partner", variant: "destructive" });
+      return;
+    }
+    if (!isSuperAdmin) {
+      toast({ title: "Unauthorized", description: "Only superadmins can change passwords", variant: "destructive" });
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast({ title: "Error", description: "Password must be at least 6 characters", variant: "destructive" });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast({ title: "Error", description: "Passwords do not match", variant: "destructive" });
       return;
     }
 
     try {
-      const { error } = await supabase.auth.admin.generateLink({
-        type: 'recovery',
-        email: partner.email,
+      setPwLoading(true);
+      const { data, error } = await supabase.functions.invoke('update-user-password', {
+        body: { user_id: editingPartner.user_id, new_password: newPassword },
       });
-
-      if (error) throw error;
-      toast({ title: "Success", description: "Password reset email sent successfully" });
+      if (error || data?.error) throw (error || new Error(data?.error));
+      toast({ title: "Success", description: "Password updated successfully" });
+      setNewPassword('');
+      setConfirmPassword('');
     } catch (error: any) {
-      console.error('Error resetting password:', error);
-      toast({ title: "Error", description: "Failed to send password reset email", variant: "destructive" });
+      console.error('Error updating password:', error);
+      toast({ title: "Error", description: "Failed to update password", variant: "destructive" });
+    } finally {
+      setPwLoading(false);
     }
   };
 
@@ -625,6 +669,43 @@ export default function SimplifiedPartnersManagement() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {isSuperAdmin && editingPartner.user_id && (
+                <div className="rounded-md border p-3 space-y-3">
+                  <h4 className="font-medium text-sm">Change Password (Superadmin)</h4>
+                  <div className="grid grid-cols-1 gap-3">
+                    <div>
+                      <Label htmlFor="new-password">New Password</Label>
+                      <Input
+                        id="new-password"
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Minimum 6 characters"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="confirm-password">Confirm Password</Label>
+                      <Input
+                        id="confirm-password"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Re-enter new password"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <Button
+                      size="sm"
+                      onClick={changePassword}
+                      disabled={pwLoading || newPassword.length < 6 || newPassword !== confirmPassword}
+                    >
+                      {pwLoading ? 'Updating…' : 'Update Password'}
+                    </Button>
+                  </div>
+                </div>
+              )}
               
               <div className="flex justify-end gap-2">
                 <Button 
