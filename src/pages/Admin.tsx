@@ -392,6 +392,17 @@ const Admin = () => {
   // Auto-assign leads by matching the MOST RECENT custom email recipient to partner emails
   const autoAssignLeadsFromEmailHistory = async () => {
     try {
+      // Restrict to selected leads only
+      const targetLeadIds = selectedLeads && selectedLeads.length > 0 ? selectedLeads : [];
+      if (targetLeadIds.length === 0) {
+        toast({
+          title: "No leads selected",
+          description: "Please select one or more leads to auto-assign from emails",
+          variant: "destructive",
+        });
+        return;
+      }
+
       let created = 0;
       let updated = 0;
 
@@ -402,10 +413,18 @@ const Admin = () => {
         return email;
       };
 
-      for (const lead of leads) {
-        const emails = (leadCustomEmails[lead.id] || []).slice().sort((a, b) =>
-          new Date(b.sent_at).getTime() - new Date(a.sent_at).getTime()
-        );
+      // Build a quick index for leads by id
+      const leadById: Record<string, QuizResponse | undefined> = Object.fromEntries(
+        leads.map(l => [l.id, l])
+      );
+
+      for (const leadId of targetLeadIds) {
+        const lead = leadById[leadId];
+        if (!lead) continue;
+
+        const emails = (leadCustomEmails[lead.id] || [])
+          .slice()
+          .sort((a, b) => new Date(b.sent_at).getTime() - new Date(a.sent_at).getTime());
         if (emails.length === 0) continue;
 
         // Find the first partner that matches recipients in the latest emails (descending by time)
