@@ -2230,17 +2230,20 @@ const Admin = () => {
                           </Button>
                         </TableHead>
                         {isSuperAdmin && <TableHead className="min-w-[140px]">Email Sequences</TableHead>}
-                        {isSuperAdmin && (
-                          <TableHead className="min-w-[100px]">
-                            <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent hover:text-current" onClick={() => handleSort('attribution_channel')}>
-                              Lead Source
-                              {sortField === 'attribution_channel' && (
-                                sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
-                              )}
-                              {sortField !== 'attribution_channel' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
-                            </Button>
-                          </TableHead>
-                        )}
+{isSuperAdmin && (
+  <>
+    <TableHead className="min-w-[100px]">
+      <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent hover:text-current" onClick={() => handleSort('attribution_channel')}>
+        Lead Source
+        {sortField === 'attribution_channel' && (
+          sortDirection === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
+        )}
+        {sortField !== 'attribution_channel' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
+      </Button>
+    </TableHead>
+    <TableHead className="min-w-[220px]">Source URL</TableHead>
+  </>
+)}
                         <TableHead className="min-w-[100px]">Actions</TableHead>
                         {isSuperAdmin && <TableHead className="min-w-[200px]">Send to Partner</TableHead>}
                         {isSuperAdmin && <TableHead className="min-w-[180px]">Assign Lead</TableHead>}
@@ -2440,17 +2443,33 @@ const Admin = () => {
                             </TableCell>
                           )}
                           {isSuperAdmin && (
-                            <TableCell>
-                              <Badge variant="outline" className="text-xs">
-                                {lead.attribution_channel ? 
-                                  lead.attribution_channel
-                                    .split('_')
-                                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                                    .join(' ') 
-                                  : 'Direct'
-                                }
-                              </Badge>
-                            </TableCell>
+                            <>
+                              <TableCell>
+                                <Badge variant="outline" className="text-xs">
+                                  {lead.attribution_channel ? 
+                                    lead.attribution_channel
+                                      .split('_')
+                                      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                                      .join(' ') 
+                                    : 'Direct'
+                                  }
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="max-w-[320px]">
+                                {lead.attribution_url ? (
+                                  <a
+                                    href={lead.attribution_url.startsWith('http') ? lead.attribution_url : `https://${lead.attribution_url}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs underline break-all"
+                                  >
+                                    {lead.attribution_url}
+                                  </a>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground">—</span>
+                                )}
+                              </TableCell>
+                            </>
                           )}
                           <TableCell>
                             <Button size="sm" onClick={() => handleCallNow(lead.phone)} disabled={!lead.phone} className="bg-green-600 hover:bg-green-700 text-white">
