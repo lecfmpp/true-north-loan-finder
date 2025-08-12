@@ -2799,7 +2799,7 @@ const Admin = () => {
                             <Icon className="h-4 w-4" />
                             <span>{item.title}</span>
                             {item.count !== undefined && (
-                              <div className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-sidebar-primary bg-status-active rounded">
+                              <div className="ml-auto inline-flex items-center justify-center whitespace-nowrap min-w-[20px] h-5 px-1.5 text-xs font-medium text-sidebar-primary bg-status-active rounded">
                                 {item.count}
                               </div>
                             )}
