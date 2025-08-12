@@ -16,6 +16,7 @@ import { ApplicationAuth } from "@/components/ApplicationAuth";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/hooks/use-auth";
+import { intervalToDuration } from "date-fns";
 
 interface ApplicationData {
   // Company Information
@@ -102,6 +103,7 @@ const Application = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
+  const [autoFilledBusinessAge, setAutoFilledBusinessAge] = useState(false);
   const { user, loading } = useAuth();
   const totalSteps = 6;
   
@@ -202,6 +204,81 @@ const Application = () => {
     }
   }, [user, loading, searchParams]);
 
+  // Prefill Years/Months in Business from quiz response and hide fields
+  useEffect(() => {
+    const prefillBusinessAge = async () => {
+      if (autoFilledBusinessAge) return;
+      try {
+        const quizId = searchParams.get('quiz_id') || localStorage.getItem('quiz_response_id');
+        let quiz: any = null;
+        if (quizId) {
+          const { data } = await supabase
+            .from('quiz_responses')
+            .select('founding_year, founding_month, founding_day, time_in_business')
+            .eq('id', quizId)
+            .maybeSingle();
+          quiz = data;
+        } else {
+          const email = searchParams.get('email') || user?.email || null;
+          if (email) {
+            const { data } = await supabase
+              .from('quiz_responses')
+              .select('founding_year, founding_month, founding_day, time_in_business')
+              .eq('email', email)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            quiz = data;
+          }
+        }
+
+        if (quiz) {
+          const y = quiz.founding_year as number | null;
+          const m = quiz.founding_month as number | null;
+          const d = quiz.founding_day as number | null;
+          let years: number | null = null;
+          let months: number | null = null;
+
+          if (y && y > 0) {
+            const start = new Date(y, (m && m > 0 ? m - 1 : 0), d && d > 0 ? d : 1);
+            const duration = intervalToDuration({ start, end: new Date() });
+            years = duration.years ?? 0;
+            months = duration.months ?? 0;
+          } else if (quiz.time_in_business) {
+            switch (quiz.time_in_business) {
+              case 'startup':
+                years = 0; months = 0; break;
+              case '6-12':
+                years = 0; months = 9; break;
+              case '1-2':
+                years = 1; months = 6; break;
+              case '2-5':
+                years = 3; months = 0; break;
+              case '+5':
+              case '5+':
+                years = 6; months = 0; break;
+              default:
+                break;
+            }
+          }
+
+          if (years !== null && months !== null) {
+            setFormData(prev => ({
+              ...prev,
+              years_in_business: String(years),
+              months_in_business: String(months),
+            }));
+            setAutoFilledBusinessAge(true);
+          }
+        }
+      } catch (e) {
+        console.error('Error pre-filling business age:', e);
+      }
+    };
+
+    prefillBusinessAge();
+  }, [searchParams, user, autoFilledBusinessAge]);
+
   const updateFormData = (field: keyof ApplicationData, value: any) => {
     setFormData(prev => ({
       ...prev,
@@ -245,7 +322,10 @@ const Application = () => {
       case 3: // Principal Information
         return ['principal_name', 'principal_title', 'principal_ssn', 'principal_date_of_birth', 'principal_home_address', 'principal_city', 'principal_state', 'principal_zip', 'principal_email', 'principal_ownership_percentage'];
       case 4: // Business Information
-        return ['years_in_business', 'months_in_business', 'number_of_employees', 'business_type', 'business_description'];
+        return [
+          ...(autoFilledBusinessAge ? [] : ['years_in_business', 'months_in_business']),
+          'number_of_employees', 'business_type', 'business_description'
+        ];
       case 5: // Bank & Financial Information
         return ['bank_name', 'bank_account_type', 'bank_routing_number', 'bank_account_number', 'months_with_bank', 'average_monthly_deposits'];
       case 6: // Loan Information
@@ -903,32 +983,43 @@ const Application = () => {
             </div>
             
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="years_in_business">Years in Business *</Label>
-                <Input
-                  id="years_in_business"
-                  type="number"
-                  min="0"
-                  value={formData.years_in_business}
-                  onChange={(e) => updateFormData('years_in_business', e.target.value)}
-                  required
-                  className={getFieldValidationClass('years_in_business', getStepRequiredFields(4))}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="months_in_business">Months in Business *</Label>
-                <Input
-                  id="months_in_business"
-                  type="number"
-                  min="0"
-                  max="11"
-                  value={formData.months_in_business}
-                  onChange={(e) => updateFormData('months_in_business', e.target.value)}
-                  required
-                  className={getFieldValidationClass('months_in_business', getStepRequiredFields(4))}
-                />
-              </div>
+              {autoFilledBusinessAge ? (
+                <div className="space-y-2 md:col-span-2">
+                  <Label>Business Age</Label>
+                  <div className="text-sm text-muted-foreground">
+                    {`${formData.years_in_business || '0'} years, ${formData.months_in_business || '0'} months (from your quiz)`}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="years_in_business">Years in Business *</Label>
+                    <Input
+                      id="years_in_business"
+                      type="number"
+                      min="0"
+                      value={formData.years_in_business}
+                      onChange={(e) => updateFormData('years_in_business', e.target.value)}
+                      required
+                      className={getFieldValidationClass('years_in_business', getStepRequiredFields(4))}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="months_in_business">Months in Business *</Label>
+                    <Input
+                      id="months_in_business"
+                      type="number"
+                      min="0"
+                      max="11"
+                      value={formData.months_in_business}
+                      onChange={(e) => updateFormData('months_in_business', e.target.value)}
+                      required
+                      className={getFieldValidationClass('months_in_business', getStepRequiredFields(4))}
+                    />
+                  </div>
+                </>
+              )}
               
               <div className="space-y-2">
                 <Label htmlFor="number_of_employees">Number of Employees *</Label>
