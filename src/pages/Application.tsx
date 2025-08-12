@@ -105,7 +105,7 @@ const Application = () => {
   const [showAuth, setShowAuth] = useState(false);
   const [autoFilledBusinessAge, setAutoFilledBusinessAge] = useState(false);
   const { user, loading } = useAuth();
-  const totalSteps = 2;
+  const totalSteps = 6;
   
   const [formData, setFormData] = useState<ApplicationData>({
     // Company Information
