@@ -87,6 +87,7 @@ const CanadianApplication = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
+  const [pendingAutoSubmit, setPendingAutoSubmit] = useState(false);
   const { user, loading } = useAuth();
   const totalSteps = 2;
   
@@ -183,8 +184,18 @@ const CanadianApplication = () => {
         setFormData(prev => ({ ...prev, ...updates }));
       }
     }
-}, [user, loading, searchParams]);
+  }, [user, loading, searchParams]);
+  // Auto-submit once authenticated after prompting login/signup
+  useEffect(() => {
+    if (pendingAutoSubmit && user) {
+      setTimeout(() => {
+        setPendingAutoSubmit(false);
+        handleSubmit();
+      }, 0);
+    }
+  }, [pendingAutoSubmit, user]);
 
+  // Prefill business_start_date from quiz response
   useEffect(() => {
     const quizId = searchParams.get('quiz_id');
     const shouldPrefill = !formData.business_start_date;
@@ -340,7 +351,7 @@ const CanadianApplication = () => {
         const filePath = `applications/${fileName}`;
 
         const { error: uploadError, data } = await supabase.storage
-          .from('documents')
+          .from('application-documents')
           .upload(filePath, file);
 
         if (uploadError) {
@@ -350,7 +361,7 @@ const CanadianApplication = () => {
         }
 
         const { data: { publicUrl } } = supabase.storage
-          .from('documents')
+          .from('application-documents')
           .getPublicUrl(filePath);
 
         uploadedFiles.push(publicUrl);
@@ -371,6 +382,7 @@ const CanadianApplication = () => {
   const handleSubmit = async () => {
     if (!user) {
       setShowAuth(true);
+      setPendingAutoSubmit(true);
       return;
     }
 
@@ -1377,7 +1389,10 @@ const CanadianApplication = () => {
           <ApplicationAuth 
             email={formData.email_address}
             name={formData.principal_owner_name}
-            onAuthSuccess={() => setShowAuth(false)}
+            onAuthSuccess={() => {
+              setShowAuth(false);
+              setPendingAutoSubmit(true);
+            }}
           />
         </div>
       )}

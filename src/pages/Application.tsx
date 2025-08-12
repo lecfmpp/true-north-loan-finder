@@ -103,6 +103,7 @@ const Application = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
+  const [pendingAutoSubmit, setPendingAutoSubmit] = useState(false);
   const [autoFilledBusinessAge, setAutoFilledBusinessAge] = useState(false);
   const { user, loading } = useAuth();
   const totalSteps = 6;
