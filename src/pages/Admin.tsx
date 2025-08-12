@@ -1700,61 +1700,64 @@ const Admin = () => {
       case 'partner-applications':
         return <div className="space-y-6">
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{filteredLeads.length}</div>
-                </CardContent>
-              </Card>
+            {/* Stats Cards - hidden on My Applications */}
+            {activeTab !== 'partner-applications' && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{filteredLeads.length}</div>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">New Leads</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{filteredLeads.filter(l => (l.status || '').toString().trim().toLowerCase().replace(/_/g, ' ') === 'new').length}</div>
-                </CardContent>
-              </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">New Leads</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{filteredLeads.filter(l => (l.status || '').toString().trim().toLowerCase().replace(/_/g, ' ') === 'new').length}</div>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Qualified Leads</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{filteredLeads.filter(l => isQualifiedLead(l)).length}</div>
-                </CardContent>
-              </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Qualified Leads</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{filteredLeads.filter(l => isQualifiedLead(l)).length}</div>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Contacted</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{filteredLeads.filter(l => (l.status || '').toString().trim().toLowerCase().replace(/_/g, ' ') === 'contacted').length}</div>
-                </CardContent>
-              </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Contacted</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{filteredLeads.filter(l => (l.status || '').toString().trim().toLowerCase().replace(/_/g, ' ') === 'contacted').length}</div>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Applications</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{filteredLeads.filter(l => (l.status || '').toString().trim().toLowerCase().replace(/_/g, ' ') === 'application sent').length}</div>
-                </CardContent>
-              </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Applications</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{filteredLeads.filter(l => (l.status || '').toString().trim().toLowerCase().replace(/_/g, ' ') === 'application sent').length}</div>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Funded</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{filteredLeads.filter(l => (l.status || '').toString().trim().toLowerCase().replace(/_/g, ' ') === 'loan approved').length}</div>
-                </CardContent>
-              </Card>
-            </div>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Funded</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{filteredLeads.filter(l => (l.status || '').toString().trim().toLowerCase().replace(/_/g, ' ') === 'loan approved').length}</div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
 
             {/* Controls */}
             <Card>
