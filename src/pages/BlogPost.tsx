@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
+import OptimizedImage from "@/components/OptimizedImage";
 
 interface BlogPost {
   id: string;
@@ -30,6 +31,7 @@ const BlogPost = () => {
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -62,6 +64,34 @@ const BlogPost = () => {
 
     fetchPost();
   }, [slug]);
+
+  // Normalize and enhance images inside the HTML content
+  useEffect(() => {
+    if (!post) return;
+    const container = contentRef.current;
+    if (!container) return;
+    const imgs = container.querySelectorAll('img');
+    imgs.forEach((img) => {
+      const original = img.getAttribute('src') || '';
+      let finalSrc = original;
+      if (original && !original.startsWith('http') && !original.startsWith('/')) {
+        if (original.startsWith('lovable-uploads/')) {
+          finalSrc = `/${original}`;
+        } else if (original.startsWith('blog-images/')) {
+          const { data } = supabase.storage
+            .from('blog-images')
+            .getPublicUrl(original.replace(/^blog-images\//, ''));
+          finalSrc = data.publicUrl;
+        }
+      }
+      if (finalSrc !== original) img.setAttribute('src', finalSrc);
+      img.setAttribute('loading', 'lazy');
+      img.setAttribute('decoding', 'async');
+      img.onerror = () => { img.setAttribute('src', '/placeholder.svg'); };
+      img.classList.add('max-w-full', 'h-auto', 'rounded');
+      if (!img.getAttribute('alt')) img.setAttribute('alt', `${post.title} image`);
+    });
+  }, [post]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-CA', {
@@ -186,14 +216,24 @@ const BlogPost = () => {
 
             {/* Featured Image */}
             {post.featured_image_url && (
-              <div className="w-full h-64 md:h-96 bg-muted rounded-lg mb-8 overflow-hidden">
-                <img 
-                  src={post.featured_image_url} 
-                  alt={`Featured image for ${post.title} - Canadian business financing guide`}
-                  className="w-full h-full object-cover"
-                  loading="eager"
-                />
-              </div>
+              <OptimizedImage
+                src={(() => {
+                  const url = post.featured_image_url || '';
+                  if (!url) return '/placeholder.svg';
+                  if (url.startsWith('http') || url.startsWith('/')) return url;
+                  if (url.startsWith('lovable-uploads/')) return `/${url}`;
+                  if (url.startsWith('blog-images/')) {
+                    const { data } = supabase.storage
+                      .from('blog-images')
+                      .getPublicUrl(url.replace(/^blog-images\//, ''));
+                    return data.publicUrl;
+                  }
+                  return url;
+                })()}
+                alt={`Featured image for ${post.title} - Canadian business financing guide`}
+                className="w-full h-64 md:h-96 rounded-lg mb-8"
+                priority
+              />
             )}
 
             {/* Tags */}
@@ -229,7 +269,7 @@ const BlogPost = () => {
             </div>
 
             {/* Content Container with new blog-content styling */}
-            <div className="blog-content">
+            <div className="blog-content" ref={contentRef}>
               <div dangerouslySetInnerHTML={{ __html: post.content }} />
             </div>
 

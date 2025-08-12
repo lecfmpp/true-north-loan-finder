@@ -8,6 +8,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
+import OptimizedImage from "@/components/OptimizedImage";
 
 interface BlogPost {
   id: string;
@@ -143,14 +144,24 @@ const Blog = () => {
                 <Card key={post.id} className="group border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                   <CardHeader>
                     {post.featured_image_url && (
-                      <div className="w-full h-48 bg-muted rounded-lg mb-4 overflow-hidden">
-                        <img 
-                          src={post.featured_image_url} 
-                          alt={`${post.title} - Canadian business financing guide`}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          loading="lazy"
-                        />
-                      </div>
+                      <OptimizedImage
+                        src={(() => {
+                          const url = post.featured_image_url || '';
+                          if (!url) return '/placeholder.svg';
+                          if (url.startsWith('http') || url.startsWith('/')) return url;
+                          if (url.startsWith('lovable-uploads/')) return `/${url}`;
+                          if (url.startsWith('blog-images/')) {
+                            const { data } = supabase.storage
+                              .from('blog-images')
+                              .getPublicUrl(url.replace(/^blog-images\//, ''));
+                            return data.publicUrl;
+                          }
+                          return url;
+                        })()}
+                        alt={`${post.title} - Canadian business financing guide`}
+                        className="w-full h-48 rounded-lg mb-4"
+                        sizes="(max-width: 1024px) 100vw, 33vw"
+                      />
                     )}
                     <div className="flex flex-wrap gap-2 mb-3">
                       {post.tags.slice(0, 2).map((tag) => (
