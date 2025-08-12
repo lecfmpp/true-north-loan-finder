@@ -1689,6 +1689,7 @@ export type Database = {
           partner_loan_amount: number | null
           phone: string
           score: number
+          shared_notes: string | null
           status: string | null
           time_in_business: string
           updated_at: string
@@ -1721,6 +1722,7 @@ export type Database = {
           partner_loan_amount?: number | null
           phone: string
           score: number
+          shared_notes?: string | null
           status?: string | null
           time_in_business: string
           updated_at?: string
@@ -1753,6 +1755,7 @@ export type Database = {
           partner_loan_amount?: number | null
           phone?: string
           score?: number
+          shared_notes?: string | null
           status?: string | null
           time_in_business?: string
           updated_at?: string

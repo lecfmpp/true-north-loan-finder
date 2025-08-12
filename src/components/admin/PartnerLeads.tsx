@@ -28,6 +28,7 @@ interface Lead {
   loan_value?: number;
   partner_notes?: string;
   attribution_channel?: string;
+  shared_notes?: string;
 }
 
 export default function PartnerLeads() {
@@ -38,7 +39,8 @@ export default function PartnerLeads() {
     status: string;
     loan_value: string;
     partner_notes: string;
-  }>({ status: '', loan_value: '', partner_notes: '' });
+    shared_notes: string;
+  }>({ status: '', loan_value: '', partner_notes: '', shared_notes: '' });
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -98,7 +100,8 @@ export default function PartnerLeads() {
         assignment_status: assignment.status,
         loan_value: assignment.loan_value,
         partner_notes: assignment.partner_notes,
-        attribution_channel: assignment.quiz_responses.attribution_channel
+        attribution_channel: assignment.quiz_responses.attribution_channel,
+        shared_notes: assignment.quiz_responses.shared_notes
       })) || [];
 
       setAssignedLeads(leads);
@@ -128,13 +131,14 @@ export default function PartnerLeads() {
     setEditValues({
       status: lead.assignment_status,
       loan_value: lead.loan_value ? lead.loan_value.toString() : '',
-      partner_notes: lead.partner_notes || ''
+      partner_notes: lead.partner_notes || '',
+      shared_notes: lead.shared_notes || ''
     });
   };
 
   const cancelEdit = () => {
     setEditingLead(null);
-    setEditValues({ status: '', loan_value: '', partner_notes: '' });
+    setEditValues({ status: '', loan_value: '', partner_notes: '', shared_notes: '' });
   };
 
   const saveChanges = async (lead: Lead) => {
@@ -151,6 +155,7 @@ export default function PartnerLeads() {
         updateData.partner_notes = editValues.partner_notes;
       }
 
+      // Update lead assignment
       const { error } = await supabase
         .from('lead_assignments')
         .update(updateData)
@@ -158,9 +163,22 @@ export default function PartnerLeads() {
 
       if (error) throw error;
 
+      // Update shared notes on quiz_responses (if changed)
+      if (editValues.shared_notes !== lead.shared_notes) {
+        const { error: notesError } = await supabase
+          .from('quiz_responses')
+          .update({ shared_notes: editValues.shared_notes })
+          .eq('id', lead.id);
+
+        if (notesError) {
+          console.error('Error updating shared notes:', notesError);
+          // Don't throw here to avoid blocking the main update
+        }
+      }
+
       toast({
         title: "Success",
-        description: "Lead status updated successfully",
+        description: "Lead updated successfully",
       });
 
       // Refresh the leads
@@ -170,7 +188,7 @@ export default function PartnerLeads() {
       console.error('Error updating lead:', error);
       toast({
         title: "Error",
-        description: "Failed to update lead status",
+        description: "Failed to update lead",
         variant: "destructive"
       });
     }
@@ -300,11 +318,20 @@ export default function PartnerLeads() {
                             </div>
                           </div>
                           <div>
-                            <label className="text-sm font-medium">Notes</label>
+                            <label className="text-sm font-medium">Partner Notes</label>
                             <Textarea
                               placeholder="Add partner notes..."
                               value={editValues.partner_notes}
                               onChange={(e) => setEditValues(prev => ({ ...prev, partner_notes: e.target.value }))}
+                              rows={2}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium">Shared Notes</label>
+                            <Textarea
+                              placeholder="Add shared notes visible to all admins and partners..."
+                              value={editValues.shared_notes}
+                              onChange={(e) => setEditValues(prev => ({ ...prev, shared_notes: e.target.value }))}
                               rows={2}
                             />
                           </div>
@@ -343,8 +370,14 @@ export default function PartnerLeads() {
                           )}
                           {lead.partner_notes && (
                             <div>
-                              <span className="text-sm font-medium">Notes:</span>
+                              <span className="text-sm font-medium">Partner Notes:</span>
                               <p className="text-sm text-muted-foreground mt-1">{lead.partner_notes}</p>
+                            </div>
+                          )}
+                          {lead.shared_notes && (
+                            <div>
+                              <span className="text-sm font-medium">Shared Notes:</span>
+                              <p className="text-sm text-muted-foreground mt-1">{lead.shared_notes}</p>
                             </div>
                           )}
                         </div>

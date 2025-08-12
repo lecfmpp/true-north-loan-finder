@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { format, intervalToDuration } from 'date-fns';
 
@@ -124,6 +125,8 @@ interface QuizResponse {
   // Add partner assignment
   assigned_partner_id?: string;
   partner_name?: string;
+  // Add shared notes
+  shared_notes?: string;
 }
 interface Partner {
   id: string;
@@ -1381,6 +1384,29 @@ const Admin = () => {
       });
     }
   };
+  const updateSharedNotes = async (leadId: string, notes: string) => {
+    try {
+      const { error } = await supabase
+        .from('quiz_responses')
+        .update({ shared_notes: notes })
+        .eq('id', leadId);
+
+      if (error) throw error;
+
+      // Update local state
+      setLeads(prev => prev.map(lead => 
+        lead.id === leadId ? { ...lead, shared_notes: notes } : lead
+      ));
+    } catch (error) {
+      console.error('Error updating shared notes:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update shared notes",
+        variant: "destructive"
+      });
+    }
+  };
+
   const updatePartnerLoanAmount = async (leadId: string, amount: string) => {
     try {
       const numericAmount = amount ? parseInt(amount) : null;
@@ -2023,6 +2049,7 @@ const Admin = () => {
                             {sortField !== 'partner_loan_amount' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
                           </Button>
                         </TableHead>}
+                        {isSuperAdmin && <TableHead className="min-w-[200px]">Shared Notes</TableHead>}
                         {isSuperAdmin && <TableHead className="min-w-[100px]">Admin</TableHead>}
                       </TableRow>
                     </TableHeader>
@@ -2357,7 +2384,18 @@ const Admin = () => {
                               </div>
                             </TableCell>}
                           {isSuperAdmin && <TableCell>
-                              <Input type="number" placeholder="Enter amount..." value={lead.partner_loan_amount || ""} onChange={e => updatePartnerLoanAmount(lead.id, e.target.value)} className="w-32" />
+                            <Input type="number" placeholder="Enter amount..." value={lead.partner_loan_amount || ""} onChange={e => updatePartnerLoanAmount(lead.id, e.target.value)} className="w-32" />
+                          </TableCell>}
+                          {isSuperAdmin && <TableCell>
+                              <div className="max-w-[200px]">
+                                <Textarea
+                                  placeholder="Shared notes..."
+                                  value={lead.shared_notes || ""}
+                                  onChange={(e) => updateSharedNotes(lead.id, e.target.value)}
+                                  rows={2}
+                                  className="text-xs resize-none"
+                                />
+                              </div>
                             </TableCell>}
                           {isSuperAdmin && <TableCell>
                               <Button variant="destructive" size="sm" onClick={() => {
