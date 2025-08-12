@@ -85,6 +85,16 @@ interface QuizResponse {
   assigned_partner_id?: string;
 }
 
+interface USADraft {
+  id: string;
+  user_id?: string;
+  form_data: any;
+  current_step: number;
+  last_updated: string;
+  quiz_response_id?: string;
+  created_at: string;
+}
+
 interface USAApplicationsManagementProps {
   onCountUpdate?: () => void;
   restrictToQuizIds?: string[];
@@ -103,6 +113,8 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
   const [stageFilter, setStageFilter] = useState("all");
   const [selectedApplication, setSelectedApplication] = useState<USAApplication | null>(null);
   const [notes, setNotes] = useState("");
+  const [drafts, setDrafts] = useState<USADraft[]>([]);
+  const [filteredDrafts, setFilteredDrafts] = useState<USADraft[]>([]);
 
   useEffect(() => {
     fetchApplications();
@@ -179,6 +191,7 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
       // Partner mode: if we have explicit restrictions and none found, return empty
       if (partnerMode && restrictToQuizIds && restrictToQuizIds.length === 0) {
         setApplications([]);
+        setDrafts([]);
         setLoading(false);
         return;
       }
@@ -197,6 +210,20 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
       if (error) throw error;
 
       setApplications(data || []);
+
+      // Fetch USA application drafts
+      let draftQuery = supabase
+        .from('usa_application_drafts')
+        .select('*')
+        .order('last_updated', { ascending: false });
+      if (restrictToQuizIds && restrictToQuizIds.length > 0) {
+        draftQuery = draftQuery.in('quiz_response_id', restrictToQuizIds);
+      }
+      const { data: draftData, error: draftError } = await draftQuery;
+      if (!draftError) {
+        setDrafts(draftData || []);
+      }
+
 
       // Fetch related quiz responses and assigned partners
       const quizIds = data?.filter(app => app.quiz_response_id).map(app => app.quiz_response_id) || [];
@@ -260,6 +287,18 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
     }
 
     setFilteredApplications(filtered);
+
+    // Filter drafts using the same search term
+    const draftFiltered = drafts.filter((d) => {
+      if (!searchTerm) return true;
+      const term = searchTerm.toLowerCase();
+      const fd = (d as any).form_data || {};
+      const company = String(fd.legal_corporation_name || fd.legal_business_name || '').toLowerCase();
+      const email = String(fd.email_address || '').toLowerCase();
+      const phone = String(fd.telephone_number || fd.business_phone || '').toLowerCase();
+      return company.includes(term) || email.includes(term) || phone.includes(term);
+    });
+    setFilteredDrafts(draftFiltered);
   };
 
   const updateApplicationStatus = async (id: string, status: string, notes?: string) => {
@@ -709,6 +748,39 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
           </div>
         </CardContent>
       </Card>
+
+      {/* Draft Applications */}
+      {filteredDrafts.length > 0 && (
+        <div className="grid gap-4">
+          {filteredDrafts.map((draft) => {
+            const fd = (draft as any).form_data || {};
+            const company = fd.legal_corporation_name || fd.legal_business_name || 'Untitled';
+            const email = fd.email_address || '—';
+            const phone = fd.telephone_number || fd.business_phone || '—';
+            return (
+              <Card key={draft.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-6 flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-primary" />
+                      <span className="font-semibold">{company}</span>
+                      <Badge variant="outline">Draft</Badge>
+                    </div>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                      <div className="flex items-center gap-1"><Mail className="h-3 w-3" />{email}</div>
+                      <div className="flex items-center gap-1"><Phone className="h-3 w-3" />{phone}</div>
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground text-right">
+                    <div>Step {draft.current_step}</div>
+                    <div>Updated: {new Date(draft.last_updated).toLocaleDateString()}</div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
 
       {/* Applications List */}
       <div className="grid gap-4">
