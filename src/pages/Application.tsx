@@ -105,7 +105,7 @@ const Application = () => {
   const [showAuth, setShowAuth] = useState(false);
   const [autoFilledBusinessAge, setAutoFilledBusinessAge] = useState(false);
   const { user, loading } = useAuth();
-  const totalSteps = 6;
+  const totalSteps = 2;
   
   const [formData, setFormData] = useState<ApplicationData>({
     // Company Information
@@ -315,21 +315,10 @@ const Application = () => {
 
   const getStepRequiredFields = (step: number): string[] => {
     switch (step) {
-      case 1: // Company Information
-        return ['legal_corporation_name', 'physical_address', 'city', 'state', 'zip', 'entity_type', 'telephone_number', 'email_address'];
-      case 2: // Federal & State Information
-        return ['federal_tax_id'];
-      case 3: // Principal Information
+      case 1: // Company + EIN + Loan Info
+        return ['legal_corporation_name', 'physical_address', 'city', 'state', 'zip', 'entity_type', 'telephone_number', 'email_address', 'federal_tax_id', 'loan_amount_requested', 'use_of_funds'];
+      case 2: // Principal + Submit
         return ['principal_name', 'principal_title', 'principal_ssn', 'principal_date_of_birth', 'principal_home_address', 'principal_city', 'principal_state', 'principal_zip', 'principal_email', 'principal_ownership_percentage'];
-      case 4: // Business Information
-        return [
-          ...(autoFilledBusinessAge ? [] : ['years_in_business', 'months_in_business']),
-          'number_of_employees', 'business_type', 'business_description'
-        ];
-      case 5: // Bank & Financial Information
-        return ['bank_name', 'bank_account_type', 'bank_routing_number', 'bank_account_number', 'months_with_bank', 'average_monthly_deposits'];
-      case 6: // Loan Information
-        return ['loan_amount_requested', 'use_of_funds'];
       default:
         return [];
     }
@@ -579,9 +568,9 @@ const Application = () => {
                 <Building2 className="h-5 w-5" />
                 Company Information
               </CardTitle>
-              <CardDescription>Tell us about your business</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
+              {/* Company basics */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="legal_corporation_name">Legal Corporation Name *</Label>
@@ -710,6 +699,84 @@ const Application = () => {
                   className={getFieldValidationClass('email_address', getStepRequiredFields(1))}
                   placeholder="business@example.com"
                 />
+              </div>
+
+              {/* EIN and Incorporation */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="federal_tax_id">Federal Tax ID (EIN) *</Label>
+                  <Input
+                    id="federal_tax_id"
+                    value={formData.federal_tax_id}
+                    onChange={(e) => {
+                      const formatted = e.target.value.replace(/\D/g, '').replace(/(\d{2})(\d{7})/, '$1-$2');
+                      updateFormData('federal_tax_id', formatted.slice(0, 10));
+                    }}
+                    placeholder="12-3456789"
+                    maxLength={10}
+                    required
+                    className={getFieldValidationClass('federal_tax_id', getStepRequiredFields(1))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="state_tax_id">State Tax ID</Label>
+                  <Input
+                    id="state_tax_id"
+                    value={formData.state_tax_id}
+                    onChange={(e) => updateFormData('state_tax_id', e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="state_of_incorporation">State of Incorporation</Label>
+                  <Select value={formData.state_of_incorporation} onValueChange={(value) => updateFormData('state_of_incorporation', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select state" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {US_STATES.map((state) => (
+                        <SelectItem key={state} value={state}>{state}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="date_incorporated">Date Incorporated</Label>
+                  <Input
+                    id="date_incorporated"
+                    type="date"
+                    value={formData.date_incorporated}
+                    onChange={(e) => updateFormData('date_incorporated', e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Loan Information */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="loan_amount_requested">Loan Amount Requested *</Label>
+                  <Input
+                    id="loan_amount_requested"
+                    type="number"
+                    min="1000"
+                    value={formData.loan_amount_requested}
+                    onChange={(e) => updateFormData('loan_amount_requested', e.target.value)}
+                    placeholder="$1,000"
+                    required
+                    className={getFieldValidationClass('loan_amount_requested', getStepRequiredFields(1))}
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="use_of_funds">Use of Funds *</Label>
+                  <Textarea
+                    id="use_of_funds"
+                    value={formData.use_of_funds}
+                    onChange={(e) => updateFormData('use_of_funds', e.target.value)}
+                    rows={4}
+                    placeholder="Please describe how you plan to use the loan funds..."
+                    required
+                    className={getFieldValidationClass('use_of_funds', getStepRequiredFields(1))}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
