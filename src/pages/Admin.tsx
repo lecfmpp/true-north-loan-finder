@@ -64,7 +64,7 @@ const isQualifiedLead = (lead: any) => {
   const creditOk = getCreditScoreApprox(lead.credit_score) >= 600;
   return revenueOk && tibOk && creditOk;
 };
-import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Trash2, Phone, ChevronDown, ChevronRight, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign, Settings as SettingsIcon, ExternalLink, TrendingUp, ChevronUp, ArrowUpDown } from 'lucide-react';
+import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Trash2, Phone, ChevronDown, ChevronRight, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign, Settings as SettingsIcon, ExternalLink, TrendingUp, ChevronUp, ArrowUpDown, Save } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import Header from '@/components/Header';
@@ -200,6 +200,8 @@ const Admin = () => {
     id: string;
     booking_status: string;
   }>>([]);
+  const [editingNotes, setEditingNotes] = useState<{ [key: string]: string }>({});
+  const [savingNotes, setSavingNotes] = useState<{ [key: string]: boolean }>({});
   const {
     user,
     isAdmin,
@@ -1384,7 +1386,11 @@ const Admin = () => {
       });
     }
   };
-  const updateSharedNotes = async (leadId: string, notes: string) => {
+  const saveSharedNotes = async (leadId: string) => {
+    const notes = editingNotes[leadId];
+    if (notes === undefined) return;
+
+    setSavingNotes(prev => ({ ...prev, [leadId]: true }));
     try {
       const { error } = await supabase
         .from('quiz_responses')
@@ -1397,6 +1403,18 @@ const Admin = () => {
       setLeads(prev => prev.map(lead => 
         lead.id === leadId ? { ...lead, shared_notes: notes } : lead
       ));
+
+      // Clear editing state
+      setEditingNotes(prev => {
+        const newState = { ...prev };
+        delete newState[leadId];
+        return newState;
+      });
+
+      toast({
+        title: "Success",
+        description: "Shared notes updated successfully",
+      });
     } catch (error) {
       console.error('Error updating shared notes:', error);
       toast({
@@ -1404,6 +1422,8 @@ const Admin = () => {
         description: "Failed to update shared notes",
         variant: "destructive"
       });
+    } finally {
+      setSavingNotes(prev => ({ ...prev, [leadId]: false }));
     }
   };
 
@@ -2386,15 +2406,26 @@ const Admin = () => {
                           {isSuperAdmin && <TableCell>
                             <Input type="number" placeholder="Enter amount..." value={lead.partner_loan_amount || ""} onChange={e => updatePartnerLoanAmount(lead.id, e.target.value)} className="w-32" />
                           </TableCell>}
-                          {isSuperAdmin && <TableCell>
-                              <div className="max-w-[200px]">
+                           {isSuperAdmin && <TableCell>
+                              <div className="max-w-[200px] space-y-2">
                                 <Textarea
                                   placeholder="Shared notes..."
-                                  value={lead.shared_notes || ""}
-                                  onChange={(e) => updateSharedNotes(lead.id, e.target.value)}
+                                  value={editingNotes[lead.id] !== undefined ? editingNotes[lead.id] : (lead.shared_notes || "")}
+                                  onChange={(e) => setEditingNotes(prev => ({ ...prev, [lead.id]: e.target.value }))}
                                   rows={2}
                                   className="text-xs resize-none"
                                 />
+                                {editingNotes[lead.id] !== undefined && (
+                                  <Button
+                                    size="sm"
+                                    onClick={() => saveSharedNotes(lead.id)}
+                                    disabled={savingNotes[lead.id]}
+                                    className="w-full"
+                                  >
+                                    <Save className="w-3 h-3 mr-1" />
+                                    {savingNotes[lead.id] ? "Saving..." : "Save"}
+                                  </Button>
+                                )}
                               </div>
                             </TableCell>}
                           {isSuperAdmin && <TableCell>
