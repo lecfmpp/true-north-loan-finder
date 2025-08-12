@@ -1963,7 +1963,7 @@ const Admin = () => {
                   <CardTitle className="text-sm font-medium">New Leads</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{filteredLeads.filter(l => l.status === 'new' && !isQualifiedLead(l)).length}</div>
+                  <div className="text-2xl font-bold">{filteredLeads.filter(l => (l.status || '').toString().trim().toLowerCase().replace(/_/g, ' ') === 'new').length}</div>
                 </CardContent>
               </Card>
               <Card>
@@ -1979,7 +1979,7 @@ const Admin = () => {
                   <CardTitle className="text-sm font-medium">Closed</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{filteredLeads.filter(l => l.status === 'loan_approved').length}</div>
+                  <div className="text-2xl font-bold">{filteredLeads.filter(l => (l.status || '').toString().trim().toLowerCase().replace(/_/g, ' ') === 'loan approved').length}</div>
                 </CardContent>
               </Card>
             </div>
