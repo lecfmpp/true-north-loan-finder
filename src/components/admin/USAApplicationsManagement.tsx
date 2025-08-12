@@ -73,6 +73,23 @@ interface USAApplication {
   updated_at: string;
 }
 
+interface USASimplifiedApplication {
+  id: string;
+  application_reference_number: string | null;
+  legal_corporation_name: string;
+  email_address: string;
+  telephone_number: string;
+  loan_amount_requested: number;
+  status: string;
+  conversion_stage: string | null;
+  lead_source: string | null;
+  quiz_response_id?: string | null;
+  user_id?: string | null;
+  admin_notes?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 interface QuizResponse {
   id: string;
   name: string;
@@ -103,10 +120,12 @@ interface USAApplicationsManagementProps {
 
 export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps> = ({ onCountUpdate, restrictToQuizIds, partnerMode }) => {
   const { isSuperAdmin } = useAuth();
-  const [applications, setApplications] = useState<USAApplication[]>([]);
-  const [filteredApplications, setFilteredApplications] = useState<USAApplication[]>([]);
-  const [quizResponses, setQuizResponses] = useState<Record<string, QuizResponse>>({});
-  const [partners, setPartners] = useState<Record<string, { name: string; email: string }>>({});
+const [applications, setApplications] = useState<USAApplication[]>([]);
+const [filteredApplications, setFilteredApplications] = useState<USAApplication[]>([]);
+const [simplifiedApps, setSimplifiedApps] = useState<USASimplifiedApplication[]>([]);
+const [filteredSimplifiedApps, setFilteredSimplifiedApps] = useState<USASimplifiedApplication[]>([]);
+const [quizResponses, setQuizResponses] = useState<Record<string, QuizResponse>>({});
+const [partners, setPartners] = useState<Record<string, { name: string; email: string }>>({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [leadFilter, setLeadFilter] = useState<'all' | LeadStatus>('all');
@@ -121,9 +140,9 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
     fetchApplications();
   }, []);
 
-  useEffect(() => {
-    filterApplications();
-  }, [applications, searchTerm, leadFilter, appTypeFilter]);
+useEffect(() => {
+  filterApplications();
+}, [applications, simplifiedApps, searchTerm, leadFilter, appTypeFilter]);
 
   // Auto-link applications without quiz by matching applicant email to quiz response email
   const autoLinkMissingApplications = async (apps: USAApplication[]) => {
@@ -197,38 +216,50 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
         return;
       }
 
-      let query = supabase
-        .from('usa_applications')
-        .select('*')
-        .order('created_at', { ascending: false });
+let query = supabase
+  .from('usa_applications')
+  .select('*')
+  .order('created_at', { ascending: false });
 
-      if (restrictToQuizIds && restrictToQuizIds.length > 0) {
-        query = query.in('quiz_response_id', restrictToQuizIds);
-      }
+if (restrictToQuizIds && restrictToQuizIds.length > 0) {
+  query = query.in('quiz_response_id', restrictToQuizIds);
+}
 
-      const { data, error } = await query;
+const { data, error } = await query;
+if (error) throw error;
+setApplications(data || []);
 
-      if (error) throw error;
+// Fetch USA applications (2-step simplified)
+let simplifiedQuery = supabase
+  .from('usa_applications_simplified')
+  .select('*')
+  .order('created_at', { ascending: false });
+if (restrictToQuizIds && restrictToQuizIds.length > 0) {
+  simplifiedQuery = simplifiedQuery.in('quiz_response_id', restrictToQuizIds);
+}
+const { data: simplifiedData, error: simplifiedError } = await simplifiedQuery;
+if (simplifiedError) throw simplifiedError;
+setSimplifiedApps(simplifiedData || []);
 
-      setApplications(data || []);
+// Fetch USA application drafts
+let draftQuery = supabase
+  .from('usa_application_drafts')
+  .select('*')
+  .order('last_updated', { ascending: false });
+if (restrictToQuizIds && restrictToQuizIds.length > 0) {
+  draftQuery = draftQuery.in('quiz_response_id', restrictToQuizIds);
+}
+const { data: draftData, error: draftError } = await draftQuery;
+if (!draftError) {
+  setDrafts(draftData || []);
+}
 
-      // Fetch USA application drafts
-      let draftQuery = supabase
-        .from('usa_application_drafts')
-        .select('*')
-        .order('last_updated', { ascending: false });
-      if (restrictToQuizIds && restrictToQuizIds.length > 0) {
-        draftQuery = draftQuery.in('quiz_response_id', restrictToQuizIds);
-      }
-      const { data: draftData, error: draftError } = await draftQuery;
-      if (!draftError) {
-        setDrafts(draftData || []);
-      }
-
-
-      // Fetch related quiz responses and assigned partners
-      const quizIds = data?.filter(app => app.quiz_response_id).map(app => app.quiz_response_id) || [];
-      if (quizIds.length > 0) {
+// Fetch related quiz responses and assigned partners
+const quizIds = Array.from(new Set([
+  ...(data?.filter(a => a.quiz_response_id).map(a => a.quiz_response_id!) || []),
+  ...(simplifiedData?.filter(a => a.quiz_response_id).map(a => a.quiz_response_id!) || []),
+]));
+if (quizIds.length > 0) {
         const { data: quizData, error: quizError } = await supabase
           .from('quiz_responses')
           .select('*')
@@ -266,49 +297,70 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
     }
   };
 
-  const filterApplications = () => {
-    // Filter complete applications
-    let filtered = [...applications];
+const filterApplications = () => {
+  // Filter complete applications
+  let filtered = [...applications];
 
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(app =>
-        app.application_reference_number.toLowerCase().includes(term) ||
-        app.legal_corporation_name.toLowerCase().includes(term) ||
-        app.email_address.toLowerCase().includes(term) ||
-        app.telephone_number.includes(term)
-      );
-    }
+  if (searchTerm) {
+    const term = searchTerm.toLowerCase();
+    filtered = filtered.filter(app =>
+      (app.application_reference_number || '').toLowerCase().includes(term) ||
+      app.legal_corporation_name.toLowerCase().includes(term) ||
+      app.email_address.toLowerCase().includes(term) ||
+      app.telephone_number.includes(term)
+    );
+  }
 
-    if (leadFilter !== 'all') {
-      filtered = filtered.filter(app => {
-        if (!app.quiz_response_id) return false;
-        const lead = quizResponses[app.quiz_response_id];
-        const normalized = normalizeLeadStatus(lead?.status);
-        return normalized === leadFilter;
-      });
-    }
+  if (leadFilter !== 'all') {
+    filtered = filtered.filter(app => {
+      if (!app.quiz_response_id) return false;
+      const lead = quizResponses[app.quiz_response_id];
+      const normalized = normalizeLeadStatus(lead?.status);
+      return normalized === leadFilter;
+    });
+  }
 
-    // Apply application type filter visibility
-    const showComplete = appTypeFilter !== 'draft';
-    const showDraft = appTypeFilter !== 'complete';
+  // Apply application type filter visibility
+  const showComplete = appTypeFilter !== 'draft';
+  const showDraft = appTypeFilter !== 'complete';
 
-    setFilteredApplications(showComplete ? filtered : []);
+  setFilteredApplications(showComplete ? filtered : []);
 
-    // Filter drafts using the same search term
-    let draftFiltered = drafts;
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      draftFiltered = drafts.filter((d) => {
-        const fd = (d as any).form_data || {};
-        const company = String(fd.legal_corporation_name || fd.legal_business_name || '').toLowerCase();
-        const email = String(fd.email_address || '').toLowerCase();
-        const phone = String(fd.telephone_number || fd.business_phone || '').toLowerCase();
-        return company.includes(term) || email.includes(term) || phone.includes(term);
-      });
-    }
-    setFilteredDrafts(showDraft ? draftFiltered : []);
-  };
+  // Filter simplified applications
+  let simplifiedFiltered = [...simplifiedApps];
+  if (searchTerm) {
+    const term = searchTerm.toLowerCase();
+    simplifiedFiltered = simplifiedFiltered.filter(app =>
+      (app.application_reference_number || '').toLowerCase().includes(term) ||
+      app.legal_corporation_name.toLowerCase().includes(term) ||
+      app.email_address.toLowerCase().includes(term) ||
+      (app.telephone_number || '').toLowerCase().includes(term)
+    );
+  }
+  if (leadFilter !== 'all') {
+    simplifiedFiltered = simplifiedFiltered.filter(app => {
+      if (!app.quiz_response_id) return false;
+      const lead = quizResponses[app.quiz_response_id!];
+      const normalized = normalizeLeadStatus(lead?.status);
+      return normalized === leadFilter;
+    });
+  }
+  setFilteredSimplifiedApps(showComplete ? simplifiedFiltered : []);
+
+  // Filter drafts using the same search term
+  let draftFiltered = drafts;
+  if (searchTerm) {
+    const term = searchTerm.toLowerCase();
+    draftFiltered = drafts.filter((d) => {
+      const fd = (d as any).form_data || {};
+      const company = String(fd.legal_corporation_name || fd.legal_business_name || '').toLowerCase();
+      const email = String(fd.email_address || '').toLowerCase();
+      const phone = String(fd.telephone_number || fd.business_phone || '').toLowerCase();
+      return company.includes(term) || email.includes(term) || phone.includes(term);
+    });
+  }
+  setFilteredDrafts(showDraft ? draftFiltered : []);
+};
 
   const updateApplicationStatus = async (id: string, status: string, notes?: string) => {
     try {
@@ -939,9 +991,84 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
             </Card>
           );
         })}
-      </div>
+</div>
 
-      {/* Draft Applications */}
+{/* USA Applications (2-Step) */}
+{appTypeFilter !== 'draft' && filteredSimplifiedApps.length > 0 && (
+  <>
+    <div className="flex justify-between items-center">
+      <h3 className="text-xl font-semibold">USA Applications (2-Step)</h3>
+      <div className="text-sm text-muted-foreground">
+        Total: {simplifiedApps.length} | Showing: {filteredSimplifiedApps.length}
+      </div>
+    </div>
+    <div className="grid gap-4">
+      {filteredSimplifiedApps.map((app) => {
+        const linkedQuiz = app.quiz_response_id ? quizResponses[app.quiz_response_id] : null;
+        return (
+          <Card key={app.id} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                <div className="lg:col-span-2 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-primary" />
+                    <span className="font-mono text-sm font-bold text-primary">
+                      {app.application_reference_number}
+                    </span>
+                    {app.lead_source && getSourceBadge(app.lead_source)}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-semibold">{app.legal_corporation_name}</span>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Mail className="h-3 w-3" />
+                      {app.email_address}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Phone className="h-3 w-3" />
+                      {app.telephone_number}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="font-medium">Loan Amount:</span>
+                    <span className="text-green-600 font-semibold">
+                      ${app.loan_amount_requested.toLocaleString()}
+                    </span>
+                  </div>
+                  {linkedQuiz && (
+                    <div className="text-sm text-blue-600">
+                      <span className="font-medium">Linked Quiz Lead:</span> {linkedQuiz.name}
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    {getStatusBadge(app.status)}
+                    {app.conversion_stage && getStageBadge(app.conversion_stage)}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    <div>Applied: {new Date(app.created_at).toLocaleDateString()}</div>
+                    <div>Updated: {new Date(app.updated_at).toLocaleDateString()}</div>
+                  </div>
+                </div>
+              </div>
+              {app.admin_notes && (
+                <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
+                  <span className="text-sm font-medium">Admin Notes:</span>
+                  <p className="text-sm mt-1">{app.admin_notes}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })}
+    </div>
+  </>
+)}
+
+{/* Draft Applications */}
       {filteredDrafts.length > 0 && appTypeFilter !== 'complete' && (
         <div className="grid gap-4">
           {filteredDrafts.map((draft) => {
