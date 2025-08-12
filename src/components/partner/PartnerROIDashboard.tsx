@@ -4,8 +4,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { TrendingUp, Filter } from "lucide-react";
-import { ResponsiveContainer, FunnelChart, Funnel, Tooltip, LabelList } from "recharts";
+import { TrendingUp, Filter, Users, ShieldCheck, PhoneCall, Banknote } from "lucide-react";
+
 
 // Simple currency helpers
 const toCurrency = (cents: number) =>
@@ -290,18 +290,28 @@ export default function PartnerROIDashboard() {
         </Card>
       </div>
 
-      {/* Funnel Chart */}
+      {/* Funnel - mobile friendly, simple, consistent shapes */}
       <Card>
         <CardHeader className="pb-2"><CardTitle className="text-sm">Conversion Funnel</CardTitle></CardHeader>
-        <CardContent className="h-72">
-          <ResponsiveContainer width="100%" height="100%">
-            <FunnelChart>
-              <Tooltip formatter={(v: any) => [v, "Count"]} />
-              <Funnel dataKey="value" data={funnelData} isAnimationActive>
-                <LabelList position="right" fill="currentColor" stroke="none" dataKey="name" formatter={(v: any) => v} />
-              </Funnel>
-            </FunnelChart>
-          </ResponsiveContainer>
+        <CardContent>
+          <div className="flex flex-col gap-3">
+            {[
+              { label: "Total Leads", value: totalLeads, Icon: Users, cls: "bg-blue-50 text-blue-700" },
+              { label: "Qualified", value: qualified.length, Icon: ShieldCheck, cls: "bg-emerald-50 text-emerald-700" },
+              { label: "Contacted", value: contactedLeads, Icon: PhoneCall, cls: "bg-amber-50 text-amber-700" },
+              { label: "Funded", value: funded.length, Icon: Banknote, cls: "bg-purple-50 text-purple-700" },
+            ].map((s) => (
+              <div key={s.label} className={`${s.cls} rounded-xl px-4 py-3 flex items-center justify-between`}>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-background/60 flex items-center justify-center">
+                    <s.Icon className="h-5 w-5" />
+                  </div>
+                  <span className="font-medium">{s.label}</span>
+                </div>
+                <span className="text-2xl font-bold">{toCompact(s.value)}</span>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
     </div>
