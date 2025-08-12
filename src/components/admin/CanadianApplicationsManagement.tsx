@@ -113,8 +113,8 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
   const [partners, setPartners] = useState<Record<string, { name: string; email: string }>>({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [stageFilter, setStageFilter] = useState("all");
+  const [leadFilter, setLeadFilter] = useState<'all' | LeadStatus>('all');
+  const [appTypeFilter, setAppTypeFilter] = useState<'all' | 'complete' | 'draft'>('all');
   const [selectedApplication, setSelectedApplication] = useState<CanadianApplication | null>(null);
   const [notes, setNotes] = useState("");
   const [drafts, setDrafts] = useState<CanadianDraft[]>([]);
@@ -127,7 +127,7 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
 
   useEffect(() => {
     filterApplications();
-  }, [applications, searchTerm, statusFilter, stageFilter]);
+  }, [applications, searchTerm, leadFilter, appTypeFilter]);
 
   // Auto-link applications without quiz by matching applicant email to quiz response email
   const autoLinkMissingApplications = async (apps: CanadianApplication[]) => {
@@ -280,34 +280,41 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(app =>
-        app.application_reference_number.toLowerCase().includes(term) ||
+        (app.application_reference_number || '').toLowerCase().includes(term) ||
         app.legal_business_name.toLowerCase().includes(term) ||
         app.email_address.toLowerCase().includes(term) ||
         app.business_phone.includes(term)
       );
     }
 
-    if (statusFilter !== "all") {
-      filtered = filtered.filter(app => app.status === statusFilter);
+    if (leadFilter !== 'all') {
+      filtered = filtered.filter(app => {
+        if (!app.quiz_response_id) return false;
+        const lead = quizResponses[app.quiz_response_id];
+        const normalized = normalizeLeadStatus(lead?.status);
+        return normalized === leadFilter;
+      });
     }
 
-    if (stageFilter !== "all") {
-      filtered = filtered.filter(app => app.conversion_stage === stageFilter);
-    }
+    // Apply application type filter visibility
+    const showComplete = appTypeFilter !== 'draft';
+    const showDraft = appTypeFilter !== 'complete';
 
-    setFilteredApplications(filtered);
+    setFilteredApplications(showComplete ? filtered : []);
 
     // Filter drafts using the same search term
-    const draftFiltered = drafts.filter((d) => {
-      if (!searchTerm) return true;
+    let draftFiltered = drafts;
+    if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      const fd = (d as any).form_data || {};
-      const company = String(fd.legal_business_name || fd.legal_corporation_name || '').toLowerCase();
-      const email = String(fd.email_address || '').toLowerCase();
-      const phone = String(fd.business_phone || fd.telephone_number || '').toLowerCase();
-      return company.includes(term) || email.includes(term) || phone.includes(term);
-    });
-    setFilteredDrafts(draftFiltered);
+      draftFiltered = drafts.filter((d) => {
+        const fd = (d as any).form_data || {};
+        const company = String(fd.legal_business_name || fd.legal_corporation_name || '').toLowerCase();
+        const email = String(fd.email_address || '').toLowerCase();
+        const phone = String(fd.business_phone || fd.telephone_number || '').toLowerCase();
+        return company.includes(term) || email.includes(term) || phone.includes(term);
+      });
+    }
+    setFilteredDrafts(showDraft ? draftFiltered : []);
   };
 
   const updateApplicationStatus = async (id: string, status: string, notes?: string) => {
@@ -837,30 +844,30 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
               />
             </div>
             
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={leadFilter} onValueChange={(val) => setLeadFilter(val as any)}>
               <SelectTrigger>
-                <SelectValue placeholder="Filter by status" />
+                <SelectValue placeholder="Lead Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="applicant">Applicant</SelectItem>
-                <SelectItem value="in_review">In Review</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
+                <SelectItem value="all">All Lead Statuses</SelectItem>
+                <SelectItem value="New"><Badge className="bg-blue-100 text-blue-800">New</Badge></SelectItem>
+                <SelectItem value="No Answer"><Badge className="bg-gray-100 text-gray-800">No Answer</Badge></SelectItem>
+                <SelectItem value="Wrong Number"><Badge className="bg-red-100 text-red-800">Wrong Number</Badge></SelectItem>
+                <SelectItem value="Contacted"><Badge className="bg-yellow-100 text-yellow-800">Contacted</Badge></SelectItem>
+                <SelectItem value="Application Sent"><Badge className="bg-purple-100 text-purple-800">Application Sent</Badge></SelectItem>
+                <SelectItem value="Disqualified"><Badge className="bg-red-100 text-red-800">Disqualified</Badge></SelectItem>
+                <SelectItem value="Loan Approved"><Badge className="bg-green-100 text-green-800">Loan Approved</Badge></SelectItem>
               </SelectContent>
             </Select>
 
-            <Select value={stageFilter} onValueChange={setStageFilter}>
+            <Select value={appTypeFilter} onValueChange={(val) => setAppTypeFilter(val as any)}>
               <SelectTrigger>
-                <SelectValue placeholder="Filter by stage" />
+                <SelectValue placeholder="Application Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Stages</SelectItem>
-                <SelectItem value="lead">Lead</SelectItem>
-                <SelectItem value="application">Application</SelectItem>
-                <SelectItem value="in_review">In Review</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
+                <SelectItem value="all">All (Draft + Complete)</SelectItem>
+                <SelectItem value="complete">Complete</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
               </SelectContent>
             </Select>
 
@@ -868,8 +875,8 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
               variant="outline" 
               onClick={() => {
                 setSearchTerm("");
-                setStatusFilter("all");
-                setStageFilter("all");
+                setLeadFilter('all');
+                setAppTypeFilter('all');
               }}
             >
               Clear Filters
@@ -879,7 +886,7 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
       </Card>
 
       {/* Draft Applications */}
-      {filteredDrafts.length > 0 && (
+      {filteredDrafts.length > 0 && appTypeFilter !== 'complete' && (
         <div className="grid gap-4">
           {filteredDrafts.map((draft) => {
             const fd = (draft as any).form_data || {};
@@ -928,12 +935,20 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
         </div>
       )}
 
-      {/* Applications List */}
-      <div className="grid gap-4">
-        {filteredApplications.map((application) => {
-          const linkedQuiz = application.quiz_response_id ? quizResponses[application.quiz_response_id] : null;
-          
-          return (
+      {/* Complete Applications */}
+      {appTypeFilter !== 'draft' && (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold">Complete Applications</h2>
+            <div className="text-sm text-muted-foreground">
+              Total: {applications.length} | Showing: {filteredApplications.length}
+            </div>
+          </div>
+        <div className="grid gap-4">
+          {filteredApplications.map((application) => {
+            const linkedQuiz = application.quiz_response_id ? quizResponses[application.quiz_response_id] : null;
+            
+            return (
             <Card key={application.id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-6">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
@@ -1068,7 +1083,9 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
             </Card>
           );
         })}
-      </div>
+        </div>
+        </div>
+      )}
 
       {/* Application Details Modal */}
       {selectedApplication && (
