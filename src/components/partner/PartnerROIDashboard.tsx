@@ -303,7 +303,7 @@ export default function PartnerROIDashboard() {
             ].map((s) => (
               <div key={s.label} className={`${s.cls} rounded-xl px-4 py-3 flex items-center justify-between`}>
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-background/60 flex items-center justify-center">
+                  <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center">
                     <s.Icon className="h-5 w-5" />
                   </div>
                   <span className="font-medium">{s.label}</span>
