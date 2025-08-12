@@ -296,15 +296,15 @@ export default function PartnerROIDashboard() {
         <CardContent>
           <div className="flex flex-col gap-3">
             {[
-              { label: "Total Leads", value: totalLeads, Icon: Users, cls: "bg-blue-50 text-blue-700" },
-              { label: "Qualified", value: qualified.length, Icon: ShieldCheck, cls: "bg-emerald-50 text-emerald-700" },
-              { label: "Contacted", value: contactedLeads, Icon: PhoneCall, cls: "bg-amber-50 text-amber-700" },
-              { label: "Funded", value: funded.length, Icon: Banknote, cls: "bg-purple-50 text-purple-700" },
+              { label: "Total Leads", value: totalLeads, Icon: Users, cls: "bg-blue-50 text-blue-700", iconBg: "bg-blue-600" },
+              { label: "Qualified", value: qualified.length, Icon: ShieldCheck, cls: "bg-emerald-50 text-emerald-700", iconBg: "bg-emerald-600" },
+              { label: "Contacted", value: contactedLeads, Icon: PhoneCall, cls: "bg-amber-50 text-amber-700", iconBg: "bg-amber-600" },
+              { label: "Funded", value: funded.length, Icon: Banknote, cls: "bg-purple-50 text-purple-700", iconBg: "bg-purple-600" },
             ].map((s) => (
               <div key={s.label} className={`${s.cls} rounded-xl px-4 py-3 flex items-center justify-between`}>
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center">
-                    <s.Icon className="h-5 w-5" />
+                  <div className={`h-10 w-10 rounded-full flex items-center justify-center ${s.iconBg}`}>
+                    <s.Icon className="h-5 w-5 text-white" />
                   </div>
                   <span className="font-medium">{s.label}</span>
                 </div>
