@@ -109,8 +109,8 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
   const [partners, setPartners] = useState<Record<string, { name: string; email: string }>>({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [stageFilter, setStageFilter] = useState("all");
+  const [leadFilter, setLeadFilter] = useState<'all' | LeadStatus>('all');
+  const [appTypeFilter, setAppTypeFilter] = useState<'all' | 'complete' | 'draft'>('all');
   const [selectedApplication, setSelectedApplication] = useState<USAApplication | null>(null);
   const [notes, setNotes] = useState("");
   const [drafts, setDrafts] = useState<USADraft[]>([]);
@@ -123,7 +123,7 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
 
   useEffect(() => {
     filterApplications();
-  }, [applications, searchTerm, statusFilter, stageFilter]);
+  }, [applications, searchTerm, leadFilter, appTypeFilter]);
 
   // Auto-link applications without quiz by matching applicant email to quiz response email
   const autoLinkMissingApplications = async (apps: USAApplication[]) => {
@@ -267,6 +267,7 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
   };
 
   const filterApplications = () => {
+    // Filter complete applications
     let filtered = [...applications];
 
     if (searchTerm) {
@@ -279,27 +280,34 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
       );
     }
 
-    if (statusFilter !== "all") {
-      filtered = filtered.filter(app => app.status === statusFilter);
+    if (leadFilter !== 'all') {
+      filtered = filtered.filter(app => {
+        if (!app.quiz_response_id) return false;
+        const lead = quizResponses[app.quiz_response_id];
+        const normalized = normalizeLeadStatus(lead?.status);
+        return normalized === leadFilter;
+      });
     }
 
-    if (stageFilter !== "all") {
-      filtered = filtered.filter(app => app.conversion_stage === stageFilter);
-    }
+    // Apply application type filter visibility
+    const showComplete = appTypeFilter !== 'draft';
+    const showDraft = appTypeFilter !== 'complete';
 
-    setFilteredApplications(filtered);
+    setFilteredApplications(showComplete ? filtered : []);
 
     // Filter drafts using the same search term
-    const draftFiltered = drafts.filter((d) => {
-      if (!searchTerm) return true;
+    let draftFiltered = drafts;
+    if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      const fd = (d as any).form_data || {};
-      const company = String(fd.legal_corporation_name || fd.legal_business_name || '').toLowerCase();
-      const email = String(fd.email_address || '').toLowerCase();
-      const phone = String(fd.telephone_number || fd.business_phone || '').toLowerCase();
-      return company.includes(term) || email.includes(term) || phone.includes(term);
-    });
-    setFilteredDrafts(draftFiltered);
+      draftFiltered = drafts.filter((d) => {
+        const fd = (d as any).form_data || {};
+        const company = String(fd.legal_corporation_name || fd.legal_business_name || '').toLowerCase();
+        const email = String(fd.email_address || '').toLowerCase();
+        const phone = String(fd.telephone_number || fd.business_phone || '').toLowerCase();
+        return company.includes(term) || email.includes(term) || phone.includes(term);
+      });
+    }
+    setFilteredDrafts(showDraft ? draftFiltered : []);
   };
 
   const updateApplicationStatus = async (id: string, status: string, notes?: string) => {
@@ -747,30 +755,30 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
               />
             </div>
             
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={leadFilter} onValueChange={(val) => setLeadFilter(val as any)}>
               <SelectTrigger>
-                <SelectValue placeholder="Filter by status" />
+                <SelectValue placeholder="Lead Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="applicant">Applicant</SelectItem>
-                <SelectItem value="in_review">In Review</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
+                <SelectItem value="all">All Lead Statuses</SelectItem>
+                <SelectItem value="New"><Badge className="bg-blue-100 text-blue-800">New</Badge></SelectItem>
+                <SelectItem value="No Answer"><Badge className="bg-gray-100 text-gray-800">No Answer</Badge></SelectItem>
+                <SelectItem value="Wrong Number"><Badge className="bg-red-100 text-red-800">Wrong Number</Badge></SelectItem>
+                <SelectItem value="Contacted"><Badge className="bg-yellow-100 text-yellow-800">Contacted</Badge></SelectItem>
+                <SelectItem value="Application Sent"><Badge className="bg-purple-100 text-purple-800">Application Sent</Badge></SelectItem>
+                <SelectItem value="Disqualified"><Badge className="bg-red-100 text-red-800">Disqualified</Badge></SelectItem>
+                <SelectItem value="Loan Approved"><Badge className="bg-green-100 text-green-800">Loan Approved</Badge></SelectItem>
               </SelectContent>
             </Select>
 
-            <Select value={stageFilter} onValueChange={setStageFilter}>
+            <Select value={appTypeFilter} onValueChange={(val) => setAppTypeFilter(val as any)}>
               <SelectTrigger>
-                <SelectValue placeholder="Filter by stage" />
+                <SelectValue placeholder="Application Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Stages</SelectItem>
-                <SelectItem value="lead">Lead</SelectItem>
-                <SelectItem value="application">Application</SelectItem>
-                <SelectItem value="in_review">In Review</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
+                <SelectItem value="all">All (Draft + Complete)</SelectItem>
+                <SelectItem value="complete">Complete</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
               </SelectContent>
             </Select>
 
@@ -778,8 +786,8 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
               variant="outline" 
               onClick={() => {
                 setSearchTerm("");
-                setStatusFilter("all");
-                setStageFilter("all");
+                setLeadFilter('all');
+                setAppTypeFilter('all');
               }}
             >
               Clear Filters
