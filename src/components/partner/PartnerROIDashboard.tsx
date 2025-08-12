@@ -146,7 +146,8 @@ export default function PartnerROIDashboard() {
   const avgFundedDealCents = funded.length ? Math.round(totalFundedVolumeCents / funded.length) : 0;
   const totalAmountRequestedDollars = qualified.reduce((sum, x) => sum + (x.lead?.loan_amount || 0), 0);
 
-  const contactRate = totalLeads ? Math.round((contactedLeads / totalLeads) * 100) : 0;
+  const contactedQualified = joined.filter(x => isQualified(x.lead) && normalize(x.lead?.status) === 'contacted').length;
+  const contactRate = qualified.length ? Math.round((contactedQualified / qualified.length) * 100) : 0;
   const conversionRate = totalLeads ? Math.round((funded.length / totalLeads) * 100) : 0;
 
   // CPFD = total spend / funded deals
