@@ -31,6 +31,9 @@ const creditScoreApprox = (creditScore: string) => {
 const timeInBiz6m = (t?: string) => !!t && ["6-12","1-2","2-5","5+","+5"].includes(t);
 const isQualified = (lead: any) => (lead?.monthly_revenue || 0) >= 10000 && timeInBiz6m(lead?.time_in_business) && creditScoreApprox(lead?.credit_score) >= 600;
 
+// Normalize statuses like "Loan Approved" vs "loan_approved"
+const normalize = (s?: string) => (s || "").toString().trim().toLowerCase().replace(/_/g, " ");
+
 // Date filter options
 const DATE_PRESETS = [
   { value: "30d", label: "Last 30 days", days: 30 },
@@ -134,10 +137,14 @@ export default function PartnerROIDashboard() {
     return assignments.map(a => ({ ...a, lead: map[a.quiz_response_id] })).filter(x => !!x.lead);
   }, [assignments, leads]);
 
-  const contactedLeads = joined.filter(x => (x.lead?.status || '').toLowerCase() === 'contacted').length;
+  const contactedLeads = joined.filter(x => normalize(x.lead?.status) === 'contacted').length;
 
   const qualified = joined.filter(x => isQualified(x.lead));
-  const funded = joined.filter(x => (x.lead?.status === 'loan_approved') || (x.lead?.conversion_status === 'funded'));
+  const funded = joined.filter(x => {
+    const s = normalize(x.lead?.status);
+    const c = normalize(x.lead?.conversion_status);
+    return s === 'loan approved' || c === 'funded';
+  });
 
   const totalFundedVolumeCents = funded.reduce((sum, x) => sum + (x.lead?.partner_loan_amount || 0), 0);
   const avgFundedDealCents = funded.length ? Math.round(totalFundedVolumeCents / funded.length) : 0;
