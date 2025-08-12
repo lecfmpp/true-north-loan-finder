@@ -201,7 +201,7 @@ export default function PartnerROIDashboard() {
         </Card>
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm">Total Leads Provided</CardTitle></CardHeader>
-          <CardContent className="text-2xl font-bold">{toCompact(funded.length)}</CardContent>
+          <CardContent className="text-2xl font-bold">{toCompact(totalLeads)}</CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm">CPFD</CardTitle></CardHeader>
