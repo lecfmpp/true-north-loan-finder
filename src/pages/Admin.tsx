@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import jsPDF from 'jspdf';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -202,6 +202,7 @@ const Admin = () => {
   }>>([]);
   const [editingNotes, setEditingNotes] = useState<{ [key: string]: string }>({});
   const [savingNotes, setSavingNotes] = useState<{ [key: string]: boolean }>({});
+  const sharedNotesRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
   const {
     user,
     isAdmin,
@@ -2410,22 +2411,20 @@ const Admin = () => {
                               <div className="max-w-[200px] space-y-2">
                                 <Textarea
                                   placeholder="Shared notes..."
-                                  value={editingNotes[lead.id] !== undefined ? editingNotes[lead.id] : (lead.shared_notes || "")}
-                                  onChange={(e) => setEditingNotes(prev => ({ ...prev, [lead.id]: e.target.value }))}
+                                  defaultValue={lead.shared_notes || ""}
                                   rows={2}
                                   className="text-xs resize-none"
+                                  ref={(el) => { sharedNotesRefs.current[lead.id] = el; }}
                                 />
-                                {editingNotes[lead.id] !== undefined && (
-                                  <Button
-                                    size="sm"
-                                    onClick={() => saveSharedNotes(lead.id)}
-                                    disabled={savingNotes[lead.id]}
-                                    className="w-full"
-                                  >
-                                    <Save className="w-3 h-3 mr-1" />
-                                    {savingNotes[lead.id] ? "Saving..." : "Save"}
-                                  </Button>
-                                )}
+                                <Button
+                                  size="sm"
+                                  onClick={() => saveSharedNotes(lead.id)}
+                                  disabled={savingNotes[lead.id]}
+                                  className="w-full"
+                                >
+                                  <Save className="w-3 h-3 mr-1" />
+                                  {savingNotes[lead.id] ? "Saving..." : "Save"}
+                                </Button>
                               </div>
                             </TableCell>}
                           {isSuperAdmin && <TableCell>
