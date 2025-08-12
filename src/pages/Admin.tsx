@@ -559,7 +559,7 @@ const Admin = () => {
           // Check for USA applications
           const { data: usaApps } = await supabase
             .from('usa_applications')
-            .select('application_reference_number, date_incorporated')
+            .select('application_reference_number, date_incorporated, years_in_business, months_in_business')
             .eq('quiz_response_id', lead.id)
             .limit(1);
 
@@ -577,6 +577,8 @@ const Admin = () => {
             usa_application_reference: usaApps?.[0]?.application_reference_number || null,
             canadian_application_reference: canadianApps?.[0]?.application_reference_number || null,
             usa_date_incorporated: usaApps?.[0]?.date_incorporated || null,
+            usa_years_in_business: usaApps?.[0]?.years_in_business ?? null,
+            usa_months_in_business: usaApps?.[0]?.months_in_business ?? null,
             canadian_business_start_date: canadianApps?.[0]?.business_start_date || null,
             partner_name: (lead as any).partners?.name || null,
           };
@@ -643,7 +645,7 @@ const Admin = () => {
         try {
           const { data: usaApps } = await supabase
             .from('usa_applications')
-            .select('application_reference_number, date_incorporated')
+            .select('application_reference_number, date_incorporated, years_in_business, months_in_business')
             .eq('quiz_response_id', lead.id)
             .limit(1);
 
@@ -660,6 +662,8 @@ const Admin = () => {
             usa_application_reference: usaApps?.[0]?.application_reference_number || null,
             canadian_application_reference: canadianApps?.[0]?.application_reference_number || null,
             usa_date_incorporated: usaApps?.[0]?.date_incorporated || null,
+            usa_years_in_business: usaApps?.[0]?.years_in_business ?? null,
+            usa_months_in_business: usaApps?.[0]?.months_in_business ?? null,
             canadian_business_start_date: canadianApps?.[0]?.business_start_date || null,
           };
         } catch (err) {
@@ -2333,6 +2337,17 @@ const Admin = () => {
                                   const canDate = (lead as any).canadian_business_start_date as string | undefined;
                                   if (usaDate) start = new Date(usaDate);
                                   else if (canDate) start = new Date(canDate);
+                                  else {
+                                    const usaYears = (lead as any).usa_years_in_business as number | undefined;
+                                    const usaMonths = (lead as any).usa_months_in_business as number | undefined;
+                                    if ((usaYears && usaYears > 0) || (usaMonths && usaMonths > 0)) {
+                                      const now = new Date();
+                                      const approx = new Date(now);
+                                      if (usaYears && usaYears > 0) approx.setFullYear(approx.getFullYear() - usaYears);
+                                      if (usaMonths && usaMonths > 0) approx.setMonth(approx.getMonth() - usaMonths);
+                                      start = approx;
+                                    }
+                                  }
                                 }
 
                                 if (start) {
