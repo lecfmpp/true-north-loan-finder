@@ -131,6 +131,7 @@ export default function PartnerROIDashboard() {
   // Derived metrics
   const totalLeads = assignments.length;
   const assignedSpend = totalLeads * (pricePerLead || 0);
+  const costPerLeadCents = (pricePerLead && pricePerLead > 0) ? pricePerLead : 5000;
 
   const joined = useMemo(() => {
     const map: Record<string, any> = Object.fromEntries(leads.map(l => [l.id, l]));
@@ -187,7 +188,7 @@ export default function PartnerROIDashboard() {
       </div>
 
       {/* Executive Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm">Total Funded Volume</CardTitle></CardHeader>
           <CardContent className="text-2xl font-bold">{toCurrency(totalFundedVolumeCents)}</CardContent>
@@ -199,6 +200,10 @@ export default function PartnerROIDashboard() {
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm">Total Leads Provided</CardTitle></CardHeader>
           <CardContent className="text-2xl font-bold">{toCompact(totalLeads)}</CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm">Cost per Lead</CardTitle></CardHeader>
+          <CardContent className="text-2xl font-bold">{toCurrency(costPerLeadCents)}</CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm">CPFD</CardTitle></CardHeader>
