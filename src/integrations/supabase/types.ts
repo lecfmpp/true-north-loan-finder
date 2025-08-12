@@ -2145,6 +2145,135 @@ export type Database = {
           },
         ]
       }
+      usa_applications_simplified: {
+        Row: {
+          admin_notes: string | null
+          application_reference_number: string | null
+          city: string
+          conversion_stage: string | null
+          created_at: string
+          date_incorporated: string | null
+          dba_name: string | null
+          document_files: Json | null
+          email_address: string
+          entity_type: string
+          fax_number: string | null
+          federal_tax_id: string
+          id: string
+          lead_source: string | null
+          legal_corporation_name: string
+          loan_amount_requested: number
+          physical_address: string
+          principal_cell_phone: string | null
+          principal_city: string
+          principal_date_of_birth: string
+          principal_email: string
+          principal_home_address: string
+          principal_home_phone: string | null
+          principal_name: string
+          principal_ownership_percentage: number
+          principal_ssn: string
+          principal_state: string
+          principal_title: string
+          principal_zip: string
+          quiz_response_id: string | null
+          state: string
+          state_of_incorporation: string | null
+          state_tax_id: string | null
+          status: string
+          telephone_number: string
+          updated_at: string
+          use_of_funds: string
+          user_id: string | null
+          website: string | null
+          zip: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          application_reference_number?: string | null
+          city: string
+          conversion_stage?: string | null
+          created_at?: string
+          date_incorporated?: string | null
+          dba_name?: string | null
+          document_files?: Json | null
+          email_address: string
+          entity_type: string
+          fax_number?: string | null
+          federal_tax_id: string
+          id?: string
+          lead_source?: string | null
+          legal_corporation_name: string
+          loan_amount_requested: number
+          physical_address: string
+          principal_cell_phone?: string | null
+          principal_city: string
+          principal_date_of_birth: string
+          principal_email: string
+          principal_home_address: string
+          principal_home_phone?: string | null
+          principal_name: string
+          principal_ownership_percentage: number
+          principal_ssn: string
+          principal_state: string
+          principal_title: string
+          principal_zip: string
+          quiz_response_id?: string | null
+          state: string
+          state_of_incorporation?: string | null
+          state_tax_id?: string | null
+          status?: string
+          telephone_number: string
+          updated_at?: string
+          use_of_funds: string
+          user_id?: string | null
+          website?: string | null
+          zip: string
+        }
+        Update: {
+          admin_notes?: string | null
+          application_reference_number?: string | null
+          city?: string
+          conversion_stage?: string | null
+          created_at?: string
+          date_incorporated?: string | null
+          dba_name?: string | null
+          document_files?: Json | null
+          email_address?: string
+          entity_type?: string
+          fax_number?: string | null
+          federal_tax_id?: string
+          id?: string
+          lead_source?: string | null
+          legal_corporation_name?: string
+          loan_amount_requested?: number
+          physical_address?: string
+          principal_cell_phone?: string | null
+          principal_city?: string
+          principal_date_of_birth?: string
+          principal_email?: string
+          principal_home_address?: string
+          principal_home_phone?: string | null
+          principal_name?: string
+          principal_ownership_percentage?: number
+          principal_ssn?: string
+          principal_state?: string
+          principal_title?: string
+          principal_zip?: string
+          quiz_response_id?: string | null
+          state?: string
+          state_of_incorporation?: string | null
+          state_tax_id?: string | null
+          status?: string
+          telephone_number?: string
+          updated_at?: string
+          use_of_funds?: string
+          user_id?: string | null
+          website?: string | null
+          zip?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           assigned_at: string

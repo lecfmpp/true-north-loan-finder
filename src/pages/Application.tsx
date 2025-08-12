@@ -446,6 +446,7 @@ const Application = () => {
       // Prepare data for submission
       const submissionData = {
         user_id: user?.id || null,
+        // Company
         legal_corporation_name: formData.legal_corporation_name,
         dba_name: formData.dba_name || null,
         physical_address: formData.physical_address,
@@ -457,10 +458,12 @@ const Application = () => {
         fax_number: formData.fax_number || null,
         website: formData.website || null,
         email_address: formData.email_address,
+        // Federal & State
         federal_tax_id: formData.federal_tax_id,
         state_tax_id: formData.state_tax_id || null,
         state_of_incorporation: formData.state_of_incorporation || null,
         date_incorporated: formData.date_incorporated || null,
+        // Principal
         principal_name: formData.principal_name,
         principal_title: formData.principal_title,
         principal_ssn: formData.principal_ssn,
@@ -473,33 +476,17 @@ const Application = () => {
         principal_cell_phone: formData.principal_cell_phone || null,
         principal_email: formData.principal_email,
         principal_ownership_percentage: parseInt(formData.principal_ownership_percentage),
-        years_in_business: parseInt(formData.years_in_business),
-        months_in_business: parseInt(formData.months_in_business),
-        number_of_employees: parseInt(formData.number_of_employees),
-        business_type: formData.business_type,
-        business_description: formData.business_description,
-        bank_name: formData.bank_name,
-        bank_account_type: formData.bank_account_type,
-        bank_routing_number: formData.bank_routing_number,
-        bank_account_number: formData.bank_account_number,
-        months_with_bank: parseInt(formData.months_with_bank),
-        average_monthly_deposits: parseInt(formData.average_monthly_deposits),
-        monthly_rent_mortgage: formData.monthly_rent_mortgage ? parseInt(formData.monthly_rent_mortgage) : null,
-        accept_cards: formData.accept_cards,
-        current_processor: formData.current_processor || null,
-        mid_number: formData.mid_number || null,
-        monthly_processing_volume: formData.monthly_processing_volume ? parseInt(formData.monthly_processing_volume) : null,
-        average_ticket: formData.average_ticket ? parseInt(formData.average_ticket) : null,
-        high_ticket: formData.high_ticket ? parseInt(formData.high_ticket) : null,
+        // Loan
         loan_amount_requested: parseInt(formData.loan_amount_requested),
         use_of_funds: formData.use_of_funds,
+        // Documents & tracking
         document_files: documentUrls,
         quiz_response_id: searchParams.get('quiz_id') || localStorage.getItem('quiz_response_id') || null
       };
 
       // Submit to database
       const { data, error } = await supabase
-        .from('usa_applications')
+        .from('usa_applications_simplified')
         .insert([submissionData])
         .select()
         .single();
