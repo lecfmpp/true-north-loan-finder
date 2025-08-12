@@ -559,14 +559,14 @@ const Admin = () => {
           // Check for USA applications
           const { data: usaApps } = await supabase
             .from('usa_applications')
-            .select('application_reference_number')
+            .select('application_reference_number, date_incorporated')
             .eq('quiz_response_id', lead.id)
             .limit(1);
 
           // Check for Canadian applications  
           const { data: canadianApps } = await supabase
             .from('canadian_applications')
-            .select('application_reference_number')
+            .select('application_reference_number, business_start_date')
             .eq('quiz_response_id', lead.id)
             .limit(1);
 
@@ -576,6 +576,8 @@ const Admin = () => {
             has_canadian_application: (canadianApps && canadianApps.length > 0),
             usa_application_reference: usaApps?.[0]?.application_reference_number || null,
             canadian_application_reference: canadianApps?.[0]?.application_reference_number || null,
+            usa_date_incorporated: usaApps?.[0]?.date_incorporated || null,
+            canadian_business_start_date: canadianApps?.[0]?.business_start_date || null,
             partner_name: (lead as any).partners?.name || null,
           };
         } catch (err) {
@@ -641,13 +643,13 @@ const Admin = () => {
         try {
           const { data: usaApps } = await supabase
             .from('usa_applications')
-            .select('application_reference_number')
+            .select('application_reference_number, date_incorporated')
             .eq('quiz_response_id', lead.id)
             .limit(1);
 
           const { data: canadianApps } = await supabase
             .from('canadian_applications')
-            .select('application_reference_number')
+            .select('application_reference_number, business_start_date')
             .eq('quiz_response_id', lead.id)
             .limit(1);
 
@@ -657,6 +659,8 @@ const Admin = () => {
             has_canadian_application: (canadianApps && canadianApps.length > 0),
             usa_application_reference: usaApps?.[0]?.application_reference_number || null,
             canadian_application_reference: canadianApps?.[0]?.application_reference_number || null,
+            usa_date_incorporated: usaApps?.[0]?.date_incorporated || null,
+            canadian_business_start_date: canadianApps?.[0]?.business_start_date || null,
           };
         } catch (err) {
           console.error('Error enriching assigned lead:', err);
@@ -2320,14 +2324,25 @@ const Admin = () => {
                                 const y = (lead as any).founding_year as number | undefined;
                                 const m = (lead as any).founding_month as number | undefined;
                                 const d = (lead as any).founding_day as number | undefined;
+
+                                let start: Date | null = null;
                                 if (y && y > 0) {
-                                  const start = new Date(y, (m && m > 0 ? m - 1 : 0), d && d > 0 ? d : 1);
+                                  start = new Date(y, (m && m > 0 ? m - 1 : 0), d && d > 0 ? d : 1);
+                                } else {
+                                  const usaDate = (lead as any).usa_date_incorporated as string | undefined;
+                                  const canDate = (lead as any).canadian_business_start_date as string | undefined;
+                                  if (usaDate) start = new Date(usaDate);
+                                  else if (canDate) start = new Date(canDate);
+                                }
+
+                                if (start) {
                                   const duration = intervalToDuration({ start, end: new Date() });
                                   const years = duration.years ?? 0;
                                   const months = duration.months ?? 0;
                                   const days = duration.days ?? 0;
                                   return `${years} years, ${months} months, ${days} days`;
                                 }
+
                                 return (
                                   lead.time_in_business === 'startup' ? 'Startup' :
                                   lead.time_in_business === '6-12' ? '6-12 months' :
