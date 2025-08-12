@@ -135,7 +135,9 @@ const Admin = () => {
   // Removed approvedPartners - using partners instead for consistency
   const [applicationsCount, setApplicationsCount] = useState(0);
   const [usaApplicationsCount, setUsaApplicationsCount] = useState(0);
+  const [usaDraftsCount, setUsaDraftsCount] = useState(0);
   const [canadianApplicationsCount, setCanadianApplicationsCount] = useState(0);
+  const [canadianDraftsCount, setCanadianDraftsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -507,7 +509,9 @@ const Admin = () => {
       // All admins need application counts for menu items
       fetchApplicationsCount();
       fetchUsaApplicationsCount();
+      fetchUsaDraftsCount();
       fetchCanadianApplicationsCount();
+      fetchCanadianDraftsCount();
     }
   }, [user, isAdmin, isSuperAdmin, userRoles]);
 
@@ -827,6 +831,26 @@ const Admin = () => {
       setCanadianApplicationsCount(count || 0);
     } catch (error) {
       console.error('Error fetching Canadian applications count:', error);
+    }
+  };
+
+  const fetchUsaDraftsCount = async () => {
+    try {
+      const { count, error } = await supabase.from('usa_application_drafts').select('*', { count: 'exact', head: true });
+      if (error) throw error;
+      setUsaDraftsCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching USA drafts count:', error);
+    }
+  };
+
+  const fetchCanadianDraftsCount = async () => {
+    try {
+      const { count, error } = await supabase.from('canadian_application_drafts').select('*', { count: 'exact', head: true });
+      if (error) throw error;
+      setCanadianDraftsCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching Canadian drafts count:', error);
     }
   };
 
@@ -1820,13 +1844,13 @@ const Admin = () => {
           title: "USA Applications",
           value: "usa-applications", 
           icon: FileText,
-          count: usaApplicationsCount
+          count: `${usaApplicationsCount} (${usaDraftsCount})`
         },
         {
           title: "Canadian Applications",
           value: "canadian-applications",
           icon: FileText,
-          count: canadianApplicationsCount
+          count: `${canadianApplicationsCount} (${canadianDraftsCount})`
         },
         {
           title: "Email Sequence",
@@ -1886,13 +1910,13 @@ const Admin = () => {
           title: "USA Applications",
           value: "usa-applications", 
           icon: FileText,
-          count: usaApplicationsCount
+          count: `${usaApplicationsCount} (${usaDraftsCount})`
         },
         {
           title: "Canadian Applications",
           value: "canadian-applications",
           icon: FileText,
-          count: canadianApplicationsCount
+          count: `${canadianApplicationsCount} (${canadianDraftsCount})`
         }
       ];
     }
@@ -2702,9 +2726,9 @@ const Admin = () => {
       case 'partners':
         return <SimplifiedPartnersManagement />;
       case 'usa-applications':
-        return <USAApplicationsManagement onCountUpdate={fetchUsaApplicationsCount} />;
+        return <USAApplicationsManagement onCountUpdate={() => { fetchUsaApplicationsCount(); fetchUsaDraftsCount(); }} />;
       case 'canadian-applications':
-        return <CanadianApplicationsManagement onCountUpdate={fetchCanadianApplicationsCount} />;
+        return <CanadianApplicationsManagement onCountUpdate={() => { fetchCanadianApplicationsCount(); fetchCanadianDraftsCount(); }} />;
       case 'email-sequence':
         return <EmailSequenceManagement />;
       case 'blog-creator':
@@ -2775,7 +2799,7 @@ const Admin = () => {
                             <Icon className="h-4 w-4" />
                             <span>{item.title}</span>
                             {item.count !== undefined && (
-                              <div className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-blue-900 bg-green-500 rounded">
+                              <div className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-medium text-sidebar-primary bg-status-active rounded">
                                 {item.count}
                               </div>
                             )}

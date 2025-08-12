@@ -386,6 +386,7 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
         .eq('id', draftToDelete.id);
       if (error) throw error;
       toast.success('Draft deleted successfully');
+      onCountUpdate?.();
       fetchApplications();
       closeDraftDeleteModal();
     } catch (e) {
@@ -891,7 +892,7 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
                     <div className="flex items-center gap-2">
                       <FileText className="h-4 w-4 text-primary" />
                       <span className="font-semibold">{company}</span>
-                      <Badge variant="outline">Draft</Badge>
+                      <Badge variant="status-draft">Draft</Badge>
                     </div>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                       <div className="flex items-center gap-1"><Mail className="h-3 w-3" />{email}</div>
