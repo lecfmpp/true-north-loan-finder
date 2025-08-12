@@ -115,6 +115,7 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
   const [notes, setNotes] = useState("");
   const [drafts, setDrafts] = useState<USADraft[]>([]);
   const [filteredDrafts, setFilteredDrafts] = useState<USADraft[]>([]);
+  const [selectedDraft, setSelectedDraft] = useState<USADraft | null>(null);
 
   useEffect(() => {
     fetchApplications();
@@ -382,6 +383,43 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
     } catch (error) {
       console.error('Error deleting application:', error);
       toast.error("Failed to delete application");
+    }
+  };
+
+  // Draft delete management
+  const [draftDeleteModalOpen, setDraftDeleteModalOpen] = useState(false);
+  const [draftToDelete, setDraftToDelete] = useState<USADraft | null>(null);
+  const [draftDeleteConfirmText, setDraftDeleteConfirmText] = useState('');
+
+  const openDraftDeleteModal = (draft: USADraft) => {
+    setDraftToDelete(draft);
+    setDraftDeleteModalOpen(true);
+  };
+
+  const closeDraftDeleteModal = () => {
+    setDraftDeleteModalOpen(false);
+    setDraftToDelete(null);
+    setDraftDeleteConfirmText('');
+  };
+
+  const confirmDraftDelete = async () => {
+    if (draftDeleteConfirmText !== 'DELETE DRAFT') {
+      toast.error("Please type exactly 'DELETE DRAFT' to confirm deletion");
+      return;
+    }
+    if (!draftToDelete) return;
+    try {
+      const { error } = await supabase
+        .from('usa_application_drafts')
+        .delete()
+        .eq('id', draftToDelete.id);
+      if (error) throw error;
+      toast.success('Draft deleted successfully');
+      fetchApplications();
+      closeDraftDeleteModal();
+    } catch (e) {
+      console.error('Error deleting draft:', e);
+      toast.error('Failed to delete draft');
     }
   };
 
@@ -759,8 +797,8 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
             const phone = fd.telephone_number || fd.business_phone || '—';
             return (
               <Card key={draft.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-6 flex items-center justify-between">
-                  <div>
+                <CardContent className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                  <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <FileText className="h-4 w-4 text-primary" />
                       <span className="font-semibold">{company}</span>
@@ -771,9 +809,26 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
                       <div className="flex items-center gap-1"><Phone className="h-3 w-3" />{phone}</div>
                     </div>
                   </div>
-                  <div className="text-xs text-muted-foreground text-right">
+                  <div className="text-xs text-muted-foreground">
                     <div>Step {draft.current_step}</div>
                     <div>Updated: {new Date(draft.last_updated).toLocaleDateString()}</div>
+                  </div>
+                  <div className="flex gap-2 md:justify-end">
+                    <Button variant="outline" size="sm" onClick={() => setSelectedDraft(draft)}>
+                      <Eye className="h-4 w-4 mr-2" />
+                      View Details
+                    </Button>
+                    {isSuperAdmin && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-red-600 border-red-600 hover:bg-red-50"
+                        onClick={() => openDraftDeleteModal(draft)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -1275,6 +1330,90 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
           </Card>
         </div>
       )}
+
+      {/* Draft Details Modal */}
+      {selectedDraft && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <Card className="max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Draft Application Details
+              </CardTitle>
+              <Button variant="outline" size="sm" onClick={() => setSelectedDraft(null)}>Close</Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {(() => { const fd = (selectedDraft as any).form_data || {}; return (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <span className="text-sm font-medium text-muted-foreground">Company</span>
+                      <p className="font-medium">{fd.legal_corporation_name || fd.legal_business_name || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-muted-foreground">Email</span>
+                      <p>{fd.email_address || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-muted-foreground">Phone</span>
+                      <p>{fd.telephone_number || fd.business_phone || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-muted-foreground">Loan Amount</span>
+                      <p>{fd.loan_amount_requested ? `$${Number(fd.loan_amount_requested).toLocaleString()}` : 'N/A'}</p>
+                    </div>
+                    <div className="md:col-span-2">
+                      <span className="text-sm font-medium text-muted-foreground">Use of Funds</span>
+                      <p>{fd.use_of_funds || 'N/A'}</p>
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    <div>Current Step: {selectedDraft.current_step}</div>
+                    <div>Last Updated: {new Date(selectedDraft.last_updated).toLocaleString()}</div>
+                  </div>
+                </div>
+              ); })()}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Draft Delete Confirmation Modal */}
+      <Dialog open={draftDeleteModalOpen} onOpenChange={setDraftDeleteModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-destructive">Delete Draft</DialogTitle>
+            <DialogDescription>
+              This action cannot be undone. This will permanently delete this draft.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <p className="text-sm font-medium">
+                To confirm, type <span className="font-mono bg-muted px-1 rounded">DELETE DRAFT</span> below:
+              </p>
+              <Input 
+                value={draftDeleteConfirmText} 
+                onChange={(e) => setDraftDeleteConfirmText(e.target.value)} 
+                placeholder="Type DELETE DRAFT to confirm" 
+                className="font-mono" 
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={closeDraftDeleteModal}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={confirmDraftDelete} 
+              disabled={draftDeleteConfirmText !== 'DELETE DRAFT'}
+            >
+              Delete Draft
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation Modal */}
       <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
