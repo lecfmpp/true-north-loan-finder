@@ -75,6 +75,10 @@ export default {
 				'status-inactive': {
 					DEFAULT: 'hsl(var(--status-inactive))',
 					foreground: 'hsl(var(--status-inactive-foreground))'
+				},
+				'status-draft': {
+					DEFAULT: 'hsl(var(--status-draft))',
+					foreground: 'hsl(var(--status-draft-foreground))'
 				}
 			},
 			borderRadius: {

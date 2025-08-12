@@ -43,6 +43,8 @@ All colors MUST be HSL.
     --status-active-foreground: 0 0% 100%;
     --status-inactive: 35 84% 62%; /* Compass Gold for disabled/paused */
     --status-inactive-foreground: 210 22% 22%;
+    --status-draft: 32 95% 55%; /* Orange for drafts */
+    --status-draft-foreground: 0 0% 100%;
 
     /* Success Toast Colors */
     --success-bg: 145 45% 85%; /* Light green background */
@@ -112,6 +114,8 @@ All colors MUST be HSL.
     --status-active-foreground: 0 0% 100%;
     --status-inactive: 35 84% 62%; /* Compass Gold for disabled/paused */
     --status-inactive-foreground: 222.2 47.4% 11.2%;
+    --status-draft: 32 95% 55%; /* Orange for drafts */
+    --status-draft-foreground: 0 0% 100%;
 
     /* Success Toast Colors - Dark Mode */
     --success-bg: 145 30% 25%; /* Dark green background for dark mode */

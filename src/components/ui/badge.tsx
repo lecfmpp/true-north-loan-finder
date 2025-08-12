@@ -18,6 +18,8 @@ const badgeVariants = cva(
           "border-transparent bg-status-active text-status-active-foreground hover:bg-status-active/80",
         "status-inactive":
           "border-transparent bg-status-inactive text-status-inactive-foreground hover:bg-status-inactive/80",
+        "status-draft":
+          "border-transparent bg-status-draft text-status-draft-foreground",
         outline: "text-foreground",
       },
     },
