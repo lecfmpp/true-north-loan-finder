@@ -935,7 +935,6 @@ const Application = () => {
                   />
                 </div>
               )}
-              </div>
             </div>
           </div>
         );
