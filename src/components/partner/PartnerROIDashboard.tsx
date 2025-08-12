@@ -127,13 +127,14 @@ export default function PartnerROIDashboard() {
 
   // Derived metrics
   const totalLeads = assignments.length;
-  const contactedLeads = assignments.filter(a => ["contacted"].includes((a.status || "").toLowerCase())).length;
   const assignedSpend = totalLeads * (pricePerLead || 0);
 
   const joined = useMemo(() => {
     const map: Record<string, any> = Object.fromEntries(leads.map(l => [l.id, l]));
     return assignments.map(a => ({ ...a, lead: map[a.quiz_response_id] })).filter(x => !!x.lead);
   }, [assignments, leads]);
+
+  const contactedLeads = joined.filter(x => (x.lead?.status || '').toLowerCase() === 'contacted').length;
 
   const qualified = joined.filter(x => isQualified(x.lead));
   const funded = joined.filter(x => (x.lead?.status === 'loan_approved') || (x.lead?.conversion_status === 'funded'));
