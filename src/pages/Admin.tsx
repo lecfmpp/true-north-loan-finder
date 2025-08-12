@@ -2340,7 +2340,11 @@ const Admin = () => {
                                   const years = duration.years ?? 0;
                                   const months = duration.months ?? 0;
                                   const days = duration.days ?? 0;
-                                  return `${years} years, ${months} months, ${days} days`;
+                                  const parts: string[] = [];
+                                  if (years > 0) parts.push(`${years} years`);
+                                  if (months > 0) parts.push(`${months} months`);
+                                  parts.push(`${days} days`);
+                                  return parts.join(', ');
                                 }
 
                                 return (
