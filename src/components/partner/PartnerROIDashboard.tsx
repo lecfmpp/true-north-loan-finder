@@ -192,37 +192,47 @@ export default function PartnerROIDashboard() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm">Total Funded Volume</CardTitle>
-            <p className="text-xs text-muted-foreground">Sum of all approved loan amounts</p>
           </CardHeader>
-          <CardContent className="text-2xl font-bold">{toCurrency(totalFundedVolumeCents)}</CardContent>
+          <CardContent>
+            <div className="text-2xl font-bold">{toCurrency(totalFundedVolumeCents)}</div>
+            <p className="text-xs text-muted-foreground mt-1">Sum of all approved loan amounts</p>
+          </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm">Avg Funded Deal Size</CardTitle>
-            <p className="text-xs text-muted-foreground">Average approved amount per funded deal</p>
           </CardHeader>
-          <CardContent className="text-2xl font-bold">{toCurrency(avgFundedDealCents)}</CardContent>
+          <CardContent>
+            <div className="text-2xl font-bold">{toCurrency(avgFundedDealCents)}</div>
+            <p className="text-xs text-muted-foreground mt-1">Average approved amount per funded deal</p>
+          </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm">Total Leads Provided</CardTitle>
-            <p className="text-xs text-muted-foreground">Number of leads assigned to you in the selected range</p>
           </CardHeader>
-          <CardContent className="text-2xl font-bold">{toCompact(totalLeads)}</CardContent>
+          <CardContent>
+            <div className="text-2xl font-bold">{toCompact(totalLeads)}</div>
+            <p className="text-xs text-muted-foreground mt-1">Number of leads assigned to you in the selected range</p>
+          </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm">Cost per Lead</CardTitle>
-            <p className="text-xs text-muted-foreground">Fixed price per lead (default $50)</p>
           </CardHeader>
-          <CardContent className="text-2xl font-bold">{toCurrency(costPerLeadCents)}</CardContent>
+          <CardContent>
+            <div className="text-2xl font-bold">{toCurrency(costPerLeadCents)}</div>
+            <p className="text-xs text-muted-foreground mt-1">Fixed price per lead (default $50)</p>
+          </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm">CPFD</CardTitle>
-            <p className="text-xs text-muted-foreground">Cost per funded deal equals total spend divided by funded deals</p>
           </CardHeader>
-          <CardContent className="text-2xl font-bold">{funded.length ? toCurrency(cpfdCents) : "-"}</CardContent>
+          <CardContent>
+            <div className="text-2xl font-bold">{funded.length ? toCurrency(cpfdCents) : "-"}</div>
+            <p className="text-xs text-muted-foreground mt-1">Cost per funded deal equals total spend divided by funded deals</p>
+          </CardContent>
         </Card>
       </div>
 
