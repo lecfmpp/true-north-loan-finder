@@ -411,7 +411,7 @@ const Application = () => {
         const filePath = `applications/${fileName}`;
 
         const { error: uploadError, data } = await supabase.storage
-          .from('application-documents')
+          .from('documents')
           .upload(filePath, file);
 
         if (uploadError) {
@@ -421,7 +421,7 @@ const Application = () => {
         }
 
         const { data: { publicUrl } } = supabase.storage
-          .from('application-documents')
+          .from('documents')
           .getPublicUrl(filePath);
 
         uploadedFiles.push(publicUrl);
