@@ -759,6 +759,18 @@ const Quiz = () => {
         if (hasSourceParams) sourceUrl = window.location.href;
       }
       
+      // Validate and sanitize phone before submission
+      const sanitizedPhone = (data.phone || '').replace(/[^\d]/g, '');
+      if (sanitizedPhone.length < 10 || sanitizedPhone.length > 15) {
+        toast({
+          title: "Invalid phone number",
+          description: "Please enter a valid phone (10-15 digits).",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       // Save to local Supabase database
       const payload = {
         loan_amount: data.loanAmount[0],
@@ -768,7 +780,7 @@ const Quiz = () => {
         credit_score: data.creditScore,
         name: data.name,
         email: data.email,
-        phone: data.phone,
+        phone: sanitizedPhone,
         company_name: data.companyName,
         website: data.website,
         country: data.country,
@@ -838,11 +850,20 @@ const Quiz = () => {
       
     } catch (error) {
       console.error('Error saving quiz response:', error);
-      toast({
-        title: "Submission Error",
-        description: "There was an issue submitting your information. Please try again.",
-        variant: "destructive",
-      });
+      const errMsg = (error as any)?.message?.toString()?.toLowerCase() || '';
+      if (errMsg.includes('invalid phone')) {
+        toast({
+          title: "Invalid phone number",
+          description: "Please enter a valid phone (10-15 digits).",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Submission Error",
+          description: "There was an issue submitting your information. Please try again.",
+          variant: "destructive",
+        });
+      }
       setShowResults(true); // Fallback to showing results inline if redirect fails
     } finally {
       setIsSubmitting(false);
