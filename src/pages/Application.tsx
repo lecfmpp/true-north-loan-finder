@@ -315,10 +315,20 @@ const Application = () => {
 
   const getStepRequiredFields = (step: number): string[] => {
     switch (step) {
-      case 1: // Company + EIN + Loan Info
-        return ['legal_corporation_name', 'physical_address', 'city', 'state', 'zip', 'entity_type', 'telephone_number', 'email_address', 'federal_tax_id', 'loan_amount_requested', 'use_of_funds'];
-      case 2: // Principal + Submit
+      case 1: // Company basics (loan details validated at step 6)
+        return ['legal_corporation_name', 'physical_address', 'city', 'state', 'zip', 'entity_type', 'telephone_number', 'email_address', 'federal_tax_id'];
+      case 2: // Federal & State Information
+        return ['federal_tax_id'];
+      case 3: // Principal Information
         return ['principal_name', 'principal_title', 'principal_ssn', 'principal_date_of_birth', 'principal_home_address', 'principal_city', 'principal_state', 'principal_zip', 'principal_email', 'principal_ownership_percentage'];
+      case 4: // Business & Financial Information
+        const fields4 = ['number_of_employees', 'business_type', 'business_description', 'average_monthly_deposits'];
+        if (!autoFilledBusinessAge) fields4.push('years_in_business', 'months_in_business');
+        return fields4;
+      case 5: // Banking & Processing Information
+        return ['bank_name', 'bank_account_type', 'bank_routing_number', 'bank_account_number', 'months_with_bank'];
+      case 6: // Loan Information & Documents
+        return ['loan_amount_requested', 'use_of_funds'];
       default:
         return [];
     }
