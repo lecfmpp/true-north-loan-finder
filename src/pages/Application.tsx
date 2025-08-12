@@ -411,7 +411,7 @@ const Application = () => {
         const filePath = `applications/${fileName}`;
 
         const { error: uploadError, data } = await supabase.storage
-          .from('documents')
+          .from('application-documents')
           .upload(filePath, file);
 
         if (uploadError) {
@@ -421,7 +421,7 @@ const Application = () => {
         }
 
         const { data: { publicUrl } } = supabase.storage
-          .from('documents')
+          .from('application-documents')
           .getPublicUrl(filePath);
 
         uploadedFiles.push(publicUrl);
@@ -440,11 +440,6 @@ const Application = () => {
   };
 
   const handleSubmit = async () => {
-    if (!user) {
-      setShowAuth(true);
-      return;
-    }
-
     if (!validateStep(currentStep)) {
       setShowValidationErrors(true);
       toast.error("Please fill in all required fields before submitting.");
@@ -461,7 +456,7 @@ const Application = () => {
 
       // Prepare data for submission
       const submissionData = {
-        user_id: user.id,
+        user_id: user?.id || null,
         legal_corporation_name: formData.legal_corporation_name,
         dba_name: formData.dba_name || null,
         physical_address: formData.physical_address,
