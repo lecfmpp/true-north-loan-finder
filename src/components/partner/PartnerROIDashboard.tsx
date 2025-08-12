@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { TrendingUp, Filter, Users, ShieldCheck, PhoneCall, Banknote } from "lucide-react";
+import { TrendingUp, Filter, Users, ShieldCheck, PhoneCall, Banknote, FileText } from "lucide-react";
 
 
 // Simple currency helpers
@@ -143,6 +143,7 @@ export default function PartnerROIDashboard() {
   }, [assignments, leads]);
 
   const contactedLeads = joined.filter(x => normalize(x.lead?.status) === 'contacted').length;
+  const applicationsSubmitted = joined.filter(x => normalize(x.lead?.status) === 'application sent').length;
 
   const qualified = joined.filter(x => isQualified(x.lead));
   const funded = joined.filter(x => normalize(x.lead?.status) === 'loan approved');
@@ -299,6 +300,7 @@ export default function PartnerROIDashboard() {
               { label: "Total Leads", value: totalLeads, Icon: Users, cls: "bg-blue-50 text-blue-700", iconBg: "bg-blue-600" },
               { label: "Qualified", value: qualified.length, Icon: ShieldCheck, cls: "bg-emerald-50 text-emerald-700", iconBg: "bg-emerald-600" },
               { label: "Contacted", value: contactedLeads, Icon: PhoneCall, cls: "bg-amber-50 text-amber-700", iconBg: "bg-amber-600" },
+              { label: "Application Submitted", value: applicationsSubmitted, Icon: FileText, cls: "bg-indigo-50 text-indigo-700", iconBg: "bg-indigo-600" },
               { label: "Funded", value: funded.length, Icon: Banknote, cls: "bg-purple-50 text-purple-700", iconBg: "bg-purple-600" },
             ].map((s) => (
               <div key={s.label} className={`${s.cls} rounded-xl px-4 py-3 flex items-center justify-between`}>
