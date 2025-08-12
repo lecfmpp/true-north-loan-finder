@@ -812,32 +812,22 @@ const Quiz = () => {
       // This can be enabled later manually by admins if needed
       console.log('Email sequence disabled by default for quiz submissions');
 
-      // Dynamic routing based on country selection
-      if (data.country === "US") {
-        // Redirect US users to results page (matching Canadian flow)
-        const resultsUrl = new URLSearchParams({
-          amount: data.loanAmount[0].toString(),
-          name: data.name,
-          email: data.email,
-          phone: data.phone,
-          score: score.toString(),
-          responseId: savedResponse.id
-        });
-        
-        window.location.href = `/results/${savedResponse.id}?${resultsUrl.toString()}`;
-      } else {
-        // Redirect Canadian users to results page
-        const resultsUrl = new URLSearchParams({
-          amount: data.loanAmount[0].toString(),
-          name: data.name,
-          email: data.email,
-          phone: data.phone,
-          score: score.toString(),
-          responseId: savedResponse.id
-        });
-        
-        window.location.href = `/results/${savedResponse.id}?${resultsUrl.toString()}`;
-      }
+      // Redirect to loan estimator page with quiz data
+      const queryParams = new URLSearchParams({
+        amount: data.loanAmount[0].toString(),
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        score: score.toString(),
+        responseId: savedResponse.id,
+        revenue: data.monthlyRevenue[0].toString(),
+        company: data.companyName || '',
+        country: data.country || '',
+        submitted: 'true'
+      });
+      
+      window.location.href = `/loan-estimator?${queryParams.toString()}`;
+      
       
     } catch (error) {
       console.error('Error saving quiz response:', error);
