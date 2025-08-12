@@ -192,6 +192,7 @@ const Admin = () => {
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [bulkDelete, setBulkDelete] = useState(false); // Track if it's bulk delete
   const [leadAssignments, setLeadAssignments] = useState<Record<string, any>>({});
+  const [currentPartnerPcts, setCurrentPartnerPcts] = useState<{ broker: number; platform: number } | null>(null);
   const [leadBookings, setLeadBookings] = useState<Array<{
     id: string;
     booking_status: string;
@@ -230,7 +231,7 @@ const Admin = () => {
         error
       } = await supabase.from('lead_assignments').select(`
           *,
-          partners!inner(id, name, email)
+          partners!inner(id, name, email, broker_commission_percentage, platform_commission_percentage)
         `);
       if (error) throw error;
       const assignmentMap: Record<string, any> = {};
@@ -568,13 +569,19 @@ const Admin = () => {
       const {
         data: partner,
         error: pErr
-      } = await supabase.from('partners').select('id').eq('user_id', user?.id!).maybeSingle();
+      } = await supabase.from('partners').select('id, broker_commission_percentage, platform_commission_percentage').eq('user_id', user?.id!).maybeSingle();
       if (pErr || !partner) {
         setLeads([]);
         setFilteredLeads([]);
+        setCurrentPartnerPcts(null);
         setLoading(false);
         return;
       }
+
+      setCurrentPartnerPcts({
+        broker: Number((partner as any).broker_commission_percentage) || 0,
+        platform: Number((partner as any).platform_commission_percentage) || 0,
+      });
 
       // Fetch assigned leads with full quiz response
       const {
@@ -1956,6 +1963,8 @@ const Admin = () => {
                             {sortField !== 'loan_amount' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
                           </Button>
                         </TableHead>
+                        <TableHead className="min-w-[140px]">Broker Commission</TableHead>
+                        <TableHead className="min-w-[140px]">Platform Commission</TableHead>
                         <TableHead className="min-w-[100px]">
                           <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent hover:text-current" onClick={() => handleSort('credit_score')}>
                             Credit Score
@@ -2062,6 +2071,28 @@ const Admin = () => {
                           <TableCell>
                             <div className="text-sm font-medium">
                               ${lead.loan_amount?.toLocaleString()}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm font-medium">
+                              {(() => {
+                                const loan = Number(lead.partner_loan_amount || 0);
+                                const bPct = (leadAssignments[lead.id]?.partners?.broker_commission_percentage ?? currentPartnerPcts?.broker);
+                                if (!loan || bPct == null) return '—';
+                                const amt = (loan * (Number(bPct) || 0)) / 100;
+                                return `$${amt.toLocaleString()}`;
+                              })()}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm font-medium">
+                              {(() => {
+                                const loan = Number(lead.partner_loan_amount || 0);
+                                const pPct = (leadAssignments[lead.id]?.partners?.platform_commission_percentage ?? currentPartnerPcts?.platform);
+                                if (!loan || pPct == null) return '—';
+                                const amt = (loan * (Number(pPct) || 0)) / 100;
+                                return `$${amt.toLocaleString()}`;
+                              })()}
                             </div>
                           </TableCell>
                           <TableCell>

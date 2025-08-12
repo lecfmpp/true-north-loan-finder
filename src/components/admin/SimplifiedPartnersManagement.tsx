@@ -31,6 +31,8 @@ interface Partner {
   leads_contacted: number;
   leads_spoken: number;
   deals_closed: number;
+  broker_commission_percentage?: number | null;
+  platform_commission_percentage?: number | null;
 }
 
 interface NewPartner {
@@ -170,7 +172,11 @@ export default function SimplifiedPartnersManagement() {
           company_name: editingPartner.company_name,
           phone: editingPartner.phone,
           application_type: editingPartner.application_type,
-          is_active: editingPartner.is_active
+          is_active: editingPartner.is_active,
+          ...(isSuperAdmin ? {
+            broker_commission_percentage: editingPartner.broker_commission_percentage,
+            platform_commission_percentage: editingPartner.platform_commission_percentage,
+          } : {})
         })
         .eq('id', editingPartner.id);
 
@@ -673,6 +679,35 @@ export default function SimplifiedPartnersManagement() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {isSuperAdmin && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit-broker-commission">Broker Commission %</Label>
+                    <Input
+                      id="edit-broker-commission"
+                      type="number"
+                      step="0.01"
+                      value={editingPartner.broker_commission_percentage ?? ''}
+                      onChange={(e) => setEditingPartner({ ...editingPartner, broker_commission_percentage: e.target.value === '' ? null : Number(e.target.value) })}
+                      placeholder="e.g. 10"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-platform-commission">Platform Commission %</Label>
+                    <Input
+                      id="edit-platform-commission"
+                      type="number"
+                      step="0.01"
+                      value={editingPartner.platform_commission_percentage ?? ''}
+                      onChange={(e) => setEditingPartner({ ...editingPartner, platform_commission_percentage: e.target.value === '' ? null : Number(e.target.value) })}
+                      placeholder="e.g. 5"
+                    />
+                  </div>
+                  <p className="col-span-2 text-xs text-muted-foreground">Applies to funded loan amounts for this partner.</p>
+                </div>
+              )}
+
 
               {isSuperAdmin && editingPartner.user_id && (
                 <div className="rounded-md border p-3 space-y-3">

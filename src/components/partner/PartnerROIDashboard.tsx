@@ -50,7 +50,8 @@ export default function PartnerROIDashboard() {
   const [loading, setLoading] = useState(true);
   const [partnerId, setPartnerId] = useState<string | null>(null);
   const [pricePerLead, setPricePerLead] = useState<number>(0); // cents
-  const [commissionPct, setCommissionPct] = useState<number>(0); // percent
+  const [brokerCommissionPct, setBrokerCommissionPct] = useState<number>(0); // percent
+  const [platformCommissionPct, setPlatformCommissionPct] = useState<number>(0); // percent
   const [assignments, setAssignments] = useState<any[]>([]);
   const [leads, setLeads] = useState<any[]>([]);
 
@@ -75,13 +76,14 @@ export default function PartnerROIDashboard() {
         // 1) Find partner record for the current user
         const { data: partnerData, error: partnerErr } = await supabase
           .from("partners")
-          .select("id, commission_percentage")
+          .select("id, broker_commission_percentage, platform_commission_percentage")
           .eq("user_id", user.id)
           .maybeSingle();
         if (partnerErr) throw partnerErr;
         const pid = partnerData?.id || null;
         setPartnerId(pid);
-        setCommissionPct(Number((partnerData as any)?.commission_percentage) || 0);
+        setBrokerCommissionPct(Number((partnerData as any)?.broker_commission_percentage) || 0);
+        setPlatformCommissionPct(Number((partnerData as any)?.platform_commission_percentage) || 0);
         if (!pid) { setAssignments([]); setLeads([]); return; }
 
         // 2) Fetch active pricing (public policy allows)
@@ -156,7 +158,7 @@ export default function PartnerROIDashboard() {
   // CPFD = total spend / funded deals
   const cpfdCents = funded.length ? Math.round((assignedSpend) / funded.length) : 0;
   // Total commission on funded volume based on partner commission percentage
-  const totalCommissionCents = commissionPct ? Math.round(totalFundedVolumeCents * (commissionPct / 100)) : 0;
+  const totalCommissionCents = brokerCommissionPct ? Math.round(totalFundedVolumeCents * (brokerCommissionPct / 100)) : 0;
 
   const funnelData = [
     { name: "Total Leads", value: totalLeads },

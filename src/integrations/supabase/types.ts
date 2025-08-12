@@ -1527,6 +1527,7 @@ export type Database = {
       partners: {
         Row: {
           application_type: string
+          broker_commission_percentage: number | null
           commission_percentage: number | null
           company_name: string
           created_at: string
@@ -1538,12 +1539,14 @@ export type Database = {
           leads_spoken: number
           name: string
           phone: string | null
+          platform_commission_percentage: number | null
           total_leads_assigned: number
           updated_at: string
           user_id: string | null
         }
         Insert: {
           application_type: string
+          broker_commission_percentage?: number | null
           commission_percentage?: number | null
           company_name: string
           created_at?: string
@@ -1555,12 +1558,14 @@ export type Database = {
           leads_spoken?: number
           name: string
           phone?: string | null
+          platform_commission_percentage?: number | null
           total_leads_assigned?: number
           updated_at?: string
           user_id?: string | null
         }
         Update: {
           application_type?: string
+          broker_commission_percentage?: number | null
           commission_percentage?: number | null
           company_name?: string
           created_at?: string
@@ -1572,6 +1577,7 @@ export type Database = {
           leads_spoken?: number
           name?: string
           phone?: string | null
+          platform_commission_percentage?: number | null
           total_leads_assigned?: number
           updated_at?: string
           user_id?: string | null
