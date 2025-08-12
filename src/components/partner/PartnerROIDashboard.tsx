@@ -50,6 +50,7 @@ export default function PartnerROIDashboard() {
   const [loading, setLoading] = useState(true);
   const [partnerId, setPartnerId] = useState<string | null>(null);
   const [pricePerLead, setPricePerLead] = useState<number>(0); // cents
+  const [commissionPct, setCommissionPct] = useState<number>(0); // percent
   const [assignments, setAssignments] = useState<any[]>([]);
   const [leads, setLeads] = useState<any[]>([]);
 
@@ -74,12 +75,13 @@ export default function PartnerROIDashboard() {
         // 1) Find partner record for the current user
         const { data: partnerData, error: partnerErr } = await supabase
           .from("partners")
-          .select("id")
+          .select("id, commission_percentage")
           .eq("user_id", user.id)
           .maybeSingle();
         if (partnerErr) throw partnerErr;
         const pid = partnerData?.id || null;
         setPartnerId(pid);
+        setCommissionPct(Number((partnerData as any)?.commission_percentage) || 0);
         if (!pid) { setAssignments([]); setLeads([]); return; }
 
         // 2) Fetch active pricing (public policy allows)
@@ -153,6 +155,8 @@ export default function PartnerROIDashboard() {
 
   // CPFD = total spend / funded deals
   const cpfdCents = funded.length ? Math.round((assignedSpend) / funded.length) : 0;
+  // Total commission on funded volume based on partner commission percentage
+  const totalCommissionCents = commissionPct ? Math.round(totalFundedVolumeCents * (commissionPct / 100)) : 0;
 
   const funnelData = [
     { name: "Total Leads", value: totalLeads },
@@ -188,7 +192,7 @@ export default function PartnerROIDashboard() {
       </div>
 
       {/* Executive Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm">Total Funded Volume</CardTitle>
@@ -207,6 +211,18 @@ export default function PartnerROIDashboard() {
             <p className="text-xs text-muted-foreground mt-1">Average approved amount per funded deal</p>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Total Commission</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{toCurrency(totalCommissionCents)}</div>
+            <p className="text-xs text-muted-foreground mt-1">Your commission based on funded volume</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm">Total Leads Provided</CardTitle>
@@ -231,7 +247,7 @@ export default function PartnerROIDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{funded.length ? toCurrency(cpfdCents) : "-"}</div>
-            <p className="text-xs text-muted-foreground mt-1">Cost per funded deal equals total spend divided by funded deals</p>
+            <p className="text-xs text-muted-foreground mt-1">Total spend divided by funded deals</p>
           </CardContent>
         </Card>
       </div>
