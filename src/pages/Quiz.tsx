@@ -826,28 +826,26 @@ const Quiz = () => {
       // This can be enabled later manually by admins if needed
       console.log('Email sequence disabled by default for quiz submissions');
 
-      // Direct redirect to appropriate application form based on country
+      // Redirect to Results page first so users can review their pre-qualification
       const queryParams = new URLSearchParams({
         amount: data.loanAmount[0].toString(),
         name: data.name,
         email: data.email,
         phone: data.phone,
         score: score.toString(),
-        responseId: savedResponseId,
+        responseId: String(savedResponseId),
         revenue: data.monthlyRevenue[0].toString(),
         company: data.companyName || '',
         country: data.country || '',
         submitted: 'true'
       });
-      
-      // Determine redirect URL based on country
-      const redirectUrl = data.country === 'CA' 
-        ? `/application-canadian?${queryParams.toString()}`
-        : `/application-usa?${queryParams.toString()}`;
-      
-      window.location.href = redirectUrl;
-      
-      
+
+      // Persist response id for downstream prefill if needed
+      try { localStorage.setItem('quiz_response_id', String(savedResponseId)); } catch {}
+
+      const resultsUrl = `/results/${savedResponseId}?${queryParams.toString()}`;
+      window.location.href = resultsUrl;
+
     } catch (error) {
       console.error('Error saving quiz response:', error);
       const errMsg = (error as any)?.message?.toString()?.toLowerCase() || '';
