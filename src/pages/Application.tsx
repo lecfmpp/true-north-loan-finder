@@ -105,7 +105,7 @@ const Application = () => {
   const [showAuth, setShowAuth] = useState(false);
   const [pendingAutoSubmit, setPendingAutoSubmit] = useState(false);
   const [autoFilledBusinessAge, setAutoFilledBusinessAge] = useState(false);
-  const [prefilled, setPrefilled] = useState({ loanAmount: false, monthlyRevenue: false, dateIncorp: false });
+  const [prefilled, setPrefilled] = useState({ loanAmount: false, monthlyRevenue: false, dateIncorp: false, website: false });
   const { user, loading } = useAuth();
   const totalSteps = 6;
   
@@ -290,7 +290,7 @@ const Application = () => {
         if (quizId) {
           const { data } = await supabase
             .from('quiz_responses')
-            .select('loan_amount, monthly_revenue, use_of_funds, founding_year, founding_month, founding_day')
+            .select('loan_amount, monthly_revenue, use_of_funds, founding_year, founding_month, founding_day, website, city_province')
             .eq('id', quizId)
             .maybeSingle();
           quiz = data;
@@ -299,7 +299,7 @@ const Application = () => {
           if (email) {
             const { data } = await supabase
               .from('quiz_responses')
-              .select('loan_amount, monthly_revenue, use_of_funds, founding_year, founding_month, founding_day')
+              .select('loan_amount, monthly_revenue, use_of_funds, founding_year, founding_month, founding_day, website, city_province')
               .eq('email', email)
               .order('created_at', { ascending: false })
               .limit(1)
@@ -324,6 +324,10 @@ const Application = () => {
         if (!formData.use_of_funds && quiz.use_of_funds) {
           updates.use_of_funds = quiz.use_of_funds;
         }
+        if (!formData.website && quiz.website) {
+          updates.website = quiz.website;
+          flags.website = true;
+        }
         if (!formData.date_incorporated && quiz.founding_year) {
           const y = quiz.founding_year as number;
           const m = (quiz.founding_month as number) || 1;
@@ -331,6 +335,9 @@ const Application = () => {
           const dateStr = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
           updates.date_incorporated = dateStr;
           flags.dateIncorp = true;
+        }
+        if (!formData.state && quiz.city_province) {
+          updates.state = quiz.city_province;
         }
 
         if (Object.keys(updates).length) {
@@ -755,15 +762,19 @@ const Application = () => {
                     placeholder="(555) 123-4568"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="website">Website</Label>
-                  <Input
-                    id="website"
-                    value={formData.website}
-                    onChange={(e) => updateFormData('website', e.target.value)}
-                    placeholder="https://www.example.com"
-                  />
-                </div>
+                {prefilled.website ? (
+                  <input type="hidden" id="website" value={formData.website} readOnly />
+                ) : (
+                  <div className="space-y-2">
+                    <Label htmlFor="website">Website</Label>
+                    <Input
+                      id="website"
+                      value={formData.website}
+                      onChange={(e) => updateFormData('website', e.target.value)}
+                      placeholder="https://www.example.com"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -816,19 +827,17 @@ const Application = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="date_incorporated">Date Incorporated</Label>
-                  <Input
-                    id="date_incorporated"
-                    type="date"
-                    value={formData.date_incorporated}
-                    onChange={(e) => updateFormData('date_incorporated', e.target.value)}
-                    disabled={prefilled.dateIncorp}
-                  />
-                  {prefilled.dateIncorp && (
-                    <p className="text-xs text-muted-foreground mt-1">Prefilled from your quiz</p>
-                  )}
-                </div>
+                {!prefilled.dateIncorp && (
+                  <div className="space-y-2">
+                    <Label htmlFor="date_incorporated">Date Incorporated</Label>
+                    <Input
+                      id="date_incorporated"
+                      type="date"
+                      value={formData.date_incorporated}
+                      onChange={(e) => updateFormData('date_incorporated', e.target.value)}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Loan Information */}
@@ -915,18 +924,17 @@ const Application = () => {
                 </Select>
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="date_incorporated">Date Incorporated</Label>
-                <Input
-                  id="date_incorporated"
-                  type="date"
-                  value={formData.date_incorporated}
-                  onChange={(e) => updateFormData('date_incorporated', e.target.value)}
-                  disabled={prefilled.dateIncorp}
-                />
-                {prefilled.dateIncorp && (
-                  <p className="text-xs text-muted-foreground mt-1">Prefilled from your quiz</p>
-                )}
+              {!prefilled.dateIncorp && (
+                <div className="space-y-2">
+                  <Label htmlFor="date_incorporated">Date Incorporated</Label>
+                  <Input
+                    id="date_incorporated"
+                    type="date"
+                    value={formData.date_incorporated}
+                    onChange={(e) => updateFormData('date_incorporated', e.target.value)}
+                  />
+                </div>
+              )}
               </div>
             </div>
           </div>
