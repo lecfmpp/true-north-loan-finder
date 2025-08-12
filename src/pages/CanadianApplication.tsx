@@ -88,6 +88,7 @@ const CanadianApplication = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const [pendingAutoSubmit, setPendingAutoSubmit] = useState(false);
+  const [prefilled, setPrefilled] = useState({ startDate: false, amount: false, annualSales: false });
   const { user, loading } = useAuth();
   const totalSteps = 2;
   
@@ -195,36 +196,70 @@ const CanadianApplication = () => {
     }
   }, [pendingAutoSubmit, user]);
 
-  // Prefill business_start_date from quiz response
+  // Prefill business_start_date and key financials from quiz response
   useEffect(() => {
-    const quizId = searchParams.get('quiz_id');
-    const shouldPrefill = !formData.business_start_date;
-    if (!quizId || !shouldPrefill) return;
-    (async () => {
+    const run = async () => {
+      const quizId = searchParams.get('quiz_id') || formData.quiz_response_id || localStorage.getItem('quiz_response_id');
       try {
-        const { data, error } = await supabase
-          .from('quiz_responses')
-          .select('founding_year, founding_month, founding_day')
-          .eq('id', quizId)
-          .maybeSingle();
-        if (error) {
-          console.error('Error fetching quiz for start date:', error);
-          return;
+        let quiz: any = null;
+        if (quizId) {
+          const { data, error } = await supabase
+            .from('quiz_responses')
+            .select('founding_year, founding_month, founding_day, loan_amount, monthly_revenue, use_of_funds')
+            .eq('id', quizId)
+            .maybeSingle();
+          if (error) console.error('Error fetching quiz:', error);
+          quiz = data;
+        } else {
+          const email = searchParams.get('email') || user?.email || null;
+          if (email) {
+            const { data, error } = await supabase
+              .from('quiz_responses')
+              .select('founding_year, founding_month, founding_day, loan_amount, monthly_revenue, use_of_funds')
+              .eq('email', email)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            if (error) console.error('Error fetching quiz by email:', error);
+            quiz = data;
+          }
         }
-        if (data && (data as any).founding_year) {
-          const y = (data as any).founding_year as number;
-          const m = (data as any).founding_month as number | null;
-          const d = (data as any).founding_day as number | null;
-          const mm = m && m >= 1 && m <= 12 ? String(m).padStart(2, '0') : '01';
-          const dd = d && d >= 1 && d <= 31 ? String(d).padStart(2, '0') : '01';
-          const dateStr = `${y}-${mm}-${dd}`;
-          setFormData(prev => ({ ...prev, business_start_date: dateStr }));
+
+        if (!quiz) return;
+
+        const updates: Partial<CanadianApplicationData> = {};
+        const flags: any = { ...prefilled };
+
+        if (!formData.business_start_date && quiz.founding_year) {
+          const y = quiz.founding_year as number;
+          const m = (quiz.founding_month as number) || 1;
+          const d = (quiz.founding_day as number) || 1;
+          updates.business_start_date = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+          flags.startDate = true;
+        }
+        if (!formData.amount_requested && quiz.loan_amount) {
+          updates.amount_requested = String(quiz.loan_amount);
+          flags.amount = true;
+        }
+        if (!formData.annual_gross_sales && quiz.monthly_revenue) {
+          const annual = Number(quiz.monthly_revenue) * 12;
+          updates.annual_gross_sales = String(annual);
+          flags.annualSales = true;
+        }
+        if (!formData.use_of_funds && quiz.use_of_funds) {
+          updates.use_of_funds = quiz.use_of_funds;
+        }
+
+        if (Object.keys(updates).length) {
+          setFormData(prev => ({ ...prev, ...updates }));
+          setPrefilled(flags);
         }
       } catch (e) {
-        console.error('Error pre-filling start date from quiz:', e);
+        console.error('Error pre-filling from quiz:', e);
       }
-    })();
-  }, [searchParams, formData.business_start_date]);
+    };
+    run();
+  }, [searchParams, formData.quiz_response_id, user]);
 
   const updateFormData = (field: keyof CanadianApplicationData, value: any) => {
     setFormData(prev => ({
@@ -675,7 +710,11 @@ const CanadianApplication = () => {
                     value={formData.business_start_date}
                     onChange={(e) => updateFormData('business_start_date', e.target.value)}
                     className={getFieldValidationClass('business_start_date', getStepRequiredFields(1))}
+                    disabled={prefilled.startDate}
                   />
+                  {prefilled.startDate && (
+                    <p className="text-xs text-muted-foreground mt-1">Prefilled from your quiz</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="number_of_locations">Number of Locations</Label>
@@ -699,7 +738,11 @@ const CanadianApplication = () => {
                     onChange={(e) => updateFormData('annual_gross_sales', e.target.value)}
                     className={getFieldValidationClass('annual_gross_sales', getStepRequiredFields(1))}
                     placeholder="500000"
+                    disabled={prefilled.annualSales}
                   />
+                  {prefilled.annualSales && (
+                    <p className="text-xs text-muted-foreground mt-1">Prefilled from your quiz (monthly x12)</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="amount_requested">Amount Requested (CAD) *</Label>
@@ -710,7 +753,11 @@ const CanadianApplication = () => {
                     onChange={(e) => updateFormData('amount_requested', e.target.value)}
                     className={getFieldValidationClass('amount_requested', getStepRequiredFields(1))}
                     placeholder="50000"
+                    disabled={prefilled.amount}
                   />
+                  {prefilled.amount && (
+                    <p className="text-xs text-muted-foreground mt-1">Prefilled from your quiz</p>
+                  )}
                 </div>
               </div>
 

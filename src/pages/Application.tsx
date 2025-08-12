@@ -105,6 +105,7 @@ const Application = () => {
   const [showAuth, setShowAuth] = useState(false);
   const [pendingAutoSubmit, setPendingAutoSubmit] = useState(false);
   const [autoFilledBusinessAge, setAutoFilledBusinessAge] = useState(false);
+  const [prefilled, setPrefilled] = useState({ loanAmount: false, monthlyRevenue: false, dateIncorp: false });
   const { user, loading } = useAuth();
   const totalSteps = 6;
   
@@ -280,6 +281,79 @@ const Application = () => {
     prefillBusinessAge();
   }, [searchParams, user, autoFilledBusinessAge]);
 
+  // Prefill key fields from quiz (loan amount, monthly revenue, incorporation date)
+  useEffect(() => {
+    const run = async () => {
+      try {
+        const quizId = searchParams.get('quiz_id') || localStorage.getItem('quiz_response_id');
+        let quiz: any = null;
+        if (quizId) {
+          const { data } = await supabase
+            .from('quiz_responses')
+            .select('loan_amount, monthly_revenue, use_of_funds, founding_year, founding_month, founding_day')
+            .eq('id', quizId)
+            .maybeSingle();
+          quiz = data;
+        } else {
+          const email = searchParams.get('email') || user?.email || null;
+          if (email) {
+            const { data } = await supabase
+              .from('quiz_responses')
+              .select('loan_amount, monthly_revenue, use_of_funds, founding_year, founding_month, founding_day')
+              .eq('email', email)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            quiz = data;
+          }
+        }
+
+        if (!quiz) return;
+
+        const updates: Partial<ApplicationData> = {};
+        const flags: any = { ...prefilled };
+
+        if (!formData.loan_amount_requested && quiz.loan_amount) {
+          updates.loan_amount_requested = String(quiz.loan_amount);
+          flags.loanAmount = true;
+        }
+        if (!formData.average_monthly_deposits && quiz.monthly_revenue) {
+          updates.average_monthly_deposits = String(quiz.monthly_revenue);
+          flags.monthlyRevenue = true;
+        }
+        if (!formData.use_of_funds && quiz.use_of_funds) {
+          updates.use_of_funds = quiz.use_of_funds;
+        }
+        if (!formData.date_incorporated && quiz.founding_year) {
+          const y = quiz.founding_year as number;
+          const m = (quiz.founding_month as number) || 1;
+          const d = (quiz.founding_day as number) || 1;
+          const dateStr = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+          updates.date_incorporated = dateStr;
+          flags.dateIncorp = true;
+        }
+
+        if (Object.keys(updates).length) {
+          setFormData((prev) => ({ ...prev, ...updates }));
+          setPrefilled(flags);
+        }
+      } catch (e) {
+        console.error('Error pre-filling from quiz:', e);
+      }
+    };
+    run();
+  }, [searchParams, user]);
+
+  // Auto-submit once authenticated after prompting login/signup
+  useEffect(() => {
+    if (pendingAutoSubmit && user) {
+      setTimeout(() => {
+        setPendingAutoSubmit(false);
+        handleSubmit();
+      }, 0);
+    }
+  }, [pendingAutoSubmit, user]);
+
   const updateFormData = (field: keyof ApplicationData, value: any) => {
     setFormData(prev => ({
       ...prev,
@@ -411,7 +485,7 @@ const Application = () => {
         const filePath = `applications/${fileName}`;
 
         const { error: uploadError, data } = await supabase.storage
-          .from('documents')
+          .from('application-documents')
           .upload(filePath, file);
 
         if (uploadError) {
@@ -421,7 +495,7 @@ const Application = () => {
         }
 
         const { data: { publicUrl } } = supabase.storage
-          .from('documents')
+          .from('application-documents')
           .getPublicUrl(filePath);
 
         uploadedFiles.push(publicUrl);
@@ -440,6 +514,11 @@ const Application = () => {
   };
 
   const handleSubmit = async () => {
+    if (!user) {
+      setShowAuth(true);
+      setPendingAutoSubmit(true);
+      return;
+    }
     if (!validateStep(currentStep)) {
       setShowValidationErrors(true);
       toast.error("Please fill in all required fields before submitting.");
@@ -744,7 +823,11 @@ const Application = () => {
                     type="date"
                     value={formData.date_incorporated}
                     onChange={(e) => updateFormData('date_incorporated', e.target.value)}
+                    disabled={prefilled.dateIncorp}
                   />
+                  {prefilled.dateIncorp && (
+                    <p className="text-xs text-muted-foreground mt-1">Prefilled from your quiz</p>
+                  )}
                 </div>
               </div>
 
@@ -761,7 +844,11 @@ const Application = () => {
                     placeholder="$1,000"
                     required
                     className={getFieldValidationClass('loan_amount_requested', getStepRequiredFields(1))}
+                    disabled={prefilled.loanAmount}
                   />
+                  {prefilled.loanAmount && (
+                    <p className="text-xs text-muted-foreground mt-1">Prefilled from your quiz</p>
+                  )}
                 </div>
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="use_of_funds">Use of Funds *</Label>
@@ -835,7 +922,11 @@ const Application = () => {
                   type="date"
                   value={formData.date_incorporated}
                   onChange={(e) => updateFormData('date_incorporated', e.target.value)}
+                  disabled={prefilled.dateIncorp}
                 />
+                {prefilled.dateIncorp && (
+                  <p className="text-xs text-muted-foreground mt-1">Prefilled from your quiz</p>
+                )}
               </div>
             </div>
           </div>
@@ -1149,8 +1240,11 @@ const Application = () => {
                   placeholder="$0"
                   required
                   className={getFieldValidationClass('average_monthly_deposits', getStepRequiredFields(4))}
+                  disabled={prefilled.monthlyRevenue}
                 />
-                <p className="text-xs text-muted-foreground mt-1">Amount in USD</p>
+                {prefilled.monthlyRevenue && (
+                  <p className="text-xs text-muted-foreground mt-1">Prefilled from your quiz</p>
+                )}
               </div>
               
               <div className="space-y-2">
@@ -1615,7 +1709,7 @@ const Application = () => {
             <ApplicationAuth 
               email={formData.email_address}
               name={formData.principal_name}
-              onAuthSuccess={() => setShowAuth(false)}
+              onAuthSuccess={() => { setShowAuth(false); setPendingAutoSubmit(true); }}
             />
           </div>
         )}
