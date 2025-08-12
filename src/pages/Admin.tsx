@@ -13,7 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
+import { format, intervalToDuration } from 'date-fns';
 
 // Helper function to get credit score number from classification
 const getCreditScoreNumber = (creditScore: string) => {
@@ -2316,12 +2316,27 @@ const Admin = () => {
                           </TableCell>
                           <TableCell>
                             <div className="text-sm text-muted-foreground">
-                              {lead.time_in_business === 'startup' ? 'Startup' : 
-                               lead.time_in_business === '6-12' ? '6-12 months' :
-                               lead.time_in_business === '1-2' ? '1-2 years' :
-                               lead.time_in_business === '2-5' ? '2-5 years' :
-                               lead.time_in_business === '+5' ? '5+ years' :
-                               lead.time_in_business || 'N/A'}
+                              {(() => {
+                                const y = (lead as any).founding_year as number | undefined;
+                                const m = (lead as any).founding_month as number | undefined;
+                                const d = (lead as any).founding_day as number | undefined;
+                                if (y && y > 0) {
+                                  const start = new Date(y, (m && m > 0 ? m - 1 : 0), d && d > 0 ? d : 1);
+                                  const duration = intervalToDuration({ start, end: new Date() });
+                                  const years = duration.years ?? 0;
+                                  const months = duration.months ?? 0;
+                                  const days = duration.days ?? 0;
+                                  return `${years} years, ${months} months, ${days} days`;
+                                }
+                                return (
+                                  lead.time_in_business === 'startup' ? 'Startup' :
+                                  lead.time_in_business === '6-12' ? '6-12 months' :
+                                  lead.time_in_business === '1-2' ? '1-2 years' :
+                                  lead.time_in_business === '2-5' ? '2-5 years' :
+                                  lead.time_in_business === '+5' ? '5+ years' :
+                                  lead.time_in_business || 'N/A'
+                                );
+                              })()}
                             </div>
                           </TableCell>
                           <TableCell>
