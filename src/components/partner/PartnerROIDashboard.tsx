@@ -190,23 +190,38 @@ export default function PartnerROIDashboard() {
       {/* Executive Summary */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm">Total Funded Volume</CardTitle></CardHeader>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Total Funded Volume</CardTitle>
+            <p className="text-xs text-muted-foreground">Sum of all approved loan amounts</p>
+          </CardHeader>
           <CardContent className="text-2xl font-bold">{toCurrency(totalFundedVolumeCents)}</CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm">Avg Funded Deal Size</CardTitle></CardHeader>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Avg Funded Deal Size</CardTitle>
+            <p className="text-xs text-muted-foreground">Average approved amount per funded deal</p>
+          </CardHeader>
           <CardContent className="text-2xl font-bold">{toCurrency(avgFundedDealCents)}</CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm">Total Leads Provided</CardTitle></CardHeader>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Total Leads Provided</CardTitle>
+            <p className="text-xs text-muted-foreground">Number of leads assigned to you in the selected range</p>
+          </CardHeader>
           <CardContent className="text-2xl font-bold">{toCompact(totalLeads)}</CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm">Cost per Lead</CardTitle></CardHeader>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Cost per Lead</CardTitle>
+            <p className="text-xs text-muted-foreground">Fixed price per lead (default $50)</p>
+          </CardHeader>
           <CardContent className="text-2xl font-bold">{toCurrency(costPerLeadCents)}</CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm">CPFD</CardTitle></CardHeader>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">CPFD</CardTitle>
+            <p className="text-xs text-muted-foreground">Cost per funded deal equals total spend divided by funded deals</p>
+          </CardHeader>
           <CardContent className="text-2xl font-bold">{funded.length ? toCurrency(cpfdCents) : "-"}</CardContent>
         </Card>
       </div>
