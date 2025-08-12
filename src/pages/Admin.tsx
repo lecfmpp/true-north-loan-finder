@@ -72,6 +72,7 @@ import ROIManagement from '@/components/admin/ROIManagement';
 import ClientsManagement from '@/components/admin/ClientsManagement';
 // Removed PartnersManagement component
 import Footer from '@/components/Footer';
+import PartnerROIDashboard from '@/components/partner/PartnerROIDashboard';
 
 interface QuizResponse {
   id: string;
@@ -1897,6 +1898,11 @@ const Admin = () => {
           icon: FileText
         },
         {
+          title: "ROI",
+          value: "partner-roi",
+          icon: TrendingUp
+        },
+        {
           title: "Payment & Access",
           value: "partner-payments",
           icon: DollarSign,
@@ -2749,6 +2755,8 @@ const Admin = () => {
         return <BillingManagement />;
       case 'roi':
         return <ROIManagement />;
+      case 'partner-roi':
+        return <PartnerROIDashboard />;
       default:
         return <div>Select a menu item</div>;
     }
