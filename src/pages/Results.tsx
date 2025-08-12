@@ -65,7 +65,7 @@ const Results = () => {
           }
         } catch (error) {
           console.error('Error fetching quiz data:', error);
-          navigate('/loan-estimator');
+          // Do not redirect on fetch error; fall back to URL params so the user can still see results
         }
       }
       setLoading(false);
@@ -76,10 +76,11 @@ const Results = () => {
 
   // Redirect if missing essential data and can't fetch it
   useEffect(() => {
-    if (!loading && !quizResponseId) {
+    const hasMinimalParams = Boolean(name && email && searchParams.get('amount'));
+    if (!loading && !quizResponseId && !hasMinimalParams) {
       navigate('/loan-estimator');
     }
-  }, [loading, quizResponseId, navigate]);
+  }, [loading, quizResponseId, name, email, navigate]);
 
   // Auto-enroll in follow-up email sequence when quiz is completed
   useEffect(() => {
