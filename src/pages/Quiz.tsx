@@ -760,7 +760,7 @@ const Quiz = () => {
       }
       
       // Save to local Supabase database
-      const { data: savedResponse, error } = await supabase.from('quiz_responses').insert({
+      const payload = {
         loan_amount: data.loanAmount[0],
         use_of_funds: data.useOfFunds,
         time_in_business: timeInBusiness,
@@ -777,7 +777,9 @@ const Quiz = () => {
         status: 'New',
         attribution_channel: finalAttribution,
         attribution_url: sourceUrl
-      }).select().single();
+      };
+
+      const { data: savedResponseId, error } = await (supabase as any).rpc('submit_quiz_response', { p: payload });
 
       if (error) throw error;
 
@@ -800,7 +802,7 @@ const Quiz = () => {
               time_in_business: timeInBusiness,
               score: score
             },
-            submissionId: savedResponse.id
+            submissionId: savedResponseId
           }
         });
       } catch (adminNotificationError) {
@@ -819,7 +821,7 @@ const Quiz = () => {
         email: data.email,
         phone: data.phone,
         score: score.toString(),
-        responseId: savedResponse.id,
+        responseId: savedResponseId,
         revenue: data.monthlyRevenue[0].toString(),
         company: data.companyName || '',
         country: data.country || '',

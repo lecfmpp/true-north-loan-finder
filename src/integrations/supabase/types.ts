@@ -2372,6 +2372,10 @@ export type Database = {
         Args: { _user_id: string }
         Returns: boolean
       }
+      submit_quiz_response: {
+        Args: { p: Json }
+        Returns: string
+      }
       update_partner_credits: {
         Args: {
           p_user_id: string
