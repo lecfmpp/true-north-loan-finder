@@ -458,6 +458,7 @@ export type Database = {
       }
       canadian_applications: {
         Row: {
+          additional_information: string | null
           admin_notes: string | null
           amount_requested: number
           annual_credit_card_sales: number | null
@@ -520,6 +521,7 @@ export type Database = {
           zip_owner_2: string | null
         }
         Insert: {
+          additional_information?: string | null
           admin_notes?: string | null
           amount_requested: number
           annual_credit_card_sales?: number | null
@@ -582,6 +584,7 @@ export type Database = {
           zip_owner_2?: string | null
         }
         Update: {
+          additional_information?: string | null
           admin_notes?: string | null
           amount_requested?: number
           annual_credit_card_sales?: number | null
@@ -1661,6 +1664,7 @@ export type Database = {
       }
       quiz_responses: {
         Row: {
+          additional_information: string | null
           admin_notes: string | null
           assigned_partner_id: string | null
           assigned_to: string | null
@@ -1692,6 +1696,7 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          additional_information?: string | null
           admin_notes?: string | null
           assigned_partner_id?: string | null
           assigned_to?: string | null
@@ -1723,6 +1728,7 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          additional_information?: string | null
           admin_notes?: string | null
           assigned_partner_id?: string | null
           assigned_to?: string | null

@@ -71,6 +71,7 @@ interface CanadianApplication {
   quiz_response_id?: string;
   user_id?: string;
   admin_notes?: string;
+  additional_information?: string;
   created_at: string;
   updated_at: string;
 }

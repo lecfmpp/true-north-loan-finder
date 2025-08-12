@@ -72,6 +72,7 @@ interface CanadianApplicationData {
   current_credit_card_processor: string;
   annual_credit_card_sales: string;
   average_monthly_cc_volume: string;
+  additional_information: string;
   
   // Documents
   document_files: File[];
@@ -144,6 +145,7 @@ const CanadianApplication = () => {
     current_credit_card_processor: "",
     annual_credit_card_sales: "",
     average_monthly_cc_volume: "",
+    additional_information: "",
     
     // Documents
     document_files: [],
@@ -401,6 +403,7 @@ const CanadianApplication = () => {
         current_credit_card_processor: formData.current_credit_card_processor || null,
         annual_credit_card_sales: formData.annual_credit_card_sales ? parseInt(formData.annual_credit_card_sales) : null,
         average_monthly_cc_volume: formData.average_monthly_cc_volume ? parseInt(formData.average_monthly_cc_volume) : null,
+        additional_information: formData.additional_information || null,
         document_files: documentUrls,
         quiz_response_id: formData.quiz_response_id
       };
@@ -1229,9 +1232,18 @@ const CanadianApplication = () => {
               </CardTitle>
               <CardDescription>Optional details to help with your application</CardDescription>
             </CardHeader>
-            <CardContent>
-              {/* This step can be used for any additional optional info or left empty */}
-              <p className="text-muted-foreground">No additional required fields on this step.</p>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="additional_information">Additional Information</Label>
+                <Textarea
+                  id="additional_information"
+                  value={formData.additional_information}
+                  onChange={(e) => updateFormData('additional_information', e.target.value)}
+                  placeholder="Share any extra details that might help us evaluate your application (e.g., seasonality, recent growth, special circumstances)..."
+                  rows={6}
+                />
+                <p className="text-xs text-muted-foreground">Optional. This will be saved with your quiz answers.</p>
+              </div>
             </CardContent>
           </Card>
         );

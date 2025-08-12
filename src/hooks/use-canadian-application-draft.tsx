@@ -60,6 +60,9 @@ interface CanadianApplicationData {
   annual_credit_card_sales: string;
   average_monthly_cc_volume: string;
   
+  // Optional additional information
+  additional_information: string;
+  
   // Documents
   document_files: File[];
   
