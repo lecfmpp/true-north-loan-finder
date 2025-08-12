@@ -127,7 +127,7 @@ export default function PartnerROIDashboard() {
 
   // Derived metrics
   const totalLeads = assignments.length;
-  const contactedLeads = assignments.filter(a => ["contacted","spoken","closed"].includes((a.status || "").toLowerCase())).length;
+  const contactedLeads = assignments.filter(a => ["contacted"].includes((a.status || "").toLowerCase())).length;
   const assignedSpend = totalLeads * (pricePerLead || 0);
 
   const joined = useMemo(() => {
