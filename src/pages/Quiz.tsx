@@ -812,7 +812,7 @@ const Quiz = () => {
       // This can be enabled later manually by admins if needed
       console.log('Email sequence disabled by default for quiz submissions');
 
-      // Redirect to loan estimator page with quiz data
+      // Direct redirect to appropriate application form based on country
       const queryParams = new URLSearchParams({
         amount: data.loanAmount[0].toString(),
         name: data.name,
@@ -826,7 +826,12 @@ const Quiz = () => {
         submitted: 'true'
       });
       
-      window.location.href = `/loan-estimator?${queryParams.toString()}`;
+      // Determine redirect URL based on country
+      const redirectUrl = data.country === 'CA' 
+        ? `/application-canadian?${queryParams.toString()}`
+        : `/application-usa?${queryParams.toString()}`;
+      
+      window.location.href = redirectUrl;
       
       
     } catch (error) {
