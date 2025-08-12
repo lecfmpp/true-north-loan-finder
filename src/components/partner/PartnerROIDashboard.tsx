@@ -142,7 +142,7 @@ export default function PartnerROIDashboard() {
   const qualified = joined.filter(x => isQualified(x.lead));
   const funded = joined.filter(x => normalize(x.lead?.status) === 'loan approved');
 
-  const totalFundedVolumeCents = funded.reduce((sum, x) => sum + (x.lead?.partner_loan_amount || 0), 0);
+  const totalFundedVolumeCents = funded.reduce((sum, x) => sum + ((x.lead?.partner_loan_amount || 0) * 100), 0);
   const avgFundedDealCents = funded.length ? Math.round(totalFundedVolumeCents / funded.length) : 0;
   const totalAmountRequestedDollars = qualified.reduce((sum, x) => sum + (x.lead?.loan_amount || 0), 0);
 
