@@ -941,6 +941,62 @@ export const USAApplicationsManagement: React.FC<USAApplicationsManagementProps>
         })}
       </div>
 
+      {/* Draft Applications */}
+      {filteredDrafts.length > 0 && appTypeFilter !== 'complete' && (
+        <div className="grid gap-4">
+          {filteredDrafts.map((draft) => {
+            const fd = (draft as any).form_data || {};
+            const company = fd.legal_corporation_name || fd.legal_business_name || 'Untitled';
+            const email = fd.email_address || '—';
+            const phone = fd.telephone_number || fd.business_phone || '—';
+            return (
+              <Card key={draft.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-primary" />
+                      <span className="font-semibold">{company}</span>
+                      <Badge variant="status-draft">Draft</Badge>
+                    </div>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Mail className="h-3 w-3" />
+                        {email}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Phone className="h-3 w-3" />
+                        {phone}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    <div>Step {draft.current_step}</div>
+                    <div>Updated: {new Date(draft.last_updated).toLocaleDateString()}</div>
+                  </div>
+                  <div className="flex gap-2 justify-start md:justify-end">
+                    <Button variant="outline" size="sm" onClick={() => setSelectedDraft(draft)}>
+                      <Eye className="h-4 w-4 mr-2" />
+                      View
+                    </Button>
+                    {isSuperAdmin && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-red-600 border-red-600 hover:bg-red-50"
+                        onClick={() => openDraftDeleteModal(draft)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
       {/* Application Details Modal */}
       {selectedApplication && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
