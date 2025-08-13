@@ -528,6 +528,9 @@ const CanadianApplication = () => {
       }
 
       toast.success("Application submitted successfully!");
+      if (data?.application_reference_number) {
+        try { localStorage.setItem('application_reference_number', data.application_reference_number); } catch {}
+      }
       navigate("/application-success");
     } catch (error) {
       console.error('Error submitting application:', error);
