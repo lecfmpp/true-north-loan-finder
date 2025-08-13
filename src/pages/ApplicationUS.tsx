@@ -50,6 +50,7 @@ interface USApplicationData {
 
   // Primary Owner Information
   principal_owner_name: string;
+  principal_title: string;
   ownership_percentage: string;
   ssn: string; // US personal ID
   dob: string;
@@ -124,6 +125,7 @@ const ApplicationUS = () => {
     outstanding_balance: "",
 
     principal_owner_name: "",
+    principal_title: "",
     ownership_percentage: "",
     ssn: "",
     dob: "",
@@ -264,7 +266,7 @@ const ApplicationUS = () => {
       case 1:
         return ['legal_business_name', 'physical_address', 'city', 'state', 'zip', 'business_phone', 'type_of_entity', 'federal_tax_id', 'business_start_date', 'annual_gross_sales', 'amount_requested', 'use_of_funds'];
       case 2:
-        return ['principal_owner_name', 'ownership_percentage', 'ssn', 'dob', 'home_address', 'city_owner', 'state_owner', 'zip_owner', 'email_address'];
+        return ['principal_owner_name', 'principal_title', 'ownership_percentage', 'ssn', 'dob', 'home_address', 'city_owner', 'state_owner', 'zip_owner', 'email_address'];
       default:
         return [];
     }
@@ -408,7 +410,7 @@ const ApplicationUS = () => {
         date_incorporated: formData.business_start_date || null,
         // Principal
         principal_name: formData.principal_owner_name,
-        principal_title: null,
+        principal_title: formData.principal_title,
         principal_ssn: formData.ssn,
         principal_home_address: formData.home_address,
         principal_city: formData.city_owner,
@@ -687,7 +689,7 @@ const ApplicationUS = () => {
               <CardDescription>Provide details of the principal owner</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="principal_owner_name">Owner Full Name *</Label>
                   <Input
@@ -696,6 +698,16 @@ const ApplicationUS = () => {
                     onChange={(e) => updateFormData('principal_owner_name', e.target.value)}
                     className={getFieldValidationClass('principal_owner_name', getStepRequiredFields(2))}
                     placeholder="Jane Doe"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="principal_title">Title *</Label>
+                  <Input
+                    id="principal_title"
+                    value={formData.principal_title}
+                    onChange={(e) => updateFormData('principal_title', e.target.value)}
+                    className={getFieldValidationClass('principal_title', getStepRequiredFields(2))}
+                    placeholder="Owner, CEO, President"
                   />
                 </div>
                 <div className="space-y-2">
@@ -1048,11 +1060,58 @@ const ApplicationUS = () => {
                           onChange={(e) => {
                             const files = Array.from(e.target.files || []);
                             if (files.length > 0) {
-                              updateFormData('document_files', files);
+                              const validFiles: File[] = [];
+                              const errors: string[] = [];
+                              files.forEach(file => {
+                                const validationError = validateFile(file);
+                                if (validationError) {
+                                  errors.push(`${file.name}: ${validationError}`);
+                                } else {
+                                  validFiles.push(file);
+                                }
+                              });
+                              if (errors.length > 0) {
+                                toast.error(errors.join('\n'));
+                              }
+                              if (validFiles.length > 0) {
+                                updateFormData('document_files', [...formData.document_files, ...validFiles]);
+                              }
                             }
+                            // Reset to allow re-selecting same files
+                            (e.target as HTMLInputElement).value = '';
                           }}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         />
                       </div>
+
+                      {formData.document_files.length > 0 && (
+                        <div className="mt-3">
+                          <p className="text-sm font-medium mb-2">Selected Files:</p>
+                          <ul className="text-xs space-y-1">
+                            {formData.document_files.map((file, index) => (
+                              <li key={index} className="flex items-center justify-between gap-2 p-2 bg-muted rounded">
+                                <div className="flex items-center gap-2">
+                                  <FileText className="h-3 w-3 text-primary" />
+                                  <span className="truncate">{file.name}</span>
+                                  <span className="text-xs text-muted-foreground">({Math.round(file.size / 1024)}KB)</span>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    const newFiles = formData.document_files.filter((_, i) => i !== index);
+                                    updateFormData('document_files', newFiles);
+                                  }}
+                                  className="h-6 w-6 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                                >
+                                  ×
+                                </Button>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
