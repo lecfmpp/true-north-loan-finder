@@ -165,7 +165,7 @@ const CanadianApplication = () => {
       const phone = searchParams.get('phone');
       const loanAmount = searchParams.get('loanAmount');
       const company = searchParams.get('company');
-      const quizId = searchParams.get('quiz_id');
+      const quizId = searchParams.get('quizResponseId') || searchParams.get('quiz_id');
 
       const updates: Partial<CanadianApplicationData> = {};
       
@@ -199,7 +199,7 @@ const CanadianApplication = () => {
   // Prefill business_start_date and key financials from quiz response
   useEffect(() => {
     const run = async () => {
-      const quizId = searchParams.get('quiz_id') || formData.quiz_response_id || localStorage.getItem('quiz_response_id');
+      const quizId = searchParams.get('quizResponseId') || searchParams.get('quiz_id') || formData.quiz_response_id || localStorage.getItem('quiz_response_id');
       try {
         let quiz: any = null;
         if (quizId) {
