@@ -686,7 +686,7 @@ const ApplicationUS = () => {
               </CardTitle>
               <CardDescription>Provide details of the principal owner</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="principal_owner_name">Owner Full Name *</Label>
@@ -743,6 +743,25 @@ const ApplicationUS = () => {
                   className={getFieldValidationClass('home_address', getStepRequiredFields(2))}
                   placeholder="456 Main St"
                 />
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="same_as_business_address"
+                  checked={formData.home_address === formData.physical_address &&
+                           formData.city_owner === formData.city &&
+                           formData.state_owner === formData.state &&
+                           formData.zip_owner === formData.zip}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      updateFormData('home_address', formData.physical_address);
+                      updateFormData('city_owner', formData.city);
+                      updateFormData('state_owner', formData.state);
+                      updateFormData('zip_owner', formData.zip);
+                    }
+                  }}
+                />
+                <Label htmlFor="same_as_business_address" className="text-sm font-medium">Same as Business Address</Label>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -810,24 +829,233 @@ const ApplicationUS = () => {
                 </div>
               </div>
 
-              {/* Documents */}
-              <div className="space-y-2">
-                <Label>Upload Documents</Label>
-                <div className="border-2 border-dashed rounded-lg p-6 text-center">
-                  <div className="flex flex-col items-center gap-2">
-                    <Upload className="h-6 w-6 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">Drag and drop files here or click to upload</p>
+              <div>
+                <h3 className="font-semibold mb-3">Secondary Owner (Optional)</h3>
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="principal_owner_name_2" className="text-sm font-medium">Name</Label>
                     <Input
-                      id="documents"
-                      type="file"
-                      multiple
-                      onChange={(e) => {
-                        if (e.target.files) updateFormData('document_files', Array.from(e.target.files));
-                      }}
+                      id="principal_owner_name_2"
+                      value={formData.principal_owner_name_2}
+                      onChange={(e) => updateFormData('principal_owner_name_2', e.target.value)}
+                      className="mt-1"
                     />
                   </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="ownership_percentage_2" className="text-sm font-medium">Ownership %</Label>
+                      <Input
+                        id="ownership_percentage_2"
+                        type="number"
+                        min="1"
+                        max="100"
+                        value={formData.ownership_percentage_2}
+                        onChange={(e) => updateFormData('ownership_percentage_2', e.target.value)}
+                        className="mt-1"
+                        placeholder="%"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="ssn_2" className="text-sm font-medium">SSN</Label>
+                      <Input
+                        id="ssn_2"
+                        value={formData.ssn_2}
+                        onChange={(e) => updateFormData('ssn_2', e.target.value)}
+                        className="mt-1"
+                        placeholder="123-45-6789"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="dob_2" className="text-sm font-medium">Date of Birth</Label>
+                      <Input
+                        id="dob_2"
+                        type="date"
+                        value={formData.dob_2}
+                        onChange={(e) => updateFormData('dob_2', e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="home_address_2" className="text-sm font-medium">Home Address</Label>
+                      <Input
+                        id="home_address_2"
+                        value={formData.home_address_2}
+                        onChange={(e) => updateFormData('home_address_2', e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="city_owner_2" className="text-sm font-medium">City</Label>
+                      <Input
+                        id="city_owner_2"
+                        value={formData.city_owner_2}
+                        onChange={(e) => updateFormData('city_owner_2', e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="state_owner_2" className="text-sm font-medium">State</Label>
+                      <Select value={formData.state_owner_2} onValueChange={(value) => updateFormData('state_owner_2', value)}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Select state" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {US_STATES.map((st) => (
+                            <SelectItem key={st} value={st}>{st}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="zip_owner_2" className="text-sm font-medium">ZIP Code</Label>
+                      <Input
+                        id="zip_owner_2"
+                        value={formData.zip_owner_2}
+                        onChange={(e) => updateFormData('zip_owner_2', e.target.value)}
+                        className="mt-1"
+                        placeholder="10001"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="home_phone_2" className="text-sm font-medium">Home Phone</Label>
+                      <Input
+                        id="home_phone_2"
+                        type="tel"
+                        value={formData.home_phone_2}
+                        onChange={(e) => updateFormData('home_phone_2', e.target.value)}
+                        className="mt-1"
+                        placeholder="(555) 123-4567"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="cell_phone_2" className="text-sm font-medium">Cell Phone</Label>
+                      <Input
+                        id="cell_phone_2"
+                        type="tel"
+                        value={formData.cell_phone_2}
+                        onChange={(e) => updateFormData('cell_phone_2', e.target.value)}
+                        className="mt-1"
+                        placeholder="(555) 123-4567"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="email_address_2" className="text-sm font-medium">Email Address</Label>
+                      <Input
+                        id="email_address_2"
+                        type="email"
+                        value={formData.email_address_2}
+                        onChange={(e) => updateFormData('email_address_2', e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <p className="text-xs text-muted-foreground">Accepted: PDF, DOCX, XLSX, JPG, PNG (max 10MB each)</p>
+              </div>
+
+              {/* Processing & Documents Section */}
+              <div className="border-t pt-6 mt-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <CreditCard className="h-5 w-5 text-primary" />
+                  <h3 className="text-lg font-bold">Processing & Documents</h3>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="current_credit_card_processor" className="text-sm font-medium">Current Credit Card Processor</Label>
+                    <Input
+                      id="current_credit_card_processor"
+                      value={formData.current_credit_card_processor}
+                      onChange={(e) => updateFormData('current_credit_card_processor', e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="annual_credit_card_sales" className="text-sm font-medium">Annual Credit Card Sales</Label>
+                      <Input
+                        id="annual_credit_card_sales"
+                        type="number"
+                        value={formData.annual_credit_card_sales}
+                        onChange={(e) => updateFormData('annual_credit_card_sales', e.target.value)}
+                        className="mt-1"
+                        placeholder="0"
+                        min="0"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">Amount in USD</p>
+                    </div>
+                    <div>
+                      <Label htmlFor="average_monthly_cc_volume" className="text-sm font-medium">Average Monthly Credit Card Volume</Label>
+                      <Input
+                        id="average_monthly_cc_volume"
+                        type="number"
+                        value={formData.average_monthly_cc_volume}
+                        onChange={(e) => updateFormData('average_monthly_cc_volume', e.target.value)}
+                        className="mt-1"
+                        placeholder="0"
+                        min="0"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">Amount in USD</p>
+                    </div>
+                  </div>
+
+                  {/* Document Upload Section */}
+                  <div className="border-t pt-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Upload className="h-4 w-4 text-primary" />
+                      <h4 className="font-semibold">Required Documents</h4>
+                    </div>
+
+                    <div className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800 mb-4">
+                      <div className="flex items-start gap-2">
+                        <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                        <div className="text-xs">
+                          <p className="font-medium text-blue-800 dark:text-blue-200 mb-1">📱 Mobile Upload Tips:</p>
+                          <ul className="list-disc pl-3 space-y-1 text-blue-700 dark:text-blue-300">
+                            <li>Use banking app to download statements as PDFs</li>
+                            <li>Take clear photos if documents are physical</li>
+                            <li>Upload files one by one for better results</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="relative">
+                      <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 text-center hover:border-primary/50 transition-colors">
+                        <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">Upload Your Documents</p>
+                          <p className="text-xs text-muted-foreground">Click here or drag and drop your files</p>
+                          <p className="text-xs text-muted-foreground">Supported: PDF, Images (JPG, PNG, GIF, WebP, BMP, TIFF), DOC, DOCX (Max 10MB each)</p>
+                        </div>
+                        <Input
+                          type="file"
+                          multiple
+                          accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.bmp,.tiff,.doc,.docx,application/pdf,image/jpeg,image/png,image/gif,image/webp,image/bmp,image/tiff,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                          onChange={(e) => {
+                            const files = Array.from(e.target.files || []);
+                            if (files.length > 0) {
+                              updateFormData('document_files', files);
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
