@@ -891,14 +891,16 @@ const ApplicationUS = () => {
       <Footer />
 
       {showAuth && (
-        <ApplicationAuth 
-          open={showAuth} 
-          onOpenChange={setShowAuth}
-          onAuthenticated={() => {
-            setShowAuth(false);
-            setPendingAutoSubmit(true);
-          }}
-        />
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <ApplicationAuth 
+            email={formData.email_address}
+            name={formData.principal_owner_name}
+            onAuthSuccess={() => {
+              setShowAuth(false);
+              setPendingAutoSubmit(true);
+            }}
+          />
+        </div>
       )}
     </div>
   );
