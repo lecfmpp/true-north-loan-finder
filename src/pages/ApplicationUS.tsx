@@ -1083,12 +1083,12 @@ const ApplicationUS = () => {
             <p className="text-muted-foreground">Complete the form below to apply for funding</p>
           </div>
 
-          <div className="mb-6">
-            <Progress value={(currentStep / totalSteps) * 100} />
-            <div className="flex justify-between text-sm text-muted-foreground mt-2">
-              <span>Business Info</span>
-              <span>Owner Info</span>
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">Step {currentStep} of {totalSteps}</span>
+              <span className="text-sm text-muted-foreground">{Math.round((currentStep / totalSteps) * 100)}% Complete</span>
             </div>
+            <Progress value={(currentStep / totalSteps) * 100} className="h-2" />
           </div>
 
           <div className="space-y-6">

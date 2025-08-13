@@ -35,6 +35,7 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const Compare = lazy(() => import("./pages/Compare"));
 const Application = lazy(() => import("./pages/Application"));
+const ApplicationUS = lazy(() => import("./pages/ApplicationUS"));
 const ApplicationSuccess = lazy(() => import("./pages/ApplicationSuccess"));
 const ApplicationStatus = lazy(() => import("./pages/ApplicationStatus"));
 const CanadianApplication = lazy(() => import("./pages/CanadianApplication"));
@@ -138,7 +139,7 @@ const App = () => {
               } />
               <Route path="/application-usa" element={
                 <Suspense fallback={<PageLoader />}>
-                  <Application />
+                  <ApplicationUS />
                 </Suspense>
               } />
               <Route path="/application-canadian" element={
