@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, ArrowRight, Building2, User, CreditCard, FileText, CheckCircle, Upload, Info } from "lucide-react";
+import { ArrowLeft, ArrowRight, Building2, User, CreditCard, FileText, CheckCircle, Upload, Info, Shield } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -102,8 +102,6 @@ const Application = () => {
   const [searchParams] = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showAuth, setShowAuth] = useState(false);
-  const [pendingAutoSubmit, setPendingAutoSubmit] = useState(false);
   const [autoFilledBusinessAge, setAutoFilledBusinessAge] = useState(false);
   const [prefilled, setPrefilled] = useState({ loanAmount: false, monthlyRevenue: false, dateIncorp: false, website: false });
   const { user, loading } = useAuth();
@@ -177,12 +175,11 @@ const Application = () => {
     document_files: []
   });
 
-  // Initialize form data from URL params or user account
+  // Initialize form data from URL params or user account (authenticated users only)
   useEffect(() => {
-    if (!loading) {
+    if (!loading && user) {
       // Pre-fill from quiz data if available
       const name = searchParams.get('name');
-      const email = searchParams.get('email');
       const phone = searchParams.get('phone');
       const loanAmount = searchParams.get('loanAmount');
       const company = searchParams.get('company');
@@ -190,15 +187,13 @@ const Application = () => {
       const updates: Partial<ApplicationData> = {};
       
       if (name) updates.principal_name = name;
-      if (email) updates.email_address = email;
       if (phone) updates.telephone_number = phone;
       if (loanAmount) updates.loan_amount_requested = loanAmount;
       if (company) updates.legal_corporation_name = company;
       
-      // Use user email if logged in and no email from quiz
-      if (user?.email && !email) {
-        updates.email_address = user.email;
-      }
+      // Always use authenticated user's email (security measure)
+      updates.email_address = user.email || '';
+      updates.principal_email = user.email || '';
 
       if (Object.keys(updates).length > 0) {
         setFormData(prev => ({ ...prev, ...updates }));
@@ -351,15 +346,6 @@ const Application = () => {
     run();
   }, [searchParams, user]);
 
-  // Auto-submit once authenticated after prompting login/signup
-  useEffect(() => {
-    if (pendingAutoSubmit && user) {
-      setTimeout(() => {
-        setPendingAutoSubmit(false);
-        handleSubmit();
-      }, 0);
-    }
-  }, [pendingAutoSubmit, user]);
 
   const updateFormData = (field: keyof ApplicationData, value: any) => {
     setFormData(prev => ({
@@ -521,11 +507,8 @@ const Application = () => {
   };
 
   const handleSubmit = async () => {
-    if (!user) {
-      setShowAuth(true);
-      setPendingAutoSubmit(true);
-      return;
-    }
+    // User must be authenticated to submit (enforced by page guard)
+    if (!user) return;
     if (!validateStep(currentStep)) {
       setShowValidationErrors(true);
       toast.error("Please fill in all required fields before submitting.");
@@ -1713,16 +1696,6 @@ const Application = () => {
         </div>
 
         <Footer />
-
-        {showAuth && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <ApplicationAuth 
-              email={formData.email_address}
-              name={formData.principal_name}
-              onAuthSuccess={() => { setShowAuth(false); setPendingAutoSubmit(true); }}
-            />
-          </div>
-        )}
       </div>
     </TooltipProvider>
   );

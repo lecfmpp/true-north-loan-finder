@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, ArrowRight, Building2, User, CreditCard, FileText, CheckCircle, Upload, Info, MapPin, DollarSign } from "lucide-react";
+import { ArrowLeft, ArrowRight, Building2, User, CreditCard, FileText, CheckCircle, Upload, Info, MapPin, DollarSign, Shield } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -86,8 +86,6 @@ const CanadianApplication = () => {
   const [searchParams] = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showAuth, setShowAuth] = useState(false);
-  const [pendingAutoSubmit, setPendingAutoSubmit] = useState(false);
   const [prefilled, setPrefilled] = useState({ startDate: false, amount: false, annualSales: false });
   const { user, loading } = useAuth();
   const totalSteps = 2;
@@ -156,12 +154,11 @@ const CanadianApplication = () => {
     quiz_response_id: null
   });
 
-  // Initialize form data from URL params or user account
+  // Initialize form data from URL params or user account (authenticated users only)
   useEffect(() => {
-    if (!loading) {
+    if (!loading && user) {
       // Pre-fill from quiz data if available
       const name = searchParams.get('name');
-      const email = searchParams.get('email');
       const phone = searchParams.get('phone');
       const loanAmount = searchParams.get('loanAmount');
       const company = searchParams.get('company');
@@ -170,31 +167,19 @@ const CanadianApplication = () => {
       const updates: Partial<CanadianApplicationData> = {};
       
       if (name) updates.principal_owner_name = name;
-      if (email) updates.email_address = email;
       if (phone) updates.business_phone = phone;
       if (loanAmount) updates.amount_requested = loanAmount;
       if (company) updates.legal_business_name = company;
       if (quizId) updates.quiz_response_id = quizId;
       
-      // Use user email if logged in and no email from quiz
-      if (user?.email && !email) {
-        updates.email_address = user.email;
-      }
+      // Always use authenticated user's email (security measure)
+      updates.email_address = user.email || '';
 
       if (Object.keys(updates).length > 0) {
         setFormData(prev => ({ ...prev, ...updates }));
       }
     }
   }, [user, loading, searchParams]);
-  // Auto-submit once authenticated after prompting login/signup
-  useEffect(() => {
-    if (pendingAutoSubmit && user) {
-      setTimeout(() => {
-        setPendingAutoSubmit(false);
-        handleSubmit();
-      }, 0);
-    }
-  }, [pendingAutoSubmit, user]);
 
   // Prefill business_start_date and key financials from quiz response
   useEffect(() => {
@@ -415,11 +400,8 @@ const CanadianApplication = () => {
   };
 
   const handleSubmit = async () => {
-    if (!user) {
-      setShowAuth(true);
-      setPendingAutoSubmit(true);
-      return;
-    }
+    // User must be authenticated to submit (enforced by page guard)
+    if (!user) return;
 
     setIsSubmitting(true);
 
@@ -1000,10 +982,13 @@ const CanadianApplication = () => {
                        id="email_address"
                        type="email"
                        value={formData.email_address}
-                       onChange={(e) => updateFormData('email_address', e.target.value)}
-                       className={getFieldValidationClass('email_address', getStepRequiredFields(2))}
-                       required
+                       readOnly
+                       className="bg-muted cursor-not-allowed"
+                       placeholder="Your authenticated email"
                      />
+                     <p className="text-xs text-muted-foreground mt-1">
+                       This email is locked to your account for security
+                     </p>
                   </div>
                 </div>
               </div>
@@ -1433,19 +1418,6 @@ const CanadianApplication = () => {
       </div>
 
       <Footer />
-
-      {showAuth && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <ApplicationAuth 
-            email={formData.email_address}
-            name={formData.principal_owner_name}
-            onAuthSuccess={() => {
-              setShowAuth(false);
-              setPendingAutoSubmit(true);
-            }}
-          />
-        </div>
-      )}
     </div>
   );
 };

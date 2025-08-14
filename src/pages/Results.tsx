@@ -210,10 +210,9 @@ const Results = () => {
         return;
       }
       
-      // Create URL params to pre-fill the application form
+      // Create URL params to pre-fill the application form (email will be secured by auth)
       const applicationParams = new URLSearchParams({
         name: finalName,
-        email: finalEmail,
         phone: finalPhone || '',
         quizResponseId: quizResponseId || '',
         loanAmount: finalLoanAmount.toString(),
@@ -391,28 +390,38 @@ const Results = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 md:space-y-6 text-center">
-                  <div className="space-y-3 md:space-y-4 max-w-2xl mx-auto px-2">
-                    <Button 
-                      size="lg" 
-                      onClick={(e) => {
-                        console.log('Button click event triggered:', e);
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleStartApplication();
-                      }}
-                      className="bg-green-500 hover:bg-green-600 text-white text-sm sm:text-base md:text-xl py-4 md:py-6 px-4 md:px-12 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all w-full min-h-[56px] md:min-h-[72px] flex items-center justify-center cursor-pointer"
-                      type="button"
-                    >
-                      <CheckCircle className="w-4 h-4 md:w-5 md:h-5 mr-2 flex-shrink-0" />
-                      <span className="text-center leading-tight">
-                        Complete Your Application<br className="sm:hidden" /> & Get Response Today
-                      </span>
-                    </Button>
-                    
-                    <p className="text-xs md:text-sm text-muted-foreground">
-                      Fast track your funding - complete your application now to get offers today.
-                    </p>
-                  </div>
+                   <div className="space-y-3 md:space-y-4 max-w-2xl mx-auto px-2">
+                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                       <div className="flex items-start gap-2">
+                         <Shield className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                         <div className="text-xs">
+                           <p className="font-medium text-blue-800 mb-1">🔒 Secure Application Process:</p>
+                           <p className="text-blue-700">You'll create an account or sign in before accessing the application form. This protects your sensitive financial information with bank-grade security.</p>
+                         </div>
+                       </div>
+                     </div>
+                     
+                     <Button 
+                       size="lg" 
+                       onClick={(e) => {
+                         console.log('Button click event triggered:', e);
+                         e.preventDefault();
+                         e.stopPropagation();
+                         handleStartApplication();
+                       }}
+                       className="bg-green-500 hover:bg-green-600 text-white text-sm sm:text-base md:text-xl py-4 md:py-6 px-4 md:px-12 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all w-full min-h-[56px] md:min-h-[72px] flex items-center justify-center cursor-pointer"
+                       type="button"
+                     >
+                       <CheckCircle className="w-4 h-4 md:w-5 md:h-5 mr-2 flex-shrink-0" />
+                       <span className="text-center leading-tight">
+                         Complete Your Application<br className="sm:hidden" /> & Get Response Today
+                       </span>
+                     </Button>
+                     
+                     <p className="text-xs md:text-sm text-muted-foreground">
+                       Fast track your funding - complete your application now to get offers today.
+                     </p>
+                   </div>
 
                   <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-3xl mx-auto px-2">
                     Based on your profile, you're pre-qualified for funding. Complete your detailed application now to receive official offers from our lender network today.
