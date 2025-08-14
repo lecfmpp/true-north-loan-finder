@@ -177,6 +177,22 @@ const Home = () => {
                 </Button>
               </div>
               
+              {/* Funding Criteria */}
+              <div className="mb-6 space-y-3">
+                <div className="flex items-center gap-3 text-primary">
+                  <CheckCircle className="h-5 w-5 text-secondary flex-shrink-0" />
+                  <span className="font-medium">Canadian or US Bank Account</span>
+                </div>
+                <div className="flex items-center gap-3 text-primary">
+                  <CheckCircle className="h-5 w-5 text-secondary flex-shrink-0" />
+                  <span className="font-medium">6+ Months in Business</span>
+                </div>
+                <div className="flex items-center gap-3 text-primary">
+                  <CheckCircle className="h-5 w-5 text-secondary flex-shrink-0" />
+                  <span className="font-medium">$10k+ Average Monthly Revenue</span>
+                </div>
+              </div>
+              
               {/* Trust Indicators */}
               <div className="flex items-center justify-start gap-6 text-sm text-muted-foreground mb-12">
                 {trustIndicators.map((item, index) => (
