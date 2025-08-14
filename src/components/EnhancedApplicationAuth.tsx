@@ -18,10 +18,7 @@ export const EnhancedApplicationAuth = ({ email = "", name = "", onAuthSuccess }
   const [formData, setFormData] = useState({
     email: email,
     password: "",
-    confirmPassword: "",
-    name: name,
-    agreeToTerms: false,
-    subscribeToUpdates: false
+    confirmPassword: ""
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -65,14 +62,6 @@ export const EnhancedApplicationAuth = ({ email = "", name = "", onAuthSuccess }
       newErrors.confirmPassword = "Passwords do not match";
     }
 
-    if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
-    }
-
-    if (!formData.agreeToTerms) {
-      newErrors.agreeToTerms = "You must agree to the terms and conditions";
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -92,8 +81,7 @@ export const EnhancedApplicationAuth = ({ email = "", name = "", onAuthSuccess }
         options: {
           emailRedirectTo: window.location.href,
           data: {
-            display_name: formData.name,
-            subscribe_to_updates: formData.subscribeToUpdates
+            display_name: name
           }
         }
       });
@@ -172,190 +160,114 @@ export const EnhancedApplicationAuth = ({ email = "", name = "", onAuthSuccess }
   };
 
   return (
-    <Card className="max-w-md mx-auto">
-      <CardHeader className="text-center">
-        <div className="mx-auto mb-4 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-          <Shield className="h-6 w-6 text-primary" />
+    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 mb-4">
+      <div className="text-center mb-4">
+        <div className="mx-auto mb-2 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+          <Shield className="h-4 w-4 text-primary" />
         </div>
-        <CardTitle className="text-xl">Create Your Secure Account</CardTitle>
-        <CardDescription>
-          This secure account will allow you to complete your application and track its progress
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <h3 className="text-lg font-semibold text-primary">Create Your Secure Account</h3>
+        <p className="text-sm text-muted-foreground">
+          Complete your account setup to proceed with your application
+        </p>
+      </div>
+      
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <Label htmlFor="email">Email Address</Label>
+          <Input
+            id="email"
+            type="email"
+            value={formData.email}
+            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+            placeholder="Enter your email"
+            className={errors.email ? "border-red-500" : ""}
+            disabled
+          />
+          {errors.email && (
+            <p className="text-sm text-red-500 mt-1">{errors.email}</p>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="name">Full Name</Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              placeholder="Enter your full name"
-              className={errors.name ? "border-red-500" : ""}
-            />
-            {errors.name && (
-              <p className="text-sm text-red-500 mt-1">{errors.name}</p>
-            )}
-          </div>
-
-          <div>
-            <Label htmlFor="email">Email Address</Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-              placeholder="Enter your email"
-              className={errors.email ? "border-red-500" : ""}
-            />
-            {errors.email && (
-              <p className="text-sm text-red-500 mt-1">{errors.email}</p>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="password">Create Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={formData.password}
-                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                  placeholder="Create a secure password"
-                  className={`pr-10 ${getPasswordStrengthColor()}`}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Must be at least 8 characters with uppercase, lowercase, and number
-              </p>
-              {errors.password && (
-                <p className="text-sm text-red-500 mt-1">{errors.password}</p>
-              )}
-            </div>
-
-            <div>
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={formData.confirmPassword}
-                  onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                  placeholder="Confirm your password"
-                  className={`pr-10 ${getConfirmPasswordColor()}`}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </Button>
-              </div>
-              {errors.confirmPassword && (
-                <p className="text-sm text-red-500 mt-1">{errors.confirmPassword}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-start space-x-2">
-              <Checkbox
-                id="agreeToTerms"
-                checked={formData.agreeToTerms}
-                onCheckedChange={(checked) => 
-                  setFormData(prev => ({ ...prev, agreeToTerms: checked as boolean }))
-                }
-                className={errors.agreeToTerms ? "border-red-500" : ""}
+            <Label htmlFor="password">Create Password</Label>
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                value={formData.password}
+                onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                placeholder="Create a secure password"
+                className={`pr-10 ${getPasswordStrengthColor()}`}
               />
-              <div className="grid gap-1.5 leading-none">
-                <Label
-                  htmlFor="agreeToTerms"
-                  className="text-sm font-normal leading-relaxed cursor-pointer"
-                >
-                  I agree to the{" "}
-                  <a href="/terms" className="text-primary hover:underline" target="_blank">
-                    Terms of Service
-                  </a>{" "}
-                  and{" "}
-                  <a href="/privacy" className="text-primary hover:underline" target="_blank">
-                    Privacy Policy
-                  </a>. My information will be used solely for application processing and will not be shared with third parties.
-                </Label>
-              </div>
-            </div>
-            {errors.agreeToTerms && (
-              <p className="text-sm text-red-500">{errors.agreeToTerms}</p>
-            )}
-
-            <div className="flex items-start space-x-2">
-              <Checkbox
-                id="subscribeToUpdates"
-                checked={formData.subscribeToUpdates}
-                onCheckedChange={(checked) => 
-                  setFormData(prev => ({ ...prev, subscribeToUpdates: checked as boolean }))
-                }
-              />
-              <Label
-                htmlFor="subscribeToUpdates"
-                className="text-sm font-normal leading-relaxed cursor-pointer"
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                onClick={() => setShowPassword(!showPassword)}
               >
-                Subscribe to application updates and funding opportunities (optional)
-              </Label>
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <Eye className="h-4 w-4 text-muted-foreground" />
+                )}
+              </Button>
             </div>
-          </div>
-
-          <div className="bg-muted/50 p-3 rounded-lg">
-            <div className="flex items-start gap-2">
-              <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-              <div className="text-sm text-muted-foreground">
-                <p className="font-medium mb-1">Why create an account?</p>
-                <ul className="space-y-1 text-xs">
-                  <li>• Secure storage of your application data</li>
-                  <li>• Track your application status in real-time</li>
-                  <li>• Receive important updates about your application</li>
-                  <li>• Access to your funding dashboard</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <Button 
-            type="submit" 
-            className="w-full" 
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              "Creating Account..."
-            ) : (
-              <>
-                <UserPlus className="h-4 w-4 mr-2" />
-                Create Account & Continue
-              </>
+            <p className="text-xs text-muted-foreground mt-1">
+              Must be at least 8 characters with uppercase, lowercase, and number
+            </p>
+            {errors.password && (
+              <p className="text-sm text-red-500 mt-1">{errors.password}</p>
             )}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+          </div>
+
+          <div>
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <div className="relative">
+              <Input
+                id="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                value={formData.confirmPassword}
+                onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                placeholder="Confirm your password"
+                className={`pr-10 ${getConfirmPasswordColor()}`}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                {showConfirmPassword ? (
+                  <EyeOff className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <Eye className="h-4 w-4 text-muted-foreground" />
+                )}
+              </Button>
+            </div>
+            {errors.confirmPassword && (
+              <p className="text-sm text-red-500 mt-1">{errors.confirmPassword}</p>
+            )}
+          </div>
+        </div>
+
+        <Button 
+          type="submit" 
+          className="w-full" 
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            "Creating Account..."
+          ) : (
+            <>
+              <UserPlus className="h-4 w-4 mr-2" />
+              Create Account & Continue
+            </>
+          )}
+        </Button>
+      </form>
+    </div>
   );
 };

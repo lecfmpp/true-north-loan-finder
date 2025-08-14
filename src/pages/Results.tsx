@@ -210,8 +210,8 @@ const Results = () => {
       
       // Check if user is authenticated
       if (!user && !authLoading) {
-        console.log('User not authenticated - showing auth form');
-        setShowAuth(true);
+        console.log('User not authenticated - form will be shown above button');
+        // Don't show separate auth screen, the form is now inline
         return;
       }
       
@@ -257,7 +257,6 @@ const Results = () => {
 
   const handleAuthSuccess = () => {
     console.log('Authentication successful, proceeding to application');
-    setShowAuth(false);
     proceedToApplication();
   };
 
@@ -350,33 +349,7 @@ const Results = () => {
       <div className="container mx-auto px-4 py-6 md:py-12 max-w-full overflow-x-hidden">
         <div className="max-w-4xl mx-auto space-y-6 md:space-y-8 overflow-x-hidden">
           
-          {showAuth ? (
-            <>
-              {/* Authentication Section */}
-              <div className="text-center space-y-4 md:space-y-6 overflow-x-hidden">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowAuth(false)}
-                  className="mb-3 md:mb-4 text-xs md:text-sm"
-                >
-                  <ArrowLeft className="w-3 h-3 md:w-4 md:h-4 mr-2" />
-                  Back to Results
-                </Button>
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary px-2 break-words">
-                  Secure Your Application
-                </h1>
-                <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-3xl mx-auto px-2">
-                  Create your secure account to proceed with your application. Your information will be protected with bank-level security.
-                </p>
-              </div>
-              
-              <EnhancedApplicationAuth 
-                email={finalEmail} 
-                name={finalName} 
-                onAuthSuccess={handleAuthSuccess} 
-              />
-            </>
-          ) : !showBooking ? (
+          {!showBooking ? (
             <>
               {/* Hook Section */}
               <div className="text-center space-y-4 md:space-y-6 overflow-x-hidden">
@@ -432,6 +405,14 @@ const Results = () => {
                 </CardHeader>
                 <CardContent className="space-y-4 md:space-y-6 text-center">
                    <div className="space-y-3 md:space-y-4 max-w-2xl mx-auto px-2">
+                     {!user && !authLoading && (
+                       <EnhancedApplicationAuth 
+                         email={finalEmail} 
+                         name={finalName} 
+                         onAuthSuccess={handleAuthSuccess} 
+                       />
+                     )}
+                     
                      <Button 
                        size="lg" 
                        onClick={(e) => {
@@ -442,10 +423,11 @@ const Results = () => {
                        }}
                        className="bg-green-500 hover:bg-green-600 text-white text-sm sm:text-base md:text-xl py-4 md:py-6 px-4 md:px-12 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all w-full min-h-[56px] md:min-h-[72px] flex items-center justify-center cursor-pointer"
                        type="button"
+                       disabled={!user && !authLoading}
                      >
                        <CheckCircle className="w-4 h-4 md:w-5 md:h-5 mr-2 flex-shrink-0" />
                        <span className="text-center leading-tight">
-                         Complete Application & Get Response Today
+                         {user ? 'Complete Application & Get Response Today' : 'Please Create Account First'}
                        </span>
                      </Button>
                      
