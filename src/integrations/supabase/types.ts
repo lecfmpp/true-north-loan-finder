@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -2320,33 +2320,37 @@ export type Database = {
         Args: { app_type: string }
         Returns: string
       }
+      get_current_user_email: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_lead_source_analytics: {
-        Args: { start_date?: string; end_date?: string }
+        Args: { end_date?: string; start_date?: string }
         Returns: {
-          source_name: string
-          source_category: string
-          source_type: string
-          lead_count: number
-          cost_per_lead: number
-          total_estimated_cost: number
-          conversion_rate: number
           avg_loan_amount: number
+          conversion_rate: number
+          cost_per_lead: number
+          lead_count: number
+          source_category: string
+          source_name: string
+          source_type: string
+          total_estimated_cost: number
         }[]
       }
       get_roi_metrics: {
-        Args: { start_date?: string; end_date?: string }
+        Args: { end_date?: string; start_date?: string }
         Returns: {
-          total_leads: number
-          total_spend: number
-          cost_per_lead: number
-          total_revenue: number
-          roi_percentage: number
-          channel_breakdown: Json
-          qualified_leads: number
-          funded_leads: number
           all_leads: number
           application_leads: number
+          channel_breakdown: Json
           commission_generated: number
+          cost_per_lead: number
+          funded_leads: number
+          qualified_leads: number
+          roi_percentage: number
+          total_leads: number
+          total_revenue: number
+          total_spend: number
         }[]
       }
       has_any_management_role: {
@@ -2359,8 +2363,8 @@ export type Database = {
       }
       has_role: {
         Args: {
-          _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
         }
         Returns: boolean
       }
@@ -2378,12 +2382,12 @@ export type Database = {
       }
       update_partner_credits: {
         Args: {
-          p_user_id: string
+          p_created_by?: string
           p_credit_change: number
-          p_transaction_type: string
           p_description?: string
           p_reference_id?: string
-          p_created_by?: string
+          p_transaction_type: string
+          p_user_id: string
         }
         Returns: boolean
       }
