@@ -1,0 +1,361 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { AlertCircle, Shield, UserPlus, Eye, EyeOff } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+interface EnhancedApplicationAuthProps {
+  email?: string;
+  name?: string;
+  onAuthSuccess: () => void;
+}
+
+export const EnhancedApplicationAuth = ({ email = "", name = "", onAuthSuccess }: EnhancedApplicationAuthProps) => {
+  const [formData, setFormData] = useState({
+    email: email,
+    password: "",
+    confirmPassword: "",
+    name: name,
+    agreeToTerms: false,
+    subscribeToUpdates: false
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const validatePassword = (password: string) => {
+    const errors = [];
+    if (password.length < 8) {
+      errors.push("at least 8 characters");
+    }
+    if (!/(?=.*[a-z])/.test(password)) {
+      errors.push("one lowercase letter");
+    }
+    if (!/(?=.*[A-Z])/.test(password)) {
+      errors.push("one uppercase letter");
+    }
+    if (!/(?=.*\d)/.test(password)) {
+      errors.push("one number");
+    }
+    return errors;
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.email) {
+      newErrors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    const passwordErrors = validatePassword(formData.password);
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (passwordErrors.length > 0) {
+      newErrors.password = `Password must contain ${passwordErrors.join(", ")}`;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required";
+    }
+
+    if (!formData.agreeToTerms) {
+      newErrors.agreeToTerms = "You must agree to the terms and conditions";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+
+    setIsLoading(true);
+
+    try {
+      // Sign up the user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          emailRedirectTo: window.location.href,
+          data: {
+            display_name: formData.name,
+            subscribe_to_updates: formData.subscribeToUpdates
+          }
+        }
+      });
+
+      if (authError) {
+        if (authError.message.includes("already registered")) {
+          // Try to sign in instead
+          const { error: signInError } = await supabase.auth.signInWithPassword({
+            email: formData.email,
+            password: formData.password
+          });
+
+          if (signInError) {
+            setErrors({ password: "Account exists but password is incorrect. Please use the correct password or contact support." });
+            return;
+          } else {
+            toast.success("Successfully signed in!");
+            onAuthSuccess();
+            return;
+          }
+        }
+        
+        // Handle specific Supabase auth errors
+        if (authError.message.includes("Password should be at least")) {
+          setErrors({ password: "Password must be at least 8 characters with uppercase, lowercase, and number" });
+          return;
+        }
+        
+        if (authError.message.includes("weak")) {
+          setErrors({ password: "Please choose a stronger password with mixed case letters, numbers, and special characters" });
+          return;
+        }
+        
+        if (authError.message.includes("Invalid email")) {
+          setErrors({ email: "Please enter a valid email address" });
+          return;
+        }
+        
+        throw authError;
+      }
+
+      if (authData.user) {
+        toast.success("Account created successfully! You can now submit your application.");
+        onAuthSuccess();
+      }
+    } catch (error: any) {
+      console.error("Authentication error:", error);
+      
+      // Provide specific error messages
+      const errorMessage = error?.message || "Failed to create account. Please try again.";
+      
+      if (errorMessage.includes("email")) {
+        setErrors({ email: errorMessage });
+      } else if (errorMessage.includes("password")) {
+        setErrors({ password: errorMessage });
+      } else {
+        toast.error(errorMessage);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getPasswordStrengthColor = () => {
+    if (!formData.password) return "border-input";
+    const errors = validatePassword(formData.password);
+    if (errors.length === 0) return "border-green-500";
+    if (errors.length <= 2) return "border-yellow-500";
+    return "border-red-500";
+  };
+
+  const getConfirmPasswordColor = () => {
+    if (!formData.confirmPassword) return "border-input";
+    if (formData.password === formData.confirmPassword) return "border-green-500";
+    return "border-red-500";
+  };
+
+  return (
+    <Card className="max-w-md mx-auto">
+      <CardHeader className="text-center">
+        <div className="mx-auto mb-4 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+          <Shield className="h-6 w-6 text-primary" />
+        </div>
+        <CardTitle className="text-xl">Create Your Secure Account</CardTitle>
+        <CardDescription>
+          This secure account will allow you to complete your application and track its progress
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="name">Full Name</Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              placeholder="Enter your full name"
+              className={errors.name ? "border-red-500" : ""}
+            />
+            {errors.name && (
+              <p className="text-sm text-red-500 mt-1">{errors.name}</p>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="email">Email Address</Label>
+            <Input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+              placeholder="Enter your email"
+              className={errors.email ? "border-red-500" : ""}
+            />
+            {errors.email && (
+              <p className="text-sm text-red-500 mt-1">{errors.email}</p>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="password">Create Password</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={formData.password}
+                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                  placeholder="Create a secure password"
+                  className={`pr-10 ${getPasswordStrengthColor()}`}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Must be at least 8 characters with uppercase, lowercase, and number
+              </p>
+              {errors.password && (
+                <p className="text-sm text-red-500 mt-1">{errors.password}</p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                  placeholder="Confirm your password"
+                  className={`pr-10 ${getConfirmPasswordColor()}`}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </Button>
+              </div>
+              {errors.confirmPassword && (
+                <p className="text-sm text-red-500 mt-1">{errors.confirmPassword}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-start space-x-2">
+              <Checkbox
+                id="agreeToTerms"
+                checked={formData.agreeToTerms}
+                onCheckedChange={(checked) => 
+                  setFormData(prev => ({ ...prev, agreeToTerms: checked as boolean }))
+                }
+                className={errors.agreeToTerms ? "border-red-500" : ""}
+              />
+              <div className="grid gap-1.5 leading-none">
+                <Label
+                  htmlFor="agreeToTerms"
+                  className="text-sm font-normal leading-relaxed cursor-pointer"
+                >
+                  I agree to the{" "}
+                  <a href="/terms" className="text-primary hover:underline" target="_blank">
+                    Terms of Service
+                  </a>{" "}
+                  and{" "}
+                  <a href="/privacy" className="text-primary hover:underline" target="_blank">
+                    Privacy Policy
+                  </a>. My information will be used solely for application processing and will not be shared with third parties.
+                </Label>
+              </div>
+            </div>
+            {errors.agreeToTerms && (
+              <p className="text-sm text-red-500">{errors.agreeToTerms}</p>
+            )}
+
+            <div className="flex items-start space-x-2">
+              <Checkbox
+                id="subscribeToUpdates"
+                checked={formData.subscribeToUpdates}
+                onCheckedChange={(checked) => 
+                  setFormData(prev => ({ ...prev, subscribeToUpdates: checked as boolean }))
+                }
+              />
+              <Label
+                htmlFor="subscribeToUpdates"
+                className="text-sm font-normal leading-relaxed cursor-pointer"
+              >
+                Subscribe to application updates and funding opportunities (optional)
+              </Label>
+            </div>
+          </div>
+
+          <div className="bg-muted/50 p-3 rounded-lg">
+            <div className="flex items-start gap-2">
+              <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-muted-foreground">
+                <p className="font-medium mb-1">Why create an account?</p>
+                <ul className="space-y-1 text-xs">
+                  <li>• Secure storage of your application data</li>
+                  <li>• Track your application status in real-time</li>
+                  <li>• Receive important updates about your application</li>
+                  <li>• Access to your funding dashboard</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              "Creating Account..."
+            ) : (
+              <>
+                <UserPlus className="h-4 w-4 mr-2" />
+                Create Account & Continue
+              </>
+            )}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+};

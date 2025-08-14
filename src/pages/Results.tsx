@@ -24,8 +24,10 @@ import {
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BookingCalendar from "@/components/BookingCalendar";
+import { EnhancedApplicationAuth } from "@/components/EnhancedApplicationAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 
 const Results = () => {
   const [searchParams] = useSearchParams();
@@ -36,7 +38,9 @@ const Results = () => {
   const [bookingDetails, setBookingDetails] = useState<any>(null);
   const [quizData, setQuizData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showAuth, setShowAuth] = useState(false);
   const { toast } = useToast();
+  const { user, loading: authLoading } = useAuth();
 
   // Get quiz data from URL params or fetch from database
   const loanAmount = parseInt(searchParams.get('amount') || '50000');
@@ -190,13 +194,7 @@ const Results = () => {
 
   const handleStartApplication = () => {
     console.log('=== START APPLICATION BUTTON CLICKED ===');
-    console.log('Navigating to application with data:', {
-      finalName,
-      finalEmail,
-      finalPhone,
-      quizResponseId,
-      country: quizData?.country
-    });
+    console.log('User status:', { user, authLoading });
     
     try {
       if (!finalName || !finalEmail) {
@@ -210,40 +208,57 @@ const Results = () => {
         return;
       }
       
-      // Create URL params to pre-fill the application form (email will be secured by auth)
-      const applicationParams = new URLSearchParams({
-        name: finalName,
-        phone: finalPhone || '',
-        quizResponseId: quizResponseId || '',
-        loanAmount: finalLoanAmount.toString(),
-        monthlyRevenue: (quizData?.monthly_revenue || 0).toString(),
-        creditScore: quizData?.credit_score || '',
-        timeInBusiness: quizData?.time_in_business || '',
-        useOfFunds: quizData?.use_of_funds || ''
-      });
+      // Check if user is authenticated
+      if (!user && !authLoading) {
+        console.log('User not authenticated - showing auth form');
+        setShowAuth(true);
+        return;
+      }
       
-      // Route based on country selection
-      const country = quizData?.country;
-      console.log('Country from quizData:', country);
-      
-      // Route based on country selection - check both quiz data and URL params
-      const countryFromParams = searchParams.get('country');
-      const finalCountry = country || countryFromParams;
-      
-      console.log('Country routing debug:', { 
-        countryFromQuizData: country, 
-        countryFromParams, 
-        finalCountry 
-      });
-      
-      const applicationRoute = finalCountry === 'CA' ? '/application-canadian' : '/application-usa';
-      
-      console.log(`Navigating to ${applicationRoute} with params:`, applicationParams.toString());
-      navigate(`${applicationRoute}?${applicationParams.toString()}`);
+      // User is authenticated, proceed with application
+      proceedToApplication();
       
     } catch (error) {
       console.error('Error in handleStartApplication:', error);
     }
+  };
+
+  const proceedToApplication = () => {
+    console.log('Proceeding to application with authenticated user');
+    
+    // Create URL params to pre-fill the application form
+    const applicationParams = new URLSearchParams({
+      name: finalName,
+      phone: finalPhone || '',
+      quizResponseId: quizResponseId || '',
+      loanAmount: finalLoanAmount.toString(),
+      monthlyRevenue: (quizData?.monthly_revenue || 0).toString(),
+      creditScore: quizData?.credit_score || '',
+      timeInBusiness: quizData?.time_in_business || '',
+      useOfFunds: quizData?.use_of_funds || ''
+    });
+    
+    // Route based on country selection
+    const country = quizData?.country;
+    const countryFromParams = searchParams.get('country');
+    const finalCountry = country || countryFromParams;
+    
+    console.log('Country routing debug:', { 
+      countryFromQuizData: country, 
+      countryFromParams, 
+      finalCountry 
+    });
+    
+    const applicationRoute = finalCountry === 'CA' ? '/application-canadian' : '/application-usa';
+    
+    console.log(`Navigating to ${applicationRoute} with params:`, applicationParams.toString());
+    navigate(`${applicationRoute}?${applicationParams.toString()}`);
+  };
+
+  const handleAuthSuccess = () => {
+    console.log('Authentication successful, proceeding to application');
+    setShowAuth(false);
+    proceedToApplication();
   };
 
   const handleBookingConfirmed = (bookingData: any) => {
@@ -335,7 +350,33 @@ const Results = () => {
       <div className="container mx-auto px-4 py-6 md:py-12 max-w-full overflow-x-hidden">
         <div className="max-w-4xl mx-auto space-y-6 md:space-y-8 overflow-x-hidden">
           
-          {!showBooking ? (
+          {showAuth ? (
+            <>
+              {/* Authentication Section */}
+              <div className="text-center space-y-4 md:space-y-6 overflow-x-hidden">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowAuth(false)}
+                  className="mb-3 md:mb-4 text-xs md:text-sm"
+                >
+                  <ArrowLeft className="w-3 h-3 md:w-4 md:h-4 mr-2" />
+                  Back to Results
+                </Button>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary px-2 break-words">
+                  Secure Your Application
+                </h1>
+                <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-3xl mx-auto px-2">
+                  Create your secure account to proceed with your application. Your information will be protected with bank-level security.
+                </p>
+              </div>
+              
+              <EnhancedApplicationAuth 
+                email={finalEmail} 
+                name={finalName} 
+                onAuthSuccess={handleAuthSuccess} 
+              />
+            </>
+          ) : !showBooking ? (
             <>
               {/* Hook Section */}
               <div className="text-center space-y-4 md:space-y-6 overflow-x-hidden">
@@ -386,21 +427,11 @@ const Results = () => {
               <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
                 <CardHeader className="text-center pb-3 md:pb-6">
                   <CardTitle className="text-xl sm:text-2xl md:text-3xl px-2">
-                    Unlock Your Official Offers in Under 48 Hours
+                    Get Your Customized Offer Today
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 md:space-y-6 text-center">
                    <div className="space-y-3 md:space-y-4 max-w-2xl mx-auto px-2">
-                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                       <div className="flex items-start gap-2">
-                         <Shield className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                         <div className="text-xs">
-                           <p className="font-medium text-blue-800 mb-1">🔒 Secure Application Process:</p>
-                           <p className="text-blue-700">You'll create an account or sign in before accessing the application form. This protects your sensitive financial information with bank-grade security.</p>
-                         </div>
-                       </div>
-                     </div>
-                     
                      <Button 
                        size="lg" 
                        onClick={(e) => {
@@ -414,47 +445,18 @@ const Results = () => {
                      >
                        <CheckCircle className="w-4 h-4 md:w-5 md:h-5 mr-2 flex-shrink-0" />
                        <span className="text-center leading-tight">
-                         Complete Your Application<br className="sm:hidden" /> & Get Response Today
+                         Complete Application & Get Response Today
                        </span>
                      </Button>
                      
                      <p className="text-xs md:text-sm text-muted-foreground">
-                       Fast track your funding - complete your application now to get offers today.
+                       A secured account is required to keep your information safe. The analysis will not affect your credit score - this will only be used to get customized offers for you.
                      </p>
                    </div>
 
-                  <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-3xl mx-auto px-2">
-                    Based on your profile, you're pre-qualified for funding. Complete your detailed application now to receive official offers from our lender network today.
-                  </p>
-
-                  <div className="space-y-3 md:space-y-4 max-w-2xl mx-auto text-left">
-                    <p className="font-medium text-sm md:text-base px-2">Your application will include:</p>
-                    <div className="grid grid-cols-1 gap-2 md:gap-3 px-2">
-                      <div className="flex items-start gap-3">
-                        <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-xs md:text-sm"><strong>Pre-filled Information:</strong> Your quiz answers will auto-complete most fields.</span>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-xs md:text-sm"><strong>Business Details:</strong> Additional information to finalize your funding profile.</span>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-xs md:text-sm"><strong>Fast Response:</strong> Get official offers from multiple lenders within 24-48 hours.</span>
-                      </div>
-                    </div>
-                  </div>
-                    
-                  <Button 
-                    variant="link" 
-                    onClick={handleChatWithUs}
-                    className="text-blue-600 hover:text-blue-800 text-center leading-relaxed px-2 text-xs md:text-sm"
-                  >
-                    <MessageCircle className="w-3 h-3 md:w-4 md:h-4 mr-2 flex-shrink-0" />
-                    <span className="break-words">
-                      Have a question before applying? Chat with us now.
-                    </span>
-                  </Button>
+                   <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-3xl mx-auto px-2">
+                     Based on your profile, you're pre-qualified for funding. Complete your detailed application now to receive official offers from our lender network today.
+                   </p>
                 </CardContent>
               </Card>
 
