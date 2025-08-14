@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, forwardRef, useImperativeHandle } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,16 +14,24 @@ interface EnhancedApplicationAuthProps {
   onAuthSuccess: () => void;
 }
 
-export const EnhancedApplicationAuth = ({ email = "", name = "", onAuthSuccess }: EnhancedApplicationAuthProps) => {
-  const [formData, setFormData] = useState({
-    email: email,
-    password: "",
-    confirmPassword: ""
-  });
-  const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+interface AuthRef {
+  validateAndSubmit: () => Promise<boolean>;
+  formData: any;
+  errors: Record<string, string>;
+  isLoading: boolean;
+}
+
+export const EnhancedApplicationAuth = forwardRef<AuthRef, EnhancedApplicationAuthProps>(
+  ({ email = "", name = "", onAuthSuccess }, ref) => {
+    const [formData, setFormData] = useState({
+      email: email,
+      password: "",
+      confirmPassword: ""
+    });
+    const [isLoading, setIsLoading] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const validatePassword = (password: string) => {
     const errors = [];
@@ -66,10 +74,18 @@ export const EnhancedApplicationAuth = ({ email = "", name = "", onAuthSuccess }
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Expose methods to parent component via ref
+  useImperativeHandle(ref, () => ({
+    validateAndSubmit: handleSubmit,
+    formData,
+    errors,
+    isLoading
+  }));
+
+  const handleSubmit = async (e?: React.FormEvent): Promise<boolean> => {
+    if (e) e.preventDefault();
     
-    if (!validateForm()) return;
+    if (!validateForm()) return false;
 
     setIsLoading(true);
 
@@ -96,28 +112,28 @@ export const EnhancedApplicationAuth = ({ email = "", name = "", onAuthSuccess }
 
           if (signInError) {
             setErrors({ password: "Account exists but password is incorrect. Please use the correct password or contact support." });
-            return;
+            return false;
           } else {
             toast.success("Successfully signed in!");
             onAuthSuccess();
-            return;
+            return true;
           }
         }
         
         // Handle specific Supabase auth errors
         if (authError.message.includes("Password should be at least")) {
           setErrors({ password: "Password must be at least 8 characters with uppercase, lowercase, and number" });
-          return;
+          return false;
         }
         
         if (authError.message.includes("weak")) {
           setErrors({ password: "Please choose a stronger password with mixed case letters, numbers, and special characters" });
-          return;
+          return false;
         }
         
         if (authError.message.includes("Invalid email")) {
           setErrors({ email: "Please enter a valid email address" });
-          return;
+          return false;
         }
         
         throw authError;
@@ -126,6 +142,7 @@ export const EnhancedApplicationAuth = ({ email = "", name = "", onAuthSuccess }
       if (authData.user) {
         toast.success("Account created successfully! You can now submit your application.");
         onAuthSuccess();
+        return true;
       }
     } catch (error: any) {
       console.error("Authentication error:", error);
@@ -140,6 +157,7 @@ export const EnhancedApplicationAuth = ({ email = "", name = "", onAuthSuccess }
       } else {
         toast.error(errorMessage);
       }
+      return false;
     } finally {
       setIsLoading(false);
     }
@@ -161,16 +179,6 @@ export const EnhancedApplicationAuth = ({ email = "", name = "", onAuthSuccess }
 
   return (
     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 mb-4">
-      <div className="text-center mb-4">
-        <div className="mx-auto mb-2 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-          <Shield className="h-4 w-4 text-primary" />
-        </div>
-        <h3 className="text-lg font-semibold text-primary">Create Your Secure Account</h3>
-        <p className="text-sm text-muted-foreground">
-          Complete your account setup to proceed with your application
-        </p>
-      </div>
-      
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <Label htmlFor="email">Email Address</Label>
@@ -252,22 +260,7 @@ export const EnhancedApplicationAuth = ({ email = "", name = "", onAuthSuccess }
             )}
           </div>
         </div>
-
-        <Button 
-          type="submit" 
-          className="w-full" 
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            "Creating Account..."
-          ) : (
-            <>
-              <UserPlus className="h-4 w-4 mr-2" />
-              Create Account & Continue
-            </>
-          )}
-        </Button>
       </form>
     </div>
   );
-};
+});

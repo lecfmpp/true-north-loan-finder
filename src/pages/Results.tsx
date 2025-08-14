@@ -41,6 +41,7 @@ const Results = () => {
   const [showAuth, setShowAuth] = useState(false);
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
+  const authRef = React.useRef<any>(null);
 
   // Get quiz data from URL params or fetch from database
   const loanAmount = parseInt(searchParams.get('amount') || '50000');
@@ -192,7 +193,7 @@ const Results = () => {
     }
   ];
 
-  const handleStartApplication = () => {
+  const handleStartApplication = async () => {
     console.log('=== START APPLICATION BUTTON CLICKED ===');
     console.log('User status:', { user, authLoading });
     
@@ -210,8 +211,11 @@ const Results = () => {
       
       // Check if user is authenticated
       if (!user && !authLoading) {
-        console.log('User not authenticated - form will be shown above button');
-        // Don't show separate auth screen, the form is now inline
+        console.log('User not authenticated - validating auth form');
+        if (authRef.current) {
+          const success = await authRef.current.validateAndSubmit();
+          if (!success) return; // Stay on page if validation fails
+        }
         return;
       }
       
@@ -407,6 +411,7 @@ const Results = () => {
                    <div className="space-y-3 md:space-y-4 max-w-2xl mx-auto px-2">
                      {!user && !authLoading && (
                        <EnhancedApplicationAuth 
+                         ref={authRef}
                          email={finalEmail} 
                          name={finalName} 
                          onAuthSuccess={handleAuthSuccess} 
@@ -415,19 +420,15 @@ const Results = () => {
                      
                      <Button 
                        size="lg" 
-                       onClick={(e) => {
-                         console.log('Button click event triggered:', e);
-                         e.preventDefault();
-                         e.stopPropagation();
-                         handleStartApplication();
-                       }}
+                       onClick={handleStartApplication}
                        className="bg-green-500 hover:bg-green-600 text-white text-sm sm:text-base md:text-xl py-4 md:py-6 px-4 md:px-12 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all w-full min-h-[56px] md:min-h-[72px] flex items-center justify-center cursor-pointer"
                        type="button"
-                       disabled={!user && !authLoading}
+                       disabled={authRef.current?.isLoading}
                      >
                        <CheckCircle className="w-4 h-4 md:w-5 md:h-5 mr-2 flex-shrink-0" />
                        <span className="text-center leading-tight">
-                         {user ? 'Complete Application & Get Response Today' : 'Please Create Account First'}
+                         {authRef.current?.isLoading ? 'Creating Account...' : 
+                          user ? 'Complete Application & Get Response Today' : 'Create Account & Get Response Today'}
                        </span>
                      </Button>
                      
