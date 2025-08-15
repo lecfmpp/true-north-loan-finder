@@ -2380,6 +2380,10 @@ export type Database = {
         Args: { p: Json }
         Returns: string
       }
+      sync_lead_assignments: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       update_partner_credits: {
         Args: {
           p_created_by?: string
