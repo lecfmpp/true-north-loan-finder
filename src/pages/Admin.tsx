@@ -64,6 +64,28 @@ const isQualifiedLead = (lead: any) => {
   const creditOk = getCreditScoreApprox(lead.credit_score) >= 600;
   return revenueOk && tibOk && creditOk;
 };
+
+// Helper function to format phone numbers as (XXX) XXX-XXXX
+const formatPhoneNumber = (phone: string) => {
+  if (!phone) return '';
+  
+  // Remove all non-digits
+  const digits = phone.replace(/\D/g, '');
+  
+  // Format as (XXX) XXX-XXXX
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
+  
+  // If 11 digits and starts with 1, remove the 1 and format
+  if (digits.length === 11 && digits.startsWith('1')) {
+    const tenDigits = digits.slice(1);
+    return `(${tenDigits.slice(0, 3)}) ${tenDigits.slice(3, 6)}-${tenDigits.slice(6)}`;
+  }
+  
+  // Return original if can't format
+  return phone;
+};
 import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Trash2, Phone, ChevronDown, ChevronRight, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign, Settings as SettingsIcon, ExternalLink, TrendingUp, ChevronUp, ArrowUpDown, Save } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
@@ -2094,7 +2116,7 @@ const Admin = () => {
                                 </Button>
                               </div>
                               <div className="text-sm text-muted-foreground">{lead.email}</div>
-                              <div className="text-sm text-muted-foreground">{lead.phone}</div>
+                              <div className="text-sm text-muted-foreground">{formatPhoneNumber(lead.phone)}</div>
                               <div className="text-xs text-muted-foreground">{lead.country}, {lead.city_province}</div>
                               
                               {/* Email sent status indicator */}
