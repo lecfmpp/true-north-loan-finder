@@ -304,14 +304,25 @@ const ApplicationUS = () => {
 
   const validateStep = (step: number): boolean => {
     const requiredFields = getStepRequiredFields(step);
+    console.log(`Validating step ${step}, required fields:`, requiredFields);
+    
     for (const field of requiredFields) {
       const value = formData[field as keyof USApplicationData];
+      console.log(`Field ${field}:`, value);
+      
       if (Array.isArray(value)) {
-        if (value.length === 0) return false;
+        if (value.length === 0) {
+          console.log(`Validation failed: ${field} is empty array`);
+          return false;
+        }
       } else {
-        if (!value || value.toString().trim() === "") return false;
+        if (!value || value.toString().trim() === "") {
+          console.log(`Validation failed: ${field} is empty or null`);
+          return false;
+        }
       }
     }
+    console.log(`Step ${step} validation passed`);
     return true;
   };
 
@@ -399,6 +410,33 @@ const ApplicationUS = () => {
   };
 
   const handleSubmit = async () => {
+    // Validate ALL required fields from all steps before submitting
+    const allRequiredFields = [
+      ...getStepRequiredFields(1),
+      ...getStepRequiredFields(2)
+    ];
+    
+    const missingFields: string[] = [];
+    for (const field of allRequiredFields) {
+      const value = formData[field as keyof USApplicationData];
+      if (Array.isArray(value)) {
+        if (value.length === 0) missingFields.push(field);
+      } else {
+        if (!value || value.toString().trim() === "") missingFields.push(field);
+      }
+    }
+    
+    if (missingFields.length > 0) {
+      console.log('Missing required fields:', missingFields);
+      toast.error(`Please complete the following required fields: ${missingFields.join(', ')}`);
+      // Go back to step 1 if step 1 fields are missing
+      if (getStepRequiredFields(1).some(field => missingFields.includes(field))) {
+        setCurrentStep(1);
+        setShowValidationErrors(true);
+      }
+      return;
+    }
+
     // User must be authenticated to submit (enforced by page guard)
     if (!user) return;
 
