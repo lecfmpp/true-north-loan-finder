@@ -247,6 +247,33 @@ const ApplicationUS = () => {
     run();
   }, [searchParams, formData.quiz_response_id, user]);
 
+  // Format functions for input fields
+  const formatPhone = (value: string): string => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 3) return numbers;
+    if (numbers.length <= 6) return `(${numbers.slice(0, 3)}) ${numbers.slice(3)}`;
+    return `(${numbers.slice(0, 3)}) ${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
+  };
+
+  const formatSSN = (value: string): string => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 3) return numbers;
+    if (numbers.length <= 5) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+    return `${numbers.slice(0, 3)}-${numbers.slice(3, 5)}-${numbers.slice(5, 9)}`;
+  };
+
+  const formatEIN = (value: string): string => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 2) return numbers;
+    return `${numbers.slice(0, 2)}-${numbers.slice(2, 9)}`;
+  };
+
+  const formatZip = (value: string): string => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 5) return numbers;
+    return `${numbers.slice(0, 5)}-${numbers.slice(5, 9)}`;
+  };
+
   const updateFormData = (field: keyof USApplicationData, value: any) => {
     setFormData(prev => ({
       ...prev,
@@ -565,9 +592,13 @@ const ApplicationUS = () => {
                   <Input
                     id="zip"
                     value={formData.zip}
-                    onChange={(e) => updateFormData('zip', e.target.value)}
+                    onChange={(e) => {
+                      const formatted = formatZip(e.target.value);
+                      if (formatted.length <= 10) updateFormData('zip', formatted);
+                    }}
                     className={getFieldValidationClass('zip', getStepRequiredFields(1))}
-                    placeholder="10001"
+                    placeholder="12345 or 12345-6789"
+                    maxLength={10}
                   />
                 </div>
               </div>
@@ -578,9 +609,13 @@ const ApplicationUS = () => {
                   <Input
                     id="business_phone"
                     value={formData.business_phone}
-                    onChange={(e) => updateFormData('business_phone', e.target.value)}
+                    onChange={(e) => {
+                      const formatted = formatPhone(e.target.value);
+                      updateFormData('business_phone', formatted);
+                    }}
                     className={getFieldValidationClass('business_phone', getStepRequiredFields(1))}
                     placeholder="(555) 123-4567"
+                    maxLength={14}
                   />
                 </div>
                 <div className="space-y-2">
@@ -615,9 +650,13 @@ const ApplicationUS = () => {
                   <Input
                     id="federal_tax_id"
                     value={formData.federal_tax_id}
-                    onChange={(e) => updateFormData('federal_tax_id', e.target.value)}
+                    onChange={(e) => {
+                      const formatted = formatEIN(e.target.value);
+                      if (formatted.length <= 10) updateFormData('federal_tax_id', formatted);
+                    }}
                     className={getFieldValidationClass('federal_tax_id', getStepRequiredFields(1))}
                     placeholder="12-3456789"
+                    maxLength={10}
                   />
                 </div>
               </div>
@@ -721,9 +760,13 @@ const ApplicationUS = () => {
                   <Input
                     id="ssn"
                     value={formData.ssn}
-                    onChange={(e) => updateFormData('ssn', e.target.value)}
+                    onChange={(e) => {
+                      const formatted = formatSSN(e.target.value);
+                      updateFormData('ssn', formatted);
+                    }}
                     className={getFieldValidationClass('ssn', getStepRequiredFields(2))}
                     placeholder="123-45-6789"
+                    maxLength={11}
                   />
                 </div>
                 <div className="space-y-2">
@@ -796,8 +839,13 @@ const ApplicationUS = () => {
                   <Input
                     id="zip_owner"
                     value={formData.zip_owner}
-                    onChange={(e) => updateFormData('zip_owner', e.target.value)}
+                    onChange={(e) => {
+                      const formatted = formatZip(e.target.value);
+                      if (formatted.length <= 10) updateFormData('zip_owner', formatted);
+                    }}
                     className={getFieldValidationClass('zip_owner', getStepRequiredFields(2))}
+                    placeholder="12345 or 12345-6789"
+                    maxLength={10}
                   />
                 </div>
               </div>
@@ -808,8 +856,12 @@ const ApplicationUS = () => {
                   <Input
                     id="home_phone"
                     value={formData.home_phone}
-                    onChange={(e) => updateFormData('home_phone', e.target.value)}
-                    placeholder="Optional"
+                    onChange={(e) => {
+                      const formatted = formatPhone(e.target.value);
+                      updateFormData('home_phone', formatted);
+                    }}
+                    placeholder="(555) 123-4567"
+                    maxLength={14}
                   />
                 </div>
                 <div className="space-y-2">
@@ -817,8 +869,12 @@ const ApplicationUS = () => {
                   <Input
                     id="cell_phone"
                     value={formData.cell_phone}
-                    onChange={(e) => updateFormData('cell_phone', e.target.value)}
-                    placeholder="Optional"
+                    onChange={(e) => {
+                      const formatted = formatPhone(e.target.value);
+                      updateFormData('cell_phone', formatted);
+                    }}
+                    placeholder="(555) 123-4567"
+                    maxLength={14}
                   />
                 </div>
                 <div className="space-y-2">
@@ -869,9 +925,13 @@ const ApplicationUS = () => {
                       <Input
                         id="ssn_2"
                         value={formData.ssn_2}
-                        onChange={(e) => updateFormData('ssn_2', e.target.value)}
+                        onChange={(e) => {
+                          const formatted = formatSSN(e.target.value);
+                          updateFormData('ssn_2', formatted);
+                        }}
                         className="mt-1"
                         placeholder="123-45-6789"
+                        maxLength={11}
                       />
                     </div>
                   </div>
@@ -929,20 +989,27 @@ const ApplicationUS = () => {
                       <Input
                         id="zip_owner_2"
                         value={formData.zip_owner_2}
-                        onChange={(e) => updateFormData('zip_owner_2', e.target.value)}
+                        onChange={(e) => {
+                          const formatted = formatZip(e.target.value);
+                          if (formatted.length <= 10) updateFormData('zip_owner_2', formatted);
+                        }}
                         className="mt-1"
-                        placeholder="10001"
+                        placeholder="12345 or 12345-6789"
+                        maxLength={10}
                       />
                     </div>
                     <div>
                       <Label htmlFor="home_phone_2" className="text-sm font-medium">Home Phone</Label>
                       <Input
                         id="home_phone_2"
-                        type="tel"
                         value={formData.home_phone_2}
-                        onChange={(e) => updateFormData('home_phone_2', e.target.value)}
+                        onChange={(e) => {
+                          const formatted = formatPhone(e.target.value);
+                          updateFormData('home_phone_2', formatted);
+                        }}
                         className="mt-1"
                         placeholder="(555) 123-4567"
+                        maxLength={14}
                       />
                     </div>
                   </div>
@@ -952,11 +1019,14 @@ const ApplicationUS = () => {
                       <Label htmlFor="cell_phone_2" className="text-sm font-medium">Cell Phone</Label>
                       <Input
                         id="cell_phone_2"
-                        type="tel"
                         value={formData.cell_phone_2}
-                        onChange={(e) => updateFormData('cell_phone_2', e.target.value)}
+                        onChange={(e) => {
+                          const formatted = formatPhone(e.target.value);
+                          updateFormData('cell_phone_2', formatted);
+                        }}
                         className="mt-1"
                         placeholder="(555) 123-4567"
+                        maxLength={14}
                       />
                     </div>
                     <div>
