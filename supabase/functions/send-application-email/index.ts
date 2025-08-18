@@ -59,9 +59,18 @@ const handler = async (req: Request): Promise<Response> => {
     if (application.document_files && Array.isArray(application.document_files)) {
       for (const filePath of application.document_files) {
         try {
+          // Extract just the path from full URL if needed
+          let storageFilePath = filePath;
+          if (filePath.startsWith('http')) {
+            // Extract path from URL: .../application-documents/applications/filename.pdf
+            const urlParts = filePath.split('/application-documents/');
+            storageFilePath = urlParts.length > 1 ? urlParts[1] : filePath;
+          }
+          
+          console.log(`Downloading file: ${storageFilePath}`);
           const { data: fileData, error: fileError } = await supabase.storage
             .from('application-documents')
-            .download(filePath);
+            .download(storageFilePath);
 
           if (!fileError && fileData) {
             const arrayBuffer = await fileData.arrayBuffer();
