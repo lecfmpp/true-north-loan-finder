@@ -181,7 +181,6 @@ export const EnhancedApplicationAuth = forwardRef<AuthRef, EnhancedApplicationAu
     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 mb-4">
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <Label htmlFor="email" className="text-lg font-medium">Email Address</Label>
           <Input
             id="email"
             type="email"
@@ -197,7 +196,6 @@ export const EnhancedApplicationAuth = forwardRef<AuthRef, EnhancedApplicationAu
         </div>
 
         <div>
-          <Label htmlFor="password" className="text-lg font-medium">Create Password</Label>
           <div className="relative">
             <Input
               id="password"
@@ -230,7 +228,6 @@ export const EnhancedApplicationAuth = forwardRef<AuthRef, EnhancedApplicationAu
         </div>
 
         <div>
-          <Label htmlFor="confirmPassword" className="text-lg font-medium">Confirm Password</Label>
           <div className="relative">
             <Input
               id="confirmPassword"
