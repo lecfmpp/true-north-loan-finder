@@ -426,10 +426,10 @@ const Results = () => {
                        disabled={authRef.current?.isLoading}
                      >
                        <CheckCircle className="w-4 h-4 md:w-5 md:h-5 mr-2 flex-shrink-0" />
-                       <span className="text-center leading-tight">
-                         {authRef.current?.isLoading ? 'Creating Account...' : 
-                          user ? 'Complete Application & Get Response Today' : 'Create Account & Get Response Today'}
-                       </span>
+                        <span className="text-center leading-tight">
+                          {authRef.current?.isLoading ? 'Creating Account...' : 
+                           user ? 'Complete Application & Get a Response Today' : 'Complete Application & Get a Response Today'}
+                        </span>
                      </Button>
                      
                      <p className="text-xs md:text-sm text-muted-foreground">

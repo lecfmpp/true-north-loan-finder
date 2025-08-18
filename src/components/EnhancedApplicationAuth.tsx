@@ -164,31 +164,31 @@ export const EnhancedApplicationAuth = forwardRef<AuthRef, EnhancedApplicationAu
   };
 
   const getPasswordStrengthColor = () => {
-    if (!formData.password) return "border-input";
+    if (!formData.password) return "border-green-500 focus-visible:border-green-600";
     const errors = validatePassword(formData.password);
-    if (errors.length === 0) return "border-green-500";
-    if (errors.length <= 2) return "border-yellow-500";
-    return "border-red-500";
+    if (errors.length === 0) return "border-green-500 focus-visible:border-green-600";
+    if (errors.length <= 2) return "border-yellow-500 focus-visible:border-yellow-600";
+    return "border-red-500 focus-visible:border-red-600";
   };
 
   const getConfirmPasswordColor = () => {
-    if (!formData.confirmPassword) return "border-input";
-    if (formData.password === formData.confirmPassword) return "border-green-500";
-    return "border-red-500";
+    if (!formData.confirmPassword) return "border-green-500 focus-visible:border-green-600";
+    if (formData.password === formData.confirmPassword) return "border-green-500 focus-visible:border-green-600";
+    return "border-red-500 focus-visible:border-red-600";
   };
 
   return (
     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 mb-4">
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <Label htmlFor="email">Email Address</Label>
+          <Label htmlFor="email" className="text-lg font-medium">Email Address</Label>
           <Input
             id="email"
             type="email"
             value={formData.email}
             onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
             placeholder="Enter your email"
-            className={errors.email ? "border-red-500" : ""}
+            className={`h-16 text-lg border-2 ${errors.email ? "border-red-500" : "border-green-500 focus-visible:border-green-600"}`}
             disabled
           />
           {errors.email && (
@@ -196,69 +196,67 @@ export const EnhancedApplicationAuth = forwardRef<AuthRef, EnhancedApplicationAu
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="password">Create Password</Label>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                value={formData.password}
-                onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                placeholder="Create a secure password"
-                className={`pr-10 ${getPasswordStrengthColor()}`}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <Eye className="h-4 w-4 text-muted-foreground" />
-                )}
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Must be at least 8 characters with uppercase, lowercase, and number
-            </p>
-            {errors.password && (
-              <p className="text-sm text-red-500 mt-1">{errors.password}</p>
-            )}
+        <div>
+          <Label htmlFor="password" className="text-lg font-medium">Create Password</Label>
+          <div className="relative">
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              value={formData.password}
+              onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+              placeholder="Create a secure password"
+              className={`h-16 text-lg border-2 pr-12 ${getPasswordStrengthColor()}`}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (
+                <EyeOff className="h-5 w-5 text-muted-foreground" />
+              ) : (
+                <Eye className="h-5 w-5 text-muted-foreground" />
+              )}
+            </Button>
           </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            Must be at least 8 characters with uppercase, lowercase, and number
+          </p>
+          {errors.password && (
+            <p className="text-sm text-red-500 mt-1">{errors.password}</p>
+          )}
+        </div>
 
-          <div>
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <div className="relative">
-              <Input
-                id="confirmPassword"
-                type={showConfirmPassword ? "text" : "password"}
-                value={formData.confirmPassword}
-                onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                placeholder="Confirm your password"
-                className={`pr-10 ${getConfirmPasswordColor()}`}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                {showConfirmPassword ? (
-                  <EyeOff className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <Eye className="h-4 w-4 text-muted-foreground" />
-                )}
-              </Button>
-            </div>
-            {errors.confirmPassword && (
-              <p className="text-sm text-red-500 mt-1">{errors.confirmPassword}</p>
-            )}
+        <div>
+          <Label htmlFor="confirmPassword" className="text-lg font-medium">Confirm Password</Label>
+          <div className="relative">
+            <Input
+              id="confirmPassword"
+              type={showConfirmPassword ? "text" : "password"}
+              value={formData.confirmPassword}
+              onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+              placeholder="Confirm your password"
+              className={`h-16 text-lg border-2 pr-12 ${getConfirmPasswordColor()}`}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            >
+              {showConfirmPassword ? (
+                <EyeOff className="h-5 w-5 text-muted-foreground" />
+              ) : (
+                <Eye className="h-5 w-5 text-muted-foreground" />
+              )}
+            </Button>
           </div>
+          {errors.confirmPassword && (
+            <p className="text-sm text-red-500 mt-1">{errors.confirmPassword}</p>
+          )}
         </div>
       </form>
     </div>
