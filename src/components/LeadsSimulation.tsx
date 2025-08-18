@@ -184,47 +184,40 @@ export const LeadsSimulation = () => {
     const fetchLeads = async () => {
       setLoading(true);
       try {
-        // Fix country filter to match actual data format
-        const countryFilter = selectedCountry === 'US' ? ['US', 'USA', 'United States'] : ['CA', 'Canada', 'Canadian', 'CAN'];
+        // Fetch from lead_feed table which is publicly accessible
         const {
-          data: quizResponses,
+          data: leadData,
           error
-        } = await supabase.from('quiz_responses').select('*').eq('status', 'New') // Fixed: 'New' with capital N, not 'new'
-        .in('country', countryFilter).order('created_at', {
-          ascending: false
-        }).limit(20); // Increased limit to show more recent leads
+        } = await supabase
+          .from('lead_feed')
+          .select('*')
+          .eq('country', selectedCountry)
+          .order('submitted_at', { ascending: false })
+          .limit(20);
+        
         if (error) throw error;
-        if (quizResponses && quizResponses.length > 0) {
-          // Filter out leads with loan amount less than 10,000
-          const filtered = quizResponses.filter((response: any) => {
-            const amount = typeof response.loan_amount === 'number' ? response.loan_amount : parseFloat(String(response.loan_amount).replace(/[^0-9.-]/g, '')) || 0;
-            return amount >= 10000;
+        
+        if (leadData && leadData.length > 0) {
+          const transformedLeads: Lead[] = leadData.map(lead => {
+            // Use the processed data from lead_feed table
+            const businessName = <span className="blur-sm select-none">{lead.business_name}</span>;
+            return {
+              id: lead.id,
+              businessName,
+              contactName: maskText(lead.contact_name),
+              email: maskEmail(lead.email),
+              phone: maskPhone(lead.phone),
+              loanAmount: `$${Number(lead.loan_amount).toLocaleString()}`,
+              submittedAt: new Date(lead.submitted_at),
+              creditScore: getCreditScore(lead.credit_score_range),
+              industry: lead.industry,
+              loanType: lead.loan_type,
+              phoneVerified: lead.phone_verified
+            };
           });
-          if (filtered.length > 0) {
-            const transformedLeads: Lead[] = filtered.map(response => {
-              // Use real business name but blur all text
-              const businessName = <span className="blur-sm select-none">{response.company_name || `${response.name} Business`}</span>;
-              return {
-                id: response.id,
-                businessName,
-                contactName: maskText(response.name),
-                email: maskEmail(response.email),
-                phone: maskPhone(response.phone),
-                loanAmount: `$${Number(response.loan_amount).toLocaleString()}`,
-                submittedAt: new Date(response.created_at),
-                creditScore: getCreditScore(response.credit_score),
-                industry: getIndustry(response.use_of_funds),
-                loanType: getBusinessType(response.use_of_funds),
-                phoneVerified: true // Assume verified for leads
-              };
-            });
-            setLeads(transformedLeads);
-            // Set the most recent submission time for the urgency countdown
-            setLastSubmissionTime(new Date(filtered[0].created_at));
-          } else {
-            setLeads([]);
-            setLastSubmissionTime(null);
-          }
+          setLeads(transformedLeads);
+          // Set the most recent submission time for the urgency countdown
+          setLastSubmissionTime(new Date(leadData[0].submitted_at));
         } else {
           setLeads([]);
           setLastSubmissionTime(null);
@@ -239,18 +232,11 @@ export const LeadsSimulation = () => {
     };
     fetchLeads();
 
-    // Set up real-time subscription for new leads
-    const channel = supabase.channel('quiz-responses-changes').on('postgres_changes', {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'quiz_responses'
-    }, payload => {
-      console.log('New lead received:', payload);
-      // Refresh leads when new one comes in
-      fetchLeads();
-    }).subscribe();
+    // Refresh leads every 30 seconds to show updates
+    const interval = setInterval(fetchLeads, 30000);
+    
     return () => {
-      supabase.removeChannel(channel);
+      clearInterval(interval);
     };
   }, [selectedCountry]); // Re-fetch when country changes
 
