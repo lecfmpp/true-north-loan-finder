@@ -1275,6 +1275,57 @@ export type Database = {
           },
         ]
       }
+      lead_feed: {
+        Row: {
+          business_name: string
+          contact_name: string
+          country: string
+          created_at: string
+          credit_score_range: string
+          email: string
+          id: string
+          industry: string
+          loan_amount: number
+          loan_type: string
+          phone: string
+          phone_verified: boolean
+          submitted_at: string
+          updated_at: string
+        }
+        Insert: {
+          business_name: string
+          contact_name: string
+          country?: string
+          created_at?: string
+          credit_score_range: string
+          email: string
+          id?: string
+          industry: string
+          loan_amount: number
+          loan_type: string
+          phone: string
+          phone_verified?: boolean
+          submitted_at: string
+          updated_at?: string
+        }
+        Update: {
+          business_name?: string
+          contact_name?: string
+          country?: string
+          created_at?: string
+          credit_score_range?: string
+          email?: string
+          id?: string
+          industry?: string
+          loan_amount?: number
+          loan_type?: string
+          phone?: string
+          phone_verified?: boolean
+          submitted_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lead_pricing: {
         Row: {
           created_at: string
