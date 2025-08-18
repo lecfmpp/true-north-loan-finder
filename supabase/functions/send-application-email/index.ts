@@ -62,9 +62,10 @@ const handler = async (req: Request): Promise<Response> => {
           // Extract just the path from full URL if needed
           let storageFilePath = filePath;
           if (filePath.startsWith('http')) {
-            // Extract path from URL: .../application-documents/applications/filename.pdf
-            const urlParts = filePath.split('/application-documents/');
-            storageFilePath = urlParts.length > 1 ? urlParts[1] : filePath;
+            // Extract path from Supabase public URL
+            // Format: https://project.supabase.co/storage/v1/object/public/bucket-name/path
+            const match = filePath.match(/\/storage\/v1\/object\/public\/application-documents\/(.+)$/);
+            storageFilePath = match ? match[1] : filePath;
           }
           
           console.log(`Downloading file: ${storageFilePath}`);
