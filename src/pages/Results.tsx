@@ -373,7 +373,7 @@ const Results = () => {
                     </div>
                     
                     {/* Funding details in a row */}
-                    <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+                    <div className="lg:col-span-3 space-y-3 md:space-y-0 md:grid md:grid-cols-3 md:gap-4">
                       <Card className="bg-blue-50 border-blue-200">
                         <CardContent className="text-center space-y-1 p-2 md:p-3">
                           <Clock className="h-5 w-5 md:h-6 md:w-6 text-blue-500 mx-auto" />
@@ -381,20 +381,22 @@ const Results = () => {
                           <p className="text-sm md:text-base font-bold text-foreground">{loanTerms.fundingSpeed}</p>
                         </CardContent>
                       </Card>
-                      <Card className="bg-green-50 border-green-200">
-                        <CardContent className="text-center space-y-1 p-2 md:p-3">
-                          <TrendingUp className="h-5 w-5 md:h-6 md:w-6 text-green-500 mx-auto" />
-                          <h3 className="text-xs md:text-sm font-semibold">Est. Rate</h3>
-                          <p className="text-sm md:text-base font-bold text-foreground">{loanTerms.estimatedRate}</p>
-                        </CardContent>
-                      </Card>
-                      <Card className="bg-purple-50 border-purple-200">
-                        <CardContent className="text-center space-y-1 p-2 md:p-3">
-                          <DollarSign className="h-5 w-5 md:h-6 md:w-6 text-purple-500 mx-auto" />
-                          <h3 className="text-xs md:text-sm font-semibold">Est. Payment</h3>
-                          <p className="text-sm md:text-base font-bold text-foreground">{loanTerms.estimatedPayment}</p>
-                        </CardContent>
-                      </Card>
+                      <div className="grid grid-cols-2 gap-3 md:contents">
+                        <Card className="bg-green-50 border-green-200">
+                          <CardContent className="text-center space-y-1 p-2 md:p-3">
+                            <TrendingUp className="h-5 w-5 md:h-6 md:w-6 text-green-500 mx-auto" />
+                            <h3 className="text-xs md:text-sm font-semibold">Est. Rate</h3>
+                            <p className="text-sm md:text-base font-bold text-foreground">{loanTerms.estimatedRate}</p>
+                          </CardContent>
+                        </Card>
+                        <Card className="bg-purple-50 border-purple-200">
+                          <CardContent className="text-center space-y-1 p-2 md:p-3">
+                            <DollarSign className="h-5 w-5 md:h-6 md:w-6 text-purple-500 mx-auto" />
+                            <h3 className="text-xs md:text-sm font-semibold">Est. Payment</h3>
+                            <p className="text-sm md:text-base font-bold text-foreground">{loanTerms.estimatedPayment}</p>
+                          </CardContent>
+                        </Card>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -404,8 +406,11 @@ const Results = () => {
               <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
                 <CardHeader className="text-center pb-3 md:pb-6">
                   <CardTitle className="text-xl sm:text-2xl md:text-3xl px-2">
-                    Get Your Customized Offer Today
+                    Increase your chances of getting better offers filling out a full application.
                   </CardTitle>
+                  <p className="text-sm sm:text-base text-muted-foreground mt-2 px-2">
+                    Expect a call from our team of funding specialists in the next 2h.
+                  </p>
                 </CardHeader>
                 <CardContent className="space-y-4 md:space-y-6 text-center">
                    <div className="space-y-3 md:space-y-4 max-w-2xl mx-auto px-2">
