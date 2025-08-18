@@ -418,28 +418,25 @@ const Results = () => {
                        />
                      )}
                      
-                     <Button 
-                       size="lg" 
-                       onClick={handleStartApplication}
-                       className="bg-green-500 hover:bg-green-600 text-white text-sm sm:text-base md:text-xl py-4 md:py-6 px-4 md:px-12 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all w-full min-h-[56px] md:min-h-[72px] flex items-center justify-center cursor-pointer"
-                       type="button"
-                       disabled={authRef.current?.isLoading}
-                     >
-                       <CheckCircle className="w-4 h-4 md:w-5 md:h-5 mr-2 flex-shrink-0" />
-                        <span className="text-center leading-tight">
+                      <Button 
+                        size="lg" 
+                        onClick={handleStartApplication}
+                        className="bg-green-500 hover:bg-green-600 text-white text-xs sm:text-sm md:text-xl py-4 md:py-6 px-2 md:px-12 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all w-full min-h-[56px] md:min-h-[72px] flex items-center justify-center cursor-pointer"
+                        type="button"
+                        disabled={authRef.current?.isLoading}
+                      >
+                        <CheckCircle className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2 flex-shrink-0" />
+                        <span className="text-center leading-tight break-words">
                           {authRef.current?.isLoading ? 'Creating Account...' : 
                            user ? 'Complete Application & Get a Response Today' : 'Complete Application & Get a Response Today'}
                         </span>
-                     </Button>
+                      </Button>
                      
                      <p className="text-xs md:text-sm text-muted-foreground">
                        A secured account is required to keep your information safe. The analysis will not affect your credit score - this will only be used to get customized offers for you.
                      </p>
                    </div>
 
-                   <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-3xl mx-auto px-2">
-                     Based on your profile, you're pre-qualified for funding. Complete your detailed application now to receive official offers from our lender network today.
-                   </p>
                 </CardContent>
               </Card>
 
