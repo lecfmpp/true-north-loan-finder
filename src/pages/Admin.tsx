@@ -5,18 +5,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ApplicationsManagement } from '@/components/admin/ApplicationsManagement';
-import { ClientsManagement } from '@/components/admin/ClientsManagement';
-import { PartnerManagement } from '@/components/admin/PartnerManagement';
-import { SimplifiedPartnersManagement } from '@/components/admin/SimplifiedPartnersManagement';
-import { SettingsManagement } from '@/components/admin/SettingsManagement';
-import { BillingManagement } from '@/components/admin/BillingManagement';
-import { BlogManagement } from '@/components/admin/BlogManagement';
-import { SocialProofManagement } from '@/components/admin/SocialProofManagement';
-import { EmailSequenceManagement } from '@/components/admin/EmailSequenceManagement';
-import { EmailSenderManagement } from '@/components/admin/EmailSenderManagement';
+import ClientsManagement from '@/components/admin/ClientsManagement';
+import PartnerManagement from '@/components/admin/PartnerManagement';
+import SimplifiedPartnersManagement from '@/components/admin/SimplifiedPartnersManagement';
+import SettingsManagement from '@/components/admin/SettingsManagement';
+import BillingManagement from '@/components/admin/BillingManagement';
+import BlogManagement from '@/components/admin/BlogManagement';
+import SocialProofManagement from '@/components/admin/SocialProofManagement';
+import EmailSequenceManagement from '@/components/admin/EmailSequenceManagement';
+import EmailSenderManagement from '@/components/admin/EmailSenderManagement';
 import { ChatWidgetManagement } from '@/components/admin/ChatWidgetManagement';
-import { SEOAnalyzer } from '@/components/admin/SEOAnalyzer';
-import { ROIManagement } from '@/components/admin/ROIManagement';
+import ROIManagement from '@/components/admin/ROIManagement';
 import { LeadsSimulation } from '@/components/LeadsSimulation';
 import {
   FileText,
@@ -29,7 +28,6 @@ import {
   Mail,
   Send,
   MessageCircle,
-  Search,
   TrendingUp,
   BarChart3
 } from 'lucide-react';
@@ -128,7 +126,6 @@ export default function Admin() {
     { id: 'email-sequence', label: 'Email Sequence', icon: Mail },
     { id: 'email-sender', label: 'Email Sender', icon: Send },
     { id: 'chat-widget', label: 'Chat Widget', icon: MessageCircle },
-    { id: 'seo', label: 'SEO Tools', icon: Search },
     { id: 'roi', label: 'ROI Dashboard', icon: TrendingUp },
     { id: 'leads-simulation', label: 'Leads Simulation', icon: BarChart3 }
   ];
@@ -165,8 +162,6 @@ export default function Admin() {
         return <EmailSenderManagement />;
       case 'chat-widget':
         return <ChatWidgetManagement />;
-      case 'seo':
-        return <SEOAnalyzer />;
       case 'roi':
         return <ROIManagement />;
       case 'leads-simulation':

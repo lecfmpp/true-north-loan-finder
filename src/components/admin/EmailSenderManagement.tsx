@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
@@ -11,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { Plus, Copy, Trash2, ArrowUp, ArrowDown, Send, Eye } from 'lucide-react';
 import { useQuillEditor } from '@/hooks/useQuillEditor';
-import { ImageUpload } from './ImageUpload';
+import ImageUpload from './ImageUpload';
 
 interface BodyBlock {
   id: string;
@@ -39,8 +38,82 @@ interface EmailSend {
   created_at: string;
 }
 
-export const EmailSenderManagement = () => {
+const EmailBodyBlockEditor = ({ 
+  block, 
+  index, 
+  onUpdate, 
+  onDuplicate, 
+  onDelete, 
+  onMoveUp, 
+  onMoveDown, 
+  canMoveUp, 
+  canMoveDown, 
+  canDelete 
+}: {
+  block: BodyBlock;
+  index: number;
+  onUpdate: (html: string) => void;
+  onDuplicate: () => void;
+  onDelete: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
+  canDelete: boolean;
+}) => {
+  const { ReactQuill, isLoading } = useQuillEditor();
+
+  if (isLoading) {
+    return <div className="animate-pulse bg-muted h-32 rounded-md" />;
+  }
+
+  return (
+    <Card className="border-2">
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium">Block {index + 1}</span>
+          <div className="flex gap-1">
+            <Button size="sm" variant="outline" onClick={onMoveUp} disabled={!canMoveUp}>
+              <ArrowUp className="w-3 h-3" />
+            </Button>
+            <Button size="sm" variant="outline" onClick={onMoveDown} disabled={!canMoveDown}>
+              <ArrowDown className="w-3 h-3" />
+            </Button>
+            <Button size="sm" variant="outline" onClick={onDuplicate}>
+              <Copy className="w-3 h-3" />
+            </Button>
+            <Button size="sm" variant="outline" onClick={onDelete} disabled={!canDelete}>
+              <Trash2 className="w-3 h-3" />
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <ReactQuill
+          value={block.html}
+          onChange={onUpdate}
+          theme="snow"
+          placeholder="Enter email content..."
+          modules={{
+            toolbar: [
+              [{ 'header': [1, 2, 3, false] }],
+              ['bold', 'italic', 'underline', 'strike'],
+              [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+              ['link', 'image'],
+              [{ 'align': [] }],
+              [{ 'color': [] }, { 'background': [] }],
+              ['clean']
+            ]
+          }}
+        />
+      </CardContent>
+    </Card>
+  );
+};
+
+const EmailSenderManagement = () => {
   const { user } = useAuth();
+  const { ReactQuill, isLoading: quillLoading } = useQuillEditor();
   const [activeTab, setActiveTab] = useState<'leads' | 'partners'>('leads');
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null);
@@ -71,7 +144,14 @@ export const EmailSenderManagement = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setTemplates(data || []);
+      
+      const mappedTemplates = (data || []).map(t => ({
+        ...t,
+        audience_type: t.audience_type as 'leads' | 'partners',
+        body_blocks: JSON.parse(t.body_blocks as string || '[]')
+      }));
+      
+      setTemplates(mappedTemplates);
     } catch (error: any) {
       toast.error('Failed to load templates');
       console.error(error);
@@ -125,7 +205,7 @@ export const EmailSenderManagement = () => {
         audience_type: activeTab,
         subject,
         header_logo_url: headerLogoUrl || null,
-        body_blocks: bodyBlocks,
+        body_blocks: JSON.stringify(bodyBlocks),
         footer_html: footerHtml || null,
         created_by: user?.id
       };
@@ -140,67 +220,22 @@ export const EmailSenderManagement = () => {
       } else {
         const { data, error } = await supabase
           .from('email_sender_templates')
-          .insert([templateData])
+          .insert(templateData)
           .select()
           .single();
         if (error) throw error;
-        setSelectedTemplate(data);
+        const newTemplate = {
+          ...data,
+          audience_type: data.audience_type as 'leads' | 'partners',
+          body_blocks: JSON.parse(data.body_blocks as string || '[]')
+        };
+        setSelectedTemplate(newTemplate);
         toast.success('Template saved successfully');
       }
       
       loadTemplates();
     } catch (error: any) {
       toast.error('Failed to save template');
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const duplicateTemplate = async () => {
-    if (!selectedTemplate) return;
-    
-    try {
-      setIsLoading(true);
-      const { error } = await supabase
-        .from('email_sender_templates')
-        .insert([{
-          name: `${selectedTemplate.name} (Copy)`,
-          audience_type: activeTab,
-          subject: selectedTemplate.subject,
-          header_logo_url: selectedTemplate.header_logo_url,
-          body_blocks: selectedTemplate.body_blocks,
-          footer_html: selectedTemplate.footer_html,
-          created_by: user?.id
-        }]);
-      
-      if (error) throw error;
-      toast.success('Template duplicated successfully');
-      loadTemplates();
-    } catch (error: any) {
-      toast.error('Failed to duplicate template');
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const deleteTemplate = async () => {
-    if (!selectedTemplate) return;
-    
-    try {
-      setIsLoading(true);
-      const { error } = await supabase
-        .from('email_sender_templates')
-        .update({ is_active: false })
-        .eq('id', selectedTemplate.id);
-      
-      if (error) throw error;
-      toast.success('Template deleted successfully');
-      createNewTemplate();
-      loadTemplates();
-    } catch (error: any) {
-      toast.error('Failed to delete template');
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -316,6 +351,10 @@ export const EmailSenderManagement = () => {
     }
   };
 
+  if (quillLoading) {
+    return <div className="animate-pulse bg-muted h-96 rounded-md" />;
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -367,18 +406,6 @@ export const EmailSenderManagement = () => {
                       <Plus className="w-4 h-4 mr-2" />
                       New
                     </Button>
-                    {selectedTemplate && (
-                      <>
-                        <Button onClick={duplicateTemplate} variant="outline" size="sm" disabled={isLoading}>
-                          <Copy className="w-4 h-4 mr-2" />
-                          Duplicate
-                        </Button>
-                        <Button onClick={deleteTemplate} variant="outline" size="sm" disabled={isLoading}>
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Delete
-                        </Button>
-                      </>
-                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -410,20 +437,11 @@ export const EmailSenderManagement = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="headerLogo">Header Logo URL</Label>
-                    <div className="space-y-2">
-                      <Input
-                        id="headerLogo"
-                        value={headerLogoUrl}
-                        onChange={(e) => setHeaderLogoUrl(e.target.value)}
-                        placeholder="https://example.com/logo.png"
-                      />
-                      <ImageUpload
-                        onImageUploaded={(url) => setHeaderLogoUrl(url)}
-                        bucket="blog-images"
-                        className="w-full"
-                      />
-                    </div>
+                    <Label htmlFor="headerLogo">Header Logo</Label>
+                    <ImageUpload
+                      currentImageUrl={headerLogoUrl}
+                      onImageUploaded={(url) => setHeaderLogoUrl(url)}
+                    />
                   </div>
 
                   <Button onClick={saveTemplate} disabled={isLoading} className="w-full">
@@ -499,126 +517,28 @@ export const EmailSenderManagement = () => {
                   <CardTitle>Footer</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <EmailFooterEditor
+                  <ReactQuill
                     value={footerHtml}
-                    onChange={setFooterHtml}
+                    onChange={(value) => setFooterHtml(value)}
+                    theme="snow"
+                    placeholder="Enter footer content..."
+                    modules={{
+                      toolbar: [
+                        ['bold', 'italic', 'underline'],
+                        ['link'],
+                        [{ 'align': [] }],
+                        [{ 'color': [] }]
+                      ]
+                    }}
                   />
                 </CardContent>
               </Card>
             </div>
           </div>
-
-          {/* Recent Sends */}
-          {recentSends.length > 0 && (
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle>Recent Sends</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {recentSends.map(send => (
-                    <div key={send.id} className="flex items-center justify-between p-3 border rounded">
-                      <div>
-                        <div className="font-medium">{send.subject}</div>
-                        <div className="text-sm text-gray-600">
-                          {send.total_recipients} recipients • {send.status}
-                        </div>
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {new Date(send.created_at).toLocaleDateString()}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </TabsContent>
       </Tabs>
     </div>
   );
 };
 
-// Body Block Editor Component
-const EmailBodyBlockEditor = ({ 
-  block, 
-  index, 
-  onUpdate, 
-  onDuplicate, 
-  onDelete, 
-  onMoveUp, 
-  onMoveDown,
-  canMoveUp,
-  canMoveDown,
-  canDelete 
-}: {
-  block: BodyBlock;
-  index: number;
-  onUpdate: (html: string) => void;
-  onDuplicate: () => void;
-  onDelete: () => void;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
-  canMoveUp: boolean;
-  canMoveDown: boolean;
-  canDelete: boolean;
-}) => {
-  const { QuillEditor } = useQuillEditor({
-    value: block.html,
-    onChange: onUpdate
-  });
-
-  return (
-    <div className="border rounded p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <Label>Block {index + 1}</Label>
-        <div className="flex gap-1">
-          <Button 
-            size="sm" 
-            variant="ghost" 
-            onClick={onMoveUp} 
-            disabled={!canMoveUp}
-          >
-            <ArrowUp className="w-4 h-4" />
-          </Button>
-          <Button 
-            size="sm" 
-            variant="ghost" 
-            onClick={onMoveDown} 
-            disabled={!canMoveDown}
-          >
-            <ArrowDown className="w-4 h-4" />
-          </Button>
-          <Button size="sm" variant="ghost" onClick={onDuplicate}>
-            <Copy className="w-4 h-4" />
-          </Button>
-          <Button 
-            size="sm" 
-            variant="ghost" 
-            onClick={onDelete} 
-            disabled={!canDelete}
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
-        </div>
-      </div>
-      <div className="min-h-[200px]">
-        <QuillEditor />
-      </div>
-    </div>
-  );
-};
-
-// Footer Editor Component
-const EmailFooterEditor = ({ value, onChange }: { value: string; onChange: (value: string) => void }) => {
-  const { QuillEditor } = useQuillEditor({
-    value,
-    onChange
-  });
-
-  return (
-    <div className="min-h-[150px]">
-      <QuillEditor />
-    </div>
-  );
-};
+export default EmailSenderManagement;
