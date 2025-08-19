@@ -54,21 +54,22 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Check if this is an admin notification (bypass partner verification)
     const isAdminNotification = recipientEmail === 'lecfmpp@gmail.com';
+    let partner = null;
     
     if (!isAdminNotification) {
       // Check if recipient is in the partners table (for Admin panel sends)
-      const { data: partner, error: partnerError } = await supabase
+      const { data: partnerData, error: partnerError } = await supabase
         .from('partners')
-        .select('id, name, email, is_active')
+        .select('id, name, email, is_active, user_id')
         .eq('email', recipientEmail)
         .eq('is_active', true)
         .single();
 
-      // If not found in partners table, check lender_broker_applications table
-      if (partnerError || !partner) {
+      if (partnerError || !partnerData) {
+        // If not found in partners table, check lender_broker_applications table
         const { data: recipient, error: recipientError } = await supabase
           .from('lender_broker_applications')
-          .select('id, applicant_name, applicant_email, status')
+          .select('id, applicant_name, applicant_email, status, user_id')
           .eq('applicant_email', recipientEmail)
           .eq('status', 'approved')
           .single();
@@ -85,8 +86,15 @@ const handler = async (req: Request): Promise<Response> => {
         }
 
         console.log(`Email recipient verified as approved partner from applications: ${recipient.applicant_name}`);
+        partner = {
+          id: recipient.id,
+          name: recipient.applicant_name,
+          email: recipient.applicant_email,
+          user_id: recipient.user_id
+        };
       } else {
-        console.log(`Email recipient verified as active partner: ${partner.name}`);
+        console.log(`Email recipient verified as active partner: ${partnerData.name}`);
+        partner = partnerData;
       }
     } else {
       console.log(`Sending admin notification to: ${recipientEmail}`);
@@ -185,6 +193,43 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     console.log(`Final check - hasApplication: ${hasApplication}, documents count: ${applicationDocuments.length}`);
+
+    // Deduct partner credit for sending this email
+    if (!isAdminNotification && partner) {
+      try {
+        console.log(`Attempting to deduct credit from partner: ${partner.name} (${partner.email})`);
+        
+        const { data: creditResult, error: creditError } = await supabase.rpc('update_partner_credits', {
+          p_user_id: partner.user_id || null,
+          p_credit_change: -1,
+          p_transaction_type: 'usage',
+          p_description: `Email sent to lead: ${lead.name}`,
+          p_reference_id: leadId
+        });
+
+        if (creditError) {
+          console.error('Credit deduction failed:', creditError);
+          return new Response(
+            JSON.stringify({ 
+              error: 'Insufficient credits or credit deduction failed',
+              details: creditError.message 
+            }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        console.log('Credit deducted successfully for email send');
+      } catch (creditErr) {
+        console.error('Error deducting partner credit:', creditErr);
+        return new Response(
+          JSON.stringify({ 
+            error: 'Credit system unavailable',
+            details: 'Unable to process credit deduction at this time'
+          }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
 
     // Helper function to get credit score number and description from classification
     const getCreditScoreDescription = (creditScore: string) => {
