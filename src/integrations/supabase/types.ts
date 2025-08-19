@@ -974,6 +974,162 @@ export type Database = {
           },
         ]
       }
+      email_sender_recipients: {
+        Row: {
+          delivery_status: string
+          error_message: string | null
+          id: string
+          lead_id: string | null
+          partner_id: string | null
+          recipient_email: string
+          recipient_name: string | null
+          resend_email_id: string | null
+          send_id: string
+          sent_at: string | null
+        }
+        Insert: {
+          delivery_status?: string
+          error_message?: string | null
+          id?: string
+          lead_id?: string | null
+          partner_id?: string | null
+          recipient_email: string
+          recipient_name?: string | null
+          resend_email_id?: string | null
+          send_id: string
+          sent_at?: string | null
+        }
+        Update: {
+          delivery_status?: string
+          error_message?: string | null
+          id?: string
+          lead_id?: string | null
+          partner_id?: string | null
+          recipient_email?: string
+          recipient_name?: string | null
+          resend_email_id?: string | null
+          send_id?: string
+          sent_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_sender_recipients_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_responses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_sender_recipients_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_sender_recipients_send_id_fkey"
+            columns: ["send_id"]
+            isOneToOne: false
+            referencedRelation: "email_sender_sends"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_sender_sends: {
+        Row: {
+          audience_type: string
+          created_at: string
+          created_by: string | null
+          filter: Json | null
+          html_content: string
+          id: string
+          notes: string | null
+          status: string
+          subject: string
+          template_id: string | null
+          total_recipients: number
+          updated_at: string
+        }
+        Insert: {
+          audience_type: string
+          created_at?: string
+          created_by?: string | null
+          filter?: Json | null
+          html_content: string
+          id?: string
+          notes?: string | null
+          status?: string
+          subject: string
+          template_id?: string | null
+          total_recipients?: number
+          updated_at?: string
+        }
+        Update: {
+          audience_type?: string
+          created_at?: string
+          created_by?: string | null
+          filter?: Json | null
+          html_content?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          subject?: string
+          template_id?: string | null
+          total_recipients?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_sender_sends_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "email_sender_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_sender_templates: {
+        Row: {
+          audience_type: string
+          body_blocks: Json
+          created_at: string
+          created_by: string | null
+          footer_html: string | null
+          header_logo_url: string | null
+          id: string
+          is_active: boolean
+          name: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          audience_type: string
+          body_blocks?: Json
+          created_at?: string
+          created_by?: string | null
+          footer_html?: string | null
+          header_logo_url?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          audience_type?: string
+          body_blocks?: Json
+          created_at?: string
+          created_by?: string | null
+          footer_html?: string | null
+          header_logo_url?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_sends: {
         Row: {
           click_count: number
