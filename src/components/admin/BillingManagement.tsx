@@ -86,13 +86,19 @@ export default function BillingManagement() {
 
       if (paymentsError) throw paymentsError;
 
-      // Fetch only client applications (not commission-based partners)
+      // Fetch all client applications
       const { data: clientApplicationsData, error: clientError } = await supabase
         .from('lender_broker_applications')
         .select('*')
         .eq('application_type', 'client');
 
+      // Fetch all partners from the partners table
+      const { data: partnersData, error: partnersError } = await supabase
+        .from('partners')
+        .select('*');
+
       if (clientError) throw clientError;
+      if (partnersError) throw partnersError;
 
       // Fetch partner credits for clients only
       const { data: creditsData, error: creditsError } = await supabase
@@ -111,34 +117,62 @@ export default function BillingManagement() {
 
       if (transactionsError) throw transactionsError;
 
-      // Merge the data manually with client applications
-      const creditsWithClients = (creditsData || []).map(credit => {
+      // Merge the data with both client applications and partners
+      const creditsWithPartners = (creditsData || []).map(credit => {
+        // First try to find in client applications
         const client = (clientApplicationsData || []).find(c => c.user_id === credit.user_id);
+        if (client) {
+          return {
+            ...credit,
+            partners: {
+              name: client.applicant_name,
+              email: client.applicant_email,
+              company_name: client.company_name
+            }
+          };
+        }
+        
+        // Then try to find in partners table
+        const partner = (partnersData || []).find(p => p.user_id === credit.user_id);
         return {
           ...credit,
-          partners: client ? {
-            name: client.applicant_name,
-            email: client.applicant_email,
-            company_name: client.company_name
+          partners: partner ? {
+            name: partner.name,
+            email: partner.email,
+            company_name: partner.company_name
           } : null
         };
       });
 
-      const transactionsWithClients = (transactionsData || []).map(transaction => {
+      const transactionsWithPartners = (transactionsData || []).map(transaction => {
+        // First try to find in client applications
         const client = (clientApplicationsData || []).find(c => c.user_id === transaction.user_id);
+        if (client) {
+          return {
+            ...transaction,
+            partners: {
+              name: client.applicant_name,
+              email: client.applicant_email,
+              company_name: client.company_name
+            }
+          };
+        }
+        
+        // Then try to find in partners table
+        const partner = (partnersData || []).find(p => p.user_id === transaction.user_id);
         return {
           ...transaction,
-          partners: client ? {
-            name: client.applicant_name,
-            email: client.applicant_email,
-            company_name: client.company_name
+          partners: partner ? {
+            name: partner.name,
+            email: partner.email,
+            company_name: partner.company_name
           } : null
         };
       });
 
       setPayments((paymentsData as any) || []);
-      setPartnerCredits(creditsWithClients as any);
-      setTransactions(transactionsWithClients as any);
+      setPartnerCredits(creditsWithPartners as any);
+      setTransactions(transactionsWithPartners as any);
     } catch (error) {
       console.error('Error fetching billing data:', error);
       toast({
