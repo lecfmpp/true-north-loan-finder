@@ -71,7 +71,7 @@ export default function ROIManagement() {
   const [dateFilter, setDateFilter] = useState('last_7_days');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
-  const [leadTypeFilter, setLeadTypeFilter] = useState('all');
+  const [channelFilter, setChannelFilter] = useState('all');
   const [newSpend, setNewSpend] = useState({
     date: new Date().toISOString().split('T')[0],
     channel: '',
@@ -86,7 +86,7 @@ export default function ROIManagement() {
 
   useEffect(() => {
     fetchROIData();
-  }, [dateFilter, customStartDate, customEndDate]);
+  }, [dateFilter, customStartDate, customEndDate, channelFilter]);
 
   const getDateRange = () => {
     const today = new Date();
@@ -149,11 +149,18 @@ export default function ROIManagement() {
       if (metricsError) throw metricsError;
 
       // Fetch ad spend records (ordered by created_at to maintain order)
-      const { data: spendsData, error: spendsError } = await supabase
+      let query = supabase
         .from('ad_spend_records')
         .select('*')
         .gte('date', startDate)
-        .lte('date', endDate)
+        .lte('date', endDate);
+
+      // Apply channel filter if not 'all'
+      if (channelFilter !== 'all') {
+        query = query.eq('channel', channelFilter);
+      }
+
+      const { data: spendsData, error: spendsError } = await query
         .order('date', { ascending: false });
 
       if (spendsError) throw spendsError;
@@ -343,24 +350,43 @@ export default function ROIManagement() {
   };
 
 
-  const getFilteredLeadCount = () => {
-    console.log('getFilteredLeadCount called with leadTypeFilter:', leadTypeFilter, 'metrics:', metrics);
-    if (!metrics) return 0;
-    switch (leadTypeFilter) {
-      case 'qualified': return metrics.qualified_leads;
-      case 'funded': return metrics.funded_leads;
-      case 'application': return metrics.application_leads;
-      default: return metrics.total_leads;
-    }
-  };
+  const getFilteredMetrics = () => {
+    if (!metrics) return {
+      totalLeads: 0,
+      totalSpend: 0,
+      costPerLead: 0,
+      costPerQualifiedLead: 0,
+      totalClicks: 0,
+      totalConversions: 0,
+      avgCtr: 0,
+      costPerClick: 0
+    };
 
-  const getLeadTypeDescription = () => {
-    switch (leadTypeFilter) {
-      case 'qualified': return 'Qualified leads (≥ $10k revenue, ≥ 6 months, credit ≥ 600)';
-      case 'funded': return 'Funded leads (loan approved)';
-      case 'application': return 'Application leads (US & Canada)';
-      default: return 'All leads';
+    let filteredSpends = adSpends;
+    if (channelFilter !== 'all') {
+      filteredSpends = adSpends.filter(spend => spend.channel === channelFilter);
     }
+
+    const totalSpend = filteredSpends.reduce((sum, spend) => sum + (spend.amount / 100), 0);
+    const totalClicks = filteredSpends.reduce((sum, spend) => sum + (spend.clicks || 0), 0);
+    const totalConversions = filteredSpends.reduce((sum, spend) => sum + (spend.conversions || 0), 0);
+    const totalImpressions = filteredSpends.reduce((sum, spend) => sum + (spend.impressions || 0), 0);
+    
+    const avgCtr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
+    const costPerClick = totalClicks > 0 ? totalSpend / totalClicks : 0;
+    const costPerLead = metrics.total_leads > 0 ? totalSpend / metrics.total_leads : 0;
+    const costPerQualifiedLead = metrics.qualified_leads > 0 ? totalSpend / metrics.qualified_leads : 0;
+
+    return {
+      totalLeads: metrics.total_leads,
+      totalSpend,
+      costPerLead,
+      costPerQualifiedLead,
+      totalClicks,
+      totalConversions,
+      avgCtr,
+      costPerClick
+    };
   };
 
   const getChannelSpend = (channel: string) => {
@@ -410,8 +436,8 @@ export default function ROIManagement() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold">ROI Dashboard</h2>
-          <p className="text-muted-foreground">Track ad spend and lead performance</p>
+          <h2 className="text-2xl font-bold">Ads Performance</h2>
+          <p className="text-muted-foreground">Track advertising performance and metrics</p>
         </div>
         <div className="flex gap-2">
           <Dialog open={csvUploadDialog} onOpenChange={setCsvUploadDialog}>
@@ -594,82 +620,86 @@ export default function ROIManagement() {
         </div>
       </div>
 
-      {/* Date Filter */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              <Label>Date Range:</Label>
-            </div>
-            <Select value={dateFilter} onValueChange={setDateFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {DATE_FILTER_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {dateFilter === 'custom' && (
+      {/* Filters */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Date Filter */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <Input
-                  type="date"
-                  value={customStartDate}
-                  onChange={(e) => setCustomStartDate(e.target.value)}
-                  className="w-40"
-                  placeholder="Start date"
-                />
-                <span className="text-muted-foreground">to</span>
-                <Input
-                  type="date"
-                  value={customEndDate}
-                  onChange={(e) => setCustomEndDate(e.target.value)}
-                  className="w-40"
-                  placeholder="End date"
-                />
+                <Calendar className="h-4 w-4" />
+                <Label>Date Range:</Label>
               </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-
-      {/* Lead Type Filter */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              <Label>Lead Type:</Label>
+              <Select value={dateFilter} onValueChange={setDateFilter}>
+                <SelectTrigger className="w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {DATE_FILTER_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {dateFilter === 'custom' && (
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="date"
+                    value={customStartDate}
+                    onChange={(e) => setCustomStartDate(e.target.value)}
+                    className="w-40"
+                    placeholder="Start date"
+                  />
+                  <span className="text-muted-foreground">to</span>
+                  <Input
+                    type="date"
+                    value={customEndDate}
+                    onChange={(e) => setCustomEndDate(e.target.value)}
+                    className="w-40"
+                    placeholder="End date"
+                  />
+                </div>
+              )}
             </div>
-            <Select value={leadTypeFilter} onValueChange={setLeadTypeFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Leads</SelectItem>
-                <SelectItem value="qualified">Qualified Leads (≥ $10k, ≥ 6mo, credit ≥ 600)</SelectItem>
-                <SelectItem value="funded">Funded Leads</SelectItem>
-                <SelectItem value="application">Application Leads</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Overview Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        {/* Channel Filter */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4" />
+                <Label>Channel:</Label>
+              </div>
+              <Select value={channelFilter} onValueChange={setChannelFilter}>
+                <SelectTrigger className="w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Channels</SelectItem>
+                  {CHANNELS.map((channel) => (
+                    <SelectItem key={channel.value} value={channel.value}>
+                      {channel.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Performance Metrics - First Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Leads</p>
-                <p className="text-2xl font-bold">{getFilteredLeadCount()}</p>
-                <p className="text-xs text-muted-foreground">{getLeadTypeDescription()}</p>
+                <p className="text-2xl font-bold">{getFilteredMetrics().totalLeads}</p>
+                <p className="text-xs text-muted-foreground">All qualified leads</p>
               </div>
               <Target className="h-8 w-8 text-blue-600" />
             </div>
@@ -681,8 +711,8 @@ export default function ROIManagement() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Spend</p>
-                <p className="text-2xl font-bold">${((metrics?.total_spend || 0) / 100).toFixed(2)}</p>
-                <p className="text-xs text-muted-foreground">All channels combined</p>
+                <p className="text-2xl font-bold">${getFilteredMetrics().totalSpend.toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground">{channelFilter === 'all' ? 'All channels' : CHANNELS.find(c => c.value === channelFilter)?.label}</p>
               </div>
               <DollarSign className="h-8 w-8 text-red-600" />
             </div>
@@ -693,13 +723,8 @@ export default function ROIManagement() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Cost Per Lead</p>
-                <p className="text-2xl font-bold">
-                  ${getFilteredLeadCount() > 0 
-                    ? (((metrics?.total_spend || 0) / 100) / getFilteredLeadCount()).toFixed(2)
-                    : '0.00'
-                  }
-                </p>
+                <p className="text-sm text-muted-foreground">Cost per Lead</p>
+                <p className="text-2xl font-bold">${getFilteredMetrics().costPerLead.toFixed(2)}</p>
                 <p className="text-xs text-muted-foreground">Average acquisition cost</p>
               </div>
               <TrendingUp className="h-8 w-8 text-orange-600" />
@@ -711,11 +736,66 @@ export default function ROIManagement() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Commission Generated</p>
-                <p className="text-2xl font-bold">${(metrics?.commission_generated || 0).toFixed(2)}</p>
-                <p className="text-xs text-muted-foreground">From funded partner loans</p>
+                <p className="text-sm text-muted-foreground">Cost per Qualified Lead</p>
+                <p className="text-2xl font-bold">${getFilteredMetrics().costPerQualifiedLead.toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground">Qualified lead cost</p>
               </div>
-              <Banknote className="h-8 w-8 text-teal-600" />
+              <Award className="h-8 w-8 text-purple-600" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Performance Metrics - Second Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Clicks</p>
+                <p className="text-2xl font-bold">{getFilteredMetrics().totalClicks.toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground">Total ad clicks</p>
+              </div>
+              <Target className="h-8 w-8 text-cyan-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">CTR</p>
+                <p className="text-2xl font-bold">{getFilteredMetrics().avgCtr.toFixed(2)}%</p>
+                <p className="text-xs text-muted-foreground">Click-through rate</p>
+              </div>
+              <BarChart3 className="h-8 w-8 text-indigo-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Conversions</p>
+                <p className="text-2xl font-bold">{getFilteredMetrics().totalConversions}</p>
+                <p className="text-xs text-muted-foreground">Total conversions</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-green-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Cost per Click</p>
+                <p className="text-2xl font-bold">${getFilteredMetrics().costPerClick.toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground">Average CPC</p>
+              </div>
+              <DollarSign className="h-8 w-8 text-amber-600" />
             </div>
           </CardContent>
         </Card>
@@ -726,7 +806,7 @@ export default function ROIManagement() {
         <CardHeader>
           <CardTitle>Channel Performance</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Performance metrics by advertising channel for {getLeadTypeDescription().toLowerCase()}
+            Performance metrics by advertising channel
           </p>
         </CardHeader>
         <CardContent>
