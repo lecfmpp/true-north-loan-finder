@@ -107,6 +107,7 @@ import BillingManagement from '@/components/admin/BillingManagement';
 import ROIManagement from '@/components/admin/ROIManagement';
 import ClientsManagement from '@/components/admin/ClientsManagement';
 // Removed PartnersManagement component
+import ReportDashboard from '@/components/admin/ReportDashboard';
 import Footer from '@/components/Footer';
 import PartnerROIDashboard from '@/components/partner/PartnerROIDashboard';
 interface QuizResponse {
@@ -1743,6 +1744,10 @@ const Admin = () => {
         title: "Billing Management",
         value: "billing",
         icon: DollarSign
+      }, {
+        title: "Report",
+        value: "report",
+        icon: FileText
       }];
     } else if (isPartner) {
       // Partners see limited tabs
@@ -2558,6 +2563,8 @@ const Admin = () => {
         return <BillingManagement />;
       case 'roi':
         return <ROIManagement />;
+      case 'report':
+        return <ReportDashboard />;
       case 'partner-roi':
         return <PartnerROIDashboard />;
       default:
