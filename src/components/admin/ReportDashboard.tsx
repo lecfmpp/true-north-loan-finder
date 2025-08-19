@@ -350,8 +350,8 @@ export default function ReportDashboard() {
       </div>
 
       {/* Top-Level Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Row 1: Volume & Spend Metrics */}
+      {/* Row 1: Volume Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Ad Spend</CardTitle>
@@ -384,8 +384,39 @@ export default function ReportDashboard() {
             <p className="text-xs text-muted-foreground">Leads meeting qualification criteria</p>
           </CardContent>
         </Card>
+      </div>
 
-        {/* Row 2: Profitability & ROI Metrics */}
+      {/* Row 2: Cost Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Average Cost per Lead</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {formatCurrency(metricsData.totalLeads > 0 ? metricsData.totalAdSpend / metricsData.totalLeads : 0)}
+            </div>
+            <p className="text-xs text-muted-foreground">Average acquisition cost</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Average Cost per Qualified Lead</CardTitle>
+            <Target className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {formatCurrency(metricsData.totalQualifiedLeads > 0 ? metricsData.totalAdSpend / metricsData.totalQualifiedLeads : 0)}
+            </div>
+            <p className="text-xs text-muted-foreground">Average qualified lead cost</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Row 3: Revenue & Profitability Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Revenue</CardTitle>
@@ -399,30 +430,8 @@ export default function ReportDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Revenue per Lead</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(metricsData.revenuePerLead)}</div>
-            <p className="text-xs text-muted-foreground">Average revenue per lead</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Revenue per Qualified Lead</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(metricsData.revenuePerQualifiedLead)}</div>
-            <p className="text-xs text-muted-foreground">Average revenue per qualified lead</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Profit Margin</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatPercent(metricsData.profitMargin)}</div>
