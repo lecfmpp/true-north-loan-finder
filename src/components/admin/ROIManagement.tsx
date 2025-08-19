@@ -4,14 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { TrendingUp, DollarSign, Target, BarChart3, Plus, Upload, FileSpreadsheet, Trash2, Users, Award, FileText, CheckCircle, Calendar, Settings, Save, Banknote, Loader2 } from 'lucide-react';
+import { TrendingUp, DollarSign, Target, BarChart3, Plus, Upload, FileSpreadsheet, Trash2, Users, Award, FileText, CheckCircle, Calendar, Banknote, Loader2 } from 'lucide-react';
 import EditableAdSpendTable from './EditableAdSpendTable';
 
 interface ROIMetrics {
@@ -74,25 +72,6 @@ export default function ROIManagement() {
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
   const [leadTypeFilter, setLeadTypeFilter] = useState('all');
-  const [aiInstructionsDialog, setAiInstructionsDialog] = useState(false);
-  const [aiInstructions, setAiInstructions] = useState(`You are an AI assistant helping with ROI analysis for ad spend tracking. 
-
-Current dashboard metrics include:
-- Total leads and spend tracking
-- Cost per lead calculations
-- ROI percentage analysis
-- Qualified leads (>$10k monthly revenue)
-- Funded leads (loan approved status)
-- Application leads (US & Canada)
-
-When analyzing data, focus on:
-1. Cost efficiency trends
-2. Channel performance comparison
-3. Lead quality indicators
-4. Revenue attribution accuracy
-
-Provide actionable insights for campaign optimization.`);
-  const [editingInstructions, setEditingInstructions] = useState(false);
   const [newSpend, setNewSpend] = useState({
     date: new Date().toISOString().split('T')[0],
     channel: '',
@@ -363,15 +342,6 @@ Provide actionable insights for campaign optimization.`);
     }
   };
 
-  const handleSaveInstructions = () => {
-    // In a real application, you would save this to a database or configuration
-    toast({
-      title: "Success",
-      description: "AI instructions saved successfully"
-    });
-    setEditingInstructions(false);
-    setAiInstructionsDialog(false);
-  };
 
   const getFilteredLeadCount = () => {
     console.log('getFilteredLeadCount called with leadTypeFilter:', leadTypeFilter, 'metrics:', metrics);
@@ -667,64 +637,6 @@ Provide actionable insights for campaign optimization.`);
         </CardContent>
       </Card>
 
-      {/* AI Instructions */}
-      <Accordion type="single" collapsible className="w-full">
-        <AccordionItem value="ai-instructions">
-          <AccordionTrigger className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            AI Instructions
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-4">
-              <div className="flex justify-end">
-                <Dialog open={aiInstructionsDialog} onOpenChange={setAiInstructionsDialog}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Settings className="h-4 w-4 mr-2" />
-                      Edit Instructions
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-3xl">
-                    <DialogHeader>
-                      <DialogTitle>Edit AI Instructions</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <Label>Instructions for AI Analysis:</Label>
-                      <Textarea
-                        value={aiInstructions}
-                        onChange={(e) => setAiInstructions(e.target.value)}
-                        rows={12}
-                        className="min-h-80"
-                        placeholder="Enter instructions for AI analysis..."
-                      />
-                      <div className="flex gap-2 justify-end">
-                        <Button 
-                          variant="outline" 
-                          onClick={() => {
-                            setAiInstructionsDialog(false);
-                            // Reset to original value if needed
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                        <Button onClick={handleSaveInstructions}>
-                          <Save className="h-4 w-4 mr-2" />
-                          Save Instructions
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
-              <div className="bg-muted/50 p-4 rounded-lg">
-                <pre className="text-sm whitespace-pre-wrap text-muted-foreground font-mono">
-                  {aiInstructions}
-                </pre>
-              </div>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
 
       {/* Lead Type Filter */}
       <Card>
