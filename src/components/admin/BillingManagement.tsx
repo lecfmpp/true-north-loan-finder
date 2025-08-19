@@ -366,24 +366,33 @@ export default function BillingManagement() {
 
     try {
       console.log('Attempting to delete payment:', selectedPayment.id);
+      console.log('Current user auth:', await supabase.auth.getUser());
       
-      const { data, error } = await supabase
+      const { data, error, count } = await supabase
         .from('payment_records')
         .delete()
         .eq('id', selectedPayment.id)
-        .select(); // Add select to confirm deletion
+        .select('*'); // Return the deleted record
 
-      console.log('Delete response:', { data, error });
+      console.log('Delete response:', { data, error, count });
 
       if (error) {
-        console.error('Delete error:', error);
+        console.error('Delete error details:', error);
         throw error;
+      }
+
+      if (!data || data.length === 0) {
+        throw new Error('No record was deleted - check permissions');
       }
 
       console.log('Payment deleted successfully:', data);
 
-      // Optimistically update UI
-      setPayments(prev => prev.filter(p => p.id !== selectedPayment.id));
+      // Optimistically update UI immediately
+      setPayments(prev => {
+        const updated = prev.filter(p => p.id !== selectedPayment.id);
+        console.log('Updated payments list length:', updated.length);
+        return updated;
+      });
 
       toast({
         title: "Success",
@@ -394,11 +403,13 @@ export default function BillingManagement() {
       setSelectedPayment(null);
 
       // Refresh data to ensure totals and related info are accurate
-      fetchBillingData();
+      setTimeout(() => {
+        fetchBillingData();
+      }, 100);
     } catch (error) {
       console.error('Error deleting payment:', error);
       toast({
-        title: "Error",
+        title: "Error", 
         description: `Failed to delete payment record: ${error.message || error}`,
         variant: "destructive"
       });
