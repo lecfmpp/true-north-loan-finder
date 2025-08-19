@@ -276,13 +276,20 @@ export default function ReportDashboard() {
       // Convert to daily data array with accurate calculations
       const dailyDataArray: DayData[] = Array.from(dailyMap.entries())
         .map(([date, data]) => {
-          const totalLeads = data.leads.length;
-          const qualifiedLeads = data.leads.filter(isQualifiedLead).length;
-          const spend = data.spend;
+          const totalLeads = data.leads.length; // Total leads generated on this specific day
+          const qualifiedLeads = data.leads.filter(isQualifiedLead).length; // Qualified leads on this specific day
+          const spend = data.spend; // Ad spend on this specific day
           
-          // Calculate cost per lead (avoid division by zero)
+          // Calculate daily cost metrics:
+          // Cost per lead = daily ad spend ÷ daily total leads
           const costPerLead = totalLeads > 0 ? spend / totalLeads : 0;
+          // Cost per qualified lead = daily ad spend ÷ daily qualified leads
           const costPerQualifiedLead = qualifiedLeads > 0 ? spend / qualifiedLeads : 0;
+          
+          // Debug logging for verification
+          if (totalLeads > 0 || spend > 0) {
+            console.log(`${date}: Spend=$${spend.toFixed(2)}, Total Leads=${totalLeads}, Qualified=${qualifiedLeads}, CPL=$${costPerLead.toFixed(2)}, CPQL=$${costPerQualifiedLead.toFixed(2)}`);
+          }
           
           return {
             date,
