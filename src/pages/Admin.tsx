@@ -1737,7 +1737,7 @@ const Admin = () => {
         value: "settings",
         icon: SettingsIcon
       }, {
-        title: "ROI Dashboard",
+        title: "Ads Performance",
         value: "roi",
         icon: TrendingUp
       }, {
