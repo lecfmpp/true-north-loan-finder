@@ -688,11 +688,26 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
 
   const downloadFileFromStorage = async (filePath: string, fileName: string) => {
     try {
+      console.log('Attempting to download file:', { filePath, fileName });
+      
+      if (!filePath) {
+        throw new Error('File path is empty or undefined');
+      }
+
       const { data, error } = await supabase.storage
         .from('application-documents')
         .download(filePath);
 
-      if (error) throw error;
+      console.log('Download response:', { data, error });
+
+      if (error) {
+        console.error('Supabase storage error:', error);
+        throw error;
+      }
+
+      if (!data) {
+        throw new Error('No file data received from storage');
+      }
 
       // Create a download link
       const url = URL.createObjectURL(data);
@@ -707,7 +722,8 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
       toast.success("File downloaded successfully");
     } catch (error) {
       console.error('Error downloading file:', error);
-      toast.error("Failed to download file");
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      toast.error(`Failed to download file: ${errorMessage}`);
     }
   };
 
