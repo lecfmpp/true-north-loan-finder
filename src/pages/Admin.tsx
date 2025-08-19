@@ -277,6 +277,41 @@ const Admin = () => {
         });
         return;
       }
+
+      // Get partner's user_id for credit deduction
+      const { data: partnerData, error: partnerError } = await supabase
+        .from('partners')
+        .select('user_id, name')
+        .eq('id', partnerId)
+        .single();
+
+      if (partnerError || !partnerData?.user_id) {
+        toast({
+          title: "Error",
+          description: "Unable to find partner information for credit deduction",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Check and deduct credit before assignment
+      const { data: creditResult, error: creditError } = await supabase.rpc('update_partner_credits', {
+        p_user_id: partnerData.user_id,
+        p_credit_change: -1,
+        p_transaction_type: 'usage',
+        p_description: `Lead assigned: ${leadId}`,
+        p_reference_id: leadId
+      });
+
+      if (creditError) {
+        toast({
+          title: "Insufficient Credits",
+          description: `${partnerData.name} doesn't have enough credits for this lead assignment`,
+          variant: "destructive"
+        });
+        return;
+      }
+
       const {
         error
       } = await supabase.from('lead_assignments').insert({
@@ -312,6 +347,26 @@ const Admin = () => {
   };
   const removePartnerAssignment = async (leadId: string) => {
     try {
+      // Get the current assignment to credit back the partner
+      const currentAssignment = leadAssignments[leadId];
+      if (currentAssignment?.partners) {
+        const { data: partnerData, error: partnerError } = await supabase
+          .from('partners')
+          .select('user_id, name')
+          .eq('id', currentAssignment.partner_id)
+          .single();
+
+        if (partnerData?.user_id) {
+          await supabase.rpc('update_partner_credits', {
+            p_user_id: partnerData.user_id,
+            p_credit_change: 1,
+            p_transaction_type: 'refund',
+            p_description: `Lead assignment removed: ${leadId}`,
+            p_reference_id: leadId
+          });
+        }
+      }
+
       const {
         error
       } = await supabase.from('lead_assignments').delete().eq('quiz_response_id', leadId);
@@ -332,6 +387,65 @@ const Admin = () => {
   };
   const changePartnerAssignment = async (leadId: string, newPartnerId: string) => {
     try {
+      // Get the current assignment to know which partner to credit back
+      const currentAssignment = leadAssignments[leadId];
+      if (!currentAssignment) {
+        toast({
+          title: "Error",
+          description: "No current assignment found for this lead",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Get both old and new partner info for credit adjustments
+      const { data: partners, error: partnersError } = await supabase
+        .from('partners')
+        .select('id, user_id, name')
+        .in('id', [currentAssignment.partner_id, newPartnerId]);
+
+      if (partnersError || !partners || partners.length !== 2) {
+        toast({
+          title: "Error",
+          description: "Unable to find partner information for reassignment",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const oldPartner = partners.find(p => p.id === currentAssignment.partner_id);
+      const newPartner = partners.find(p => p.id === newPartnerId);
+
+      // Credit back the old partner and deduct from new partner
+      if (oldPartner?.user_id) {
+        await supabase.rpc('update_partner_credits', {
+          p_user_id: oldPartner.user_id,
+          p_credit_change: 1,
+          p_transaction_type: 'refund',
+          p_description: `Lead reassigned away: ${leadId}`,
+          p_reference_id: leadId
+        });
+      }
+
+      if (newPartner?.user_id) {
+        const { error: creditError } = await supabase.rpc('update_partner_credits', {
+          p_user_id: newPartner.user_id,
+          p_credit_change: -1,
+          p_transaction_type: 'usage',
+          p_description: `Lead reassigned to partner: ${leadId}`,
+          p_reference_id: leadId
+        });
+
+        if (creditError) {
+          toast({
+            title: "Insufficient Credits",
+            description: `${newPartner.name} doesn't have enough credits for this reassignment`,
+            variant: "destructive"
+          });
+          return;
+        }
+      }
+
       const {
         error
       } = await supabase.from('lead_assignments').update({
@@ -367,6 +481,41 @@ const Admin = () => {
         });
       }
       if (unassignedLeads.length === 0) return;
+
+      // Get partner's user_id for credit deduction
+      const { data: partnerData, error: partnerError } = await supabase
+        .from('partners')
+        .select('user_id, name')
+        .eq('id', partnerId)
+        .single();
+
+      if (partnerError || !partnerData?.user_id) {
+        toast({
+          title: "Error",
+          description: "Unable to find partner information for credit deduction",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Check and deduct credits before assignment (batch deduction)
+      const { data: creditResult, error: creditError } = await supabase.rpc('update_partner_credits', {
+        p_user_id: partnerData.user_id,
+        p_credit_change: -unassignedLeads.length,
+        p_transaction_type: 'usage',
+        p_description: `Bulk lead assignment: ${unassignedLeads.length} leads`,
+        p_reference_id: null
+      });
+
+      if (creditError) {
+        toast({
+          title: "Insufficient Credits",
+          description: `${partnerData.name} doesn't have enough credits for ${unassignedLeads.length} lead assignment(s)`,
+          variant: "destructive"
+        });
+        return;
+      }
+
       const assignments = unassignedLeads.map(leadId => ({
         quiz_response_id: leadId,
         partner_id: partnerId,
