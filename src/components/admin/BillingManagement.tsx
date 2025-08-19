@@ -170,9 +170,13 @@ export default function BillingManagement() {
         };
       });
 
+      // Filter out unknown partners (where no partner info is found)
+      const filteredCredits = creditsWithPartners.filter(credit => credit.partners !== null);
+      const filteredTransactions = transactionsWithPartners.filter(transaction => transaction.partners !== null);
+
       setPayments((paymentsData as any) || []);
-      setPartnerCredits(creditsWithPartners as any);
-      setTransactions(transactionsWithPartners as any);
+      setPartnerCredits(filteredCredits as any);
+      setTransactions(filteredTransactions as any);
     } catch (error) {
       console.error('Error fetching billing data:', error);
       toast({
