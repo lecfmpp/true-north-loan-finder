@@ -153,7 +153,30 @@ export default function PartnerPayments() {
     return <Badge variant={variants[type as keyof typeof variants] || 'secondary'}>{type}</Badge>;
   };
 
+  const getAvailableCreditsBadge = (credits: number) => {
+    if (credits < 0) {
+      return (
+        <span className="text-2xl font-bold text-red-600">
+          {credits}
+        </span>
+      );
+    } else if (credits === 0) {
+      return (
+        <span className="text-2xl font-bold text-gray-600">
+          {credits}
+        </span>
+      );
+    } else {
+      return (
+        <span className="text-2xl font-bold text-green-600">
+          {credits}
+        </span>
+      );
+    }
+  };
+
   const isLowCredits = credits && credits.available_credits <= 5;
+  const isNegativeCredits = credits && credits.available_credits < 0;
 
   if (loading) {
     return (
@@ -176,17 +199,20 @@ export default function PartnerPayments() {
     <div className="space-y-6">
       {/* Credit Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className={isLowCredits ? "border-orange-200 bg-orange-50" : ""}>
+        <Card className={isNegativeCredits ? "border-red-200 bg-red-50" : isLowCredits ? "border-orange-200 bg-orange-50" : ""}>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Available Credits</p>
-                <p className="text-2xl font-bold">{credits?.available_credits || 0}</p>
-                {isLowCredits && (
+                {getAvailableCreditsBadge(credits?.available_credits || 0)}
+                {isNegativeCredits && (
+                  <p className="text-sm text-red-600 mt-1 font-medium">Negative balance - please purchase more credits</p>
+                )}
+                {isLowCredits && !isNegativeCredits && (
                   <p className="text-sm text-orange-600 mt-1">Low credits - consider purchasing more</p>
                 )}
               </div>
-              <CreditCard className={`h-8 w-8 ${isLowCredits ? 'text-orange-600' : 'text-blue-600'}`} />
+              <CreditCard className={`h-8 w-8 ${isNegativeCredits ? 'text-red-600' : isLowCredits ? 'text-orange-600' : 'text-blue-600'}`} />
             </div>
           </CardContent>
         </Card>
@@ -207,8 +233,9 @@ export default function PartnerPayments() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Used</p>
+                <p className="text-sm text-muted-foreground">Leads Assigned</p>
                 <p className="text-2xl font-bold">{credits?.total_used || 0}</p>
+                <p className="text-xs text-muted-foreground mt-1">Based on lead assignments</p>
               </div>
               <History className="h-8 w-8 text-purple-600" />
             </div>
@@ -217,20 +244,26 @@ export default function PartnerPayments() {
       </div>
 
       {/* Purchase More Credits */}
-      {isLowCredits && (
-        <Card className="border-orange-200 bg-orange-50">
+      {(isLowCredits || isNegativeCredits) && (
+        <Card className={isNegativeCredits ? "border-red-200 bg-red-50" : "border-orange-200 bg-orange-50"}>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <AlertCircle className="h-6 w-6 text-orange-600" />
+                <AlertCircle className={`h-6 w-6 ${isNegativeCredits ? 'text-red-600' : 'text-orange-600'}`} />
                 <div>
-                  <h3 className="font-semibold text-orange-900">Running Low on Credits</h3>
-                  <p className="text-sm text-orange-700">You have {credits?.available_credits || 0} credits remaining. Purchase more to continue receiving leads.</p>
+                  <h3 className={`font-semibold ${isNegativeCredits ? 'text-red-900' : 'text-orange-900'}`}>
+                    {isNegativeCredits ? 'Negative Credit Balance' : 'Running Low on Credits'}
+                  </h3>
+                  <p className={`text-sm ${isNegativeCredits ? 'text-red-700' : 'text-orange-700'}`}>
+                    You have {credits?.available_credits || 0} credits remaining. 
+                    {isNegativeCredits ? ' Your account is overdrawn. ' : ' '}
+                    Purchase more to continue receiving leads.
+                  </p>
                 </div>
               </div>
               <Dialog open={purchaseDialog} onOpenChange={setPurchaseDialog}>
                 <DialogTrigger asChild>
-                  <Button className="bg-orange-600 hover:bg-orange-700">
+                  <Button className={isNegativeCredits ? "bg-red-600 hover:bg-red-700" : "bg-orange-600 hover:bg-orange-700"}>
                     Buy More Credits
                   </Button>
                 </DialogTrigger>

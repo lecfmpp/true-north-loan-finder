@@ -427,6 +427,28 @@ export default function BillingManagement() {
     return <Badge variant={variants[status as keyof typeof variants] || 'secondary'}>{status}</Badge>;
   };
 
+  const getAvailableCreditsBadge = (credits: number) => {
+    if (credits < 0) {
+      return (
+        <Badge variant="destructive" className="bg-red-100 text-red-800 border-red-200">
+          {credits}
+        </Badge>
+      );
+    } else if (credits === 0) {
+      return (
+        <Badge variant="secondary" className="bg-gray-100 text-gray-700 border-gray-300">
+          {credits}
+        </Badge>
+      );
+    } else {
+      return (
+        <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">
+          {credits}
+        </Badge>
+      );
+    }
+  };
+
   const totalRevenue = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0);
   const totalCreditsIssued = partnerCredits.reduce((sum, p) => sum + p.total_purchased, 0);
   const totalCreditsUsed = partnerCredits.reduce((sum, p) => sum + p.total_used, 0);
@@ -493,8 +515,9 @@ export default function BillingManagement() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Credits Used</p>
+                <p className="text-sm text-muted-foreground">Leads Assigned</p>
                 <p className="text-2xl font-bold">{totalCreditsUsed}</p>
+                <p className="text-xs text-muted-foreground mt-1">Based on lead assignments</p>
               </div>
               <TrendingUp className="h-8 w-8 text-orange-600" />
             </div>
@@ -744,7 +767,7 @@ export default function BillingManagement() {
                   <TableHead>Partner</TableHead>
                   <TableHead>Available</TableHead>
                   <TableHead>Total Purchased</TableHead>
-                  <TableHead>Total Used</TableHead>
+                  <TableHead>Leads Assigned</TableHead>
                   <TableHead>Utilization Rate</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -759,9 +782,7 @@ export default function BillingManagement() {
                     <TableRow key={credit.id}>
                       <TableCell>{credit.partners?.name || 'Unknown Partner'}</TableCell>
                       <TableCell>
-                        <Badge variant={credit.available_credits > 0 ? 'default' : 'secondary'}>
-                          {credit.available_credits}
-                        </Badge>
+                        {getAvailableCreditsBadge(credit.available_credits)}
                       </TableCell>
                       <TableCell>{credit.total_purchased}</TableCell>
                       <TableCell>{credit.total_used}</TableCell>
