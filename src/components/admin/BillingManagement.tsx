@@ -365,12 +365,22 @@ export default function BillingManagement() {
     if (!selectedPayment) return;
 
     try {
-      const { error } = await supabase
+      console.log('Attempting to delete payment:', selectedPayment.id);
+      
+      const { data, error } = await supabase
         .from('payment_records')
         .delete()
-        .eq('id', selectedPayment.id);
+        .eq('id', selectedPayment.id)
+        .select(); // Add select to confirm deletion
 
-      if (error) throw error;
+      console.log('Delete response:', { data, error });
+
+      if (error) {
+        console.error('Delete error:', error);
+        throw error;
+      }
+
+      console.log('Payment deleted successfully:', data);
 
       // Optimistically update UI
       setPayments(prev => prev.filter(p => p.id !== selectedPayment.id));
@@ -389,7 +399,7 @@ export default function BillingManagement() {
       console.error('Error deleting payment:', error);
       toast({
         title: "Error",
-        description: "Failed to delete payment record",
+        description: `Failed to delete payment record: ${error.message || error}`,
         variant: "destructive"
       });
     }
