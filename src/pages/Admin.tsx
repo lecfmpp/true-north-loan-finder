@@ -184,6 +184,7 @@ const Admin = () => {
   const [applicationSentFilter, setApplicationSentFilter] = useState('all');
   const [partnerFilter, setPartnerFilter] = useState('all');
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedDateRange, setSelectedDateRange] = useState<{from: Date | undefined, to: Date | undefined}>({from: undefined, to: undefined});
   const [sortField, setSortField] = useState<string>('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [activeTab, setActiveTab] = useState('leads');
@@ -500,7 +501,7 @@ const Admin = () => {
   }, [user, isAdmin, isSuperAdmin, userRoles]);
   useEffect(() => {
     filterLeads();
-  }, [leads, searchTerm, statusFilter, countryFilter, monthlyRevenueFilter, loanAmountFilter, timeInBusinessFilter, applicationSentFilter, partnerFilter, selectedDate, sortField, sortDirection]);
+  }, [leads, searchTerm, statusFilter, countryFilter, monthlyRevenueFilter, loanAmountFilter, timeInBusinessFilter, applicationSentFilter, partnerFilter, selectedDateRange, sortField, sortDirection]);
 
   // Real-time subscription for email delivery updates
   useEffect(() => {
@@ -1169,13 +1170,17 @@ const Admin = () => {
     }
 
     // Apply date filter
-    if (selectedDate) {
+    if (selectedDateRange.from) {
       filtered = filtered.filter(lead => {
         const leadDate = new Date(lead.created_at);
-        const filterDate = new Date(selectedDate);
+        const startDate = new Date(selectedDateRange.from!);
+        const endDate = selectedDateRange.to ? new Date(selectedDateRange.to) : startDate;
         
-        // Compare dates (ignoring time)
-        return leadDate.toDateString() === filterDate.toDateString();
+        // Set time to start/end of day for accurate comparison
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(23, 59, 59, 999);
+        
+        return leadDate >= startDate && leadDate <= endDate;
       });
     }
 
@@ -1803,37 +1808,60 @@ const Admin = () => {
                       </SelectContent>
                      </Select>
                      
-                     {/* Date Filter */}
+                     {/* Date Range Filter */}
                      <Popover>
                        <PopoverTrigger asChild>
                          <Button
                            variant="outline"
                            className={cn(
                              "w-full justify-start text-left font-normal",
-                             !selectedDate && "text-muted-foreground"
+                             !selectedDateRange.from && "text-muted-foreground"
                            )}
                          >
                            <CalendarIcon className="mr-2 h-4 w-4" />
-                           {selectedDate ? format(selectedDate, "MMM dd, yyyy") : <span>Pick a date</span>}
+                           {selectedDateRange.from ? (
+                             selectedDateRange.to ? (
+                               selectedDateRange.from.toDateString() === selectedDateRange.to.toDateString() ? 
+                               format(selectedDateRange.from, "MMM dd, yyyy") :
+                               `${format(selectedDateRange.from, "MMM dd")} - ${format(selectedDateRange.to, "MMM dd, yyyy")}`
+                             ) : (
+                               format(selectedDateRange.from, "MMM dd, yyyy")
+                             )
+                           ) : (
+                             <span>Pick date range</span>
+                           )}
                          </Button>
                        </PopoverTrigger>
                        <PopoverContent className="w-auto p-0" align="start">
                          <Calendar
-                           mode="single"
-                           selected={selectedDate}
-                           onSelect={setSelectedDate}
+                           mode="range"
+                           selected={selectedDateRange}
+                           onSelect={(range) => {
+                             if (!range) {
+                               setSelectedDateRange({from: undefined, to: undefined});
+                               return;
+                             }
+                             
+                             // Handle single day selection (clicking twice on same day)
+                             if (range.from && range.to && range.from.toDateString() === range.to.toDateString()) {
+                               setSelectedDateRange({from: range.from, to: range.from});
+                             } else {
+                               setSelectedDateRange({from: range.from, to: range.to});
+                             }
+                           }}
+                           numberOfMonths={2}
                            initialFocus
                            className={cn("p-3 pointer-events-auto")}
                          />
-                         {selectedDate && (
+                         {selectedDateRange.from && (
                            <div className="p-3 border-t">
                              <Button
                                variant="outline"
                                size="sm"
                                className="w-full"
-                               onClick={() => setSelectedDate(undefined)}
+                               onClick={() => setSelectedDateRange({from: undefined, to: undefined})}
                              >
-                               Clear Date
+                               Clear Date Range
                              </Button>
                            </div>
                          )}
