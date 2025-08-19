@@ -374,12 +374,14 @@ export default function PartnerLeads() {
                               <p className="text-sm text-muted-foreground mt-1">{lead.partner_notes}</p>
                             </div>
                           )}
-                          {lead.shared_notes && (
-                            <div>
-                              <span className="text-sm font-medium">Shared Notes:</span>
+                          <div>
+                            <span className="text-sm font-medium">Notes:</span>
+                            {lead.shared_notes ? (
                               <p className="text-sm text-muted-foreground mt-1">{lead.shared_notes}</p>
-                            </div>
-                          )}
+                            ) : (
+                              <p className="text-sm text-muted-foreground mt-1 italic">No notes added yet</p>
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>
