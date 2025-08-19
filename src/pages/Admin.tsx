@@ -92,7 +92,7 @@ import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGrou
 import Header from '@/components/Header';
 import BlogManagement from '@/components/admin/BlogManagement';
 import BlogPostCreator from '@/components/admin/BlogPostCreator';
-import EmailSequenceManagement from '@/components/admin/EmailSequenceManagement';
+
 import { ApplicationsManagement } from '@/components/admin/ApplicationsManagement';
 import USAApplicationsManagement from '@/components/admin/USAApplicationsManagement';
 import CanadianApplicationsManagement from '@/components/admin/CanadianApplicationsManagement';
@@ -186,11 +186,6 @@ const Admin = () => {
   const [expandedLeads, setExpandedLeads] = useState<{
     [key: string]: boolean;
   }>({});
-  const [emailEnrollments, setEmailEnrollments] = useState<{
-    [key: string]: {
-      [key: string]: boolean;
-    };
-  }>({});
   const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
   const [sendingEmails, setSendingEmails] = useState<{
     [key: string]: boolean;
@@ -238,11 +233,6 @@ const Admin = () => {
     toast
   } = useToast();
 
-  // Email sequence IDs - these should match the actual sequence IDs from your database
-  const EMAIL_SEQUENCES = {
-    FOLLOW_UP: '7473795a-4822-49ef-9f5f-d1b35857277a',
-    PRE_CALL: 'a4eb9d81-6602-4e99-959d-1a1b8e5592a5'
-  };
   const toggleExpandedLead = (leadId: string) => {
     setExpandedLeads(prev => ({
       ...prev,
@@ -575,8 +565,6 @@ const Admin = () => {
       }));
       setLeads(enrichedLeads);
 
-      // Fetch email enrollments for all leads
-      await fetchEmailEnrollments(enrichedLeads);
       // Fetch custom emails for all leads
       await fetchLeadCustomEmails(enrichedLeads);
     } catch (error) {
@@ -664,45 +652,6 @@ const Admin = () => {
       setFilteredLeads([]);
     } finally {
       setLoading(false);
-    }
-  };
-  const fetchEmailEnrollments = async (leadsData: QuizResponse[]) => {
-    try {
-      console.log('Fetching email enrollments for leads:', leadsData.length);
-      const {
-        data: enrollments,
-        error
-      } = await supabase.from('email_enrollments').select('user_email, sequence_id, status').in('user_email', leadsData.map(lead => lead.email));
-      if (error) {
-        console.error('Error fetching enrollments:', error);
-        throw error;
-      }
-      console.log('Retrieved enrollments:', enrollments);
-
-      // Initialize enrollment map for all leads first
-      const enrollmentMap: {
-        [key: string]: {
-          [key: string]: boolean;
-        };
-      } = {};
-      leadsData.forEach(lead => {
-        enrollmentMap[lead.email] = {
-          [EMAIL_SEQUENCES.FOLLOW_UP]: false,
-          [EMAIL_SEQUENCES.PRE_CALL]: false
-        };
-      });
-
-      // Then update with actual ACTIVE enrollments
-      enrollments?.forEach(enrollment => {
-        if (enrollmentMap[enrollment.user_email] && enrollment.status === 'active') {
-          enrollmentMap[enrollment.user_email][enrollment.sequence_id] = true;
-          console.log(`Setting ${enrollment.user_email} sequence ${enrollment.sequence_id} to active`);
-        }
-      });
-      console.log('Final enrollment map:', enrollmentMap);
-      setEmailEnrollments(enrollmentMap);
-    } catch (error) {
-      console.error('Error fetching email enrollments:', error);
     }
   };
   const fetchLeadCustomEmails = async (leadsData: QuizResponse[]) => {
@@ -1132,98 +1081,6 @@ const Admin = () => {
           variant: "destructive"
         });
       }
-    }
-  };
-  const toggleEmailSequence = async (leadEmail: string, leadName: string, sequenceId: string, isEnabled: boolean) => {
-    console.log(`Toggling email sequence for ${leadEmail}, sequence: ${sequenceId}, enabled: ${isEnabled}`);
-
-    // Optimistically update UI
-    setEmailEnrollments(prev => ({
-      ...prev,
-      [leadEmail]: {
-        ...prev[leadEmail],
-        [sequenceId]: isEnabled
-      }
-    }));
-    try {
-      if (isEnabled) {
-        // Check if there's an existing enrollment first
-        const {
-          data: existingEnrollment
-        } = await supabase.from('email_enrollments').select('id, status').eq('user_email', leadEmail).eq('sequence_id', sequenceId).maybeSingle();
-        if (existingEnrollment && existingEnrollment.status === 'cancelled') {
-          // Reactivate existing enrollment
-          console.log('Reactivating existing enrollment:', existingEnrollment.id);
-          const {
-            error
-          } = await supabase.from('email_enrollments').update({
-            status: 'active',
-            enrolled_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }).eq('id', existingEnrollment.id);
-          if (error) throw error;
-        }
-
-        // Always trigger the email sequence when enabling (for both new and reactivated enrollments)
-        const sequenceType = sequenceId === EMAIL_SEQUENCES.FOLLOW_UP ? 'follow_up' : 'pre_call_reminder';
-        console.log(`Triggering email sequence: ${sequenceType}`);
-        const leadData = leads.find(l => l.email === leadEmail);
-        const {
-          error: emailError
-        } = await supabase.functions.invoke('send-email-sequence', {
-          body: {
-            type: sequenceType,
-            userEmail: leadEmail,
-            userName: leadName,
-            variables: {
-              callDate: '',
-              callTime: '',
-              userPhone: leadData?.phone || '',
-              monthly_revenue: leadData?.monthly_revenue || 0,
-              loan_amount: leadData?.loan_amount || 0,
-              credit_score: leadData?.credit_score || '',
-              time_in_business: leadData?.time_in_business || '',
-              use_of_funds: leadData?.use_of_funds || ''
-            }
-          }
-        });
-        if (emailError) {
-          console.error('Email sequence error:', emailError);
-          throw emailError;
-        }
-        console.log('Email sequence triggered successfully');
-      } else {
-        // Unenroll from sequence
-        console.log('Unenrolling from sequence');
-        const {
-          error
-        } = await supabase.from('email_enrollments').update({
-          status: 'cancelled'
-        }).eq('user_email', leadEmail).eq('sequence_id', sequenceId);
-        if (error) throw error;
-        console.log('Successfully unenrolled from sequence');
-      }
-      const sequenceName = sequenceId === EMAIL_SEQUENCES.FOLLOW_UP ? 'Follow-up' : 'Pre-Call';
-      toast({
-        title: "Success",
-        description: `${sequenceName} sequence ${isEnabled ? 'enabled' : 'disabled'} for ${leadName}${isEnabled ? ' - Email sent!' : ''}`
-      });
-    } catch (error) {
-      console.error('Error in toggleEmailSequence:', error);
-
-      // Reset the toggle state on error
-      setEmailEnrollments(prev => ({
-        ...prev,
-        [leadEmail]: {
-          ...prev[leadEmail],
-          [sequenceId]: !isEnabled
-        }
-      }));
-      toast({
-        title: "Error",
-        description: `Failed to ${isEnabled ? 'enable' : 'disable'} email sequence: ${error.message}`,
-        variant: "destructive"
-      });
     }
   };
   const filterLeads = () => {
@@ -1698,10 +1555,6 @@ const Admin = () => {
         icon: FileText,
         count: `${canadianApplicationsCount} (${canadianDraftsCount})`
       }, {
-        title: "Email Sequence",
-        value: "email-sequence",
-        icon: Mail
-      }, {
         title: "Blog Management",
         value: "blog",
         icon: FileText
@@ -1956,19 +1809,6 @@ const Admin = () => {
                     <h3 className="font-semibold text-blue-900 mb-3">Bulk Actions ({selectedLeads.length} leads selected)</h3>
                     <div className="flex flex-wrap gap-4 items-center">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-blue-900">Bulk Email Actions:</span>
-                        <Button size="sm" onClick={() => selectedLeads.forEach(leadId => {
-                      const lead = leads.find(l => l.id === leadId);
-                      if (lead) toggleEmailSequence(lead.email, lead.name, EMAIL_SEQUENCES.FOLLOW_UP, true);
-                    })} className="text-xs">
-                          Enable Follow-up for All
-                        </Button>
-                        <Button size="sm" onClick={() => selectedLeads.forEach(leadId => {
-                      const lead = leads.find(l => l.id === leadId);
-                      if (lead) toggleEmailSequence(lead.email, lead.name, EMAIL_SEQUENCES.PRE_CALL, true);
-                    })} className="text-xs">
-                          Enable Pre-Call for All
-                        </Button>
                         <Button size="sm" onClick={autoAssignLeadsFromEmailHistory} className="text-xs">
                           Auto-assign from Emails
                         </Button>
@@ -2280,18 +2120,6 @@ const Admin = () => {
                           <TableCell className="text-sm text-muted-foreground">
                             {format(new Date(lead.created_at), 'MMM dd, yyyy HH:mm')}
                           </TableCell>
-                          {isSuperAdmin && <TableCell>
-                              <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                  <Switch key={`follow-up-${lead.email}-${emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.FOLLOW_UP] || false}`} checked={emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.FOLLOW_UP] || false} onCheckedChange={checked => toggleEmailSequence(lead.email, lead.name, EMAIL_SEQUENCES.FOLLOW_UP, checked)} />
-                                  <span className="text-sm text-muted-foreground">Follow-up</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Switch key={`pre-call-${lead.email}-${emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.PRE_CALL] || false}`} checked={emailEnrollments[lead.email]?.[EMAIL_SEQUENCES.PRE_CALL] || false} onCheckedChange={checked => toggleEmailSequence(lead.email, lead.name, EMAIL_SEQUENCES.PRE_CALL, checked)} />
-                                  <span className="text-sm text-muted-foreground">Pre-Call</span>
-                                </div>
-                              </div>
-                            </TableCell>}
                           {isSuperAdmin && <>
                               <TableCell>
                                 <Badge variant="outline" className="text-xs">
@@ -2483,8 +2311,6 @@ const Admin = () => {
           fetchCanadianApplicationsCount();
           fetchCanadianDraftsCount();
         }} />;
-      case 'email-sequence':
-        return <EmailSequenceManagement />;
       case 'blog-creator':
         return <BlogPostCreator onBlogCreated={() => setActiveTab('blog')} />;
       case 'blog':
