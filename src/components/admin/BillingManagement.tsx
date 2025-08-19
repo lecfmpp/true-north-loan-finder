@@ -78,6 +78,7 @@ export default function BillingManagement() {
   const [paymentMethod, setPaymentMethod] = useState('');
   const [paymentDescription, setPaymentDescription] = useState('');
   const [selectedPaymentPartner, setSelectedPaymentPartner] = useState<string>('');
+  const [leadsPurchased, setLeadsPurchased] = useState('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -244,7 +245,7 @@ export default function BillingManagement() {
   };
 
   const handleManualPayment = async () => {
-    if (!paymentAmount || !paymentMethod || !selectedPaymentPartner) {
+    if (!paymentAmount || !paymentMethod || !selectedPaymentPartner || !leadsPurchased) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -255,10 +256,21 @@ export default function BillingManagement() {
 
     try {
       const amount = parseFloat(paymentAmount);
+      const leadsCount = parseInt(leadsPurchased);
+      
       if (isNaN(amount) || amount <= 0) {
         toast({
           title: "Error",
           description: "Please enter a valid amount",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (isNaN(leadsCount) || leadsCount <= 0) {
+        toast({
+          title: "Error",
+          description: "Please enter a valid number of leads",
           variant: "destructive"
         });
         return;
@@ -287,7 +299,7 @@ export default function BillingManagement() {
           currency: 'usd',
           status: 'completed',
           payment_type: 'manual_payment',
-          leads_purchased: 0,
+          leads_purchased: leadsCount,
           metadata: {
             payment_method: paymentMethod,
             description: paymentDescription || `Manual ${paymentMethod} payment`,
@@ -297,9 +309,19 @@ export default function BillingManagement() {
 
       if (paymentError) throw paymentError;
 
+      // Also add credits to the partner's account
+      const { error: creditError } = await supabase.rpc('update_partner_credits', {
+        p_user_id: partner.user_id,
+        p_credit_change: leadsCount,
+        p_transaction_type: 'purchase',
+        p_description: `Manual payment - ${leadsCount} leads purchased via ${paymentMethod}`
+      });
+
+      if (creditError) throw creditError;
+
       toast({
         title: "Success",
-        description: "Manual payment record created successfully"
+        description: `Manual payment record created and ${leadsCount} credits added successfully`
       });
 
       // Reset form and close dialog
@@ -308,6 +330,7 @@ export default function BillingManagement() {
       setPaymentMethod('');
       setPaymentDescription('');
       setSelectedPaymentPartner('');
+      setLeadsPurchased('');
       fetchBillingData();
     } catch (error) {
       console.error('Error creating manual payment:', error);
@@ -495,6 +518,15 @@ export default function BillingManagement() {
                         placeholder="Enter payment amount"
                         value={paymentAmount}
                         onChange={(e) => setPaymentAmount(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label>Number of Leads</Label>
+                      <Input
+                        type="number"
+                        placeholder="Enter number of leads being purchased"
+                        value={leadsPurchased}
+                        onChange={(e) => setLeadsPurchased(e.target.value)}
                       />
                     </div>
                     <div>
