@@ -168,42 +168,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({ onBookingConfirmed, u
         console.error('Error creating Google Meet event:', meetError);
       }
 
-      // Remove from follow-up sequence and start pre-call reminder sequence
-      try {
-        const appointmentDate = format(new Date(selectedSlot.date), 'MMMM do, yyyy');
-        const appointmentTime = format(new Date(`2000-01-01 ${selectedSlot.time}`), 'h:mm a');
-        
-        // First, cancel any active follow-up sequence enrollment
-        const { data: followUpSequence } = await supabase
-          .from('email_sequences')
-          .select('id')
-          .eq('sequence_type', 'follow_up')
-          .single();
-
-        if (followUpSequence) {
-          await supabase
-            .from('email_enrollments')
-            .update({ status: 'cancelled' })
-            .eq('user_email', userInfo.email)
-            .eq('sequence_id', followUpSequence.id)
-            .eq('status', 'active');
-        }
-        
-        // Start pre-call reminder email sequence
-        await supabase.functions.invoke('send-email-sequence', {
-          body: {
-            type: 'pre_call_reminder',
-            userEmail: userInfo.email,
-            userName: userInfo.name.split(' ')[0], // First name
-            callDate: appointmentDate,
-            callTime: appointmentTime,
-            userPhone: userInfo.phone // Include phone for the call
-          }
-        });
-      } catch (emailError) {
-        console.error('Error managing email sequences:', emailError);
-        // Don't fail the booking if email fails
-      }
+      // Email sequence functionality removed - feature no longer available
 
       toast({
         title: "Booking Confirmed!",
