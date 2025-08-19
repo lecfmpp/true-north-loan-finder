@@ -1,0 +1,236 @@
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+interface TestGHLRequest {
+  partnerId: string;
+  testData: {
+    name: string;
+    email: string;
+    phone: string;
+    company_name: string;
+    loan_amount: number;
+    monthly_revenue: number;
+    credit_score: string;
+  };
+}
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { partnerId, testData }: TestGHLRequest = await req.json();
+
+    console.log('Testing GHL integration for partner:', partnerId);
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    // Get GHL integration settings
+    const { data: integration, error: integrationError } = await supabase
+      .from("ghl_integrations")
+      .select("*")
+      .eq("partner_id", partnerId)
+      .eq("is_active", true)
+      .single();
+
+    if (integrationError || !integration) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: "No active GHL integration found for partner"
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    console.log('Testing integration with location:', integration.location_id);
+
+    // Test API key by getting location info
+    const locationResponse = await fetch(`https://services.leadconnectorhq.com/locations/${integration.location_id}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${integration.api_key}`,
+        'Content-Type': 'application/json',
+        'Version': '2021-07-28',
+      },
+    });
+
+    if (!locationResponse.ok) {
+      const errorText = await locationResponse.text();
+      console.error('GHL Location API Error:', errorText);
+      
+      return new Response(JSON.stringify({
+        success: false,
+        error: `Invalid API key or location ID: ${locationResponse.status}`
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const locationData = await locationResponse.json();
+    console.log('Location verified:', locationData.location?.name);
+
+    // Test pipeline if configured
+    let pipelineValid = true;
+    if (integration.pipeline_id) {
+      const pipelineResponse = await fetch(`https://services.leadconnectorhq.com/opportunities/pipelines?locationId=${integration.location_id}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${integration.api_key}`,
+          'Content-Type': 'application/json',
+          'Version': '2021-07-28',
+        },
+      });
+
+      if (pipelineResponse.ok) {
+        const pipelinesData = await pipelineResponse.json();
+        const pipeline = pipelinesData.pipelines?.find((p: any) => p.id === integration.pipeline_id);
+        
+        if (!pipeline) {
+          pipelineValid = false;
+          console.log('Pipeline not found:', integration.pipeline_id);
+        } else {
+          console.log('Pipeline verified:', pipeline.name);
+        }
+      } else {
+        pipelineValid = false;
+        console.log('Failed to verify pipeline');
+      }
+    }
+
+    // Prepare test contact data
+    const nameParts = testData.name.trim().split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+
+    const testContact = {
+      firstName,
+      lastName: lastName || 'Test',
+      email: testData.email,
+      phone: testData.phone.replace(/\D/g, ''),
+      companyName: testData.company_name,
+      source: 'Integration Test',
+      tags: ['Test', 'Integration'],
+      customFields: {
+        loanAmount: testData.loan_amount.toString(),
+        monthlyRevenue: testData.monthly_revenue.toString(),
+        creditScore: testData.credit_score,
+        testContact: 'true'
+      },
+      locationId: integration.location_id,
+    };
+
+    console.log('Creating test contact:', testContact);
+
+    // Create test contact
+    const contactResponse = await fetch(`https://services.leadconnectorhq.com/contacts/`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${integration.api_key}`,
+        'Content-Type': 'application/json',
+        'Version': '2021-07-28',
+      },
+      body: JSON.stringify(testContact),
+    });
+
+    let contactResult = null;
+    if (contactResponse.ok) {
+      contactResult = await contactResponse.json();
+      console.log('Test contact created:', contactResult.contact?.id);
+      
+      // Clean up test contact
+      if (contactResult.contact?.id) {
+        setTimeout(async () => {
+          try {
+            await fetch(`https://services.leadconnectorhq.com/contacts/${contactResult.contact.id}`, {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${integration.api_key}`,
+                'Version': '2021-07-28',
+              },
+            });
+            console.log('Test contact cleaned up');
+          } catch (cleanupError) {
+            console.error('Failed to cleanup test contact:', cleanupError);
+          }
+        }, 5000);
+      }
+    } else {
+      const errorText = await contactResponse.text();
+      console.error('Test contact creation failed:', errorText);
+      
+      return new Response(JSON.stringify({
+        success: false,
+        error: `Failed to create test contact: ${contactResponse.status}`
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Test webhook if configured
+    let webhookValid = true;
+    if (integration.webhook_url) {
+      try {
+        const webhookResponse = await fetch(integration.webhook_url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            event: 'integration_test',
+            partnerId,
+            timestamp: new Date().toISOString(),
+          }),
+        });
+        
+        if (!webhookResponse.ok) {
+          webhookValid = false;
+        }
+      } catch (webhookError) {
+        webhookValid = false;
+        console.error('Webhook test failed:', webhookError);
+      }
+    }
+
+    console.log('GHL integration test completed successfully');
+
+    return new Response(JSON.stringify({
+      success: true,
+      results: {
+        apiKey: 'Valid',
+        location: locationData.location?.name || 'Valid',
+        pipeline: integration.pipeline_id ? (pipelineValid ? 'Valid' : 'Invalid pipeline ID') : 'Not configured',
+        webhook: integration.webhook_url ? (webhookValid ? 'Valid' : 'Failed to reach webhook') : 'Not configured',
+        contactCreation: 'Successful'
+      },
+      message: 'GHL integration test completed successfully'
+    }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+
+  } catch (error: any) {
+    console.error("Error in test-ghl-integration function:", error);
+
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: error.message || "Failed to test GHL integration" 
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  }
+});

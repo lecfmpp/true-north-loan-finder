@@ -1741,6 +1741,10 @@ const Admin = () => {
         value: "roi",
         icon: TrendingUp
       }, {
+        title: "GHL Integration",
+        value: "ghl-integration",
+        icon: SettingsIcon
+      }, {
         title: "Billing Management",
         value: "billing",
         icon: DollarSign
