@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { CreditCard, DollarSign, Users, TrendingUp, Plus, Edit, Trash2 } from 'lucide-react';
+import { CreditCard, DollarSign, Users, TrendingUp, Plus, Edit, Trash2, Receipt } from 'lucide-react';
 
 interface PaymentRecord {
   id: string;
@@ -23,6 +23,12 @@ interface PaymentRecord {
   payment_type: string;
   leads_purchased: number;
   created_at: string;
+  metadata?: {
+    payment_method?: string;
+    description?: string;
+    created_by?: string;
+    [key: string]: any;
+  } | null;
   profiles?: {
     display_name: string | null;
   } | null;
@@ -64,9 +70,14 @@ export default function BillingManagement() {
   const [loading, setLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState('overview');
   const [adjustmentDialog, setAdjustmentDialog] = useState(false);
+  const [manualPaymentDialog, setManualPaymentDialog] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState<PartnerCredit | null>(null);
   const [adjustmentAmount, setAdjustmentAmount] = useState('');
   const [adjustmentReason, setAdjustmentReason] = useState('');
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [paymentDescription, setPaymentDescription] = useState('');
+  const [selectedPaymentPartner, setSelectedPaymentPartner] = useState<string>('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -77,11 +88,11 @@ export default function BillingManagement() {
     try {
       setLoading(true);
 
-      // Fetch payment records for clients only (pay-per-lead model)
+      // Fetch payment records (including manual payments)
       const { data: paymentsData, error: paymentsError } = await supabase
         .from('payment_records')
         .select('*')
-        .eq('payment_type', 'lead_credits')
+        .in('payment_type', ['lead_credits', 'manual_payment'])
         .order('created_at', { ascending: false });
 
       if (paymentsError) throw paymentsError;
@@ -232,6 +243,82 @@ export default function BillingManagement() {
     }
   };
 
+  const handleManualPayment = async () => {
+    if (!paymentAmount || !paymentMethod || !selectedPaymentPartner) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const amount = parseFloat(paymentAmount);
+      if (isNaN(amount) || amount <= 0) {
+        toast({
+          title: "Error",
+          description: "Please enter a valid amount",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Convert to cents for storage
+      const amountInCents = Math.round(amount * 100);
+
+      // Find the selected partner to get their details
+      const partner = partnerCredits.find(p => p.id === selectedPaymentPartner);
+      if (!partner) {
+        toast({
+          title: "Error",
+          description: "Selected partner not found",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Create payment record
+      const { error: paymentError } = await supabase
+        .from('payment_records')
+        .insert({
+          user_id: partner.user_id,
+          amount: amountInCents,
+          currency: 'usd',
+          status: 'completed',
+          payment_type: 'manual_payment',
+          leads_purchased: 0,
+          metadata: {
+            payment_method: paymentMethod,
+            description: paymentDescription || `Manual ${paymentMethod} payment`,
+            created_by: 'admin'
+          }
+        });
+
+      if (paymentError) throw paymentError;
+
+      toast({
+        title: "Success",
+        description: "Manual payment record created successfully"
+      });
+
+      // Reset form and close dialog
+      setManualPaymentDialog(false);
+      setPaymentAmount('');
+      setPaymentMethod('');
+      setPaymentDescription('');
+      setSelectedPaymentPartner('');
+      fetchBillingData();
+    } catch (error) {
+      console.error('Error creating manual payment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create manual payment record",
+        variant: "destructive"
+      });
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const variants = {
       completed: 'default',
@@ -350,7 +437,81 @@ export default function BillingManagement() {
       {selectedTab === 'payments' && (
         <Card>
           <CardHeader>
-            <CardTitle>Payment Records</CardTitle>
+            <div className="flex justify-between items-center">
+              <CardTitle>Payment Records</CardTitle>
+              <Dialog open={manualPaymentDialog} onOpenChange={setManualPaymentDialog}>
+                <DialogTrigger asChild>
+                  <Button size="sm">
+                    <Receipt className="h-4 w-4 mr-2" />
+                    Add Manual Payment
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create Manual Payment Record</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Partner</Label>
+                      <Select
+                        value={selectedPaymentPartner}
+                        onValueChange={setSelectedPaymentPartner}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select a partner" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border shadow-lg z-50">
+                          {partnerCredits.map((partner) => (
+                            <SelectItem key={partner.id} value={partner.id}>
+                              {partner.partners?.name || 'Unknown Partner'} - {partner.partners?.company_name || 'No Company'}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Payment Method</Label>
+                      <Select
+                        value={paymentMethod}
+                        onValueChange={setPaymentMethod}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select payment method" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border shadow-lg z-50">
+                          <SelectItem value="etransfer">E-Transfer</SelectItem>
+                          <SelectItem value="cash">Cash</SelectItem>
+                          <SelectItem value="direct_deposit">Direct Deposit</SelectItem>
+                          <SelectItem value="wire_transfer">Wire Transfer</SelectItem>
+                          <SelectItem value="check">Check</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Amount ($)</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="Enter payment amount"
+                        value={paymentAmount}
+                        onChange={(e) => setPaymentAmount(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label>Description (Optional)</Label>
+                      <Textarea
+                        placeholder="Additional payment details"
+                        value={paymentDescription}
+                        onChange={(e) => setPaymentDescription(e.target.value)}
+                      />
+                    </div>
+                    <Button onClick={handleManualPayment} className="w-full">
+                      Create Payment Record
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
           </CardHeader>
           <CardContent>
             <Table>
@@ -365,16 +526,25 @@ export default function BillingManagement() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {payments.map((payment) => (
-                  <TableRow key={payment.id}>
-                    <TableCell>{payment.user_id}</TableCell>
-                    <TableCell>${(payment.amount / 100).toFixed(2)}</TableCell>
-                    <TableCell>{getStatusBadge(payment.status)}</TableCell>
-                    <TableCell className="capitalize">{payment.payment_type}</TableCell>
-                    <TableCell>{payment.leads_purchased}</TableCell>
-                    <TableCell>{new Date(payment.created_at).toLocaleDateString()}</TableCell>
-                  </TableRow>
-                ))}
+                 {payments.map((payment) => {
+                   // Try to find partner info from our existing data
+                   const partnerInfo = partnerCredits.find(p => p.user_id === payment.user_id);
+                   const displayName = partnerInfo?.partners?.name || payment.user_id;
+                   const paymentMethodDisplay = payment.metadata?.payment_method 
+                     ? `${payment.payment_type} (${payment.metadata.payment_method})`
+                     : payment.payment_type;
+                   
+                   return (
+                     <TableRow key={payment.id}>
+                       <TableCell>{displayName}</TableCell>
+                       <TableCell>${(payment.amount / 100).toFixed(2)}</TableCell>
+                       <TableCell>{getStatusBadge(payment.status)}</TableCell>
+                       <TableCell className="capitalize">{paymentMethodDisplay}</TableCell>
+                       <TableCell>{payment.leads_purchased}</TableCell>
+                       <TableCell>{new Date(payment.created_at).toLocaleDateString()}</TableCell>
+                     </TableRow>
+                   );
+                 })}
               </TableBody>
             </Table>
           </CardContent>
