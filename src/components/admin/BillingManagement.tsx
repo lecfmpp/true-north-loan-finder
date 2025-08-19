@@ -372,6 +372,9 @@ export default function BillingManagement() {
 
       if (error) throw error;
 
+      // Optimistically update UI
+      setPayments(prev => prev.filter(p => p.id !== selectedPayment.id));
+
       toast({
         title: "Success",
         description: "Payment record deleted successfully"
@@ -379,6 +382,8 @@ export default function BillingManagement() {
 
       setDeletePaymentDialog(false);
       setSelectedPayment(null);
+
+      // Refresh data to ensure totals and related info are accurate
       fetchBillingData();
     } catch (error) {
       console.error('Error deleting payment:', error);
