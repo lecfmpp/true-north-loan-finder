@@ -1394,7 +1394,7 @@ const Admin = () => {
       filtered = filtered.filter(lead => {
         const leadDate = new Date(lead.created_at);
         const startDate = new Date(selectedDateRange.from!);
-        const endDate = selectedDateRange.to ? new Date(selectedDateRange.to) : startDate;
+        const endDate = selectedDateRange.to ? new Date(selectedDateRange.to) : new Date(selectedDateRange.from!);
         
         // Set time to start/end of day for accurate comparison
         startDate.setHours(0, 0, 0, 0);
