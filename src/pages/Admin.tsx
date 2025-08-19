@@ -201,6 +201,13 @@ const Admin = () => {
     [key: string]: string;
   }>({});
   const [partners, setPartners] = useState<Partner[]>([]);
+  const [assignmentOptions, setAssignmentOptions] = useState<Array<{
+    id: string;
+    name: string;
+    email: string;
+    type: 'partner' | 'client';
+    company_name?: string;
+  }>>([]);
   const [selectedPartner, setSelectedPartner] = useState<string>('');
   const [customEmails, setCustomEmails] = useState<Record<string, string>>({});
   const [sendingCustomEmails, setSendingCustomEmails] = useState<Record<string, boolean>>({});
@@ -937,6 +944,53 @@ const Admin = () => {
       });
       if (error) throw error;
       setPartners(data || []);
+      
+      // Also fetch clients for assignment dropdown
+      await fetchAssignmentOptions();
+    } catch (error) {
+      console.error('Error fetching partners:', error);
+    }
+  };
+
+  const fetchAssignmentOptions = async () => {
+    try {
+      // Fetch active partners
+      const { data: partnersData, error: partnersError } = await supabase
+        .from('partners')
+        .select('id, name, email, company_name')
+        .eq('is_active', true)
+        .order('name', { ascending: true });
+
+      if (partnersError) throw partnersError;
+
+      // Fetch active clients
+      const { data: clientsData, error: clientsError } = await supabase
+        .from('clients')
+        .select('id, name, email, company_name')
+        .eq('status', 'active')
+        .order('name', { ascending: true });
+
+      if (clientsError) throw clientsError;
+
+      // Combine partners and clients for assignment dropdown
+      const options = [
+        ...(partnersData || []).map(partner => ({
+          id: partner.id,
+          name: partner.name,
+          email: partner.email,
+          company_name: partner.company_name,
+          type: 'partner' as const
+        })),
+        ...(clientsData || []).map(client => ({
+          id: client.id,
+          name: client.name,
+          email: client.email,
+          company_name: client.company_name,
+          type: 'client' as const
+        }))
+      ];
+
+      setAssignmentOptions(options);
     } catch (error) {
       console.error('Error fetching partners:', error);
       toast({
@@ -950,16 +1004,31 @@ const Admin = () => {
   // Real-time subscription: refresh partners list on insert/update/delete so dropdowns stay in sync
   useEffect(() => {
     if (!user || !isAdmin) return;
-    const channel = supabase.channel('partners_changes').on('postgres_changes', {
+    
+    const partnersChannel = supabase.channel('partners_changes').on('postgres_changes', {
       event: '*',
       schema: 'public',
       table: 'partners'
     }, () => {
       // Re-fetch active partners when partners table changes
       fetchPartners();
-    }).subscribe();
+    });
+
+    const clientsChannel = supabase.channel('clients_changes').on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'clients'
+    }, () => {
+      // Re-fetch assignment options when clients table changes
+      fetchAssignmentOptions();
+    });
+
+    partnersChannel.subscribe();
+    clientsChannel.subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(partnersChannel);
+      supabase.removeChannel(clientsChannel);
     };
   }, [user, isAdmin]);
   const sendCustomLeadEmail = async (leadId: string, recipientEmails: string) => {
@@ -1961,9 +2030,9 @@ const Admin = () => {
                       <SelectContent>
                         <SelectItem value="all">Partner (All)</SelectItem>
                         <SelectItem value="unassigned">Unassigned</SelectItem>
-                        {partners.map(partner => <SelectItem key={partner.id} value={partner.id}>
-                            {partner.name}
-                          </SelectItem>)}
+                         {assignmentOptions.map(option => <SelectItem key={option.id} value={option.id}>
+                            {option.name} ({option.type === 'client' ? 'Client' : 'Partner'})
+                           </SelectItem>)}
                       </SelectContent>
                      </Select>
                      
@@ -2060,9 +2129,9 @@ const Admin = () => {
                             <SelectValue placeholder="Select partner" />
                           </SelectTrigger>
                           <SelectContent>
-                            {partners.map(partner => <SelectItem key={partner.id} value={partner.id}>
-                                {partner.name} ({partner.email})
-                              </SelectItem>)}
+                           {assignmentOptions.map(option => <SelectItem key={option.id} value={option.id}>
+                                {option.name} ({option.email}) - {option.type === 'client' ? 'Client' : 'Partner'}
+                               </SelectItem>)}
                           </SelectContent>
                         </Select>
                         <Button size="sm" disabled={!selectedPartner || selectedLeads.length === 0} onClick={() => assignLeadsToPartner(selectedLeads, selectedPartner)} className="text-xs">
@@ -2387,12 +2456,12 @@ const Admin = () => {
                                       <SelectValue placeholder={sendingEmails[lead.id] ? "Sending..." : "Select partner"} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                      {partners.map(partner => <SelectItem key={partner.id} value={partner.id}>
-                                          <div className="flex items-center gap-2">
-                                            <Send className="w-4 h-4" />
-                                            {partner.name}
-                                          </div>
-                                        </SelectItem>)}
+                                       {assignmentOptions.map(option => <SelectItem key={option.id} value={option.id}>
+                                           <div className="flex items-center gap-2">
+                                             <Send className="w-4 h-4" />
+                                             {option.name} - {option.type === 'client' ? 'Client' : 'Partner'}
+                                           </div>
+                                         </SelectItem>)}
                                     </SelectContent>
                                   </Select>
                                   {selectedRecipients[lead.id] && <Button size="sm" onClick={async () => {
@@ -2436,12 +2505,12 @@ const Admin = () => {
                                         <SelectValue placeholder="Change" />
                                       </SelectTrigger>
                                       <SelectContent className="bg-background border shadow-md z-50">
-                                        {partners.map(partner => <SelectItem key={partner.id} value={partner.id}>
-                                            <div className="flex items-center gap-2">
-                                              <UserCheck className="w-3 h-3" />
-                                              {partner.name}
-                                            </div>
-                                          </SelectItem>)}
+                                         {assignmentOptions.map(option => <SelectItem key={option.id} value={option.id}>
+                                             <div className="flex items-center gap-2">
+                                               <UserCheck className="w-3 h-3" />
+                                               {option.name} - {option.type === 'client' ? 'Client' : 'Partner'}
+                                             </div>
+                                           </SelectItem>)}
                                       </SelectContent>
                                     </Select>
                                     <Button size="sm" variant="outline" className="h-8 px-2 text-xs" onClick={() => removePartnerAssignment(lead.id)}>
@@ -2454,12 +2523,12 @@ const Admin = () => {
                                       <SelectValue placeholder="Assign to partner" />
                                     </SelectTrigger>
                                      <SelectContent className="bg-background border shadow-md z-50">
-                                       {partners.map(partner => <SelectItem key={partner.id} value={partner.id}>
-                                           <div className="flex items-center gap-2">
-                                             <UserCheck className="w-4 h-4" />
-                                             {partner.name}
-                                           </div>
-                                         </SelectItem>)}
+                                        {assignmentOptions.map(option => <SelectItem key={option.id} value={option.id}>
+                                            <div className="flex items-center gap-2">
+                                              <UserCheck className="w-4 h-4" />
+                                              {option.name} - {option.type === 'client' ? 'Client' : 'Partner'}
+                                            </div>
+                                          </SelectItem>)}
                                     </SelectContent>
                                   </Select>
                                 </div> : <div className="text-sm text-muted-foreground">
