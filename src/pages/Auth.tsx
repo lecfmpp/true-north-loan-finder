@@ -89,14 +89,10 @@ const Auth = () => {
 
   useEffect(() => {
     if (user && !isPasswordReset) {
-      // Redirect admin users to admin page, regular users to home
-      if (isAdmin) {
-        navigate('/admin');
-      } else {
-        navigate('/');
-      }
+      // Redirect all authenticated users to admin page
+      navigate('/admin');
     }
-  }, [user, isAdmin, navigate, isPasswordReset]);
+  }, [user, navigate, isPasswordReset]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -177,12 +173,8 @@ const Auth = () => {
       setIsPasswordReset(false);
       window.history.replaceState({}, '', '/auth');
       
-      // Redirect based on user role
-      if (isAdmin) {
-        navigate('/admin');
-      } else {
-        navigate('/');
-      }
+      // Redirect all authenticated users to admin page
+      navigate('/admin');
     } catch (error: any) {
       toast({
         title: "Error",
