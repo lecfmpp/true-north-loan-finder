@@ -83,6 +83,8 @@ export default function ROIManagement() {
     conversions: ''
   });
   const { toast } = useToast();
+  // Backward-compat: removed Lead Type filter; define fallback to avoid stale references
+  const leadTypeFilter = 'all';
 
   useEffect(() => {
     fetchROIData();
