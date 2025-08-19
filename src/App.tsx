@@ -6,7 +6,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Routes, Route, BrowserRouter } from "react-router-dom";
 // Defer heavy widgets to improve LCP/CLS
 import { lazy, Suspense } from "react";
-const LazyChatWidget = lazy(() => import("@/components/ChatWidget").then(m => ({ default: m.ChatWidget })));
 const LazySocialProofWidget = lazy(() => import("@/components/SocialProofWidget"));
 import ConsentBanner from "@/components/ConsentBanner";
 
@@ -74,9 +73,6 @@ const App = () => {
             <ScrollToTop />
             <Suspense fallback={null}>
               {widgetsReady && <LazySocialProofWidget />}
-            </Suspense>
-            <Suspense fallback={null}>
-              {widgetsReady && <LazyChatWidget />}
             </Suspense>
             <Routes>
               <Route path="/" element={<Home />} />
