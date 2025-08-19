@@ -108,6 +108,7 @@ import ROIManagement from '@/components/admin/ROIManagement';
 import ClientsManagement from '@/components/admin/ClientsManagement';
 // Removed PartnersManagement component
 import ReportDashboard from '@/components/admin/ReportDashboard';
+import GHLIntegrationManagement from '@/components/admin/GHLIntegrationManagement';
 import Footer from '@/components/Footer';
 import PartnerROIDashboard from '@/components/partner/PartnerROIDashboard';
 interface QuizResponse {
@@ -2567,6 +2568,8 @@ const Admin = () => {
         return <BillingManagement />;
       case 'roi':
         return <ROIManagement />;
+      case 'ghl-integration':
+        return <GHLIntegrationManagement />;
       case 'report':
         return <ReportDashboard />;
       case 'partner-roi':
