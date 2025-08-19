@@ -28,7 +28,7 @@ const creditScoreApprox = (creditScore: string) => {
     }
   }
 };
-const timeInBiz6m = (t?: string) => !!t && ["6-12","1-2","2-5","5+","+5"].includes(t);
+const timeInBiz6m = (t?: string) => !!t && ["6-12","1-2","2-5","5+","+6"].includes(t);
 const isQualified = (lead: any) => (lead?.monthly_revenue || 0) >= 10000 && timeInBiz6m(lead?.time_in_business) && creditScoreApprox(lead?.credit_score) >= 600;
 
 // Normalize statuses like "Loan Approved" vs "loan_approved"
