@@ -107,50 +107,87 @@ export default function ReportDashboard() {
         profitMargin
       });
 
-      // Group data by day for daily breakdown
+      // Group data by day for daily performance breakdown
       const dailyMap = new Map<string, {
         spend: number;
         leads: any[];
+        leadsByHour: Map<string, number>; // Track leads by hour for better attribution
       }>();
+
+      // First, collect all unique dates from both ad spend and leads
+      const allDates = new Set<string>();
+      
+      // Add dates from ad spend records
+      adSpendData?.forEach(record => {
+        allDates.add(record.date);
+      });
+      
+      // Add dates from leads (convert to date format)
+      leadsData?.forEach(lead => {
+        const dateKey = format(new Date(lead.created_at), 'yyyy-MM-dd');
+        allDates.add(dateKey);
+      });
+
+      // Initialize all dates with empty data
+      allDates.forEach(date => {
+        dailyMap.set(date, { 
+          spend: 0, 
+          leads: [],
+          leadsByHour: new Map()
+        });
+      });
 
       // Add ad spend by day
       adSpendData?.forEach(record => {
         const dateKey = record.date;
-        if (!dailyMap.has(dateKey)) {
-          dailyMap.set(dateKey, { spend: 0, leads: [] });
+        const dayData = dailyMap.get(dateKey);
+        if (dayData) {
+          dayData.spend += (record.amount || 0) / 100; // Convert from cents to dollars
         }
-        const dayData = dailyMap.get(dateKey)!;
-        dayData.spend += (record.amount || 0) / 100; // Convert from cents to dollars
       });
 
-      // Add leads by day
+      // Add leads by day with hour tracking for better cost attribution
       leadsData?.forEach(lead => {
-        const dateKey = format(new Date(lead.created_at), 'yyyy-MM-dd');
-        if (!dailyMap.has(dateKey)) {
-          dailyMap.set(dateKey, { spend: 0, leads: [] });
+        const leadDate = new Date(lead.created_at);
+        const dateKey = format(leadDate, 'yyyy-MM-dd');
+        const hourKey = format(leadDate, 'HH');
+        
+        const dayData = dailyMap.get(dateKey);
+        if (dayData) {
+          dayData.leads.push(lead);
+          const currentCount = dayData.leadsByHour.get(hourKey) || 0;
+          dayData.leadsByHour.set(hourKey, currentCount + 1);
         }
-        const dayData = dailyMap.get(dateKey)!;
-        dayData.leads.push(lead);
       });
 
-      // Convert to daily data array
+      // Convert to daily data array with accurate calculations
       const dailyDataArray: DayData[] = Array.from(dailyMap.entries())
         .map(([date, data]) => {
           const totalLeads = data.leads.length;
           const qualifiedLeads = data.leads.filter(isQualifiedLead).length;
           const spend = data.spend;
           
+          // Calculate cost per lead (avoid division by zero)
+          const costPerLead = totalLeads > 0 ? spend / totalLeads : 0;
+          const costPerQualifiedLead = qualifiedLeads > 0 ? spend / qualifiedLeads : 0;
+          
           return {
             date,
-            spend,
+            spend: Math.round(spend * 100) / 100, // Round to 2 decimal places
             totalLeads,
             qualifiedLeads,
-            costPerLead: totalLeads > 0 ? spend / totalLeads : 0,
-            costPerQualifiedLead: qualifiedLeads > 0 ? spend / qualifiedLeads : 0
+            costPerLead: Math.round(costPerLead * 100) / 100, // Round to 2 decimal places
+            costPerQualifiedLead: Math.round(costPerQualifiedLead * 100) / 100 // Round to 2 decimal places
           };
         })
-        .filter(day => day.totalLeads > 0 || day.spend > 0) // Only show days with activity
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Most recent first
+        .filter(day => {
+          // Show days that have either leads OR spend (real activity)
+          return day.totalLeads > 0 || day.spend > 0;
+        })
+        .sort((a, b) => {
+          // Sort by date descending (most recent first)
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        });
 
       setDailyData(dailyDataArray);
     } catch (error) {
