@@ -287,7 +287,7 @@ export const LeadsSimulation = () => {
     setShowModal(false);
   };
   return <>
-      <div className="space-y-6">
+      <div className="space-y-6 hidden">
         <div className="text-center mb-8">
           <h3 className="font-sans text-primary mb-4 text-lg font-medium">Check out the latest leads and call them right now</h3>
           
