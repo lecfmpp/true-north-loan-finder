@@ -15,6 +15,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { format, intervalToDuration } from 'date-fns';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 // Helper function to get credit score number from classification
 const getCreditScoreNumber = (creditScore: string) => {
@@ -86,7 +89,7 @@ const formatPhoneNumber = (phone: string) => {
   // Return original if can't format
   return phone;
 };
-import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Trash2, Phone, ChevronDown, ChevronRight, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign, Settings as SettingsIcon, ExternalLink, TrendingUp, ChevronUp, ArrowUpDown, Save } from 'lucide-react';
+import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Trash2, Phone, ChevronDown, ChevronRight, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign, Settings as SettingsIcon, ExternalLink, TrendingUp, ChevronUp, ArrowUpDown, Save, CalendarIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import Header from '@/components/Header';
@@ -180,6 +183,7 @@ const Admin = () => {
   const [timeInBusinessFilter, setTimeInBusinessFilter] = useState('all');
   const [applicationSentFilter, setApplicationSentFilter] = useState('all');
   const [partnerFilter, setPartnerFilter] = useState('all');
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [sortField, setSortField] = useState<string>('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [activeTab, setActiveTab] = useState('leads');
@@ -496,7 +500,7 @@ const Admin = () => {
   }, [user, isAdmin, isSuperAdmin, userRoles]);
   useEffect(() => {
     filterLeads();
-  }, [leads, searchTerm, statusFilter, countryFilter, monthlyRevenueFilter, loanAmountFilter, timeInBusinessFilter, applicationSentFilter, partnerFilter, sortField, sortDirection]);
+  }, [leads, searchTerm, statusFilter, countryFilter, monthlyRevenueFilter, loanAmountFilter, timeInBusinessFilter, applicationSentFilter, partnerFilter, selectedDate, sortField, sortDirection]);
 
   // Real-time subscription for email delivery updates
   useEffect(() => {
@@ -1164,6 +1168,17 @@ const Admin = () => {
       });
     }
 
+    // Apply date filter
+    if (selectedDate) {
+      filtered = filtered.filter(lead => {
+        const leadDate = new Date(lead.created_at);
+        const filterDate = new Date(selectedDate);
+        
+        // Compare dates (ignoring time)
+        return leadDate.toDateString() === filterDate.toDateString();
+      });
+    }
+
     // Apply sorting
     if (sortField) {
       filtered = filtered.sort((a, b) => {
@@ -1718,8 +1733,8 @@ const Admin = () => {
                     </div>
                   </div>
                   
-                  {/* Additional Filters in Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
+                   {/* Additional Filters in Grid */}
+                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
                     <Select value={monthlyRevenueFilter} onValueChange={setMonthlyRevenueFilter}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Monthly Revenue (All)" />
@@ -1786,7 +1801,44 @@ const Admin = () => {
                             {partner.name}
                           </SelectItem>)}
                       </SelectContent>
-                    </Select>
+                     </Select>
+                     
+                     {/* Date Filter */}
+                     <Popover>
+                       <PopoverTrigger asChild>
+                         <Button
+                           variant="outline"
+                           className={cn(
+                             "w-full justify-start text-left font-normal",
+                             !selectedDate && "text-muted-foreground"
+                           )}
+                         >
+                           <CalendarIcon className="mr-2 h-4 w-4" />
+                           {selectedDate ? format(selectedDate, "MMM dd, yyyy") : <span>Pick a date</span>}
+                         </Button>
+                       </PopoverTrigger>
+                       <PopoverContent className="w-auto p-0" align="start">
+                         <Calendar
+                           mode="single"
+                           selected={selectedDate}
+                           onSelect={setSelectedDate}
+                           initialFocus
+                           className={cn("p-3 pointer-events-auto")}
+                         />
+                         {selectedDate && (
+                           <div className="p-3 border-t">
+                             <Button
+                               variant="outline"
+                               size="sm"
+                               className="w-full"
+                               onClick={() => setSelectedDate(undefined)}
+                             >
+                               Clear Date
+                             </Button>
+                           </div>
+                         )}
+                       </PopoverContent>
+                     </Popover>
                   </div>
                   
                   {/* Action Buttons */}
