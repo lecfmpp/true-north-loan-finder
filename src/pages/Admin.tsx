@@ -46,31 +46,51 @@ export default function Admin() {
 
   useEffect(() => {
     const checkUserRole = async () => {
-      if (user) {
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single();
+      if (!user) return;
 
-        if (profileError) {
-          console.error('Error fetching profile:', profileError);
-          return;
+      try {
+        // Prefer role from user_roles table
+        const { data: rolesData, error: rolesError } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id);
+
+        if (rolesError) {
+          console.error('Error fetching user roles:', rolesError);
         }
 
-        setUserRole(profileData?.role || 'unknown');
+        let resolvedRole: string = 'user';
+        if (rolesData && rolesData.length > 0) {
+          const roles = rolesData.map(r => r.role);
+          if (roles.includes('superadmin')) resolvedRole = 'superadmin';
+          else if (roles.includes('lender')) resolvedRole = 'lender';
+          else if (roles.includes('broker')) resolvedRole = 'broker';
+        } else {
+          // Fallback to profiles table if present (by user_id)
+          const { data: profileMaybe, error: profileErr } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('user_id', user.id)
+            .maybeSingle();
+          if (!profileErr && profileMaybe?.role) {
+            resolvedRole = profileMaybe.role;
+          }
+        }
+        setUserRole(resolvedRole);
 
+        // Determine superadmin via RPC (authoritative)
         const { data: superadminData, error: superadminError } = await supabase.rpc(
           'is_superadmin',
           { user_id_param: user.id }
         );
-
         if (superadminError) {
           console.error('Error checking superadmin status:', superadminError);
-          return;
         }
-
         setIsSuperadmin(superadminData === true);
+      } catch (e) {
+        console.error('Unexpected error checking role:', e);
+        setUserRole('user');
+        setIsSuperadmin(false);
       }
     };
 

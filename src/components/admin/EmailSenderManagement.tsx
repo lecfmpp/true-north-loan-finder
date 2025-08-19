@@ -147,8 +147,10 @@ const EmailSenderManagement = () => {
       
       const mappedTemplates = (data || []).map(t => ({
         ...t,
-        audience_type: t.audience_type as 'leads' | 'partners',
-        body_blocks: JSON.parse(t.body_blocks as string || '[]')
+        audience_type: (t as any).audience_type as 'leads' | 'partners',
+        body_blocks: Array.isArray((t as any).body_blocks)
+          ? ((t as any).body_blocks as BodyBlock[])
+          : JSON.parse(((t as any).body_blocks as string) || '[]')
       }));
       
       setTemplates(mappedTemplates);
