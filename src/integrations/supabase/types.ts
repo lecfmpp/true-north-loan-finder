@@ -663,45 +663,6 @@ export type Database = {
           },
         ]
       }
-      chat_contact_submissions: {
-        Row: {
-          admin_notes: string | null
-          created_at: string
-          email: string
-          id: string
-          message: string | null
-          name: string
-          phone: string | null
-          status: string
-          submitted_at: string
-          updated_at: string
-        }
-        Insert: {
-          admin_notes?: string | null
-          created_at?: string
-          email: string
-          id?: string
-          message?: string | null
-          name: string
-          phone?: string | null
-          status?: string
-          submitted_at?: string
-          updated_at?: string
-        }
-        Update: {
-          admin_notes?: string | null
-          created_at?: string
-          email?: string
-          id?: string
-          message?: string | null
-          name?: string
-          phone?: string | null
-          status?: string
-          submitted_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       clients: {
         Row: {
           additional_requirements: string | null
