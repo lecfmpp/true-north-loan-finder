@@ -48,30 +48,17 @@ interface PartnerCredit {
   } | null;
 }
 
-interface CreditTransaction {
-  id: string;
-  user_id: string;
-  transaction_type: string;
-  credits_amount: number;
-  balance_after: number;
-  description: string;
-  created_at: string;
-  partners?: {
-    name: string;
-    email: string;
-    company_name: string;
-  } | null;
-}
-
 export default function BillingManagement() {
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [partnerCredits, setPartnerCredits] = useState<PartnerCredit[]>([]);
-  const [transactions, setTransactions] = useState<CreditTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState('overview');
   const [adjustmentDialog, setAdjustmentDialog] = useState(false);
   const [manualPaymentDialog, setManualPaymentDialog] = useState(false);
+  const [editPaymentDialog, setEditPaymentDialog] = useState(false);
+  const [deletePaymentDialog, setDeletePaymentDialog] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState<PartnerCredit | null>(null);
+  const [selectedPayment, setSelectedPayment] = useState<PaymentRecord | null>(null);
   const [adjustmentAmount, setAdjustmentAmount] = useState('');
   const [adjustmentReason, setAdjustmentReason] = useState('');
   const [paymentAmount, setPaymentAmount] = useState('');
@@ -79,6 +66,9 @@ export default function BillingManagement() {
   const [paymentDescription, setPaymentDescription] = useState('');
   const [selectedPaymentPartner, setSelectedPaymentPartner] = useState<string>('');
   const [leadsPurchased, setLeadsPurchased] = useState('');
+  const [editPaymentAmount, setEditPaymentAmount] = useState('');
+  const [editPaymentStatus, setEditPaymentStatus] = useState('');
+  const [editLeadsPurchased, setEditLeadsPurchased] = useState('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -120,15 +110,6 @@ export default function BillingManagement() {
 
       if (creditsError) throw creditsError;
 
-      // Fetch recent transactions for clients only
-      const { data: transactionsData, error: transactionsError } = await supabase
-        .from('lead_credit_transactions')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (transactionsError) throw transactionsError;
-
       // Merge the data with both client applications and partners
       const creditsWithPartners = (creditsData || []).map(credit => {
         // First try to find in client applications
@@ -156,39 +137,11 @@ export default function BillingManagement() {
         };
       });
 
-      const transactionsWithPartners = (transactionsData || []).map(transaction => {
-        // First try to find in client applications
-        const client = (clientApplicationsData || []).find(c => c.user_id === transaction.user_id);
-        if (client) {
-          return {
-            ...transaction,
-            partners: {
-              name: client.applicant_name,
-              email: client.applicant_email,
-              company_name: client.company_name
-            }
-          };
-        }
-        
-        // Then try to find in partners table
-        const partner = (partnersData || []).find(p => p.user_id === transaction.user_id);
-        return {
-          ...transaction,
-          partners: partner ? {
-            name: partner.name,
-            email: partner.email,
-            company_name: partner.company_name
-          } : null
-        };
-      });
-
       // Filter out unknown partners (where no partner info is found)
       const filteredCredits = creditsWithPartners.filter(credit => credit.partners !== null);
-      const filteredTransactions = transactionsWithPartners.filter(transaction => transaction.partners !== null);
 
       setPayments((paymentsData as any) || []);
       setPartnerCredits(filteredCredits as any);
-      setTransactions(filteredTransactions as any);
     } catch (error) {
       console.error('Error fetching billing data:', error);
       toast({
@@ -342,6 +295,101 @@ export default function BillingManagement() {
     }
   };
 
+  const handleEditPayment = async () => {
+    if (!selectedPayment || !editPaymentAmount || !editPaymentStatus || !editLeadsPurchased) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const amount = parseFloat(editPaymentAmount);
+      const leadsCount = parseInt(editLeadsPurchased);
+      
+      if (isNaN(amount) || amount <= 0) {
+        toast({
+          title: "Error",
+          description: "Please enter a valid amount",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (isNaN(leadsCount) || leadsCount < 0) {
+        toast({
+          title: "Error",
+          description: "Please enter a valid number of leads",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const amountInCents = Math.round(amount * 100);
+
+      const { error } = await supabase
+        .from('payment_records')
+        .update({
+          amount: amountInCents,
+          status: editPaymentStatus,
+          leads_purchased: leadsCount,
+        })
+        .eq('id', selectedPayment.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Payment record updated successfully"
+      });
+
+      setEditPaymentDialog(false);
+      setSelectedPayment(null);
+      setEditPaymentAmount('');
+      setEditPaymentStatus('');
+      setEditLeadsPurchased('');
+      fetchBillingData();
+    } catch (error) {
+      console.error('Error updating payment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update payment record",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeletePayment = async () => {
+    if (!selectedPayment) return;
+
+    try {
+      const { error } = await supabase
+        .from('payment_records')
+        .delete()
+        .eq('id', selectedPayment.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Payment record deleted successfully"
+      });
+
+      setDeletePaymentDialog(false);
+      setSelectedPayment(null);
+      fetchBillingData();
+    } catch (error) {
+      console.error('Error deleting payment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete payment record",
+        variant: "destructive"
+      });
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const variants = {
       completed: 'default',
@@ -351,17 +399,6 @@ export default function BillingManagement() {
     } as const;
     
     return <Badge variant={variants[status as keyof typeof variants] || 'secondary'}>{status}</Badge>;
-  };
-
-  const getTransactionTypeBadge = (type: string) => {
-    const variants = {
-      purchase: 'default',
-      usage: 'destructive',
-      admin_adjustment: 'secondary',
-      refund: 'outline'
-    } as const;
-    
-    return <Badge variant={variants[type as keyof typeof variants] || 'secondary'}>{type}</Badge>;
   };
 
   const totalRevenue = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0);
@@ -441,7 +478,7 @@ export default function BillingManagement() {
 
       {/* Tab Navigation */}
       <div className="flex space-x-4 border-b">
-        {['overview', 'payments', 'credits', 'transactions'].map((tab) => (
+        {['overview', 'payments', 'credits'].map((tab) => (
           <button
             key={tab}
             onClick={() => setSelectedTab(tab)}
@@ -549,12 +586,13 @@ export default function BillingManagement() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Partner</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Credits</TableHead>
-                  <TableHead>Date</TableHead>
+                   <TableHead>Partner</TableHead>
+                   <TableHead>Amount</TableHead>
+                   <TableHead>Status</TableHead>
+                   <TableHead>Type</TableHead>
+                   <TableHead>Credits</TableHead>
+                   <TableHead>Date</TableHead>
+                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -566,16 +604,43 @@ export default function BillingManagement() {
                      ? `${payment.payment_type} (${payment.metadata.payment_method})`
                      : payment.payment_type;
                    
-                   return (
-                     <TableRow key={payment.id}>
-                       <TableCell>{displayName}</TableCell>
-                       <TableCell>${(payment.amount / 100).toFixed(2)}</TableCell>
-                       <TableCell>{getStatusBadge(payment.status)}</TableCell>
-                       <TableCell className="capitalize">{paymentMethodDisplay}</TableCell>
-                       <TableCell>{payment.leads_purchased}</TableCell>
-                       <TableCell>{new Date(payment.created_at).toLocaleDateString()}</TableCell>
-                     </TableRow>
-                   );
+                     return (
+                       <TableRow key={payment.id}>
+                         <TableCell>{displayName}</TableCell>
+                         <TableCell>${(payment.amount / 100).toFixed(2)}</TableCell>
+                         <TableCell>{getStatusBadge(payment.status)}</TableCell>
+                         <TableCell className="capitalize">{paymentMethodDisplay}</TableCell>
+                         <TableCell>{payment.leads_purchased}</TableCell>
+                         <TableCell>{new Date(payment.created_at).toLocaleDateString()}</TableCell>
+                         <TableCell>
+                           <div className="flex gap-2">
+                             <Button
+                               size="sm"
+                               variant="outline"
+                               onClick={() => {
+                                 setSelectedPayment(payment);
+                                 setEditPaymentAmount((payment.amount / 100).toString());
+                                 setEditPaymentStatus(payment.status);
+                                 setEditLeadsPurchased(payment.leads_purchased.toString());
+                                 setEditPaymentDialog(true);
+                               }}
+                             >
+                               <Edit className="h-4 w-4" />
+                             </Button>
+                             <Button
+                               size="sm"
+                               variant="destructive"
+                               onClick={() => {
+                                 setSelectedPayment(payment);
+                                 setDeletePaymentDialog(true);
+                               }}
+                             >
+                               <Trash2 className="h-4 w-4" />
+                             </Button>
+                           </div>
+                         </TableCell>
+                       </TableRow>
+                     );
                  })}
               </TableBody>
             </Table>
@@ -693,46 +758,73 @@ export default function BillingManagement() {
               </TableBody>
             </Table>
           </CardContent>
-        </Card>
-      )}
+         </Card>
+       )}
+       
+       {/* Edit Payment Dialog */}
+       <Dialog open={editPaymentDialog} onOpenChange={setEditPaymentDialog}>
+         <DialogContent>
+           <DialogHeader>
+             <DialogTitle>Edit Payment Record</DialogTitle>
+           </DialogHeader>
+           <div className="space-y-4">
+             <div>
+               <Label>Amount ($)</Label>
+               <Input
+                 type="number"
+                 step="0.01"
+                 value={editPaymentAmount}
+                 onChange={(e) => setEditPaymentAmount(e.target.value)}
+               />
+             </div>
+             <div>
+               <Label>Status</Label>
+               <Select value={editPaymentStatus} onValueChange={setEditPaymentStatus}>
+                 <SelectTrigger className="w-full">
+                   <SelectValue placeholder="Select status" />
+                 </SelectTrigger>
+                 <SelectContent className="bg-background border shadow-lg z-50">
+                   <SelectItem value="pending">Pending</SelectItem>
+                   <SelectItem value="completed">Completed</SelectItem>
+                   <SelectItem value="failed">Failed</SelectItem>
+                   <SelectItem value="refunded">Refunded</SelectItem>
+                 </SelectContent>
+               </Select>
+             </div>
+             <div>
+               <Label>Number of Leads</Label>
+               <Input
+                 type="number"
+                 value={editLeadsPurchased}
+                 onChange={(e) => setEditLeadsPurchased(e.target.value)}
+               />
+             </div>
+             <Button onClick={handleEditPayment} className="w-full">
+               Update Payment Record
+             </Button>
+           </div>
+         </DialogContent>
+       </Dialog>
 
-      {selectedTab === 'transactions' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Partner</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Balance After</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Date</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {transactions.map((transaction) => (
-                  <TableRow key={transaction.id}>
-                    <TableCell>{transaction.partners?.name || 'Unknown Partner'}</TableCell>
-                    <TableCell>{getTransactionTypeBadge(transaction.transaction_type)}</TableCell>
-                    <TableCell>
-                      <span className={transaction.credits_amount > 0 ? 'text-green-600' : 'text-red-600'}>
-                        {transaction.credits_amount > 0 ? '+' : ''}{transaction.credits_amount}
-                      </span>
-                    </TableCell>
-                    <TableCell>{transaction.balance_after}</TableCell>
-                    <TableCell className="max-w-xs truncate">{transaction.description}</TableCell>
-                    <TableCell>{new Date(transaction.created_at).toLocaleDateString()}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  );
-}
+       {/* Delete Payment Dialog */}
+       <Dialog open={deletePaymentDialog} onOpenChange={setDeletePaymentDialog}>
+         <DialogContent>
+           <DialogHeader>
+             <DialogTitle>Delete Payment Record</DialogTitle>
+           </DialogHeader>
+           <div className="space-y-4">
+             <p>Are you sure you want to delete this payment record? This action cannot be undone.</p>
+             <div className="flex gap-2 justify-end">
+               <Button variant="outline" onClick={() => setDeletePaymentDialog(false)}>
+                 Cancel
+               </Button>
+               <Button variant="destructive" onClick={handleDeletePayment}>
+                 Delete
+               </Button>
+             </div>
+           </div>
+         </DialogContent>
+       </Dialog>
+     </div>
+   );
+ }
