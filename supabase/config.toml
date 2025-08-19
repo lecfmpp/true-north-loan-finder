@@ -1,4 +1,3 @@
-
 project_id = "kgwcogltpsmapxnjzjhm"
 
 [api]
@@ -100,9 +99,6 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.update-google-settings]
-verify_jwt = true
-
-[functions.send-email-batch]
 verify_jwt = true
 
 [analytics]
