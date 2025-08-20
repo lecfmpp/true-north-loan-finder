@@ -54,6 +54,20 @@ serve(async (req) => {
 
     console.log('Testing integration with location:', integration.location_id);
 
+    // Validate API key format
+    if (!integration.api_key || integration.api_key.trim() === '') {
+      return new Response(JSON.stringify({
+        success: false,
+        error: "API key is missing or empty"
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    console.log('API key length:', integration.api_key.length);
+    console.log('Location ID:', integration.location_id);
+
     // Test API key by getting location info
     const locationResponse = await fetch(`https://services.leadconnectorhq.com/locations/${integration.location_id}`, {
       method: 'GET',
@@ -64,13 +78,36 @@ serve(async (req) => {
       },
     });
 
+    console.log('Location API response status:', locationResponse.status);
+
     if (!locationResponse.ok) {
       const errorText = await locationResponse.text();
       console.error('GHL Location API Error:', errorText);
       
+      let errorMessage = `API Error (${locationResponse.status})`;
+      
+      if (locationResponse.status === 401) {
+        errorMessage = "Invalid or expired API key. Please check your GHL API key.";
+      } else if (locationResponse.status === 403) {
+        errorMessage = "Access forbidden. Check if the API key has proper permissions.";
+      } else if (locationResponse.status === 404) {
+        errorMessage = "Location not found. Please verify the Location ID.";
+      } else {
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          // Use the default error message if parsing fails
+        }
+      }
+      
       return new Response(JSON.stringify({
         success: false,
-        error: `Invalid API key or location ID: ${locationResponse.status}`
+        error: errorMessage,
+        details: {
+          status: locationResponse.status,
+          response: errorText
+        }
       }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
