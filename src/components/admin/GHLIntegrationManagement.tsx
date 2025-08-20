@@ -236,7 +236,7 @@ export default function GHLIntegrationManagement() {
           <h2 className="text-3xl font-bold">Go High Level Integrations</h2>
           <p className="text-muted-foreground">Manage GHL integrations for automatic lead delivery</p>
         </div>
-        <Dialog>
+        <Dialog open={!!editingIntegration} onOpenChange={(open) => { if (!open) setEditingIntegration(null); }}>
           <DialogTrigger asChild>
             <Button onClick={() => setEditingIntegration({ field_mappings: defaultFieldMappings })}>
               <Plus className="w-4 h-4 mr-2" />
