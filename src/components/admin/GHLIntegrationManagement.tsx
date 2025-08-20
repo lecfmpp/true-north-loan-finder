@@ -170,7 +170,23 @@ export default function GHLIntegrationManagement() {
       if (error) throw error;
       
       if (data.success) {
-        toast.success('GHL integration test successful!');
+        // Show detailed test results
+        const results = data.results;
+        const successCount = Object.values(results).filter((r: any) => 
+          r.status === 'Valid' || r.status === 'Successful'
+        ).length;
+        const totalTests = Object.keys(results).length;
+        
+        toast.success(
+          <div className="space-y-2">
+            <div className="font-medium">GHL Integration Test Results</div>
+            <div className="text-sm">{data.summary}</div>
+            <div className="text-xs text-muted-foreground">
+              {successCount}/{totalTests} checks passed
+            </div>
+          </div>,
+          { duration: 6000 }
+        );
       } else {
         toast.error(`Test failed: ${data.error}`);
       }
@@ -271,7 +287,7 @@ export default function GHLIntegrationManagement() {
               </div>
 
               <div>
-                <Label htmlFor="apiKey">GHL API Key *</Label>
+                <Label htmlFor="apiKey">GHL API Key (JWT Format) *</Label>
                 <div className="relative">
                   <Input
                     id="apiKey"
@@ -292,13 +308,21 @@ export default function GHLIntegrationManagement() {
                   </Button>
                 </div>
                 {editingIntegration?.api_key && editingIntegration.api_key.length < 100 && (
-                  <p className="text-sm text-yellow-600 mt-1">
-                    ⚠️ GHL API keys are typically much longer (200+ characters). Please verify this is the correct API key format.
-                  </p>
+                  <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 mt-2">
+                    <p className="text-sm text-yellow-800">
+                      ⚠️ This doesn't look like a valid GHL API key. GHL v2 API keys are JWT tokens that are typically 200+ characters long and start with "eyJ".
+                    </p>
+                  </div>
                 )}
-                <p className="text-xs text-muted-foreground mt-1">
-                  Get your API key from GHL Settings → API Keys. It should be a long JWT token starting with "eyJ"
-                </p>
+                <div className="text-xs text-muted-foreground mt-2 space-y-1">
+                  <p><strong>How to get your GHL API Key:</strong></p>
+                  <ol className="list-decimal list-inside ml-2 space-y-0.5">
+                    <li>Go to GHL Settings → API Keys</li>
+                    <li>Click "Create New API Key"</li>
+                    <li>Grant permissions: <strong>Contacts (read/write)</strong> and <strong>Opportunities (read/write)</strong></li>
+                    <li>Copy the JWT token (should start with "eyJ" and be very long)</li>
+                  </ol>
+                </div>
               </div>
 
               <div>
@@ -309,6 +333,9 @@ export default function GHLIntegrationManagement() {
                   onChange={(e) => setEditingIntegration(prev => ({ ...prev, location_id: e.target.value }))}
                   placeholder="Enter GHL Location/Sub-account ID"
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Found in GHL Settings → Company → Location ID (usually a 20-character alphanumeric string)
+                </p>
               </div>
 
               <div>
@@ -317,8 +344,11 @@ export default function GHLIntegrationManagement() {
                   id="pipelineId"
                   value={editingIntegration?.pipeline_id || ''}
                   onChange={(e) => setEditingIntegration(prev => ({ ...prev, pipeline_id: e.target.value }))}
-                  placeholder="Enter GHL Pipeline ID"
+                  placeholder="Enter GHL Pipeline ID for automatic opportunity creation"
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  If provided, leads will be added as opportunities to this pipeline. Leave empty to only create contacts.
+                </p>
               </div>
 
               <div>

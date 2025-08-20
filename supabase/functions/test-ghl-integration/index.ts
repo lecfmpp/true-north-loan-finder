@@ -245,13 +245,39 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       success: true,
       results: {
-        apiKey: 'Valid',
-        location: locationData.location?.name || 'Valid',
-        pipeline: integration.pipeline_id ? (pipelineValid ? 'Valid' : 'Invalid pipeline ID') : 'Not configured',
-        webhook: integration.webhook_url ? (webhookValid ? 'Valid' : 'Failed to reach webhook') : 'Not configured',
-        contactCreation: 'Successful'
+        apiKey: {
+          status: 'Valid',
+          details: 'API key authenticated successfully'
+        },
+        location: {
+          status: 'Valid',
+          details: locationData.location?.name || 'Location verified',
+          locationId: integration.location_id
+        },
+        pipeline: integration.pipeline_id ? {
+          status: pipelineValid ? 'Valid' : 'Invalid',
+          details: pipelineValid ? 'Pipeline ID verified' : 'Pipeline not found in location',
+          pipelineId: integration.pipeline_id
+        } : {
+          status: 'Not configured',
+          details: 'No pipeline ID specified - leads will be created without pipeline assignment'
+        },
+        webhook: integration.webhook_url ? {
+          status: webhookValid ? 'Valid' : 'Failed',
+          details: webhookValid ? 'Webhook endpoint responded successfully' : 'Webhook endpoint did not respond',
+          webhookUrl: integration.webhook_url
+        } : {
+          status: 'Not configured',
+          details: 'No webhook URL specified'
+        },
+        contactCreation: {
+          status: 'Successful',
+          details: 'Test contact created and cleaned up successfully',
+          contactId: contactResult.contact?.id
+        }
       },
-      message: 'GHL integration test completed successfully'
+      message: 'GHL integration test completed successfully',
+      summary: `✓ API Key Valid ✓ Location Valid ${integration.pipeline_id ? (pipelineValid ? '✓' : '✗') + ' Pipeline' : '- Pipeline'} ${integration.webhook_url ? (webhookValid ? '✓' : '✗') + ' Webhook' : '- Webhook'} ✓ Contact Creation`
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

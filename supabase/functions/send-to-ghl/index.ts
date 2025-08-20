@@ -31,6 +31,26 @@ interface SendToGHLRequest {
   }>;
 }
 
+// Enhanced phone normalization function
+function normalizePhone(phone: string, country: string = 'US'): string {
+  if (!phone) return '';
+  
+  // Remove all non-digits
+  const digits = phone.replace(/\D/g, '');
+  
+  // For US/Canada numbers, ensure they start with +1
+  if (country === 'US' || country === 'CA') {
+    if (digits.length === 10) {
+      return `+1${digits}`;
+    } else if (digits.length === 11 && digits.startsWith('1')) {
+      return `+${digits}`;
+    }
+  }
+  
+  // For other countries, add + if not present
+  return digits.startsWith('+') ? digits : `+${digits}`;
+}
+
 interface GHLContact {
   firstName: string;
   lastName?: string;
@@ -97,12 +117,15 @@ serve(async (req) => {
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
 
+    // Normalize phone number with country context
+    const normalizedPhone = normalizePhone(leadData.phone, leadData.country);
+
     // Prepare GHL contact data
     const ghlContact: GHLContact = {
       firstName,
       lastName: lastName || undefined,
       email: leadData.email,
-      phone: leadData.phone?.replace(/\D/g, ''), // Remove non-digits
+      phone: normalizedPhone,
       companyName: leadData.company_name,
       source: 'Lead Management System',
       tags: ['Lead', 'Business Loan'],
@@ -113,15 +136,15 @@ serve(async (req) => {
     Object.entries(fieldMappings).forEach(([sourceField, ghlField]) => {
       if (leadData[sourceField as keyof typeof leadData] !== undefined) {
         const value = leadData[sourceField as keyof typeof leadData];
-        if (ghlField.startsWith('custom_')) {
+        if (ghlField && ghlField.startsWith('custom_')) {
           ghlContact.customFields![ghlField] = value;
-        } else {
+        } else if (ghlField && ['firstName', 'lastName', 'email', 'phone', 'companyName'].includes(ghlField)) {
           (ghlContact as any)[ghlField] = value;
         }
       }
     });
 
-    // Add additional custom fields
+    // Add additional custom fields with lead data
     ghlContact.customFields = {
       ...ghlContact.customFields,
       loanAmount: leadData.loan_amount?.toString(),
@@ -133,33 +156,127 @@ serve(async (req) => {
       city: leadData.city_province,
       country: leadData.country,
       quizResponseId: quizResponseId,
-      ...(applicationData && { hasApplication: 'true' })
+      ...(applicationData && { hasApplication: 'true' }),
+      submissionDate: new Date().toISOString()
     };
 
-    console.log('Creating contact in GHL:', ghlContact);
+    // Create contact notes with document information
+    let contactNotes = `Lead submitted via Lead Management System
+    
+Business Details:
+• Loan Amount: $${leadData.loan_amount?.toLocaleString()}
+• Monthly Revenue: $${leadData.monthly_revenue?.toLocaleString()}
+• Credit Score: ${leadData.credit_score}
+• Use of Funds: ${leadData.use_of_funds}
+• Time in Business: ${leadData.time_in_business}`;
 
-    // Create contact in GHL
-    const contactResponse = await fetch(`https://services.leadconnectorhq.com/contacts/`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${integration.api_key}`,
-        'Content-Type': 'application/json',
-        'Version': '2021-07-28',
-      },
-      body: JSON.stringify({
-        ...ghlContact,
-        locationId: integration.location_id,
-      }),
-    });
-
-    if (!contactResponse.ok) {
-      const errorText = await contactResponse.text();
-      console.error('GHL Contact API Error:', errorText);
-      throw new Error(`Failed to create contact in GHL: ${contactResponse.status} ${errorText}`);
+    if (documents && documents.length > 0) {
+      contactNotes += `\n\nDocuments Available:`;
+      documents.forEach((doc, index) => {
+        contactNotes += `\n• ${doc.name} (${doc.type})`;
+      });
     }
 
-    const contactResult = await contactResponse.json();
-    console.log('GHL contact created successfully:', contactResult.contact?.id);
+    if (applicationData) {
+      contactNotes += `\n\nApplication Data: Additional application details available in system`;
+    }
+
+    console.log('Creating contact in GHL:', { ...ghlContact, customFields: Object.keys(ghlContact.customFields || {}) });
+
+    // Try to upsert contact (check if exists first by email)
+    let contactResult = null;
+    let isNewContact = true;
+
+    try {
+      // First, try to find existing contact by email
+      const searchResponse = await fetch(`https://services.leadconnectorhq.com/contacts/search?email=${encodeURIComponent(leadData.email)}&locationId=${integration.location_id}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${integration.api_key}`,
+          'Content-Type': 'application/json',
+          'Version': '2021-07-28',
+        },
+      });
+
+      if (searchResponse.ok) {
+        const searchResult = await searchResponse.json();
+        if (searchResult.contacts && searchResult.contacts.length > 0) {
+          isNewContact = false;
+          const existingContact = searchResult.contacts[0];
+          console.log('Found existing contact, updating:', existingContact.id);
+
+          // Update existing contact
+          const updateResponse = await fetch(`https://services.leadconnectorhq.com/contacts/${existingContact.id}`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${integration.api_key}`,
+              'Content-Type': 'application/json',
+              'Version': '2021-07-28',
+            },
+            body: JSON.stringify({
+              ...ghlContact,
+              locationId: integration.location_id,
+            }),
+          });
+
+          if (updateResponse.ok) {
+            contactResult = await updateResponse.json();
+            console.log('GHL contact updated successfully:', contactResult.contact?.id);
+          } else {
+            throw new Error(`Failed to update contact: ${updateResponse.status}`);
+          }
+        }
+      }
+    } catch (searchError) {
+      console.log('Contact search failed, proceeding with create:', searchError);
+    }
+
+    // If no existing contact found or search failed, create new contact
+    if (!contactResult) {
+      const createResponse = await fetch(`https://services.leadconnectorhq.com/contacts/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${integration.api_key}`,
+          'Content-Type': 'application/json',
+          'Version': '2021-07-28',
+        },
+        body: JSON.stringify({
+          ...ghlContact,
+          locationId: integration.location_id,
+        }),
+      });
+
+      if (!createResponse.ok) {
+        const errorText = await createResponse.text();
+        console.error('GHL Contact API Error:', errorText);
+        throw new Error(`Failed to create contact in GHL: ${createResponse.status} ${errorText}`);
+      }
+
+      contactResult = await createResponse.json();
+      console.log('GHL contact created successfully:', contactResult.contact?.id);
+    }
+
+    // Add notes to the contact
+    if (contactResult.contact?.id && contactNotes) {
+      try {
+        await fetch(`https://services.leadconnectorhq.com/contacts/${contactResult.contact.id}/notes`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${integration.api_key}`,
+            'Content-Type': 'application/json',
+            'Version': '2021-07-28',
+          },
+          body: JSON.stringify({
+            body: contactNotes,
+            userId: integration.location_id, // Use location as fallback user
+          }),
+        });
+        console.log('Added notes to contact');
+      } catch (noteError) {
+        console.error('Failed to add notes to contact:', noteError);
+        // Don't fail the main process for note errors
+      }
+    }
 
     let opportunityResult = null;
 
@@ -236,6 +353,10 @@ serve(async (req) => {
         response_data: {
           contactId: contactResult.contact?.id,
           opportunityId: opportunityResult?.opportunity?.id,
+          isNewContact,
+          documentsProvided: documents?.length || 0,
+          applicationDataIncluded: !!applicationData,
+          fieldMappingsUsed: Object.keys(fieldMappings).length,
           ghlResponse: {
             contact: contactResult,
             opportunity: opportunityResult
@@ -249,7 +370,9 @@ serve(async (req) => {
       success: true,
       contactId: contactResult.contact?.id,
       opportunityId: opportunityResult?.opportunity?.id,
-      message: 'Lead sent to Go High Level successfully'
+      isNewContact,
+      documentsCount: documents?.length || 0,
+      message: `Lead ${isNewContact ? 'created' : 'updated'} in Go High Level successfully`
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
@@ -257,9 +380,10 @@ serve(async (req) => {
   } catch (error: any) {
     console.error("Error in send-to-ghl function:", error);
 
-    // Log the error
+    // Log the error with more details
     try {
-      const { partnerId, quizResponseId } = await req.json();
+      const requestBody = await req.json();
+      const { partnerId, quizResponseId } = requestBody;
       const supabase = createClient(
         Deno.env.get("SUPABASE_URL") ?? "",
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
@@ -268,20 +392,39 @@ serve(async (req) => {
       await supabase
         .from("ghl_integration_logs")
         .insert({
-          partner_id: partnerId,
-          quiz_response_id: quizResponseId,
+          partner_id: partnerId || null,
+          quiz_response_id: quizResponseId || null,
           status: 'error',
           error_message: error.message,
-          response_data: { error: error.message }
+          response_data: { 
+            error: error.message,
+            stack: error.stack,
+            requestData: {
+              hasLeadData: !!requestBody.leadData,
+              hasApplicationData: !!requestBody.applicationData,
+              documentsCount: requestBody.documents?.length || 0
+            }
+          }
         });
     } catch (logError) {
       console.error('Failed to log error:', logError);
     }
 
+    // Provide more helpful error messages
+    let userFriendlyError = error.message;
+    if (error.message.includes('401')) {
+      userFriendlyError = 'Invalid or expired GHL API key. Please check your credentials.';
+    } else if (error.message.includes('403')) {
+      userFriendlyError = 'GHL API key does not have sufficient permissions. Please ensure contacts and opportunities permissions are granted.';
+    } else if (error.message.includes('404')) {
+      userFriendlyError = 'GHL location not found. Please verify the Location ID.';
+    }
+
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message || "Failed to send lead to GHL" 
+        error: userFriendlyError,
+        details: error.message
       }),
       {
         status: 500,
