@@ -278,7 +278,8 @@ export default function GHLIntegrationManagement() {
                     type={showApiKey['edit'] ? 'text' : 'password'}
                     value={editingIntegration?.api_key || ''}
                     onChange={(e) => setEditingIntegration(prev => ({ ...prev, api_key: e.target.value }))}
-                    placeholder="Enter Go High Level API key"
+                    placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    className={editingIntegration?.api_key && editingIntegration.api_key.length < 100 ? 'border-yellow-400' : ''}
                   />
                   <Button
                     type="button"
@@ -290,6 +291,14 @@ export default function GHLIntegrationManagement() {
                     {showApiKey['edit'] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </Button>
                 </div>
+                {editingIntegration?.api_key && editingIntegration.api_key.length < 100 && (
+                  <p className="text-sm text-yellow-600 mt-1">
+                    ⚠️ GHL API keys are typically much longer (200+ characters). Please verify this is the correct API key format.
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground mt-1">
+                  Get your API key from GHL Settings → API Keys. It should be a long JWT token starting with "eyJ"
+                </p>
               </div>
 
               <div>
@@ -360,11 +369,30 @@ export default function GHLIntegrationManagement() {
           <div className="space-y-2 text-sm">
             <p><strong>Required from client:</strong></p>
             <ul className="list-disc list-inside ml-4 space-y-1">
-              <li>Go High Level API Key (with contacts and opportunities permissions)</li>
-              <li>Location ID (their GHL sub-account/location identifier)</li>
-              <li>Pipeline ID (optional - which sales pipeline to add leads to)</li>
-              <li>Webhook URL (optional - for status updates)</li>
+              <li><strong>Go High Level API Key</strong> (with contacts and opportunities permissions)
+                <ul className="list-disc list-inside ml-4 mt-1 text-xs text-muted-foreground">
+                  <li>Go to GHL Settings → API Keys → Create New API Key</li>
+                  <li>Grant permissions: Contacts (read/write), Opportunities (read/write)</li>
+                  <li>Should be a long JWT token starting with "eyJ" (200+ characters)</li>
+                </ul>
+              </li>
+              <li><strong>Location ID</strong> (their GHL sub-account/location identifier)
+                <ul className="list-disc list-inside ml-4 mt-1 text-xs text-muted-foreground">
+                  <li>Found in GHL Settings → Company → Location ID</li>
+                  <li>Usually a 20-character alphanumeric string</li>
+                </ul>
+              </li>
+              <li><strong>Pipeline ID</strong> (optional - which sales pipeline to add leads to)</li>
+              <li><strong>Webhook URL</strong> (optional - for status updates)</li>
             </ul>
+            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 mt-4">
+              <p className="text-yellow-800 font-medium">⚠️ Common Issues:</p>
+              <ul className="text-yellow-700 text-xs mt-1 space-y-1">
+                <li>• API keys must have proper permissions for contacts and opportunities</li>
+                <li>• Short UUID-format keys (like "31131afb-...") are not valid GHL API keys</li>
+                <li>• Test the integration after setup to verify credentials</li>
+              </ul>
+            </div>
             <p className="text-muted-foreground mt-4">
               When a lead is assigned to a partner with GHL integration enabled, the system will automatically 
               create a contact in their GHL account and optionally add them to a pipeline.
