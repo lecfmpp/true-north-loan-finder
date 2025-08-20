@@ -1962,7 +1962,7 @@ const Admin = () => {
                           <SelectItem value="No Answer">No Answer</SelectItem>
                           <SelectItem value="Wrong Number">Wrong Number</SelectItem>
                           <SelectItem value="Contacted">Contacted</SelectItem>
-                          <SelectItem value="Application Sent">Application Sent</SelectItem>
+                          <SelectItem value="Application Sent">Lender Approval</SelectItem>
                           <SelectItem value="Disqualified">Disqualified</SelectItem>
                           <SelectItem value="Loan Approved">Loan Approved</SelectItem>
                         </SelectContent>
@@ -2403,7 +2403,7 @@ const Admin = () => {
                                   <Badge className="bg-yellow-100 text-yellow-800">Contacted</Badge>
                                 </SelectItem>
                                 <SelectItem value="Application Sent">
-                                  <Badge className="bg-purple-100 text-purple-800">Application Sent</Badge>
+                                  <Badge className="bg-purple-100 text-purple-800">Lender Approval</Badge>
                                 </SelectItem>
                                 <SelectItem value="Disqualified">
                                   <Badge className="bg-red-100 text-red-800">Disqualified</Badge>
