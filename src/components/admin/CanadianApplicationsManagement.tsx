@@ -694,32 +694,59 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
         throw new Error('File path is empty or undefined');
       }
 
-      const { data, error } = await supabase.storage
-        .from('application-documents')
-        .download(filePath);
-
-      console.log('Download response:', { data, error });
-
-      if (error) {
-        console.error('Supabase storage error:', error);
-        throw error;
+      // Extract relative path from full URL if it's a Supabase storage URL
+      let relativePath = filePath;
+      const supabaseStoragePattern = /\/storage\/v1\/object\/public\/application-documents\/(.+)$/;
+      const match = filePath.match(supabaseStoragePattern);
+      if (match) {
+        relativePath = match[1];
       }
 
-      if (!data) {
-        throw new Error('No file data received from storage');
-      }
+      // Try downloading from Supabase storage first
+      try {
+        const { data, error } = await supabase.storage
+          .from('application-documents')
+          .download(relativePath);
 
-      // Create a download link
-      const url = URL.createObjectURL(data);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      
-      toast.success("File downloaded successfully");
+        if (error) throw error;
+
+        if (!data) {
+          throw new Error('No file data received from storage');
+        }
+
+        // Create a download link
+        const url = URL.createObjectURL(data);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        toast.success("File downloaded successfully");
+        return;
+      } catch (storageError) {
+        console.warn('Storage download failed, trying direct URL fetch:', storageError);
+        
+        // Fallback: fetch the URL directly
+        const response = await fetch(filePath);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch file: ${response.statusText}`);
+        }
+        
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        toast.success("File downloaded successfully");
+      }
     } catch (error) {
       console.error('Error downloading file:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
