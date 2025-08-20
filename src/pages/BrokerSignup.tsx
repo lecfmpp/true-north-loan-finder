@@ -272,7 +272,7 @@ const BrokerSignup = () => {
             </Badge>
             
             <h1 className="text-2xl md:text-4xl lg:text-6xl font-bold font-sans text-primary mb-3 md:mb-6 leading-tight">
-              Tired of Burning Hours Calling Hundreds of People Who <span className="text-accent">Aren't Interested?</span> Get 10 Exclusive Loan Leads This Week If You Qualify.
+              Stop Paying for the Same Old Lists Every Broker Calls. Start Getting <span className="text-accent">Exclusive Leads</span> That Buy Back Your Time.
             </h1>
             
             <p className="text-base md:text-xl lg:text-2xl text-muted-foreground mb-6 md:mb-8 font-serif max-w-3xl mx-auto">
