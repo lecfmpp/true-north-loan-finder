@@ -374,7 +374,9 @@ export default function ROIManagement() {
     const totalConversions = filteredSpends.reduce((sum, spend) => sum + (spend.conversions || 0), 0);
     const totalImpressions = filteredSpends.reduce((sum, spend) => sum + (spend.impressions || 0), 0);
     
-    const avgCtr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
+    const avgCtr = filteredSpends.length > 0 
+      ? filteredSpends.reduce((sum, spend) => sum + (spend.ctr || 0), 0) / filteredSpends.length 
+      : 0;
     const costPerClick = totalClicks > 0 ? totalSpend / totalClicks : 0;
     const costPerLead = metrics.total_leads > 0 ? totalSpend / metrics.total_leads : 0;
     const costPerQualifiedLead = metrics.qualified_leads > 0 ? totalSpend / metrics.qualified_leads : 0;
