@@ -1884,7 +1884,13 @@ const Admin = () => {
                   <CardTitle className="text-sm font-medium">New Leads</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{filteredLeads.filter(l => (l.status || '').toString().trim().toLowerCase().replace(/_/g, ' ') === 'new').length}</div>
+                  <div className="text-2xl font-bold">
+                    {(() => {
+                      const count = filteredLeads.filter(l => (l.status || '').toString().trim().toLowerCase().replace(/_/g, ' ') === 'new').length;
+                      const percentage = filteredLeads.length > 0 ? Math.round((count / filteredLeads.length) * 100) : 0;
+                      return `${count}/${filteredLeads.length} (${percentage}%)`;
+                    })()}
+                  </div>
                 </CardContent>
               </Card>
 
@@ -1893,7 +1899,13 @@ const Admin = () => {
                   <CardTitle className="text-sm font-medium">Qualified Leads</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{filteredLeads.filter(l => isQualifiedLead(l)).length}</div>
+                  <div className="text-2xl font-bold">
+                    {(() => {
+                      const count = filteredLeads.filter(l => isQualifiedLead(l)).length;
+                      const percentage = filteredLeads.length > 0 ? Math.round((count / filteredLeads.length) * 100) : 0;
+                      return `${count}/${filteredLeads.length} (${percentage}%)`;
+                    })()}
+                  </div>
                 </CardContent>
               </Card>
 
@@ -1902,7 +1914,13 @@ const Admin = () => {
                   <CardTitle className="text-sm font-medium">Contacted</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{filteredLeads.filter(l => (l.status || '').toString().trim().toLowerCase().replace(/_/g, ' ') === 'contacted').length}</div>
+                  <div className="text-2xl font-bold">
+                    {(() => {
+                      const count = filteredLeads.filter(l => (l.status || '').toString().trim().toLowerCase().replace(/_/g, ' ') === 'contacted').length;
+                      const percentage = filteredLeads.length > 0 ? Math.round((count / filteredLeads.length) * 100) : 0;
+                      return `${count}/${filteredLeads.length} (${percentage}%)`;
+                    })()}
+                  </div>
                 </CardContent>
               </Card>
 
@@ -1911,7 +1929,13 @@ const Admin = () => {
                   <CardTitle className="text-sm font-medium">Applications</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{usaApplicationsCount + canadianApplicationsCount}</div>
+                  <div className="text-2xl font-bold">
+                    {(() => {
+                      const count = usaApplicationsCount + canadianApplicationsCount;
+                      const percentage = filteredLeads.length > 0 ? Math.round((count / filteredLeads.length) * 100) : 0;
+                      return `${count}/${filteredLeads.length} (${percentage}%)`;
+                    })()}
+                  </div>
                 </CardContent>
               </Card>
 
@@ -1920,7 +1944,13 @@ const Admin = () => {
                   <CardTitle className="text-sm font-medium">Funded</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{filteredLeads.filter(l => (l.status || '').toString().trim().toLowerCase().replace(/_/g, ' ') === 'loan approved').length}</div>
+                  <div className="text-2xl font-bold">
+                    {(() => {
+                      const count = filteredLeads.filter(l => (l.status || '').toString().trim().toLowerCase().replace(/_/g, ' ') === 'loan approved').length;
+                      const percentage = filteredLeads.length > 0 ? Math.round((count / filteredLeads.length) * 100) : 0;
+                      return `${count}/${filteredLeads.length} (${percentage}%)`;
+                    })()}
+                  </div>
                 </CardContent>
               </Card>
             </div>
