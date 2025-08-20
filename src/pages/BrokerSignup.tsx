@@ -306,14 +306,6 @@ const BrokerSignup = () => {
               </div>
             </div>
 
-            {/* Calendly Booking Section */}
-            <section id="schedule-demo" aria-label="Schedule your 10 Leads Trial" className="max-w-3xl mx-auto mt-8">
-              <div className="text-center mb-4">
-                <h2 className="text-2xl md:text-4xl lg:text-4xl font-bold text-primary mb-3">Book your '10 Leads' trial call and find out if we can start filling your pipeline this week.</h2>
-                <p className="text-base md:text-lg text-muted-foreground">Pick a time to chat and activate your trial.</p>
-              </div>
-              <CalendlyInline url="https://calendly.com/leandro-truenorth-businessloan/30min?hide_gdpr_banner=1&primary_color=29df77" height={1100} />
-            </section>
             
               <div className="mt-4 md:mt-8">
                 <LeadsSimulation />
