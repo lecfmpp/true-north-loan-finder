@@ -271,12 +271,39 @@ const BrokerSignup = () => {
             </Badge>
             
             <h1 className="text-2xl md:text-4xl lg:text-6xl font-bold font-sans text-primary mb-3 md:mb-6 leading-tight">
-              Access <span className="text-accent">High-Quality Leads</span> Every Single Day
+              Tired of Burning Hours Calling Hundreds of People Who <span className="text-accent">Aren't Interested?</span> Get 10 Exclusive Loan Leads This Week If You Qualify.
             </h1>
             
             <p className="text-base md:text-xl lg:text-2xl text-muted-foreground mb-6 md:mb-8 font-serif max-w-3xl mx-auto">
-              Join our exclusive broker network and receive pre-qualified business loan leads directly to your inbox. We focus on quality over quantity - delivering genuine opportunities that convert into funded deals.
+              Every lead is prequalified, exclusive to you, and replaced if it is not a fit for your products. No more chasing tire kickers, only real opportunities delivered straight to your inbox.
             </p>
+
+            {/* Benefits Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8 max-w-4xl mx-auto">
+              <div className="bg-card border border-border rounded-lg p-4 md:p-6 text-center">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Users className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2">Free CRM for Sales Teams</h3>
+                <p className="text-sm text-muted-foreground">Complete CRM access included with your partnership</p>
+              </div>
+              
+              <div className="bg-card border border-border rounded-lg p-4 md:p-6 text-center">
+                <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <CheckCircle className="w-6 h-6 text-accent" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2">Exclusive Leads</h3>
+                <p className="text-sm text-muted-foreground">Every lead is yours alone - no competition from other brokers</p>
+              </div>
+              
+              <div className="bg-card border border-border rounded-lg p-4 md:p-6 text-center">
+                <div className="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <TrendingUp className="w-6 h-6 text-secondary" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2">Replaceable if Not a Fit</h3>
+                <p className="text-sm text-muted-foreground">Quality guarantee - we replace any lead that doesn't match</p>
+              </div>
+            </div>
             
               <div className="mt-4 md:mt-8">
                 <LeadsSimulation />
