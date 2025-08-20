@@ -1911,7 +1911,7 @@ const Admin = () => {
                   <CardTitle className="text-sm font-medium">Applications</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{filteredLeads.filter(l => (l.status || '').toString().trim().toLowerCase().replace(/_/g, ' ') === 'application sent').length}</div>
+                  <div className="text-2xl font-bold">{usaApplicationsCount + canadianApplicationsCount}</div>
                 </CardContent>
               </Card>
 
