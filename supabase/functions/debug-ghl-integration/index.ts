@@ -7,12 +7,24 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { partnerId } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const { partnerId } = body;
+    
+    if (!partnerId) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: "Partner ID is required"
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     
     console.log('🔍 Debugging GHL integration for partner:', partnerId);
     

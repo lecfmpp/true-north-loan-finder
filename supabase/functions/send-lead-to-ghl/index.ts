@@ -427,21 +427,40 @@ serve(async (req) => {
         
         if (pipelineResponse.ok) {
           const pipelinesData = await pipelineResponse.json();
-          console.log(`📊 Pipelines data:`, pipelinesData);
+          console.log(`📊 All available pipelines:`, pipelinesData.pipelines?.map((p: any) => ({
+            id: p.id, 
+            name: p.name,
+            stages: p.stages?.length || 0
+          })));
           
           const pipeline = pipelinesData.pipelines?.find((p: any) => p.id === integration.pipeline_id);
-          console.log(`🔍 Found target pipeline:`, pipeline ? `Yes (${pipeline.name})` : 'No');
+          console.log(`🔍 Target pipeline (${integration.pipeline_id}):`, pipeline ? {
+            id: pipeline.id,
+            name: pipeline.name,
+            stages: pipeline.stages?.map((s: any) => ({ id: s.id, name: s.name, position: s.position }))
+          } : 'NOT FOUND');
           
           if (pipeline && pipeline.stages?.length > 0) {
             const firstStageId = pipeline.stages[0].id;
-            console.log(`🎪 Using first stage ID: ${firstStageId} (${pipeline.stages[0].name})`);
+            console.log(`🎪 Using first stage: ${firstStageId} (${pipeline.stages[0].name})`);
             
             opportunityResult = await createOpportunityForContact(contactId, integration, leadData, firstStageId);
             opportunityCreated = true;
             
-            console.log(`🎉 Opportunity creation result:`, opportunityResult);
+            console.log(`🎉 Opportunity creation completed:`, {
+              opportunityId: opportunityResult?.opportunity?.id,
+              pipelineId: integration.pipeline_id,
+              stageId: firstStageId,
+              stageName: pipeline.stages[0].name,
+              existing: opportunityResult?.existing || false
+            });
           } else {
-            console.log(`❌ Pipeline not found or has no stages - pipeline:`, pipeline);
+            console.log(`❌ Cannot create opportunity - Pipeline issues:`, {
+              pipelineFound: !!pipeline,
+              stagesCount: pipeline?.stages?.length || 0,
+              targetPipelineId: integration.pipeline_id,
+              availablePipelines: pipelinesData.pipelines?.length || 0
+            });
           }
         } else {
           const errorText = await pipelineResponse.text();
