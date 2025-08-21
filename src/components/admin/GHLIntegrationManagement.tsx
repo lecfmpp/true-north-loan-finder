@@ -52,6 +52,12 @@ export default function GHLIntegrationManagement() {
   const [selectedPartner, setSelectedPartner] = useState<string>('');
   const [showApiKey, setShowApiKey] = useState<Record<string, boolean>>({});
   const [editingIntegration, setEditingIntegration] = useState<Partial<GHLIntegration> | null>(null);
+  const [testOptions, setTestOptions] = useState({
+    useRealData: false,
+    dryRun: false,
+    keepTestContact: false,
+    skipAutomations: false
+  });
 
   const defaultFieldMappings = {
     name: 'firstName',
@@ -147,18 +153,21 @@ export default function GHLIntegrationManagement() {
     }
   };
 
-  const handleTestIntegration = async (integration: GHLIntegration, useRealData = false) => {
+  const handleTestIntegration = async (integration: GHLIntegration, options = testOptions) => {
     try {
       setTesting(true);
       
-      console.log('Testing integration:', integration.id, 'with real data:', useRealData);
+      console.log('Testing integration:', integration.id, 'with options:', options);
       
       // Test the integration by calling our edge function
       const { data, error } = await supabase.functions.invoke('test-ghl-integration', {
         body: {
           partnerId: integration.partner_id,
-          useRealData,
-          testData: useRealData ? undefined : {
+          useRealData: options.useRealData,
+          dryRun: options.dryRun,
+          keepTestContact: options.keepTestContact,
+          skipAutomations: options.skipAutomations,
+          testData: options.useRealData ? undefined : {
             name: 'Test Lead',
             email: 'test@integration-test.com',
             phone: '5551234567',
@@ -215,18 +224,31 @@ export default function GHLIntegrationManagement() {
         
         toast.success(
           <div className="space-y-2">
-            <div className="font-medium">✅ GHL Integration Test Results</div>
+            <div className="font-medium">
+              {data.dryRun ? '🧪' : data.duplicate ? '⚠️' : '✅'} GHL Integration Test Results
+            </div>
             <div className="text-sm">{data.summary}</div>
             <div className="text-xs text-muted-foreground">
               {successCount}/{totalTests} checks passed • API Version: {data.apiVersion}
+              {data.dryRun && ' • Dry Run Mode'}
+              {data.duplicate && ' • Duplicate Contact Detected'}
             </div>
             {data.message && (
-              <div className="text-xs bg-green-50 p-2 rounded border">
+              <div className={`text-xs p-2 rounded border ${
+                data.dryRun ? 'bg-blue-50 border-blue-200' :
+                data.duplicate ? 'bg-yellow-50 border-yellow-200' : 
+                'bg-green-50 border-green-200'
+              }`}>
                 {data.message}
               </div>
             )}
+            {options.keepTestContact && !data.dryRun && !data.duplicate && (
+              <div className="text-xs bg-blue-50 p-2 rounded border">
+                📌 Test contact kept in GHL for your review
+              </div>
+            )}
           </div>,
-          { duration: 8000 }
+          { duration: 10000 }
         );
       } else {
         // Show the actual error from the response with more context
@@ -514,87 +536,128 @@ export default function GHLIntegrationManagement() {
             <p className="text-muted-foreground text-center py-8">No GHL integrations configured</p>
           ) : (
             <div className="space-y-4">
-              {integrations.map(integration => (
-                <div key={integration.id} className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div>
-                      <h4 className="font-medium">{getPartnerName(integration.partner_id)}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Location: {integration.location_id}
-                      </p>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge variant={integration.is_active ? 'default' : 'secondary'}>
-                        {integration.is_active ? 'Active' : 'Inactive'}
-                      </Badge>
-                      <Button
-                        onClick={() => handleTestIntegration(integration, false)}
-                        disabled={testing}
-                        size="sm"
-                        variant="outline"
-                        title="Test integration with mock data"
-                      >
-                        {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <TestTube className="w-4 h-4" />}
-                        Test (Mock)
-                      </Button>
-                      <Button
-                        onClick={() => handleTestIntegration(integration, true)}
-                        disabled={testing}
-                        size="sm"
-                        variant="default"
-                        title="Test integration with data from the last assigned lead"
-                      >
-                        {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <TestTube className="w-4 h-4" />}
-                        Test (Real Lead)
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setEditingIntegration(integration)}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleDeleteIntegration(integration.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="font-medium">API Key:</span>
-                      <div className="flex items-center space-x-2">
-                        <span className="font-mono">
-                          {showApiKey[integration.id] ? integration.api_key : '••••••••••••••••'}
-                        </span>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => toggleShowApiKey(integration.id)}
-                        >
-                          {showApiKey[integration.id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </Button>
-                      </div>
-                    </div>
-                    <div>
-                      <span className="font-medium">Pipeline:</span> {integration.pipeline_id || 'None'}
-                    </div>
-                    {integration.webhook_url && (
-                      <div className="col-span-2">
-                        <span className="font-medium">Webhook:</span> {integration.webhook_url}
-                      </div>
-                    )}
-                    <div className="col-span-2">
-                      <span className="font-medium">Field Mappings:</span>
-                      <p className="text-muted-foreground">
-                        {formatFieldMappings(integration.field_mappings)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+               {integrations.map(integration => (
+                 <div key={integration.id} className="border rounded-lg p-4">
+                   <div className="flex items-center justify-between mb-3">
+                     <div>
+                       <h4 className="font-medium">{getPartnerName(integration.partner_id)}</h4>
+                       <p className="text-sm text-muted-foreground">
+                         Location: {integration.location_id}
+                       </p>
+                     </div>
+                     <Badge variant={integration.is_active ? 'default' : 'secondary'}>
+                       {integration.is_active ? 'Active' : 'Inactive'}
+                     </Badge>
+                   </div>
+                   
+                   <div className="space-y-3">
+                     {/* Test Options */}
+                     <div className="grid grid-cols-2 gap-2 text-xs">
+                       <div className="flex items-center space-x-2">
+                         <Switch
+                           id={`realData-${integration.id}`}
+                           checked={testOptions.useRealData}
+                           onCheckedChange={(checked) => setTestOptions(prev => ({ ...prev, useRealData: checked }))}
+                         />
+                         <label htmlFor={`realData-${integration.id}`} className="text-xs">Real Lead</label>
+                       </div>
+                       <div className="flex items-center space-x-2">
+                         <Switch
+                           id={`dryRun-${integration.id}`}
+                           checked={testOptions.dryRun}
+                           onCheckedChange={(checked) => setTestOptions(prev => ({ ...prev, dryRun: checked }))}
+                         />
+                         <label htmlFor={`dryRun-${integration.id}`} className="text-xs">Dry Run</label>
+                       </div>
+                       <div className="flex items-center space-x-2">
+                         <Switch
+                           id={`keepContact-${integration.id}`}
+                           checked={testOptions.keepTestContact}
+                           onCheckedChange={(checked) => setTestOptions(prev => ({ ...prev, keepTestContact: checked }))}
+                           disabled={testOptions.dryRun}
+                         />
+                         <label htmlFor={`keepContact-${integration.id}`} className="text-xs">Keep Contact</label>
+                       </div>
+                       <div className="flex items-center space-x-2">
+                         <Switch
+                           id={`skipAutomations-${integration.id}`}
+                           checked={testOptions.skipAutomations}
+                           onCheckedChange={(checked) => setTestOptions(prev => ({ ...prev, skipAutomations: checked }))}
+                           disabled={testOptions.dryRun}
+                         />
+                         <label htmlFor={`skipAutomations-${integration.id}`} className="text-xs">Skip Automations</label>
+                       </div>
+                     </div>
+                     
+                     {/* Test Buttons */}
+                     <div className="flex space-x-2">
+                       <Button
+                         size="sm"
+                         onClick={() => handleTestIntegration(integration)}
+                         disabled={testing}
+                         variant="secondary"
+                       >
+                         {testing && <Loader2 className="w-4 h-4 mr-1 animate-spin" />}
+                         <TestTube className="w-4 h-4 mr-1" />
+                         {testOptions.dryRun ? 'Validate' : 'Test Integration'}
+                       </Button>
+                       <Button
+                         size="sm"
+                         variant="outline"
+                         onClick={() => setEditingIntegration(integration)}
+                       >
+                         Edit
+                       </Button>
+                       <Button
+                         size="sm"
+                         variant="destructive"
+                         onClick={() => handleDeleteIntegration(integration.id)}
+                       >
+                         <Trash2 className="w-4 h-4" />
+                       </Button>
+                     </div>
+                     
+                     {/* Test Options Help */}
+                     <div className="text-xs text-muted-foreground space-y-1 border-t pt-2">
+                       <div><strong>Real Lead:</strong> Uses actual lead data from your database</div>
+                       <div><strong>Dry Run:</strong> Validates setup without creating contacts</div>
+                       <div><strong>Keep Contact:</strong> Leaves test contact in GHL for review</div>
+                       <div><strong>Skip Automations:</strong> Adds DND tags to prevent triggering workflows</div>
+                     </div>
+                   </div>
+
+                   <div className="grid grid-cols-2 gap-4 text-sm mt-4">
+                     <div>
+                       <span className="font-medium">API Key:</span>
+                       <div className="flex items-center space-x-2">
+                         <span className="font-mono">
+                           {showApiKey[integration.id] ? integration.api_key : '••••••••••••••••'}
+                         </span>
+                         <Button
+                           size="sm"
+                           variant="ghost"
+                           onClick={() => toggleShowApiKey(integration.id)}
+                         >
+                           {showApiKey[integration.id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                         </Button>
+                       </div>
+                     </div>
+                     <div>
+                       <span className="font-medium">Pipeline:</span> {integration.pipeline_id || 'None'}
+                     </div>
+                     {integration.webhook_url && (
+                       <div className="col-span-2">
+                         <span className="font-medium">Webhook:</span> {integration.webhook_url}
+                       </div>
+                     )}
+                     <div className="col-span-2">
+                       <span className="font-medium">Field Mappings:</span>
+                       <p className="text-muted-foreground">
+                         {formatFieldMappings(integration.field_mappings)}
+                       </p>
+                     </div>
+                   </div>
+                 </div>
               ))}
             </div>
           )}
