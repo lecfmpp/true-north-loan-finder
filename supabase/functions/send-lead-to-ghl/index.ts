@@ -51,6 +51,36 @@ function normalizeName(name: string): { firstName: string; lastName: string } {
   return { firstName, lastName };
 }
 
+// Check if opportunity already exists for contact
+async function checkExistingOpportunity(
+  contactId: string,
+  integration: any
+): Promise<string | null> {
+  try {
+    const searchResponse = await fetch(`https://services.leadconnectorhq.com/opportunities/search?contactId=${contactId}&pipelineId=${integration.pipeline_id}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${integration.api_key}`,
+        'Content-Type': 'application/json',
+        'Version': '2021-07-28',
+      },
+    });
+
+    if (searchResponse.ok) {
+      const searchResult = await searchResponse.json();
+      if (searchResult.opportunities && searchResult.opportunities.length > 0) {
+        const existingOpportunity = searchResult.opportunities[0];
+        console.log('Found existing opportunity:', existingOpportunity.id);
+        return existingOpportunity.id;
+      }
+    }
+    return null;
+  } catch (error) {
+    console.log('Error checking existing opportunity:', error);
+    return null;
+  }
+}
+
 // Create opportunity for contact
 async function createOpportunityForContact(
   contactId: string, 
@@ -59,6 +89,13 @@ async function createOpportunityForContact(
   stageId: string
 ): Promise<any> {
   try {
+    // First check if opportunity already exists
+    const existingOpportunityId = await checkExistingOpportunity(contactId, integration);
+    if (existingOpportunityId) {
+      console.log(`Opportunity already exists for contact ${contactId}: ${existingOpportunityId}`);
+      return { opportunity: { id: existingOpportunityId }, existing: true };
+    }
+
     console.log(`Creating opportunity for contact ${contactId} in pipeline ${integration.pipeline_id}`);
     
     const opportunityPayload = {
@@ -88,11 +125,21 @@ async function createOpportunityForContact(
     if (opportunityResponse.ok) {
       const opportunityResult = await opportunityResponse.json();
       console.log('Opportunity created successfully:', opportunityResult.opportunity?.id);
-      return opportunityResult;
+      return { ...opportunityResult, existing: false };
     } else {
-      const errorText = await opportunityResponse.text();
-      console.error('Failed to create opportunity:', errorText);
-      throw new Error(`Failed to create opportunity: ${opportunityResponse.status} - ${errorText}`);
+      const errorResponse = await opportunityResponse.json().catch(() => ({}));
+      console.error('Failed to create opportunity:', errorResponse);
+      
+      // Handle duplicate opportunity error gracefully
+      if (opportunityResponse.status === 400 && errorResponse.message?.includes('duplicate opportunity')) {
+        console.log('Duplicate opportunity detected, checking for existing opportunity ID');
+        const existingId = await checkExistingOpportunity(contactId, integration);
+        if (existingId) {
+          return { opportunity: { id: existingId }, existing: true };
+        }
+      }
+      
+      throw new Error(`Failed to create opportunity: ${opportunityResponse.status} - ${errorResponse.message || 'Unknown error'}`);
     }
   } catch (error) {
     console.error('Error creating opportunity:', error);
