@@ -245,6 +245,9 @@ serve(async (req) => {
 
     console.log('Testing API V1 integration with location:', integration.location_id);
 
+    // Initialize scope tracking
+    let scopeIssues: string[] = [];
+
     // Validate Private Integration Token format
     if (!integration.api_key || integration.api_key.trim() === '') {
       return new Response(JSON.stringify({
@@ -281,43 +284,31 @@ serve(async (req) => {
 
     console.log('Location API response status:', locationResponse.status);
 
+    // Track API access issues but don't fail the entire test
+    let locationError = null;
+    let locationData = null;
+
     if (!locationResponse.ok) {
       const errorText = await locationResponse.text();
       console.error('GHL Location API Error:', errorText);
       
-      let errorMessage = `API Error (${locationResponse.status})`;
-      
-      if (locationResponse.status === 401) {
-        errorMessage = "Invalid or expired Private Integration Token. Please check your GHL token.";
-      } else if (locationResponse.status === 403) {
-        errorMessage = "Access forbidden. Check if the Private Integration Token has proper scopes.";
-      } else if (locationResponse.status === 404) {
-        errorMessage = "Location not found. Please verify the Location ID.";
-      } else {
-        try {
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.message || errorMessage;
-        } catch (e) {
-          // Use the default error message if parsing fails
-        }
-      }
-      
-      return new Response(JSON.stringify({
-        success: false,
-        error: errorMessage,
-        details: {
-          status: locationResponse.status,
-          response: errorText,
-          apiVersion: 'v1'
-        }
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+      locationError = {
+        status: locationResponse.status,
+        message: errorText
+      };
 
-    const locationData = await locationResponse.json();
-    console.log('Location verified:', locationData.location?.name);
+      if (locationResponse.status === 401) {
+        scopeIssues.push('contacts.read');
+        locationError.interpretation = "Missing contacts.read scope or invalid token";
+      } else if (locationResponse.status === 403) {
+        locationError.interpretation = "Access forbidden - check token permissions";
+      } else if (locationResponse.status === 404) {
+        locationError.interpretation = "Location not found - verify Location ID";
+      }
+    } else {
+      locationData = await locationResponse.json();
+      console.log('Location verified:', locationData.location?.name);
+    }
 
     // Fetch pipelines for validation and discovery
     let pipelineValid = true;
@@ -325,7 +316,6 @@ serve(async (req) => {
     let availablePipelines: any[] = [];
     let pipelineInfo = null;
     let firstStageId = null;
-    let scopeIssues: string[] = [];
 
     const pipelineResponse = await fetch(`https://services.leadconnectorhq.com/opportunities/pipelines?locationId=${integration.location_id}`, {
       method: 'GET',
@@ -447,9 +437,14 @@ serve(async (req) => {
             status: 'Valid',
             details: 'Private Integration Token authenticated successfully (API V1)'
           },
-          location: {
+          location: locationError ? {
+            status: 'Error',
+            details: locationError.interpretation || 'Location API failed',
+            error: locationError.message,
+            locationId: integration.location_id
+          } : {
             status: 'Valid',
-            details: locationData.location?.name || 'Location verified',
+            details: locationData?.location?.name || 'Location verified',
             locationId: integration.location_id
           },
           pipeline: integration.pipeline_id ? {
@@ -626,9 +621,14 @@ serve(async (req) => {
                 status: 'Valid',
                 details: 'Private Integration Token authenticated successfully (API V1)'
               },
-              location: {
+              location: locationError ? {
+                status: 'Error',
+                details: locationError.interpretation || 'Location API failed',
+                error: locationError.message,
+                locationId: integration.location_id
+              } : {
                 status: 'Valid',
-                details: locationData.location?.name || 'Location verified',
+                details: locationData?.location?.name || 'Location verified',
                 locationId: integration.location_id
               },
               pipeline: integration.pipeline_id ? {
@@ -740,9 +740,14 @@ serve(async (req) => {
           status: 'Valid',
           details: 'Private Integration Token authenticated successfully (API V1)'
         },
-        location: {
+        location: locationError ? {
+          status: 'Error',
+          details: locationError.interpretation || 'Location API failed',
+          error: locationError.message,
+          locationId: integration.location_id
+        } : {
           status: 'Valid',
-          details: locationData.location?.name || 'Location verified',
+          details: locationData?.location?.name || 'Location verified',
           locationId: integration.location_id
         },
         pipeline: integration.pipeline_id ? {
