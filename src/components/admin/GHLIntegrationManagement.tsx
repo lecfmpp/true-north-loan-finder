@@ -147,7 +147,7 @@ export default function GHLIntegrationManagement() {
     }
   };
 
-  const handleTestIntegration = async (integration: GHLIntegration) => {
+  const handleTestIntegration = async (integration: GHLIntegration, useRealData = false) => {
     try {
       setTesting(true);
       
@@ -157,10 +157,11 @@ export default function GHLIntegrationManagement() {
       const { data, error } = await supabase.functions.invoke('test-ghl-integration', {
         body: {
           partnerId: integration.partner_id,
-          testData: {
+          useRealData,
+          testData: useRealData ? undefined : {
             name: 'Test Lead',
-            email: 'test@example.com',
-            phone: '555-0123',
+            email: 'test@integration-test.com',
+            phone: '5551234567',
             company_name: 'Test Company',
             loan_amount: 50000,
             monthly_revenue: 25000,
@@ -477,13 +478,22 @@ export default function GHLIntegrationManagement() {
                         {integration.is_active ? 'Active' : 'Inactive'}
                       </Badge>
                       <Button
+                        onClick={() => handleTestIntegration(integration, false)}
+                        disabled={testing}
                         size="sm"
                         variant="outline"
-                        onClick={() => handleTestIntegration(integration)}
-                        disabled={testing}
                       >
                         {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <TestTube className="w-4 h-4" />}
-                        Test
+                        Test (Mock)
+                      </Button>
+                      <Button
+                        onClick={() => handleTestIntegration(integration, true)}
+                        disabled={testing}
+                        size="sm"
+                        variant="default"
+                      >
+                        {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <TestTube className="w-4 h-4" />}
+                        Test (Real Lead)
                       </Button>
                       <Button
                         size="sm"

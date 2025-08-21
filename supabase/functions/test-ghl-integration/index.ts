@@ -8,7 +8,7 @@ const corsHeaders = {
 
 interface TestGHLRequest {
   partnerId: string;
-  testData: {
+  testData?: {
     name: string;
     email: string;
     phone: string;
@@ -17,6 +17,7 @@ interface TestGHLRequest {
     monthly_revenue: number;
     credit_score: string;
   };
+  useRealData?: boolean;
 }
 
 serve(async (req) => {
@@ -25,9 +26,10 @@ serve(async (req) => {
   }
 
   try {
-    const { partnerId, testData }: TestGHLRequest = await req.json();
+    const { partnerId, testData, useRealData }: TestGHLRequest = await req.json();
 
     console.log('Testing GHL API V1 integration for partner:', partnerId);
+    console.log('Use real data:', useRealData);
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -50,6 +52,61 @@ serve(async (req) => {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Get real lead data if requested
+    let actualTestData = testData;
+    let leadSource = 'Test Data';
+    
+    if (useRealData) {
+      console.log('Fetching last lead assigned to partner...');
+      
+      // Get the last lead assigned to this partner
+      const { data: lastLead, error: leadError } = await supabase
+        .from("quiz_responses")
+        .select(`
+          *,
+          lead_assignments!inner(
+            partner_id,
+            assigned_at
+          )
+        `)
+        .eq("lead_assignments.partner_id", partnerId)
+        .order("lead_assignments.assigned_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (leadError || !lastLead) {
+        console.log('No leads found for partner, using test data');
+        leadSource = 'Test Data (No real leads available)';
+      } else {
+        console.log('Found real lead data:', lastLead.id);
+        leadSource = `Real Lead Data (ID: ${lastLead.id})`;
+        
+        // Use real lead data but modify email to avoid conflicts
+        actualTestData = {
+          name: lastLead.name || 'Test Lead',
+          email: `test-${lastLead.id.substring(0, 8)}@integration-test.com`, // Modified email to avoid conflicts
+          phone: lastLead.phone || '5551234567',
+          company_name: lastLead.company_name || 'Test Company',
+          loan_amount: lastLead.loan_amount || 50000,
+          monthly_revenue: lastLead.monthly_revenue || 25000,
+          credit_score: lastLead.credit_score || 'good'
+        };
+      }
+    }
+
+    // Fallback to default test data if no real data available
+    if (!actualTestData) {
+      actualTestData = {
+        name: 'Test Lead',
+        email: 'test@integration-test.com',
+        phone: '5551234567',
+        company_name: 'Test Company',
+        loan_amount: 50000,
+        monthly_revenue: 25000,
+        credit_score: 'good'
+      };
     }
 
     console.log('Testing API V1 integration with location:', integration.location_id);
@@ -157,12 +214,12 @@ serve(async (req) => {
     }
 
     // Prepare test contact data for API V1
-    const nameParts = testData.name.trim().split(' ');
+    const nameParts = actualTestData.name.trim().split(' ');
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
 
     // Normalize phone number (add +1 for US/Canada)
-    let normalizedPhone = testData.phone.replace(/\D/g, '');
+    let normalizedPhone = actualTestData.phone.replace(/\D/g, '');
     if (normalizedPhone.length === 10) {
       normalizedPhone = `+1${normalizedPhone}`;
     } else if (normalizedPhone.length === 11 && normalizedPhone.startsWith('1')) {
@@ -172,17 +229,18 @@ serve(async (req) => {
     const testContact = {
       firstName,
       lastName: lastName || 'Test',
-      email: testData.email,
+      email: actualTestData.email,
       phone: normalizedPhone,
-      companyName: testData.company_name,
-      source: 'API V1 Integration Test',
-      tags: ['Test', 'Integration', 'API-V1'],
+      companyName: actualTestData.company_name,
+      source: `API V1 Integration Test - ${leadSource}`,
+      tags: ['Test', 'Integration', 'API-V1', useRealData ? 'RealData' : 'MockData'],
       customFields: [
-        { key: 'loanAmount', field_value: testData.loan_amount.toString() },
-        { key: 'monthlyRevenue', field_value: testData.monthly_revenue.toString() },
-        { key: 'creditScore', field_value: testData.credit_score },
+        { key: 'loanAmount', field_value: actualTestData.loan_amount.toString() },
+        { key: 'monthlyRevenue', field_value: actualTestData.monthly_revenue.toString() },
+        { key: 'creditScore', field_value: actualTestData.credit_score },
         { key: 'testContact', field_value: 'true' },
-        { key: 'apiVersion', field_value: 'v1' }
+        { key: 'apiVersion', field_value: 'v1' },
+        { key: 'dataSource', field_value: leadSource }
       ]
     };
 
@@ -317,7 +375,7 @@ serve(async (req) => {
         },
         contactCreation: {
           status: 'Successful',
-          details: 'Test contact created and cleaned up successfully using API V1',
+          details: `Test contact created and cleaned up successfully using API V1 (${leadSource})`,
           contactId: contactResult.contact?.id
         },
         scopes: {
@@ -325,10 +383,10 @@ serve(async (req) => {
           details: 'Private Integration Token has required scopes for contacts and opportunities'
         }
       },
-      message: 'GHL API V1 Private Integration test completed successfully',
+      message: `GHL API V1 Private Integration test completed successfully using ${leadSource}`,
       apiVersion: 'v1',
       tokenType: 'private_integration',
-      summary: `✓ Private Token Valid ✓ Location Valid ${integration.pipeline_id ? (pipelineValid ? '✓' : '✗') + ' Pipeline' : '- Pipeline'} ${integration.webhook_url ? (webhookValid ? '✓' : '✗') + ' Webhook' : '- Webhook'} ✓ Contact Creation ✓ API V1`
+      summary: `✓ Private Token Valid ✓ Location Valid ${integration.pipeline_id ? (pipelineValid ? '✓' : '✗') + ' Pipeline' : '- Pipeline'} ${integration.webhook_url ? (webhookValid ? '✓' : '✗') + ' Webhook' : '- Webhook'} ✓ Contact Creation ✓ API V1 (${leadSource})`
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
