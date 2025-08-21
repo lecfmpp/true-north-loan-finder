@@ -142,8 +142,28 @@ async function createOpportunityForContact(
   stageId: string
 ): Promise<any> {
   try {
-    // Duplicate checking temporarily disabled - create opportunity directly
-    console.log(`Creating new opportunity for contact ${contactId} in pipeline ${integration.pipeline_id}`);
+    console.log(`🎯 Starting opportunity creation for contact ${contactId} in pipeline ${integration.pipeline_id}, stage ${stageId}`);
+    
+    // First, check if opportunity already exists in ANY pipeline
+    console.log(`🔍 Checking for existing opportunities for contact ${contactId}`);
+    const existingOpp = await findAnyOpportunityForContact(contactId, integration);
+    
+    if (existingOpp) {
+      console.log(`📋 Found existing opportunity: ${existingOpp.id} in pipeline ${existingOpp.pipelineId}`);
+      
+      // If it's already in the target pipeline, just return it
+      if (existingOpp.pipelineId === integration.pipeline_id) {
+        console.log(`✅ Opportunity already in target pipeline ${integration.pipeline_id}`);
+        return { opportunity: { id: existingOpp.id }, existing: true, alreadyInPipeline: true };
+      } else {
+        console.log(`🔄 Moving opportunity from pipeline ${existingOpp.pipelineId} to ${integration.pipeline_id}`);
+        const moved = await moveOpportunityToPipeline(existingOpp.id, integration, stageId);
+        return { opportunity: { id: existingOpp.id }, existing: true, moved };
+      }
+    }
+    
+    console.log(`➕ No existing opportunity found, creating new one`);
+    // Create new opportunity
 
     console.log(`Creating opportunity for contact ${contactId} in pipeline ${integration.pipeline_id}`);
     
@@ -159,7 +179,7 @@ async function createOpportunityForContact(
       source: 'Lead Management System'
     };
 
-    console.log('Creating opportunity with payload:', JSON.stringify(opportunityPayload, null, 2));
+    console.log('📤 Creating opportunity with payload:', JSON.stringify(opportunityPayload, null, 2));
 
     const opportunityResponse = await fetch(`https://services.leadconnectorhq.com/opportunities/`, {
       method: 'POST',
@@ -173,19 +193,28 @@ async function createOpportunityForContact(
 
     if (opportunityResponse.ok) {
       const opportunityResult = await opportunityResponse.json();
-      console.log('Opportunity created successfully:', opportunityResult.opportunity?.id);
+      console.log('✅ Opportunity created successfully:', opportunityResult.opportunity?.id);
       return { ...opportunityResult, existing: false };
     } else {
       const errorResponse = await opportunityResponse.json().catch(() => ({}));
-      console.error('Failed to create opportunity:', errorResponse);
+      console.error('❌ Failed to create opportunity:', {
+        status: opportunityResponse.status,
+        statusText: opportunityResponse.statusText,
+        error: errorResponse
+      });
       
       // Handle duplicate opportunity error gracefully
       if (opportunityResponse.status === 400 && (errorResponse.message?.includes('duplicate opportunity') || errorResponse.message?.toLowerCase?.().includes('duplicate'))) {
-        console.log('Duplicate opportunity detected — locating existing opportunity for contact');
+        console.log('🔄 Duplicate opportunity detected — locating existing opportunity for contact');
         const existing = await findAnyOpportunityForContact(contactId, integration);
+        console.log('🔍 Found existing after duplicate error:', existing);
         if (existing?.id) {
+          console.log('🎯 Moving existing opportunity to target pipeline');
           const moved = await moveOpportunityToPipeline(existing.id, integration, stageId);
+          console.log('📋 Move result:', moved);
           return { opportunity: { id: existing.id }, existing: true, moved };
+        } else {
+          console.log('⚠️ No existing opportunity found despite duplicate error');
         }
       }
 
