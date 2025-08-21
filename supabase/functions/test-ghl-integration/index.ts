@@ -590,6 +590,7 @@ serve(async (req) => {
       let errorMessage = `Failed to create test contact: ${contactResponse.status}`;
       let isDuplicateError = false;
       let existingContactId = null;
+      let isAuthError = false;
       
       try {
         const errorData = JSON.parse(errorText);
@@ -598,117 +599,41 @@ serve(async (req) => {
         if (errorData.statusCode === 400 && errorData.message?.includes('duplicated contacts')) {
           isDuplicateError = true;
           existingContactId = errorData.meta?.contactId;
-          const matchingField = errorData.meta?.matchingField;
-          
-          errorMessage = `Duplicate contact detected (matching ${matchingField}). This means the integration can create contacts, but this ${matchingField} already exists in GHL.`;
-          
-          // For duplicate errors, we still consider it a successful test
-          console.log('Duplicate contact detected, but integration is working correctly');
-          console.log('Existing contact ID:', existingContactId);
-          // Try to create opportunity with existing contact if enabled
-          if (createOpportunity && integration.pipeline_id && pipelineValid && existingContactId && firstStageId) {
-            try {
-              opportunityResult = await createOpportunityForContact(
-                existingContactId, 
-                integration, 
-                actualTestData, 
-                firstStageId, 
-                leadSource
-              );
-              console.log('Opportunity created for existing contact:', opportunityResult?.opportunity?.id);
-            } catch (opportunityError) {
-              console.error('Failed to create opportunity for existing contact:', opportunityError);
-              if (opportunityError.message?.includes('opportunities.write')) {
-                scopeIssues.push('opportunities.write');
-              }
-            }
-          }
-          
-          return new Response(JSON.stringify({
-            success: true,
-            duplicate: true,
-            results: {
-              apiKey: {
-                status: 'Valid',
-                details: 'Private Integration Token authenticated successfully (API V1)'
-              },
-              location: {
-                status: 'Valid',
-                details: locationData.location?.name || 'Location verified',
-                locationId: integration.location_id
-              },
-              pipeline: integration.pipeline_id ? {
-                status: pipelineValid ? 'Valid' : 'Invalid',
-                details: pipelineValid ? 'Pipeline ID verified' : 'Pipeline not found in location',
-                pipelineId: integration.pipeline_id
-              } : {
-                status: 'Not configured',
-                details: 'No pipeline ID specified - leads will be created without pipeline assignment'
-              },
-              webhook: integration.webhook_url ? {
-                status: webhookValid ? 'Valid' : 'Failed',
-                details: webhookValid ? 'Webhook endpoint responded successfully' : 'Webhook endpoint did not respond',
-                webhookUrl: integration.webhook_url
-              } : {
-                status: 'Not configured',
-                details: 'No webhook URL specified'
-              },
-              contactCreation: {
-                status: 'Duplicate Detected',
-                details: errorMessage,
-                existingContactId,
-                matchingField: errorData.meta?.matchingField
-              },
-              opportunityCreation: createOpportunity && integration.pipeline_id ? {
-                status: opportunityResult ? 'Successful' : 'Failed',
-                details: opportunityResult ? 
-                  `Opportunity created in pipeline '${pipelineInfo?.name}'` :
-                  'Failed to create opportunity - check scopes',
-                opportunityId: opportunityResult?.opportunity?.id,
-                pipelineName: pipelineInfo?.name
-              } : {
-                status: 'Not attempted',
-                details: createOpportunity ? 'No pipeline configured' : 'Opportunity creation disabled'
-              },
-              scopes: {
-                status: scopeIssues.length === 0 ? 'Verified' : 'Missing',
-                details: scopeIssues.length === 0 ? 
-                  'Private Integration Token has required scopes for contacts and opportunities' :
-                  `Missing scopes: ${scopeIssues.join(', ')}`,
-                missingScopes: scopeIssues
-              }
-            },
-            message: `GHL API V1 integration working correctly - duplicate contact indicates successful API connection using ${leadSource}`,
-            apiVersion: 'v1',
-            tokenType: 'private_integration',
-            summary: `✓ Private Token Valid ✓ Location Valid ${integration.pipeline_id ? (pipelineValid ? '✓' : '✗') + ' Pipeline' : '- Pipeline'} ${integration.webhook_url ? (webhookValid ? '✓' : '✗') + ' Webhook' : '- Webhook'} ⚠ Duplicate Contact ✓ API V1 (${leadSource})`
-          }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+          errorMessage = `Duplicate contact detected - existing contact ID: ${existingContactId}`;
+          console.log('Duplicate contact found, continuing with existing contact for opportunity creation');
+        } else if (errorData.statusCode === 401 || contactResponse.status === 401) {
+          // Handle authorization errors as scope issues, not failures
+          isAuthError = true;
+          scopeIssues.push('contacts.write');
+          errorMessage = 'Unauthorized - missing contacts.write scope';
+          console.log('Contact creation failed due to missing scope:', errorData.message || errorText);
+        } else {
+          errorMessage = errorData.message || errorMessage;
         }
-        
-        errorMessage = errorData.message ? 
-          (Array.isArray(errorData.message) ? errorData.message.join(', ') : errorData.message) :
-          errorMessage;
       } catch (e) {
-        // Use the raw error text if JSON parsing fails
-        errorMessage = errorText || errorMessage;
+        // Use the default error message if parsing fails
       }
       
-      return new Response(JSON.stringify({
-        success: false,
-        error: errorMessage,
-        details: {
-          status: contactResponse.status,
-          response: errorText,
-          apiVersion: 'v1',
-          isDuplicateError,
-          existingContactId
-        }
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      // For auth errors, continue with the flow but report scope issues
+      if (isAuthError) {
+        console.log('Continuing test flow despite contact creation auth error to validate other components');
+      } else if (!isDuplicateError) {
+        // Only return error response for non-auth, non-duplicate errors
+        return new Response(JSON.stringify({
+          success: false,
+          error: errorMessage,
+          details: {
+            status: contactResponse.status,
+            response: errorText,
+            apiVersion: 'v1',
+            isDuplicateError,
+            existingContactId
+          }
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // Test webhook if configured
@@ -767,13 +692,20 @@ serve(async (req) => {
           status: 'Not configured',
           details: 'No webhook URL specified'
         },
-        contactCreation: {
+        contactCreation: contactResult ? {
           status: 'Successful',
           details: keepTestContact ? 
             `Test contact created and kept in GHL using API V1 (${leadSource})` :
             `Test contact created and cleaned up successfully using API V1 (${leadSource})`,
-          contactId: contactResult.contact?.id,
+          contactId: contactResult?.contact?.id,
           kept: keepTestContact
+        } : {
+          status: scopeIssues.includes('contacts.write') ? 'Scope Missing' : 'Failed',
+          details: scopeIssues.includes('contacts.write') ? 
+            'Contact creation failed - missing contacts.write scope' :
+            'Contact creation failed - check configuration',
+          contactId: null,
+          kept: false
         },
         opportunityCreation: createOpportunity && integration.pipeline_id ? {
           status: opportunityResult ? 'Successful' : 'Failed',
@@ -798,7 +730,7 @@ serve(async (req) => {
       message: `GHL API V1 Private Integration test completed successfully using ${leadSource}`,
       apiVersion: 'v1',
       tokenType: 'private_integration',
-      summary: `✓ Private Token Valid ✓ Location Valid ${integration.pipeline_id ? (pipelineValid ? '✓' : '✗') + ' Pipeline' : '- Pipeline'} ${integration.webhook_url ? (webhookValid ? '✓' : '✗') + ' Webhook' : '- Webhook'} ✓ Contact Creation ${createOpportunity && opportunityResult ? '✓ Opportunity' : createOpportunity ? '✗ Opportunity' : '- Opportunity'} ${scopeIssues.length === 0 ? '✓' : '✗'} Scopes ✓ API V1 (${leadSource})`
+      summary: `✓ Private Token Valid ✓ Location Valid ${integration.pipeline_id ? (pipelineValid ? '✓' : '✗') + ' Pipeline' : '- Pipeline'} ${integration.webhook_url ? (webhookValid ? '✓' : '✗') + ' Webhook' : '- Webhook'} ${contactResult ? '✓' : (scopeIssues.includes('contacts.write') ? '✗' : '✗')} Contact Creation ${createOpportunity && opportunityResult ? '✓ Opportunity' : createOpportunity ? '✗ Opportunity' : '- Opportunity'} ${scopeIssues.length === 0 ? '✓' : '✗'} Scopes ✓ API V1 (${leadSource})`
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
