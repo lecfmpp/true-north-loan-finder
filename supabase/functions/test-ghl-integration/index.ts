@@ -272,8 +272,11 @@ serve(async (req) => {
     console.log('Private Integration Token format validated');
     console.log('Location ID:', integration.location_id);
 
-    // Test API key by getting location info using API V1
-    const locationResponse = await fetch(`https://services.leadconnectorhq.com/locations/${integration.location_id}`, {
+    // Test API key validity first with a basic auth check
+    let apiKeyValid = false;
+    
+    // Test contacts.read scope by attempting to get contacts (limit to 1)
+    const contactsTestResponse = await fetch(`https://services.leadconnectorhq.com/contacts/?locationId=${integration.location_id}&limit=1`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${integration.api_key}`,
@@ -282,32 +285,59 @@ serve(async (req) => {
       },
     });
 
-    console.log('Location API response status:', locationResponse.status);
+    console.log('Contacts API response status:', contactsTestResponse.status);
 
-    // Track API access issues but don't fail the entire test
     let locationError = null;
-    let locationData = null;
+    let contactsAccessible = false;
 
-    if (!locationResponse.ok) {
-      const errorText = await locationResponse.text();
-      console.error('GHL Location API Error:', errorText);
+    if (contactsTestResponse.ok) {
+      apiKeyValid = true;
+      contactsAccessible = true;
+      console.log('Contacts API accessible - contacts.read scope verified');
+    } else {
+      const errorText = await contactsTestResponse.text();
+      console.error('GHL Contacts API Error:', errorText);
       
       locationError = {
-        status: locationResponse.status,
+        status: contactsTestResponse.status,
         message: errorText
       };
 
-      if (locationResponse.status === 401) {
-        scopeIssues.push('contacts.read');
+      if (contactsTestResponse.status === 401) {
         locationError.interpretation = "Missing contacts.read scope or invalid token";
-      } else if (locationResponse.status === 403) {
-        locationError.interpretation = "Access forbidden - check token permissions";
-      } else if (locationResponse.status === 404) {
+        scopeIssues.push('contacts.read');
+      } else if (contactsTestResponse.status === 403) {
+        locationError.interpretation = "Access forbidden - check token permissions for contacts";
+        scopeIssues.push('contacts.read');
+      } else if (contactsTestResponse.status === 404) {
         locationError.interpretation = "Location not found - verify Location ID";
+      } else {
+        // For other errors, assume API key might still be valid
+        apiKeyValid = true;
+        locationError.interpretation = `Contacts API returned ${contactsTestResponse.status} - API key may be valid but contacts access limited`;
       }
-    } else {
-      locationData = await locationResponse.json();
-      console.log('Location verified:', locationData.location?.name);
+    }
+
+    // If contacts test failed, try a simpler API key validation
+    if (!apiKeyValid) {
+      console.log('Testing basic API key validity...');
+      // Test with locations endpoint as fallback
+      const locationResponse = await fetch(`https://services.leadconnectorhq.com/locations/${integration.location_id}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${integration.api_key}`,
+          'Content-Type': 'application/json',
+          'Version': '2021-07-28',
+        },
+      });
+
+      if (locationResponse.ok) {
+        apiKeyValid = true;
+        const locationData = await locationResponse.json();
+        console.log('Location API accessible, API key valid:', locationData.location?.name);
+      } else {
+        console.log('Location API also failed, status:', locationResponse.status);
+      }
     }
 
     // Fetch pipelines for validation and discovery
@@ -437,16 +467,20 @@ serve(async (req) => {
             status: 'Valid',
             details: 'Private Integration Token authenticated successfully (API V1)'
           },
-          location: locationError ? {
+          location: contactsAccessible ? {
+            status: 'Valid',
+            details: 'Contacts accessible - contacts.read scope verified',
+            locationId: integration.location_id
+          } : (locationError ? {
             status: 'Error',
-            details: locationError.interpretation || 'Location API failed',
+            details: locationError.interpretation || 'Contacts API failed',
             error: locationError.message,
             locationId: integration.location_id
           } : {
-            status: 'Valid',
-            details: locationData?.location?.name || 'Location verified',
+            status: 'Unknown',
+            details: 'Unable to verify location access',
             locationId: integration.location_id
-          },
+          }),
           pipeline: integration.pipeline_id ? {
             status: pipelineValid ? 'Valid' : 'Invalid',
             details: pipelineValid ? `Pipeline '${pipelineInfo?.name}' verified` : 'Pipeline not found in location',
@@ -621,16 +655,20 @@ serve(async (req) => {
                 status: 'Valid',
                 details: 'Private Integration Token authenticated successfully (API V1)'
               },
-              location: locationError ? {
+              location: contactsAccessible ? {
+                status: 'Valid',
+                details: 'Contacts accessible - contacts.read scope verified',
+                locationId: integration.location_id
+              } : (locationError ? {
                 status: 'Error',
-                details: locationError.interpretation || 'Location API failed',
+                details: locationError.interpretation || 'Contacts API failed',
                 error: locationError.message,
                 locationId: integration.location_id
               } : {
-                status: 'Valid',
-                details: locationData?.location?.name || 'Location verified',
+                status: 'Unknown',
+                details: 'Unable to verify location access',
                 locationId: integration.location_id
-              },
+              }),
               pipeline: integration.pipeline_id ? {
                 status: pipelineValid ? 'Valid' : 'Invalid',
                 details: pipelineValid ? 'Pipeline ID verified' : 'Pipeline not found in location',
@@ -740,16 +778,20 @@ serve(async (req) => {
           status: 'Valid',
           details: 'Private Integration Token authenticated successfully (API V1)'
         },
-        location: locationError ? {
+        location: contactsAccessible ? {
+          status: 'Valid', 
+          details: 'Contacts accessible - contacts.read scope verified',
+          locationId: integration.location_id
+        } : (locationError ? {
           status: 'Error',
-          details: locationError.interpretation || 'Location API failed',
+          details: locationError.interpretation || 'Contacts API failed',
           error: locationError.message,
           locationId: integration.location_id
         } : {
-          status: 'Valid',
-          details: locationData?.location?.name || 'Location verified',
+          status: 'Unknown',
+          details: 'Unable to verify location access', 
           locationId: integration.location_id
-        },
+        }),
         pipeline: integration.pipeline_id ? {
           status: pipelineValid ? 'Valid' : 'Invalid',
           details: pipelineValid ? 'Pipeline ID verified' : 'Pipeline not found in location',
