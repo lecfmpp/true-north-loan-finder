@@ -151,7 +151,7 @@ export default function GHLIntegrationManagement() {
     try {
       setTesting(true);
       
-      console.log('Testing integration:', integration);
+      console.log('Testing integration:', integration.id, 'with real data:', useRealData);
       
       // Test the integration by calling our edge function
       const { data, error } = await supabase.functions.invoke('test-ghl-integration', {
@@ -170,18 +170,38 @@ export default function GHLIntegrationManagement() {
         }
       });
 
-      console.log('Response data:', data);
-      console.log('Response error:', error);
+      console.log('Test response data:', data);
+      console.log('Test response error:', error);
 
       if (error) {
         console.error('Edge function error details:', error);
         
-        // Show more specific error information
+        // Show detailed error information with debug info
+        let errorMessage = 'Integration test failed';
         if (error.message?.includes('400')) {
-          toast.error('Integration test failed: Bad request. Please check your API token format and settings.');
+          errorMessage = 'Bad request - check API token format and settings';
+        } else if (error.message?.includes('401')) {
+          errorMessage = 'Authentication failed - invalid API token';
+        } else if (error.message?.includes('403')) {
+          errorMessage = 'Permission denied - check API token scopes';
+        } else if (error.message?.includes('500')) {
+          errorMessage = 'Server error - check function logs for details';
         } else {
-          toast.error(`Integration test failed: ${error.message}`);
+          errorMessage = error.message || 'Unknown error';
         }
+        
+        toast.error(
+          <div className="space-y-2">
+            <div className="font-medium">GHL Integration Test Failed</div>
+            <div className="text-sm">{errorMessage}</div>
+            {data?.debugInfo && (
+              <div className="text-xs text-muted-foreground">
+                Debug: {data.debugInfo.originalError || 'No additional debug info'}
+              </div>
+            )}
+          </div>,
+          { duration: 8000 }
+        );
         return;
       }
       
@@ -195,24 +215,54 @@ export default function GHLIntegrationManagement() {
         
         toast.success(
           <div className="space-y-2">
-            <div className="font-medium">GHL Integration Test Results</div>
+            <div className="font-medium">✅ GHL Integration Test Results</div>
             <div className="text-sm">{data.summary}</div>
             <div className="text-xs text-muted-foreground">
-              {successCount}/{totalTests} checks passed
+              {successCount}/{totalTests} checks passed • API Version: {data.apiVersion}
             </div>
+            {data.message && (
+              <div className="text-xs bg-green-50 p-2 rounded border">
+                {data.message}
+              </div>
+            )}
           </div>,
-          { duration: 6000 }
+          { duration: 8000 }
         );
       } else {
-        // Show the actual error from the response
+        // Show the actual error from the response with more context
         const errorMsg = data?.error || 'Unknown error occurred';
-        console.error('Test failed with error:', errorMsg);
-        toast.error(`Test failed: ${errorMsg}`);
+        const details = data?.details || '';
+        console.error('Test failed with error:', errorMsg, 'Details:', details);
+        
+        toast.error(
+          <div className="space-y-2">
+            <div className="font-medium">❌ Integration Test Failed</div>
+            <div className="text-sm">{errorMsg}</div>
+            {details && details !== errorMsg && (
+              <div className="text-xs text-muted-foreground">Details: {details}</div>
+            )}
+            {data?.debugInfo && (
+              <div className="text-xs bg-red-50 p-2 rounded border mt-2">
+                Debug: {data.debugInfo.originalError}
+              </div>
+            )}
+          </div>,
+          { duration: 10000 }
+        );
       }
       
     } catch (error: any) {
       console.error('Error testing integration:', error);
-      toast.error(`Failed to test integration: ${error.message || 'Unknown error'}`);
+      toast.error(
+        <div className="space-y-2">
+          <div className="font-medium">⚠️ Test Request Failed</div>
+          <div className="text-sm">{error.message || 'Unknown error'}</div>
+          <div className="text-xs text-muted-foreground">
+            This may be a network issue or function deployment problem
+          </div>
+        </div>,
+        { duration: 8000 }
+      );
     } finally {
       setTesting(false);
     }
@@ -482,6 +532,7 @@ export default function GHLIntegrationManagement() {
                         disabled={testing}
                         size="sm"
                         variant="outline"
+                        title="Test integration with mock data"
                       >
                         {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <TestTube className="w-4 h-4" />}
                         Test (Mock)
@@ -491,6 +542,7 @@ export default function GHLIntegrationManagement() {
                         disabled={testing}
                         size="sm"
                         variant="default"
+                        title="Test integration with data from the last assigned lead"
                       >
                         {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <TestTube className="w-4 h-4" />}
                         Test (Real Lead)

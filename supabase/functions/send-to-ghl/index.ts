@@ -149,17 +149,20 @@ serve(async (req) => {
       }
     });
 
-    // Convert custom fields to API V1 format (array of objects)
+    // Convert custom fields to API V1 format (array of objects) - Enhanced validation
     const customFieldsArray = [];
     
-    // Add mapped custom fields
+    // Add mapped custom fields with validation
     Object.entries(ghlContact.customFields || {}).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        customFieldsArray.push({ key, field_value: String(value) });
+      if (value !== undefined && value !== null && value !== '') {
+        // Ensure key is valid (no spaces, special chars)
+        const sanitizedKey = String(key).replace(/[^a-zA-Z0-9_]/g, '_');
+        const sanitizedValue = String(value).slice(0, 255); // Limit field value length
+        customFieldsArray.push({ key: sanitizedKey, field_value: sanitizedValue });
       }
     });
     
-    // Add additional lead data as custom fields
+    // Add additional lead data as custom fields with enhanced validation
     const additionalFields = {
       loanAmount: leadData.loan_amount?.toString(),
       monthlyRevenue: leadData.monthly_revenue?.toString(),
@@ -170,19 +173,30 @@ serve(async (req) => {
       city: leadData.city_province,
       country: leadData.country,
       quizResponseId: quizResponseId,
-      submissionDate: new Date().toISOString()
+      submissionDate: new Date().toISOString(),
+      systemSource: 'LeadManagementSystem'
     };
     
     if (applicationData) {
       additionalFields.hasApplication = 'true';
+      additionalFields.applicationSubmitted = new Date().toISOString();
+    }
+
+    if (documents && documents.length > 0) {
+      additionalFields.documentsCount = documents.length.toString();
+      additionalFields.hasDocuments = 'true';
     }
     
+    // Add fields with validation
     Object.entries(additionalFields).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        customFieldsArray.push({ key, field_value: String(value) });
+      if (value !== undefined && value !== null && value !== '') {
+        const sanitizedKey = String(key).replace(/[^a-zA-Z0-9_]/g, '_');
+        const sanitizedValue = String(value).slice(0, 255); // Limit field value length
+        customFieldsArray.push({ key: sanitizedKey, field_value: sanitizedValue });
       }
     });
     
+    // Ensure customFields is always an array for API V1
     ghlContact.customFields = customFieldsArray;
 
     // Create contact notes with document information

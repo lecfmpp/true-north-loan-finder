@@ -18,6 +18,54 @@ interface TestGHLRequest {
     credit_score: string;
   };
   useRealData?: boolean;
+  dryRun?: boolean;
+}
+
+// Enhanced phone normalization function
+function normalizePhone(phone: string, country: string = 'US'): string {
+  if (!phone) return '+15551234567'; // Fallback for test
+  
+  // Remove all non-digits
+  const digits = phone.replace(/\D/g, '');
+  
+  // For US/Canada numbers, ensure they start with +1
+  if (country === 'US' || country === 'CA') {
+    if (digits.length === 10) {
+      return `+1${digits}`;
+    } else if (digits.length === 11 && digits.startsWith('1')) {
+      return `+${digits}`;
+    }
+  }
+  
+  // For other countries, add + if not present
+  return digits.startsWith('+') ? digits : `+${digits}`;
+}
+
+// Enhanced name validation and normalization
+function normalizeName(name: string): { firstName: string; lastName: string } {
+  if (!name || typeof name !== 'string') {
+    return { firstName: 'Test', lastName: 'Lead' };
+  }
+  
+  const cleanName = name.trim();
+  if (!cleanName) {
+    return { firstName: 'Test', lastName: 'Lead' };
+  }
+  
+  const nameParts = cleanName.split(' ').filter(part => part.length > 0);
+  const firstName = nameParts[0] || 'Test';
+  const lastName = nameParts.slice(1).join(' ') || 'Lead';
+  
+  return { firstName, lastName };
+}
+
+// Enhanced email validation
+function normalizeEmail(email: string): string {
+  if (!email || typeof email !== 'string' || !email.includes('@')) {
+    return 'test@integration-test.com';
+  }
+  
+  return email.toLowerCase().trim();
 }
 
 serve(async (req) => {
@@ -54,45 +102,66 @@ serve(async (req) => {
       });
     }
 
-    // Get real lead data if requested
+    // Get real lead data if requested - with enhanced error handling
     let actualTestData = testData;
     let leadSource = 'Test Data';
+    let realLeadId = null;
     
     if (useRealData) {
       console.log('Fetching last lead assigned to partner...');
       
-      // Get the last lead assigned to this partner
-      const { data: lastLead, error: leadError } = await supabase
-        .from("quiz_responses")
-        .select(`
-          *,
-          lead_assignments!inner(
-            partner_id,
-            assigned_at
-          )
-        `)
-        .eq("lead_assignments.partner_id", partnerId)
-        .order("lead_assignments.assigned_at", { ascending: false })
-        .limit(1)
-        .single();
+      try {
+        // First try with lead_assignments join
+        let leadQuery = await supabase
+          .from("quiz_responses")
+          .select(`
+            *,
+            lead_assignments!inner(
+              partner_id,
+              assigned_at
+            )
+          `)
+          .eq("lead_assignments.partner_id", partnerId)
+          .order("lead_assignments.assigned_at", { ascending: false })
+          .limit(1);
 
-      if (leadError || !lastLead) {
-        console.log('No leads found for partner, using test data');
-        leadSource = 'Test Data (No real leads available)';
-      } else {
-        console.log('Found real lead data:', lastLead.id);
-        leadSource = `Real Lead Data (ID: ${lastLead.id})`;
+        // If no results with join, try direct assigned_partner_id
+        if (!leadQuery.data || leadQuery.data.length === 0) {
+          console.log('No leads found with assignments table, trying assigned_partner_id...');
+          leadQuery = await supabase
+            .from("quiz_responses")
+            .select("*")
+            .eq("assigned_partner_id", partnerId)
+            .order("updated_at", { ascending: false })
+            .limit(1);
+        }
+
+        const lastLead = leadQuery.data?.[0];
         
-        // Use real lead data but modify email to avoid conflicts
-        actualTestData = {
-          name: lastLead.name || 'Test Lead',
-          email: `test-${lastLead.id.substring(0, 8)}@integration-test.com`, // Modified email to avoid conflicts
-          phone: lastLead.phone || '5551234567',
-          company_name: lastLead.company_name || 'Test Company',
-          loan_amount: lastLead.loan_amount || 50000,
-          monthly_revenue: lastLead.monthly_revenue || 25000,
-          credit_score: lastLead.credit_score || 'good'
-        };
+        if (leadQuery.error || !lastLead) {
+          console.log('No leads found for partner, using test data. Error:', leadQuery.error?.message);
+          leadSource = 'Test Data (No real leads available)';
+        } else {
+          console.log('Found real lead data:', lastLead.id);
+          realLeadId = lastLead.id;
+          leadSource = `Real Lead Data (ID: ${lastLead.id})`;
+          
+          // Use real lead data with defensive parsing and normalization
+          actualTestData = {
+            name: lastLead.name || 'Test Lead',
+            email: `test-${lastLead.id.substring(0, 8)}@integration-test.com`, // Modified email to avoid conflicts
+            phone: lastLead.phone || '5551234567',
+            company_name: lastLead.company_name || lastLead.use_of_funds || 'Test Company',
+            loan_amount: typeof lastLead.loan_amount === 'number' ? lastLead.loan_amount : 50000,
+            monthly_revenue: typeof lastLead.monthly_revenue === 'number' ? lastLead.monthly_revenue : 25000,
+            credit_score: lastLead.credit_score || 'good'
+          };
+          
+          console.log('Processed real lead data:', JSON.stringify(actualTestData, null, 2));
+        }
+      } catch (fetchError) {
+        console.error('Error fetching real lead data:', fetchError);
+        leadSource = `Test Data (Error fetching real leads: ${fetchError.message})`;
       }
     }
 
@@ -213,36 +282,50 @@ serve(async (req) => {
       }
     }
 
-    // Prepare test contact data for API V1
-    const nameParts = actualTestData.name.trim().split(' ');
-    const firstName = nameParts[0] || '';
-    const lastName = nameParts.slice(1).join(' ') || '';
+    // Prepare test contact data for API V1 with enhanced validation
+    const { firstName, lastName } = normalizeName(actualTestData.name);
+    const normalizedPhone = normalizePhone(actualTestData.phone, actualTestData.country || 'US');
+    const normalizedEmail = normalizeEmail(actualTestData.email);
 
-    // Normalize phone number (add +1 for US/Canada)
-    let normalizedPhone = actualTestData.phone.replace(/\D/g, '');
-    if (normalizedPhone.length === 10) {
-      normalizedPhone = `+1${normalizedPhone}`;
-    } else if (normalizedPhone.length === 11 && normalizedPhone.startsWith('1')) {
-      normalizedPhone = `+${normalizedPhone}`;
+    // Ensure all required fields are valid
+    if (!firstName || !normalizedEmail) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: "Invalid lead data: name and email are required"
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Build custom fields array properly for API V1
+    const customFieldsArray = [
+      { key: 'loanAmount', field_value: String(actualTestData.loan_amount) },
+      { key: 'monthlyRevenue', field_value: String(actualTestData.monthly_revenue) },
+      { key: 'creditScore', field_value: String(actualTestData.credit_score) },
+      { key: 'testContact', field_value: 'true' },
+      { key: 'apiVersion', field_value: 'v1' },
+      { key: 'dataSource', field_value: leadSource },
+      { key: 'integrationTest', field_value: new Date().toISOString() }
+    ];
+
+    // Add real lead ID if available
+    if (realLeadId) {
+      customFieldsArray.push({ key: 'originalLeadId', field_value: realLeadId });
     }
 
     const testContact = {
       firstName,
-      lastName: lastName || 'Test',
-      email: actualTestData.email,
+      lastName,
+      email: normalizedEmail,
       phone: normalizedPhone,
-      companyName: actualTestData.company_name,
+      companyName: actualTestData.company_name || 'Test Company',
       source: `API V1 Integration Test - ${leadSource}`,
       tags: ['Test', 'Integration', 'API-V1', useRealData ? 'RealData' : 'MockData'],
-      customFields: [
-        { key: 'loanAmount', field_value: actualTestData.loan_amount.toString() },
-        { key: 'monthlyRevenue', field_value: actualTestData.monthly_revenue.toString() },
-        { key: 'creditScore', field_value: actualTestData.credit_score },
-        { key: 'testContact', field_value: 'true' },
-        { key: 'apiVersion', field_value: 'v1' },
-        { key: 'dataSource', field_value: leadSource }
-      ]
+      customFields: customFieldsArray
     };
+
+    console.log('Prepared test contact for API V1:', JSON.stringify(testContact, null, 2));
 
     console.log('Creating test contact with API V1:', JSON.stringify(testContact, null, 2));
 
@@ -394,11 +477,54 @@ serve(async (req) => {
   } catch (error: any) {
     console.error("Error in test-ghl-integration function (API V1):", error);
 
+    // Log error to database for debugging
+    try {
+      const supabase = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      );
+
+      await supabase
+        .from("ghl_integration_logs")
+        .insert({
+          partner_id: partnerId || null,
+          status: 'error',
+          error_message: error.message,
+          response_data: {
+            error: error.message,
+            stack: error.stack,
+            apiVersion: 'v1',
+            testType: 'integration_test',
+            useRealData: !!useRealData,
+            timestamp: new Date().toISOString()
+          }
+        });
+    } catch (logError) {
+      console.error('Failed to log error to database:', logError);
+    }
+
+    // Provide more helpful error messages
+    let userFriendlyError = error.message;
+    if (error.message.includes('401')) {
+      userFriendlyError = 'Invalid or expired GHL Private Integration Token. Please check your credentials.';
+    } else if (error.message.includes('403')) {
+      userFriendlyError = 'GHL Private Integration Token does not have sufficient scopes. Please ensure contacts and opportunities scopes are granted.';
+    } else if (error.message.includes('404')) {
+      userFriendlyError = 'GHL location not found. Please verify the Location ID.';
+    } else if (error.message.includes('Cannot read properties of undefined')) {
+      userFriendlyError = 'Data validation error. Please check your integration configuration.';
+    }
+
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message || "Failed to test GHL API V1 integration",
-        apiVersion: 'v1'
+        error: userFriendlyError,
+        details: error.message,
+        apiVersion: 'v1',
+        debugInfo: {
+          originalError: error.message,
+          stack: error.stack?.split('\n')[0] // First line of stack trace
+        }
       }),
       {
         status: 500,
