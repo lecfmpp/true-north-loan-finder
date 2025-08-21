@@ -186,9 +186,16 @@ serve(async (req) => {
       ]
     };
 
-    console.log('Creating test contact with API V1:', testContact);
+    console.log('Creating test contact with API V1:', JSON.stringify(testContact, null, 2));
 
     // Create test contact using API V1
+    const requestBody = {
+      ...testContact,
+      locationId: integration.location_id
+    };
+    
+    console.log('GHL API Request Body:', JSON.stringify(requestBody, null, 2));
+    
     const contactResponse = await fetch(`https://services.leadconnectorhq.com/contacts/`, {
       method: 'POST',
       headers: {
@@ -197,10 +204,7 @@ serve(async (req) => {
         'Version': '2021-07-28',
         'LocationId': integration.location_id,
       },
-      body: JSON.stringify({
-        ...testContact,
-        locationId: integration.location_id
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     let contactResult = null;
@@ -229,10 +233,25 @@ serve(async (req) => {
       const errorText = await contactResponse.text();
       console.error('Test contact creation failed:', errorText);
       
+      let errorMessage = `Failed to create test contact: ${contactResponse.status}`;
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message ? 
+          (Array.isArray(errorData.message) ? errorData.message.join(', ') : errorData.message) :
+          errorMessage;
+      } catch (e) {
+        // Use the raw error text if JSON parsing fails
+        errorMessage = errorText || errorMessage;
+      }
+      
       return new Response(JSON.stringify({
         success: false,
-        error: `Failed to create test contact: ${contactResponse.status}`,
-        apiVersion: 'v1'
+        error: errorMessage,
+        details: {
+          status: contactResponse.status,
+          response: errorText,
+          apiVersion: 'v1'
+        }
       }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
