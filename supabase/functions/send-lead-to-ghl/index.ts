@@ -218,26 +218,32 @@ serve(async (req) => {
     // Check for duplicates first (unless skipped)
     let existingContactId = null;
     if (!skipDuplicateCheck && leadData.email) {
-      const duplicateResponse = await fetch(`https://services.leadconnectorhq.com/contacts/search/duplicate`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${integration.api_key}`,
-          'Content-Type': 'application/json',
-          'Version': '2021-07-28',
-        },
-        body: JSON.stringify({
-          email: leadData.email,
-          phone: normalizedPhone,
-          locationId: integration.location_id
-        }),
-      });
+      try {
+        const duplicateResponse = await fetch(`https://services.leadconnectorhq.com/contacts/search/duplicate`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${integration.api_key}`,
+            'Content-Type': 'application/json',
+            'Version': '2021-07-28',
+          },
+          body: JSON.stringify({
+            email: leadData.email,
+            phone: normalizedPhone,
+            locationId: integration.location_id
+          }),
+        });
 
-      if (duplicateResponse.ok) {
-        const duplicateData = await duplicateResponse.json();
-        if (duplicateData.contact) {
-          existingContactId = duplicateData.contact.id;
-          console.log('Found existing contact:', existingContactId);
+        if (duplicateResponse.ok) {
+          const duplicateData = await duplicateResponse.json();
+          if (duplicateData.contact) {
+            existingContactId = duplicateData.contact.id;
+            console.log('Found existing contact:', existingContactId);
+          }
+        } else {
+          console.log('Duplicate check failed, will proceed with creation');
         }
+      } catch (dupError) {
+        console.log('Duplicate check error, will proceed with creation:', dupError);
       }
     }
 
@@ -246,35 +252,57 @@ serve(async (req) => {
 
     // Create contact if no duplicate found
     if (!existingContactId) {
-      const contactResponse = await fetch(`https://services.leadconnectorhq.com/contacts/`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${integration.api_key}`,
-          'Content-Type': 'application/json',
-          'Version': '2021-07-28',
-        },
-        body: JSON.stringify(contactPayload),
-      });
+      try {
+        const contactResponse = await fetch(`https://services.leadconnectorhq.com/contacts/`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${integration.api_key}`,
+            'Content-Type': 'application/json',
+            'Version': '2021-07-28',
+          },
+          body: JSON.stringify(contactPayload),
+        });
 
-      if (contactResponse.ok) {
-        const contactResult = await contactResponse.json();
-        contactId = contactResult.contact.id;
-        contactCreated = true;
-        console.log('Contact created successfully:', contactId);
-      } else {
-        const errorText = await contactResponse.text();
-        console.error('Failed to create contact:', errorText);
-        
+        if (contactResponse.ok) {
+          const contactResult = await contactResponse.json();
+          contactId = contactResult.contact.id;
+          contactCreated = true;
+          console.log('Contact created successfully:', contactId);
+        } else {
+          const errorResponse = await contactResponse.json().catch(() => ({}));
+          console.error('Failed to create contact:', errorResponse);
+          
+          // Check if it's a duplicate error with contactId in response
+          if (errorResponse.meta?.contactId) {
+            console.log('Duplicate contact detected in error response, using existing contact:', errorResponse.meta.contactId);
+            contactId = errorResponse.meta.contactId;
+            contactCreated = false;
+          } else {
+            return new Response(JSON.stringify({
+              success: false,
+              error: `Failed to create contact: ${contactResponse.status} - ${errorResponse.message || 'Unknown error'}`,
+              leadId,
+              partnerId: targetPartnerId
+            }), {
+              status: 400,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+          }
+        }
+      } catch (createError) {
+        console.error('Contact creation error:', createError);
         return new Response(JSON.stringify({
           success: false,
-          error: `Failed to create contact: ${contactResponse.status} - ${errorText}`,
+          error: `Contact creation failed: ${createError.message}`,
           leadId,
           partnerId: targetPartnerId
         }), {
-          status: 400,
+          status: 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+    } else {
+      console.log('Using existing contact:', existingContactId);
     }
 
     let opportunityResult = null;
