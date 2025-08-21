@@ -86,6 +86,9 @@ const GHLLeadManagement = () => {
   };
 
   const sendLeadToGHL = async (leadId: string, skipDuplicateCheck = false) => {
+    const operation = skipDuplicateCheck ? 'Creating Opportunity' : 'Sending Lead to GHL';
+    console.log(`🚀 ${operation} started for lead:`, leadId);
+    
     try {
       setSendingLeads(prev => new Set([...prev, leadId]));
       
@@ -95,29 +98,46 @@ const GHLLeadManagement = () => {
         throw new Error('Lead not found');
       }
       
+      console.log('📋 Lead details:', {
+        id: lead.id,
+        name: lead.name,
+        email: lead.email,
+        partnerId: lead.assigned_partner_id,
+        hasContact: !!lead.ghl_contact_id,
+        hasOpportunity: !!lead.ghl_opportunity_id
+      });
+      
       if (!lead.assigned_partner_id) {
         throw new Error('Lead has no assigned partner');
       }
       
+      const payload = {
+        leadId,
+        partnerId: lead.assigned_partner_id,
+        createOpportunity: true,
+        skipDuplicateCheck
+      };
+      
+      console.log('📤 Sending to GHL with payload:', payload);
+      
       const { data, error } = await supabase.functions.invoke('send-lead-to-ghl', {
-        body: {
-          leadId,
-          partnerId: lead.assigned_partner_id,
-          createOpportunity: true,
-          skipDuplicateCheck
-        }
+        body: payload
       });
+
+      console.log('📥 GHL Response:', { data, error });
 
       if (error) throw error;
 
       if (data.success) {
+        console.log('✅ Success:', data);
         toast.success(data.message || 'Lead sent to GHL successfully');
         fetchLeads(); // Refresh the list
       } else {
+        console.log('❌ Operation failed:', data);
         throw new Error(data.error || 'Failed to send lead');
       }
     } catch (error) {
-      console.error('Error sending lead to GHL:', error);
+      console.error('💥 Error sending lead to GHL:', error);
       toast.error(`Failed to send lead: ${error.message}`);
     } finally {
       setSendingLeads(prev => {
@@ -125,6 +145,7 @@ const GHLLeadManagement = () => {
         newSet.delete(leadId);
         return newSet;
       });
+      console.log(`🏁 ${operation} completed for lead:`, leadId);
     }
   };
 
