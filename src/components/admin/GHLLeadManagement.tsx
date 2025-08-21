@@ -33,10 +33,6 @@ interface Lead {
   conversion_status: string;
   created_at: string;
   updated_at: string;
-  partners?: {
-    company_name: string;
-    contact_name: string;
-  };
 }
 
 const GHLLeadManagement = () => {
@@ -64,11 +60,7 @@ const GHLLeadManagement = () => {
           status,
           conversion_status,
           created_at,
-          updated_at,
-          partners:assigned_partner_id (
-            company_name,
-            contact_name
-          )
+          updated_at
         `)
         .not('assigned_partner_id', 'is', null)
         .order('created_at', { ascending: false })
@@ -245,13 +237,6 @@ const GHLLeadManagement = () => {
                               <span>{lead.phone}</span>
                             </div>
                           </div>
-
-                          {lead.partners && (
-                            <div className="text-sm text-muted-foreground">
-                              <span className="font-medium">Partner:</span> {lead.partners.company_name} 
-                              {lead.partners.contact_name && ` (${lead.partners.contact_name})`}
-                            </div>
-                          )}
 
                           {(lead.ghl_contact_id || lead.ghl_opportunity_id) && (
                             <div className="flex gap-4 text-sm">
