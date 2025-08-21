@@ -161,22 +161,29 @@ serve(async (req) => {
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
 
+    // Normalize phone number (add +1 for US/Canada)
+    let normalizedPhone = testData.phone.replace(/\D/g, '');
+    if (normalizedPhone.length === 10) {
+      normalizedPhone = `+1${normalizedPhone}`;
+    } else if (normalizedPhone.length === 11 && normalizedPhone.startsWith('1')) {
+      normalizedPhone = `+${normalizedPhone}`;
+    }
+
     const testContact = {
       firstName,
       lastName: lastName || 'Test',
       email: testData.email,
-      phone: testData.phone.replace(/\D/g, ''),
+      phone: normalizedPhone,
       companyName: testData.company_name,
       source: 'API V1 Integration Test',
       tags: ['Test', 'Integration', 'API-V1'],
-      customFields: {
-        loanAmount: testData.loan_amount.toString(),
-        monthlyRevenue: testData.monthly_revenue.toString(),
-        creditScore: testData.credit_score,
-        testContact: 'true',
-        apiVersion: 'v1'
-      },
-      locationId: integration.location_id,
+      customFields: [
+        { key: 'loanAmount', field_value: testData.loan_amount.toString() },
+        { key: 'monthlyRevenue', field_value: testData.monthly_revenue.toString() },
+        { key: 'creditScore', field_value: testData.credit_score },
+        { key: 'testContact', field_value: 'true' },
+        { key: 'apiVersion', field_value: 'v1' }
+      ]
     };
 
     console.log('Creating test contact with API V1:', testContact);
@@ -188,8 +195,12 @@ serve(async (req) => {
         'Authorization': `Bearer ${integration.api_key}`,
         'Content-Type': 'application/json',
         'Version': '2021-07-28',
+        'LocationId': integration.location_id,
       },
-      body: JSON.stringify(testContact),
+      body: JSON.stringify({
+        ...testContact,
+        locationId: integration.location_id
+      }),
     });
 
     let contactResult = null;

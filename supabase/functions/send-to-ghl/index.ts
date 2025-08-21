@@ -149,9 +149,18 @@ serve(async (req) => {
       }
     });
 
-    // Add additional custom fields with lead data
-    ghlContact.customFields = {
-      ...ghlContact.customFields,
+    // Convert custom fields to API V1 format (array of objects)
+    const customFieldsArray = [];
+    
+    // Add mapped custom fields
+    Object.entries(ghlContact.customFields || {}).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        customFieldsArray.push({ key, field_value: String(value) });
+      }
+    });
+    
+    // Add additional lead data as custom fields
+    const additionalFields = {
       loanAmount: leadData.loan_amount?.toString(),
       monthlyRevenue: leadData.monthly_revenue?.toString(),
       creditScore: leadData.credit_score,
@@ -161,9 +170,20 @@ serve(async (req) => {
       city: leadData.city_province,
       country: leadData.country,
       quizResponseId: quizResponseId,
-      ...(applicationData && { hasApplication: 'true' }),
       submissionDate: new Date().toISOString()
     };
+    
+    if (applicationData) {
+      additionalFields.hasApplication = 'true';
+    }
+    
+    Object.entries(additionalFields).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        customFieldsArray.push({ key, field_value: String(value) });
+      }
+    });
+    
+    ghlContact.customFields = customFieldsArray;
 
     // Create contact notes with document information
     let contactNotes = `Lead submitted via Lead Management System
@@ -217,6 +237,7 @@ Business Details:
               'Authorization': `Bearer ${integration.api_key}`,
               'Content-Type': 'application/json',
               'Version': '2021-07-28',
+              'LocationId': integration.location_id,
             },
             body: JSON.stringify({
               ...ghlContact,
@@ -244,6 +265,7 @@ Business Details:
           'Authorization': `Bearer ${integration.api_key}`,
           'Content-Type': 'application/json',
           'Version': '2021-07-28',
+          'LocationId': integration.location_id,
         },
         body: JSON.stringify({
           ...ghlContact,
@@ -287,19 +309,21 @@ Business Details:
 
     // Create opportunity if pipeline is configured using API V1
     if (integration.pipeline_id && contactResult.contact?.id) {
+      const opportunityCustomFields = [
+        { key: 'loanAmount', field_value: leadData.loan_amount?.toString() || '' },
+        { key: 'monthlyRevenue', field_value: leadData.monthly_revenue?.toString() || '' },
+        { key: 'creditScore', field_value: leadData.credit_score || '' },
+        { key: 'useOfFunds', field_value: leadData.use_of_funds || '' },
+        { key: 'quizResponseId', field_value: quizResponseId || '' },
+      ].filter(field => field.field_value !== '');
+
       const ghlOpportunity: GHLOpportunity = {
         title: `Business Loan - ${leadData.company_name || leadData.name}`,
         status: 'open',
         monetaryValue: leadData.loan_amount,
         pipelineId: integration.pipeline_id,
         contactId: contactResult.contact.id,
-        customFields: {
-          loanAmount: leadData.loan_amount?.toString(),
-          monthlyRevenue: leadData.monthly_revenue?.toString(),
-          creditScore: leadData.credit_score,
-          useOfFunds: leadData.use_of_funds,
-          quizResponseId: quizResponseId,
-        }
+        customFields: opportunityCustomFields
       };
 
       console.log('Creating opportunity in GHL with API V1:', ghlOpportunity);
@@ -310,6 +334,7 @@ Business Details:
           'Authorization': `Bearer ${integration.api_key}`,
           'Content-Type': 'application/json',
           'Version': '2021-07-28',
+          'LocationId': integration.location_id,
         },
         body: JSON.stringify({
           ...ghlOpportunity,
