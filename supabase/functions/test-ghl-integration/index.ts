@@ -359,6 +359,12 @@ serve(async (req) => {
       pipelineValid = false;
       const errorText = await pipelineResponse.text();
       console.log('Missing opportunities.read scope - Response:', errorText);
+    } else if (pipelineResponse.status === 401) {
+      // Unauthorized usually means the token lacks scope to read pipelines
+      scopeIssues.push('opportunities.read');
+      pipelineValid = false;
+      const errorText = await pipelineResponse.text();
+      console.log('Unauthorized when fetching pipelines (likely missing scope) - Response:', errorText);
     } else {
       pipelineValid = false;
       const errorText = await pipelineResponse.text();
