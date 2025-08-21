@@ -390,6 +390,8 @@ serve(async (req) => {
       });
     }
 
+    // Initialize webhook status before possible early returns
+    let webhookValid = true;
     console.log('Creating test contact with API V1:', JSON.stringify(baseContact, null, 2));
 
     // Create test contact using API V1
@@ -531,7 +533,6 @@ serve(async (req) => {
     }
 
     // Test webhook if configured
-    let webhookValid = true;
     if (integration.webhook_url) {
       try {
         const webhookResponse = await fetch(integration.webhook_url, {
