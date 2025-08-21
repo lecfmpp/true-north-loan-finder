@@ -80,6 +80,59 @@ async function checkExistingOpportunity(
     return null;
   }
 }
+// Find any existing opportunity for contact (across all pipelines)
+async function findAnyOpportunityForContact(contactId: string, integration: any): Promise<any | null> {
+  try {
+    const resp = await fetch(`https://services.leadconnectorhq.com/opportunities/search?contactId=${contactId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${integration.api_key}`,
+        'Content-Type': 'application/json',
+        'Version': '2021-07-28',
+      },
+    });
+    if (resp.ok) {
+      const json = await resp.json();
+      const opp = json.opportunities?.[0] || null;
+      if (opp) console.log('Found opportunity (any pipeline):', opp.id);
+      return opp || null;
+    }
+  } catch (e) {
+    console.log('findAnyOpportunityForContact error:', e);
+  }
+  return null;
+}
+
+// Move an opportunity to the target pipeline and stage
+async function moveOpportunityToPipeline(opportunityId: string, integration: any, stageId: string): Promise<boolean> {
+  try {
+    const updatePayload = {
+      pipelineId: integration.pipeline_id,
+      pipelineStageId: stageId,
+      status: 'open',
+    };
+    const resp = await fetch(`https://services.leadconnectorhq.com/opportunities/${opportunityId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${integration.api_key}`,
+        'Content-Type': 'application/json',
+        'Version': '2021-07-28',
+      },
+      body: JSON.stringify(updatePayload),
+    });
+    if (resp.ok) {
+      console.log(`Moved opportunity ${opportunityId} to pipeline ${integration.pipeline_id} stage ${stageId}`);
+      return true;
+    } else {
+      const err = await resp.json().catch(() => ({}));
+      console.error('Failed to move opportunity:', err);
+      return false;
+    }
+  } catch (e) {
+    console.error('Error moving opportunity:', e);
+    return false;
+  }
+}
 
 // Create opportunity for contact
 async function createOpportunityForContact(
@@ -127,14 +180,15 @@ async function createOpportunityForContact(
       console.error('Failed to create opportunity:', errorResponse);
       
       // Handle duplicate opportunity error gracefully
-      if (opportunityResponse.status === 400 && errorResponse.message?.includes('duplicate opportunity')) {
-        console.log('Duplicate opportunity detected, checking for existing opportunity ID');
-        const existingId = await checkExistingOpportunity(contactId, integration);
-        if (existingId) {
-          return { opportunity: { id: existingId }, existing: true };
+      if (opportunityResponse.status === 400 && (errorResponse.message?.includes('duplicate opportunity') || errorResponse.message?.toLowerCase?.().includes('duplicate'))) {
+        console.log('Duplicate opportunity detected — locating existing opportunity for contact');
+        const existing = await findAnyOpportunityForContact(contactId, integration);
+        if (existing?.id) {
+          const moved = await moveOpportunityToPipeline(existing.id, integration, stageId);
+          return { opportunity: { id: existing.id }, existing: true, moved };
         }
       }
-      
+
       throw new Error(`Failed to create opportunity: ${opportunityResponse.status} - ${errorResponse.message || 'Unknown error'}`);
     }
   } catch (error) {
