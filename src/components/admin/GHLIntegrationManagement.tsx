@@ -151,6 +151,8 @@ export default function GHLIntegrationManagement() {
     try {
       setTesting(true);
       
+      console.log('Testing integration:', integration);
+      
       // Test the integration by calling our edge function
       const { data, error } = await supabase.functions.invoke('test-ghl-integration', {
         body: {
@@ -167,13 +169,26 @@ export default function GHLIntegrationManagement() {
         }
       });
 
-      if (error) throw error;
+      console.log('Response data:', data);
+      console.log('Response error:', error);
+
+      if (error) {
+        console.error('Edge function error details:', error);
+        
+        // Show more specific error information
+        if (error.message?.includes('400')) {
+          toast.error('Integration test failed: Bad request. Please check your API token format and settings.');
+        } else {
+          toast.error(`Integration test failed: ${error.message}`);
+        }
+        return;
+      }
       
-      if (data.success) {
+      if (data && data.success) {
         // Show detailed test results
         const results = data.results;
         const successCount = Object.values(results).filter((r: any) => 
-          r.status === 'Valid' || r.status === 'Successful'
+          r.status === 'Valid' || r.status === 'Successful' || r.status === 'Verified'
         ).length;
         const totalTests = Object.keys(results).length;
         
@@ -188,12 +203,15 @@ export default function GHLIntegrationManagement() {
           { duration: 6000 }
         );
       } else {
-        toast.error(`Test failed: ${data.error}`);
+        // Show the actual error from the response
+        const errorMsg = data?.error || 'Unknown error occurred';
+        console.error('Test failed with error:', errorMsg);
+        toast.error(`Test failed: ${errorMsg}`);
       }
       
     } catch (error: any) {
       console.error('Error testing integration:', error);
-      toast.error('Failed to test integration');
+      toast.error(`Failed to test integration: ${error.message || 'Unknown error'}`);
     } finally {
       setTesting(false);
     }
@@ -259,12 +277,15 @@ export default function GHLIntegrationManagement() {
               Add Integration
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl" aria-describedby="ghl-integration-dialog-description">
             <DialogHeader>
               <DialogTitle>
                 {editingIntegration?.id ? 'Edit' : 'Add'} GHL Integration
               </DialogTitle>
             </DialogHeader>
+            <p id="ghl-integration-dialog-description" className="sr-only">
+              Configure Go High Level integration settings including API token, location ID, and field mappings.
+            </p>
             
             <div className="space-y-4">
               <div>
