@@ -1869,6 +1869,8 @@ export type Database = {
           founding_day: number | null
           founding_month: number | null
           founding_year: number | null
+          ghl_contact_id: string | null
+          ghl_opportunity_id: string | null
           id: string
           lead_value: number | null
           loan_amount: number
@@ -1902,6 +1904,8 @@ export type Database = {
           founding_day?: number | null
           founding_month?: number | null
           founding_year?: number | null
+          ghl_contact_id?: string | null
+          ghl_opportunity_id?: string | null
           id?: string
           lead_value?: number | null
           loan_amount: number
@@ -1935,6 +1939,8 @@ export type Database = {
           founding_day?: number | null
           founding_month?: number | null
           founding_year?: number | null
+          ghl_contact_id?: string | null
+          ghl_opportunity_id?: string | null
           id?: string
           lead_value?: number | null
           loan_amount?: number
