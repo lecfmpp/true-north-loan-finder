@@ -339,6 +339,7 @@ serve(async (req) => {
     if (pipelineResponse.ok) {
       pipelinesData = await pipelineResponse.json();
       availablePipelines = pipelinesData.pipelines || [];
+      console.log(`Found ${availablePipelines.length} pipelines:`, availablePipelines.map(p => ({ id: p.id, name: p.name })));
       
       if (integration.pipeline_id) {
         pipelineInfo = availablePipelines.find((p: any) => p.id === integration.pipeline_id);
@@ -346,6 +347,7 @@ serve(async (req) => {
         if (!pipelineInfo) {
           pipelineValid = false;
           console.log('Pipeline not found:', integration.pipeline_id);
+          console.log('Available pipeline IDs:', availablePipelines.map(p => p.id));
         } else {
           console.log('Pipeline verified:', pipelineInfo.name);
           // Get first stage for opportunity creation
@@ -355,10 +357,12 @@ serve(async (req) => {
     } else if (pipelineResponse.status === 403) {
       scopeIssues.push('opportunities.read');
       pipelineValid = false;
-      console.log('Missing opportunities.read scope');
+      const errorText = await pipelineResponse.text();
+      console.log('Missing opportunities.read scope - Response:', errorText);
     } else {
       pipelineValid = false;
-      console.log('Failed to fetch pipelines');
+      const errorText = await pipelineResponse.text();
+      console.log(`Failed to fetch pipelines (${pipelineResponse.status}):`, errorText);
     }
 
     // If discovery mode, return pipeline information
