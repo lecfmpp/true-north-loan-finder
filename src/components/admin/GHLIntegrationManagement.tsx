@@ -343,32 +343,16 @@ export default function GHLIntegrationManagement() {
 
       if (error) throw error;
       
-      const pipelines: Array<{ id: string; name: string; stages?: Array<{id: string; name: string}> }> = data?.availablePipelines || [];
-      const scopeIssues: string[] = data?.scopeIssues || [];
-
-      if (data && data.success && pipelines.length > 0) {
-        setAvailablePipelines(pipelines.map(p => ({ id: p.id, name: p.name })));
+      if (data && data.success && data.availablePipelines) {
+        setAvailablePipelines(data.availablePipelines);
         toast.success(
           <div className="space-y-2">
             <div className="font-medium">Pipelines Fetched</div>
-            <div className="text-sm">Found {pipelines.length} pipelines</div>
+            <div className="text-sm">Found {data.availablePipelines.length} pipelines</div>
           </div>
         );
       } else {
-        const missing = scopeIssues.length ? `Missing scopes: ${scopeIssues.join(', ')}` : 'Token may be missing required scopes';
-        toast.error(
-          <div className="space-y-2">
-            <div className="font-medium">No Pipelines Found</div>
-            <div className="text-sm">We couldn’t fetch pipelines for this Location.</div>
-            <ul className="text-xs list-disc ml-4 space-y-1">
-              <li>{missing} (require at least opportunities.readonly; recommend opportunities.write too)</li>
-              <li>Confirm the Location ID matches the sub-account that owns the pipeline</li>
-              <li>Ensure you’re using a Private Integration Token (starts with "pit-")</li>
-            </ul>
-          </div>,
-          { duration: 10000 }
-        );
-        setAvailablePipelines([]);
+        toast.error('No pipelines found or missing permissions');
       }
       
     } catch (error: any) {
