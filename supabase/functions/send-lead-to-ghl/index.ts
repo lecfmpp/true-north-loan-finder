@@ -407,9 +407,13 @@ serve(async (req) => {
     let opportunityCreated = false;
 
     // Create opportunity if requested and pipeline configured
+    console.log(`🎯 Opportunity creation check - createOpportunity: ${createOpportunity}, pipeline_id: ${integration.pipeline_id}, contactId: ${contactId}`);
+    
     if (createOpportunity && integration.pipeline_id && contactId) {
+      console.log(`✅ Starting opportunity creation process for contact ${contactId}`);
       try {
         // Get pipeline stages to find the first stage
+        console.log(`📋 Fetching pipeline stages for location: ${integration.location_id}`);
         const pipelineResponse = await fetch(`https://services.leadconnectorhq.com/opportunities/pipelines?locationId=${integration.location_id}`, {
           method: 'GET',
           headers: {
@@ -419,24 +423,36 @@ serve(async (req) => {
           },
         });
 
+        console.log(`📡 Pipeline fetch response status: ${pipelineResponse.status}`);
+        
         if (pipelineResponse.ok) {
           const pipelinesData = await pipelineResponse.json();
+          console.log(`📊 Pipelines data:`, pipelinesData);
+          
           const pipeline = pipelinesData.pipelines?.find((p: any) => p.id === integration.pipeline_id);
+          console.log(`🔍 Found target pipeline:`, pipeline ? `Yes (${pipeline.name})` : 'No');
           
           if (pipeline && pipeline.stages?.length > 0) {
             const firstStageId = pipeline.stages[0].id;
+            console.log(`🎪 Using first stage ID: ${firstStageId} (${pipeline.stages[0].name})`);
+            
             opportunityResult = await createOpportunityForContact(contactId, integration, leadData, firstStageId);
             opportunityCreated = true;
+            
+            console.log(`🎉 Opportunity creation result:`, opportunityResult);
           } else {
-            console.log('Pipeline not found or has no stages');
+            console.log(`❌ Pipeline not found or has no stages - pipeline:`, pipeline);
           }
         } else {
-          console.log('Failed to fetch pipeline information');
+          const errorText = await pipelineResponse.text();
+          console.log(`❌ Failed to fetch pipeline information - Status: ${pipelineResponse.status}, Error: ${errorText}`);
         }
       } catch (opportunityError) {
-        console.error('Failed to create opportunity:', opportunityError);
+        console.error('💥 Failed to create opportunity:', opportunityError);
         // Continue - contact was created successfully even if opportunity failed
       }
+    } else {
+      console.log(`⏭️ Skipping opportunity creation - Missing requirements`);
     }
 
     // Update the lead record with GHL IDs
