@@ -287,15 +287,15 @@ export default function GHLIntegrationManagement() {
               </div>
 
               <div>
-                <Label htmlFor="apiKey">GHL API Key (JWT Format) *</Label>
+                <Label htmlFor="apiKey">GHL Private Integration Token *</Label>
                 <div className="relative">
                   <Input
                     id="apiKey"
                     type={showApiKey['edit'] ? 'text' : 'password'}
                     value={editingIntegration?.api_key || ''}
                     onChange={(e) => setEditingIntegration(prev => ({ ...prev, api_key: e.target.value }))}
-                    placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                    className={editingIntegration?.api_key && editingIntegration.api_key.length < 100 ? 'border-yellow-400' : ''}
+                    placeholder="pit-29377c18-cb8d-488f-9434-17124225a314"
+                    className={editingIntegration?.api_key && !editingIntegration.api_key.startsWith('pit-') ? 'border-yellow-400' : ''}
                   />
                   <Button
                     type="button"
@@ -307,20 +307,20 @@ export default function GHLIntegrationManagement() {
                     {showApiKey['edit'] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </Button>
                 </div>
-                {editingIntegration?.api_key && editingIntegration.api_key.length < 100 && (
+                {editingIntegration?.api_key && !editingIntegration.api_key.startsWith('pit-') && (
                   <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 mt-2">
                     <p className="text-sm text-yellow-800">
-                      ⚠️ This doesn't look like a valid GHL API key. GHL v2 API keys are JWT tokens that are typically 200+ characters long and start with "eyJ".
+                      ⚠️ This should be a Private Integration Token starting with "pit-". Make sure you're using the correct token format for API V1.
                     </p>
                   </div>
                 )}
                 <div className="text-xs text-muted-foreground mt-2 space-y-1">
-                  <p><strong>How to get your GHL API Key:</strong></p>
+                  <p><strong>How to get your GHL Private Integration Token:</strong></p>
                   <ol className="list-decimal list-inside ml-2 space-y-0.5">
-                    <li>Go to GHL Settings → API Keys</li>
-                    <li>Click "Create New API Key"</li>
-                    <li>Grant permissions: <strong>Contacts (read/write)</strong> and <strong>Opportunities (read/write)</strong></li>
-                    <li>Copy the JWT token (should start with "eyJ" and be very long)</li>
+                    <li>Go to GHL Settings → Integrations → Private Integrations</li>
+                    <li>Create or select your Private Integration</li>
+                    <li>Grant scopes: <strong>contacts.readonly</strong>, <strong>contacts.write</strong>, <strong>opportunities.readonly</strong>, <strong>opportunities.write</strong></li>
+                    <li>Copy the Private Integration Token (starts with "pit-")</li>
                   </ol>
                 </div>
               </div>
@@ -399,11 +399,11 @@ export default function GHLIntegrationManagement() {
           <div className="space-y-2 text-sm">
             <p><strong>Required from client:</strong></p>
             <ul className="list-disc list-inside ml-4 space-y-1">
-              <li><strong>Go High Level API Key</strong> (with contacts and opportunities permissions)
+              <li><strong>Go High Level Private Integration Token</strong> (API V1 with required scopes)
                 <ul className="list-disc list-inside ml-4 mt-1 text-xs text-muted-foreground">
-                  <li>Go to GHL Settings → API Keys → Create New API Key</li>
-                  <li>Grant permissions: Contacts (read/write), Opportunities (read/write)</li>
-                  <li>Should be a long JWT token starting with "eyJ" (200+ characters)</li>
+                  <li>Go to GHL Settings → Integrations → Private Integrations</li>
+                  <li>Grant scopes: contacts.readonly, contacts.write, opportunities.readonly, opportunities.write</li>
+                  <li>Should be a Private Integration Token starting with "pit-"</li>
                 </ul>
               </li>
               <li><strong>Location ID</strong> (their GHL sub-account/location identifier)
@@ -415,12 +415,13 @@ export default function GHLIntegrationManagement() {
               <li><strong>Pipeline ID</strong> (optional - which sales pipeline to add leads to)</li>
               <li><strong>Webhook URL</strong> (optional - for status updates)</li>
             </ul>
-            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 mt-4">
-              <p className="text-yellow-800 font-medium">⚠️ Common Issues:</p>
-              <ul className="text-yellow-700 text-xs mt-1 space-y-1">
-                <li>• API keys must have proper permissions for contacts and opportunities</li>
-                <li>• Short UUID-format keys (like "31131afb-...") are not valid GHL API keys</li>
-                <li>• Test the integration after setup to verify credentials</li>
+            <div className="bg-blue-50 border-l-4 border-blue-400 p-3 mt-4">
+              <p className="text-blue-800 font-medium">ℹ️ API V1 Private Integration:</p>
+              <ul className="text-blue-700 text-xs mt-1 space-y-1">
+                <li>• Using API V1 with Private Integration tokens (pit-format)</li>
+                <li>• Tokens must have proper scopes: contacts and opportunities read/write</li>
+                <li>• Always test integration after setup to verify credentials and scopes</li>
+                <li>• Calls services.leadconnectorhq.com with Version: 2021-07-28 header</li>
               </ul>
             </div>
             <p className="text-muted-foreground mt-4">
