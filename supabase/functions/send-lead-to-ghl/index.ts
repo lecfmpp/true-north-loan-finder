@@ -89,12 +89,8 @@ async function createOpportunityForContact(
   stageId: string
 ): Promise<any> {
   try {
-    // First check if opportunity already exists
-    const existingOpportunityId = await checkExistingOpportunity(contactId, integration);
-    if (existingOpportunityId) {
-      console.log(`Opportunity already exists for contact ${contactId}: ${existingOpportunityId}`);
-      return { opportunity: { id: existingOpportunityId }, existing: true };
-    }
+    // Duplicate checking temporarily disabled - create opportunity directly
+    console.log(`Creating new opportunity for contact ${contactId} in pipeline ${integration.pipeline_id}`);
 
     console.log(`Creating opportunity for contact ${contactId} in pipeline ${integration.pipeline_id}`);
     
@@ -262,37 +258,9 @@ serve(async (req) => {
 
     console.log('Creating contact with payload:', JSON.stringify(contactPayload, null, 2));
 
-    // Check for duplicates first (unless skipped)
+    // Duplicate checking temporarily disabled - create contact directly
     let existingContactId = null;
-    if (!skipDuplicateCheck && leadData.email) {
-      try {
-        const duplicateResponse = await fetch(`https://services.leadconnectorhq.com/contacts/search/duplicate`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${integration.api_key}`,
-            'Content-Type': 'application/json',
-            'Version': '2021-07-28',
-          },
-          body: JSON.stringify({
-            email: leadData.email,
-            phone: normalizedPhone,
-            locationId: integration.location_id
-          }),
-        });
-
-        if (duplicateResponse.ok) {
-          const duplicateData = await duplicateResponse.json();
-          if (duplicateData.contact) {
-            existingContactId = duplicateData.contact.id;
-            console.log('Found existing contact:', existingContactId);
-          }
-        } else {
-          console.log('Duplicate check failed, will proceed with creation');
-        }
-      } catch (dupError) {
-        console.log('Duplicate check error, will proceed with creation:', dupError);
-      }
-    }
+    console.log('Skipping duplicate check - proceeding with contact creation');
 
     let contactId = existingContactId;
     let contactCreated = false;
