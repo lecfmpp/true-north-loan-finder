@@ -56,8 +56,11 @@ export default function GHLIntegrationManagement() {
     useRealData: false,
     dryRun: false,
     keepTestContact: false,
-    skipAutomations: false
+    skipAutomations: false,
+    createOpportunity: true
   });
+  const [fetchingPipelines, setFetchingPipelines] = useState(false);
+  const [availablePipelines, setAvailablePipelines] = useState<Array<{id: string, name: string}>>([]);
 
   const defaultFieldMappings = {
     name: 'firstName',
@@ -167,6 +170,7 @@ export default function GHLIntegrationManagement() {
           dryRun: options.dryRun,
           keepTestContact: options.keepTestContact,
           skipAutomations: options.skipAutomations,
+          createOpportunity: options.createOpportunity,
           testData: options.useRealData ? undefined : {
             name: 'Test Lead',
             email: 'test@integration-test.com',
@@ -245,6 +249,19 @@ export default function GHLIntegrationManagement() {
             {options.keepTestContact && !data.dryRun && !data.duplicate && (
               <div className="text-xs bg-blue-50 p-2 rounded border">
                 📌 Test contact kept in GHL for your review
+                {data.results?.opportunityCreation?.opportunityId && (
+                  <div>🎯 Test opportunity also kept (ID: {data.results.opportunityCreation.opportunityId})</div>
+                )}
+              </div>
+            )}
+            {data.results?.opportunityCreation?.status === 'Successful' && (
+              <div className="text-xs bg-green-50 p-2 rounded border">
+                🎯 Opportunity created: {data.results.opportunityCreation.opportunityId}
+              </div>
+            )}
+            {data.results?.scopes?.missingScopes?.length > 0 && (
+              <div className="text-xs bg-yellow-50 p-2 rounded border">
+                ⚠️ Missing scopes: {data.results.scopes.missingScopes.join(', ')}
               </div>
             )}
           </div>,
@@ -309,6 +326,40 @@ export default function GHLIntegrationManagement() {
     } catch (error: any) {
       console.error('Error deleting integration:', error);
       toast.error('Failed to delete integration');
+    }
+  };
+
+  const handleFetchPipelines = async (integration: GHLIntegration) => {
+    try {
+      setFetchingPipelines(true);
+      
+      // Use discovery mode to fetch available pipelines
+      const { data, error } = await supabase.functions.invoke('test-ghl-integration', {
+        body: {
+          partnerId: integration.partner_id,
+          discoveryMode: true
+        }
+      });
+
+      if (error) throw error;
+      
+      if (data && data.success && data.availablePipelines) {
+        setAvailablePipelines(data.availablePipelines);
+        toast.success(
+          <div className="space-y-2">
+            <div className="font-medium">Pipelines Fetched</div>
+            <div className="text-sm">Found {data.availablePipelines.length} pipelines</div>
+          </div>
+        );
+      } else {
+        toast.error('No pipelines found or missing permissions');
+      }
+      
+    } catch (error: any) {
+      console.error('Error fetching pipelines:', error);
+      toast.error('Failed to fetch pipelines');
+    } finally {
+      setFetchingPipelines(false);
     }
   };
 
@@ -434,12 +485,50 @@ export default function GHLIntegrationManagement() {
 
               <div>
                 <Label htmlFor="pipelineId">Pipeline ID (Optional)</Label>
-                <Input
-                  id="pipelineId"
-                  value={editingIntegration?.pipeline_id || ''}
-                  onChange={(e) => setEditingIntegration(prev => ({ ...prev, pipeline_id: e.target.value }))}
-                  placeholder="Enter GHL Pipeline ID for automatic opportunity creation"
-                />
+                <div className="flex space-x-2">
+                  <div className="flex-1">
+                    <Input
+                      id="pipelineId"
+                      value={editingIntegration?.pipeline_id || ''}
+                      onChange={(e) => setEditingIntegration(prev => ({ ...prev, pipeline_id: e.target.value }))}
+                      placeholder="Enter GHL Pipeline ID for automatic opportunity creation"
+                    />
+                  </div>
+                  {editingIntegration?.api_key && editingIntegration?.location_id && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleFetchPipelines(editingIntegration as GHLIntegration)}
+                      disabled={fetchingPipelines}
+                    >
+                      {fetchingPipelines && <Loader2 className="w-4 h-4 mr-1 animate-spin" />}
+                      Fetch Pipelines
+                    </Button>
+                  )}
+                </div>
+                
+                {availablePipelines.length > 0 && (
+                  <div className="mt-2">
+                    <Label className="text-xs text-muted-foreground">Available Pipelines:</Label>
+                    <Select 
+                      value={editingIntegration?.pipeline_id || ''} 
+                      onValueChange={(value) => setEditingIntegration(prev => ({ ...prev, pipeline_id: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a pipeline" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availablePipelines.map(pipeline => (
+                          <SelectItem key={pipeline.id} value={pipeline.id}>
+                            {pipeline.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                
                 <p className="text-xs text-muted-foreground mt-1">
                   If provided, leads will be added as opportunities to this pipeline. Leave empty to only create contacts.
                 </p>
@@ -578,15 +667,24 @@ export default function GHLIntegrationManagement() {
                          />
                          <label htmlFor={`keepContact-${integration.id}`} className="text-xs">Keep Contact</label>
                        </div>
-                       <div className="flex items-center space-x-2">
-                         <Switch
-                           id={`skipAutomations-${integration.id}`}
-                           checked={testOptions.skipAutomations}
-                           onCheckedChange={(checked) => setTestOptions(prev => ({ ...prev, skipAutomations: checked }))}
-                           disabled={testOptions.dryRun}
-                         />
-                         <label htmlFor={`skipAutomations-${integration.id}`} className="text-xs">Skip Automations</label>
-                       </div>
+                        <div className="flex items-center space-x-2">
+                          <Switch
+                            id={`skipAutomations-${integration.id}`}
+                            checked={testOptions.skipAutomations}
+                            onCheckedChange={(checked) => setTestOptions(prev => ({ ...prev, skipAutomations: checked }))}
+                            disabled={testOptions.dryRun}
+                          />
+                          <label htmlFor={`skipAutomations-${integration.id}`} className="text-xs">Skip Automations</label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Switch
+                            id={`createOpportunity-${integration.id}`}
+                            checked={testOptions.createOpportunity}
+                            onCheckedChange={(checked) => setTestOptions(prev => ({ ...prev, createOpportunity: checked }))}
+                            disabled={testOptions.dryRun || !integration.pipeline_id}
+                          />
+                          <label htmlFor={`createOpportunity-${integration.id}`} className="text-xs">Create Opportunity</label>
+                        </div>
                      </div>
                      
                      {/* Test Buttons */}
@@ -617,13 +715,14 @@ export default function GHLIntegrationManagement() {
                        </Button>
                      </div>
                      
-                     {/* Test Options Help */}
-                     <div className="text-xs text-muted-foreground space-y-1 border-t pt-2">
-                       <div><strong>Real Lead:</strong> Uses actual lead data from your database</div>
-                       <div><strong>Dry Run:</strong> Validates setup without creating contacts</div>
-                       <div><strong>Keep Contact:</strong> Leaves test contact in GHL for review</div>
-                       <div><strong>Skip Automations:</strong> Adds DND tags to prevent triggering workflows</div>
-                     </div>
+                      {/* Test Options Help */}
+                      <div className="text-xs text-muted-foreground space-y-1 border-t pt-2">
+                        <div><strong>Real Lead:</strong> Uses actual lead data from your database</div>
+                        <div><strong>Dry Run:</strong> Validates setup without creating contacts</div>
+                        <div><strong>Keep Contact:</strong> Leaves test contact in GHL for review</div>
+                        <div><strong>Skip Automations:</strong> Adds DND tags to prevent triggering workflows</div>
+                        <div><strong>Create Opportunity:</strong> Creates opportunity in pipeline (requires pipeline ID)</div>
+                      </div>
                    </div>
 
                    <div className="grid grid-cols-2 gap-4 text-sm mt-4">

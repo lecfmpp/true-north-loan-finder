@@ -21,6 +21,8 @@ interface TestGHLRequest {
   dryRun?: boolean;
   keepTestContact?: boolean;
   skipAutomations?: boolean;
+  createOpportunity?: boolean;
+  discoveryMode?: boolean;
 }
 
 // Enhanced phone normalization function
@@ -70,19 +72,77 @@ function normalizeEmail(email: string): string {
   return email.toLowerCase().trim();
 }
 
+// Create opportunity for contact
+async function createOpportunityForContact(
+  contactId: string, 
+  integration: any, 
+  testData: any, 
+  stageId: string, 
+  leadSource: string
+): Promise<any> {
+  try {
+    console.log(`Creating opportunity for contact ${contactId} in pipeline ${integration.pipeline_id}`);
+    
+    const opportunityPayload = {
+      pipelineId: integration.pipeline_id,
+      locationId: integration.location_id,
+      contactId: contactId,
+      name: `Test Opportunity - ${testData.company_name || 'Test Company'}`,
+      pipelineStageId: stageId,
+      status: 'open',
+      monetaryValue: testData.loan_amount || 50000,
+      assignedTo: null,
+      notes: `Integration test opportunity created from ${leadSource}`,
+      source: 'API Integration Test'
+    };
+
+    console.log('Creating opportunity with payload:', JSON.stringify(opportunityPayload, null, 2));
+
+    const opportunityResponse = await fetch(`https://services.leadconnectorhq.com/opportunities/`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${integration.api_key}`,
+        'Content-Type': 'application/json',
+        'Version': '2021-07-28',
+      },
+      body: JSON.stringify(opportunityPayload),
+    });
+
+    if (opportunityResponse.ok) {
+      const opportunityResult = await opportunityResponse.json();
+      console.log('Opportunity created successfully:', opportunityResult.opportunity?.id);
+      return opportunityResult;
+    } else {
+      const errorText = await opportunityResponse.text();
+      console.error('Failed to create opportunity:', errorText);
+      
+      if (opportunityResponse.status === 403) {
+        throw new Error('Missing opportunities.write scope');
+      }
+      
+      throw new Error(`Failed to create opportunity: ${opportunityResponse.status}`);
+    }
+  } catch (error) {
+    console.error('Error creating opportunity:', error);
+    throw error;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { partnerId, testData, useRealData, dryRun, keepTestContact, skipAutomations }: TestGHLRequest = await req.json();
+    const { partnerId, testData, useRealData, dryRun, keepTestContact, skipAutomations, createOpportunity, discoveryMode }: TestGHLRequest = await req.json();
 
     console.log('Testing GHL API V1 integration for partner:', partnerId);
     console.log('Use real data:', useRealData);
     console.log('Dry run mode:', dryRun);
     console.log('Keep test contact:', keepTestContact);
     console.log('Skip automations:', skipAutomations);
+    console.log('Create opportunity:', createOpportunity);
+    console.log('Discovery mode:', discoveryMode);
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -259,32 +319,65 @@ serve(async (req) => {
     const locationData = await locationResponse.json();
     console.log('Location verified:', locationData.location?.name);
 
-    // Test pipeline if configured using API V1
+    // Fetch pipelines for validation and discovery
     let pipelineValid = true;
-    if (integration.pipeline_id) {
-      const pipelineResponse = await fetch(`https://services.leadconnectorhq.com/opportunities/pipelines?locationId=${integration.location_id}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${integration.api_key}`,
-          'Content-Type': 'application/json',
-          'Version': '2021-07-28',
-        },
-      });
+    let pipelinesData = null;
+    let availablePipelines: any[] = [];
+    let pipelineInfo = null;
+    let firstStageId = null;
+    let scopeIssues: string[] = [];
 
-      if (pipelineResponse.ok) {
-        const pipelinesData = await pipelineResponse.json();
-        const pipeline = pipelinesData.pipelines?.find((p: any) => p.id === integration.pipeline_id);
+    const pipelineResponse = await fetch(`https://services.leadconnectorhq.com/opportunities/pipelines?locationId=${integration.location_id}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${integration.api_key}`,
+        'Content-Type': 'application/json',
+        'Version': '2021-07-28',
+      },
+    });
+
+    if (pipelineResponse.ok) {
+      pipelinesData = await pipelineResponse.json();
+      availablePipelines = pipelinesData.pipelines || [];
+      
+      if (integration.pipeline_id) {
+        pipelineInfo = availablePipelines.find((p: any) => p.id === integration.pipeline_id);
         
-        if (!pipeline) {
+        if (!pipelineInfo) {
           pipelineValid = false;
           console.log('Pipeline not found:', integration.pipeline_id);
         } else {
-          console.log('Pipeline verified:', pipeline.name);
+          console.log('Pipeline verified:', pipelineInfo.name);
+          // Get first stage for opportunity creation
+          firstStageId = pipelineInfo.stages?.[0]?.id;
         }
-      } else {
-        pipelineValid = false;
-        console.log('Failed to verify pipeline');
       }
+    } else if (pipelineResponse.status === 403) {
+      scopeIssues.push('opportunities.read');
+      pipelineValid = false;
+      console.log('Missing opportunities.read scope');
+    } else {
+      pipelineValid = false;
+      console.log('Failed to fetch pipelines');
+    }
+
+    // If discovery mode, return pipeline information
+    if (discoveryMode) {
+      return new Response(JSON.stringify({
+        success: true,
+        discoveryMode: true,
+        availablePipelines: availablePipelines.map(p => ({
+          id: p.id,
+          name: p.name,
+          stages: p.stages?.map((s: any) => ({ id: s.id, name: s.name })) || []
+        })),
+        scopeIssues,
+        message: availablePipelines.length > 0 ? 
+          `Found ${availablePipelines.length} pipelines in location` :
+          'No pipelines found or missing read permissions'
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Prepare test contact data for API V1 with enhanced validation
@@ -357,8 +450,9 @@ serve(async (req) => {
           },
           pipeline: integration.pipeline_id ? {
             status: pipelineValid ? 'Valid' : 'Invalid',
-            details: pipelineValid ? 'Pipeline ID verified' : 'Pipeline not found in location',
-            pipelineId: integration.pipeline_id
+            details: pipelineValid ? `Pipeline '${pipelineInfo?.name}' verified` : 'Pipeline not found in location',
+            pipelineId: integration.pipeline_id,
+            availablePipelines: !pipelineValid ? availablePipelines.map(p => ({ id: p.id, name: p.name })) : undefined
           } : {
             status: 'Not configured',
             details: 'No pipeline ID specified - leads will be created without pipeline assignment'
@@ -377,14 +471,17 @@ serve(async (req) => {
             contactPayload: baseContact
           },
           scopes: {
-            status: 'Verified',
-            details: 'Private Integration Token has required scopes for contacts and opportunities'
+            status: scopeIssues.length === 0 ? 'Verified' : 'Missing',
+            details: scopeIssues.length === 0 ? 
+              'Private Integration Token has required scopes for contacts and opportunities' :
+              `Missing scopes: ${scopeIssues.join(', ')}`,
+            missingScopes: scopeIssues
           }
         },
         message: `GHL API V1 Integration dry run completed successfully using ${leadSource} - payload validated but no contact created`,
         apiVersion: 'v1',
         tokenType: 'private_integration',
-        summary: `✓ Private Token Valid ✓ Location Valid ${integration.pipeline_id ? (pipelineValid ? '✓' : '✗') + ' Pipeline' : '- Pipeline'} ${integration.webhook_url ? '?' + ' Webhook' : '- Webhook'} ✓ Payload Valid ✓ Dry Run (${leadSource})`
+        summary: `✓ Private Token Valid ✓ Location Valid ${integration.pipeline_id ? (pipelineValid ? '✓' : '✗') + ' Pipeline' : '- Pipeline'} ${integration.webhook_url ? '?' + ' Webhook' : '- Webhook'} ${scopeIssues.length === 0 ? '✓' : '✗'} Scopes ✓ Payload Valid ✓ Dry Run (${leadSource})`
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -414,15 +511,51 @@ serve(async (req) => {
     });
 
     let contactResult = null;
+    let opportunityResult = null;
+    let existingContactId = null;
+    
     if (contactResponse.ok) {
       contactResult = await contactResponse.json();
       console.log('Test contact created:', contactResult.contact?.id);
-      
-      // Clean up test contact after 5 seconds (unless keepTestContact is true)
-      if (contactResult.contact?.id && !keepTestContact) {
+      existingContactId = contactResult.contact?.id;
+
+      // Create opportunity if enabled and pipeline is configured
+      if (createOpportunity && integration.pipeline_id && pipelineValid && existingContactId && firstStageId) {
+        try {
+          opportunityResult = await createOpportunityForContact(
+            existingContactId, 
+            integration, 
+            actualTestData, 
+            firstStageId, 
+            leadSource
+          );
+          console.log('Opportunity created for contact:', opportunityResult?.opportunity?.id);
+        } catch (opportunityError) {
+          console.error('Failed to create opportunity:', opportunityError);
+          if (opportunityError.message?.includes('opportunities.write')) {
+            scopeIssues.push('opportunities.write');
+          }
+        }
+      }
+
+      // Clean up test contact and opportunity after 5 seconds (unless keepTestContact is true)
+      if (existingContactId && !keepTestContact) {
         setTimeout(async () => {
           try {
-            await fetch(`https://services.leadconnectorhq.com/contacts/${contactResult.contact.id}`, {
+            // Delete opportunity first if it exists
+            if (opportunityResult?.opportunity?.id) {
+              await fetch(`https://services.leadconnectorhq.com/opportunities/${opportunityResult.opportunity.id}`, {
+                method: 'DELETE',
+                headers: {
+                  'Authorization': `Bearer ${integration.api_key}`,
+                  'Version': '2021-07-28',
+                },
+              });
+              console.log('Test opportunity cleaned up');
+            }
+            
+            // Then delete contact
+            await fetch(`https://services.leadconnectorhq.com/contacts/${existingContactId}`, {
               method: 'DELETE',
               headers: {
                 'Authorization': `Bearer ${integration.api_key}`,
@@ -431,11 +564,14 @@ serve(async (req) => {
             });
             console.log('Test contact cleaned up');
           } catch (cleanupError) {
-            console.error('Failed to cleanup test contact:', cleanupError);
+            console.error('Failed to cleanup test contact/opportunity:', cleanupError);
           }
         }, 5000);
-      } else if (contactResult.contact?.id && keepTestContact) {
-        console.log('Test contact kept in GHL as requested (ID:', contactResult.contact.id, ')');
+      } else if (existingContactId && keepTestContact) {
+        console.log('Test contact kept in GHL as requested (ID:', existingContactId, ')');
+        if (opportunityResult?.opportunity?.id) {
+          console.log('Test opportunity kept in GHL (ID:', opportunityResult.opportunity.id, ')');
+        }
       }
     } else {
       const errorText = await contactResponse.text();
@@ -458,6 +594,25 @@ serve(async (req) => {
           
           // For duplicate errors, we still consider it a successful test
           console.log('Duplicate contact detected, but integration is working correctly');
+          console.log('Existing contact ID:', existingContactId);
+          // Try to create opportunity with existing contact if enabled
+          if (createOpportunity && integration.pipeline_id && pipelineValid && existingContactId && firstStageId) {
+            try {
+              opportunityResult = await createOpportunityForContact(
+                existingContactId, 
+                integration, 
+                actualTestData, 
+                firstStageId, 
+                leadSource
+              );
+              console.log('Opportunity created for existing contact:', opportunityResult?.opportunity?.id);
+            } catch (opportunityError) {
+              console.error('Failed to create opportunity for existing contact:', opportunityError);
+              if (opportunityError.message?.includes('opportunities.write')) {
+                scopeIssues.push('opportunities.write');
+              }
+            }
+          }
           
           return new Response(JSON.stringify({
             success: true,
@@ -494,9 +649,23 @@ serve(async (req) => {
                 existingContactId,
                 matchingField: errorData.meta?.matchingField
               },
+              opportunityCreation: createOpportunity && integration.pipeline_id ? {
+                status: opportunityResult ? 'Successful' : 'Failed',
+                details: opportunityResult ? 
+                  `Opportunity created in pipeline '${pipelineInfo?.name}'` :
+                  'Failed to create opportunity - check scopes',
+                opportunityId: opportunityResult?.opportunity?.id,
+                pipelineName: pipelineInfo?.name
+              } : {
+                status: 'Not attempted',
+                details: createOpportunity ? 'No pipeline configured' : 'Opportunity creation disabled'
+              },
               scopes: {
-                status: 'Verified',
-                details: 'Private Integration Token has required scopes for contacts and opportunities'
+                status: scopeIssues.length === 0 ? 'Verified' : 'Missing',
+                details: scopeIssues.length === 0 ? 
+                  'Private Integration Token has required scopes for contacts and opportunities' :
+                  `Missing scopes: ${scopeIssues.join(', ')}`,
+                missingScopes: scopeIssues
               }
             },
             message: `GHL API V1 integration working correctly - duplicate contact indicates successful API connection using ${leadSource}`,
@@ -596,15 +765,30 @@ serve(async (req) => {
           contactId: contactResult.contact?.id,
           kept: keepTestContact
         },
+        opportunityCreation: createOpportunity && integration.pipeline_id ? {
+          status: opportunityResult ? 'Successful' : 'Failed',
+          details: opportunityResult ? 
+            `Opportunity created in pipeline '${pipelineInfo?.name}'` :
+            'Failed to create opportunity - check scopes',
+          opportunityId: opportunityResult?.opportunity?.id,
+          pipelineName: pipelineInfo?.name,
+          kept: keepTestContact
+        } : {
+          status: 'Not attempted',
+          details: createOpportunity ? 'No pipeline configured' : 'Opportunity creation disabled'
+        },
         scopes: {
-          status: 'Verified',
-          details: 'Private Integration Token has required scopes for contacts and opportunities'
+          status: scopeIssues.length === 0 ? 'Verified' : 'Missing',
+          details: scopeIssues.length === 0 ? 
+            'Private Integration Token has required scopes for contacts and opportunities' :
+            `Missing scopes: ${scopeIssues.join(', ')}`,
+          missingScopes: scopeIssues
         }
       },
       message: `GHL API V1 Private Integration test completed successfully using ${leadSource}`,
       apiVersion: 'v1',
       tokenType: 'private_integration',
-      summary: `✓ Private Token Valid ✓ Location Valid ${integration.pipeline_id ? (pipelineValid ? '✓' : '✗') + ' Pipeline' : '- Pipeline'} ${integration.webhook_url ? (webhookValid ? '✓' : '✗') + ' Webhook' : '- Webhook'} ✓ Contact Creation ✓ API V1 (${leadSource})`
+      summary: `✓ Private Token Valid ✓ Location Valid ${integration.pipeline_id ? (pipelineValid ? '✓' : '✗') + ' Pipeline' : '- Pipeline'} ${integration.webhook_url ? (webhookValid ? '✓' : '✗') + ' Webhook' : '- Webhook'} ✓ Contact Creation ${createOpportunity && opportunityResult ? '✓ Opportunity' : createOpportunity ? '✗ Opportunity' : '- Opportunity'} ${scopeIssues.length === 0 ? '✓' : '✗'} Scopes ✓ API V1 (${leadSource})`
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
