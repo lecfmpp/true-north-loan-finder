@@ -149,6 +149,34 @@ const GHLLeadManagement = () => {
     }
   };
 
+  const debugGHLIntegration = async (leadId: string) => {
+    try {
+      const lead = leads.find(l => l.id === leadId);
+      if (!lead || !lead.assigned_partner_id) {
+        throw new Error('Lead not found or no assigned partner');
+      }
+
+      console.log('🔍 Starting GHL integration debug for partner:', lead.assigned_partner_id);
+
+      const { data, error } = await supabase.functions.invoke('debug-ghl-integration', {
+        body: { partnerId: lead.assigned_partner_id }
+      });
+
+      if (error) throw error;
+
+      console.log('🔧 GHL Integration Debug Results:', data);
+      
+      if (data.success) {
+        toast.success('Debug completed - check console for detailed results');
+      } else {
+        toast.error(`Debug failed: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('💥 Debug error:', error);
+      toast.error(`Debug failed: ${error.message}`);
+    }
+  };
+
   const getLeadStatus = (lead: Lead) => {
     if (lead.ghl_contact_id && lead.ghl_opportunity_id) {
       return { status: 'complete', label: 'Contact & Opportunity', color: 'bg-green-500' };
@@ -327,6 +355,17 @@ const GHLLeadManagement = () => {
                                   Create Opportunity
                                 </>
                               )}
+                            </Button>
+                          )}
+                          
+                          {/* Debug button for leads with opportunities */}
+                          {(lead.ghl_contact_id || lead.ghl_opportunity_id) && (
+                            <Button
+                              onClick={() => debugGHLIntegration(lead.id)}
+                              variant="secondary"
+                              size="sm"
+                            >
+                              🔍 Debug GHL
                             </Button>
                           )}
                         </div>
