@@ -89,9 +89,20 @@ const GHLLeadManagement = () => {
     try {
       setSendingLeads(prev => new Set([...prev, leadId]));
       
+      // Find the lead to get the assigned_partner_id
+      const lead = leads.find(l => l.id === leadId);
+      if (!lead) {
+        throw new Error('Lead not found');
+      }
+      
+      if (!lead.assigned_partner_id) {
+        throw new Error('Lead has no assigned partner');
+      }
+      
       const { data, error } = await supabase.functions.invoke('send-lead-to-ghl', {
         body: {
           leadId,
+          partnerId: lead.assigned_partner_id,
           createOpportunity: true,
           skipDuplicateCheck
         }
