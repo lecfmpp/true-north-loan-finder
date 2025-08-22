@@ -45,6 +45,21 @@ const GHLLeadManagement = () => {
     try {
       setLoading(true);
       
+      // First, get partner IDs that have active GHL integrations
+      const { data: ghlIntegrations, error: ghlError } = await supabase
+        .from('ghl_integrations')
+        .select('partner_id')
+        .eq('is_active', true);
+      
+      if (ghlError) throw ghlError;
+      
+      const activePartnerIds = ghlIntegrations?.map(integration => integration.partner_id) || [];
+      
+      if (activePartnerIds.length === 0) {
+        setLeads([]);
+        return;
+      }
+
       let query = supabase
         .from('quiz_responses')
         .select(`
@@ -62,7 +77,7 @@ const GHLLeadManagement = () => {
           created_at,
           updated_at
         `)
-        .not('assigned_partner_id', 'is', null)
+        .in('assigned_partner_id', activePartnerIds)
         .order('created_at', { ascending: false })
         .limit(50);
 
