@@ -80,27 +80,65 @@ async function checkExistingOpportunity(
     return null;
   }
 }
-// Find any existing opportunity for contact (across all pipelines)
+// Find any existing opportunity for contact (comprehensive search across all pipelines/stages/statuses)
 async function findAnyOpportunityForContact(contactId: string, integration: any): Promise<any | null> {
   try {
-    const resp = await fetch(`https://services.leadconnectorhq.com/opportunities/search?contactId=${contactId}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${integration.api_key}`,
-        'Content-Type': 'application/json',
-        'Version': '2021-07-28',
-      },
-    });
-    if (resp.ok) {
+    console.log('🔍 Performing comprehensive opportunity search for contact:', contactId);
+    
+    // Search without pipeline restriction to find ANY opportunity for this contact
+    let allOpportunities: any[] = [];
+    let offset = 0;
+    const limit = 20;
+    
+    // Paginate through all opportunities for this contact
+    while (true) {
+      const resp = await fetch(`https://services.leadconnectorhq.com/opportunities/search?contactId=${contactId}&limit=${limit}&offset=${offset}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${integration.api_key}`,
+          'Content-Type': 'application/json',
+          'Version': '2021-07-28',
+        },
+      });
+      
+      if (!resp.ok) {
+        console.log('Search request failed:', resp.status, resp.statusText);
+        break;
+      }
+      
       const json = await resp.json();
-      const opp = json.opportunities?.[0] || null;
-      if (opp) console.log('Found opportunity (any pipeline):', opp.id);
-      return opp || null;
+      const opportunities = json.opportunities || [];
+      
+      if (opportunities.length === 0) break;
+      
+      allOpportunities = [...allOpportunities, ...opportunities];
+      
+      // If we got fewer than the limit, we've reached the end
+      if (opportunities.length < limit) break;
+      
+      offset += limit;
     }
+    
+    console.log(`📊 Found ${allOpportunities.length} total opportunities for contact ${contactId}`);
+    
+    if (allOpportunities.length > 0) {
+      // Return the most recent opportunity (they're usually ordered by creation date)
+      const selectedOpp = allOpportunities[0];
+      console.log('✅ Selected opportunity:', {
+        id: selectedOpp.id,
+        pipelineId: selectedOpp.pipelineId,
+        status: selectedOpp.status,
+        name: selectedOpp.name
+      });
+      return selectedOpp;
+    }
+    
+    console.log('❌ No opportunities found for contact');
+    return null;
   } catch (e) {
-    console.log('findAnyOpportunityForContact error:', e);
+    console.error('💥 findAnyOpportunityForContact error:', e);
+    return null;
   }
-  return null;
 }
 
 // Move an opportunity to the target pipeline and stage
@@ -134,7 +172,7 @@ async function moveOpportunityToPipeline(opportunityId: string, integration: any
   }
 }
 
-// Create opportunity for contact
+// Create opportunity for contact (revised approach - no moving, just linking)
 async function createOpportunityForContact(
   contactId: string, 
   integration: any, 
@@ -144,22 +182,20 @@ async function createOpportunityForContact(
   try {
     console.log(`🎯 Starting opportunity creation for contact ${contactId} in pipeline ${integration.pipeline_id}, stage ${stageId}`);
     
-    // First, check if opportunity already exists in ANY pipeline
+    // First, check if opportunity already exists anywhere
     console.log(`🔍 Checking for existing opportunities for contact ${contactId}`);
     const existingOpp = await findAnyOpportunityForContact(contactId, integration);
     
     if (existingOpp) {
-      console.log(`📋 Found existing opportunity: ${existingOpp.id} in pipeline ${existingOpp.pipelineId}`);
-      
-      // If it's already in the target pipeline, just return it
-      if (existingOpp.pipelineId === integration.pipeline_id) {
-        console.log(`✅ Opportunity already in target pipeline ${integration.pipeline_id}`);
-        return { opportunity: { id: existingOpp.id }, existing: true, alreadyInPipeline: true };
-      } else {
-        console.log(`🔄 Moving opportunity from pipeline ${existingOpp.pipelineId} to ${integration.pipeline_id}`);
-        const moved = await moveOpportunityToPipeline(existingOpp.id, integration, stageId);
-        return { opportunity: { id: existingOpp.id }, existing: true, moved };
-      }
+      console.log(`📋 Found existing opportunity: ${existingOpp.id} in pipeline ${existingOpp.pipelineId} (status: ${existingOpp.status})`);
+      console.log(`✅ Will link existing opportunity without moving it`);
+      return { 
+        opportunity: { id: existingOpp.id }, 
+        existing: true, 
+        linked: true,
+        originalPipeline: existingOpp.pipelineId,
+        originalStage: existingOpp.pipelineStageId
+      };
     }
     
     console.log(`➕ No existing opportunity found, creating new one`);
@@ -203,94 +239,40 @@ async function createOpportunityForContact(
         error: errorResponse
       });
       
-      // Handle duplicate opportunity error gracefully
+      // Handle duplicate opportunity error gracefully with comprehensive search
       if (opportunityResponse.status === 400 && (errorResponse.message?.includes('duplicate opportunity') || errorResponse.message?.toLowerCase?.().includes('duplicate'))) {
-        console.log('🔄 Duplicate opportunity detected — locating existing opportunity for contact');
+        console.log('🔄 Duplicate opportunity detected — performing comprehensive search');
+        
+        // Extract GHL trace ID for logging
+        const ghlTraceId = errorResponse.traceId || 'unknown';
+        console.log('📋 GHL Trace ID:', ghlTraceId);
+        
+        // Wait a moment for GHL's eventual consistency
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
         const existing = await findAnyOpportunityForContact(contactId, integration);
-        console.log('🔍 Found existing after duplicate error:', existing);
+        console.log('🔍 Comprehensive search result:', existing ? `Found ${existing.id}` : 'None found');
+        
         if (existing?.id) {
-          console.log('🎯 Moving existing opportunity to target pipeline');
-          const moved = await moveOpportunityToPipeline(existing.id, integration, stageId);
-          console.log('📋 Move result:', moved);
-          return { opportunity: { id: existing.id }, existing: true, moved };
-        } else {
-          console.log('⚠️ No existing opportunity found despite duplicate error - FORCING CREATION');
-          
-          // Try alternative approaches to force opportunity creation
-          console.log('🚀 Attempt 1: Create with unique timestamp suffix');
-          const uniquePayload = {
-            ...opportunityPayload,
-            name: `${opportunityPayload.name} - ${Date.now()}`,
-            source: `Lead Management System - ${Date.now()}`
+          console.log(`✅ Linking existing opportunity: ${existing.id} (keeping in current pipeline: ${existing.pipelineId})`);
+          return { 
+            opportunity: { id: existing.id }, 
+            existing: true, 
+            linked: true,
+            ghlTraceId,
+            originalPipeline: existing.pipelineId,
+            originalStage: existing.pipelineStageId
           };
-          
-          try {
-            const retryResponse = await fetch(`https://services.leadconnectorhq.com/opportunities/`, {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${integration.api_key}`,
-                'Content-Type': 'application/json',
-                'Version': '2021-07-28',
-              },
-              body: JSON.stringify(uniquePayload),
-            });
-            
-            if (retryResponse.ok) {
-              const retryResult = await retryResponse.json();
-              console.log('✅ Forced opportunity creation successful:', retryResult.opportunity?.id);
-              return { ...retryResult, existing: false, forced: true };
-            } else {
-              const retryError = await retryResponse.json().catch(() => ({}));
-              console.log('❌ Retry attempt 1 failed:', retryError);
-              
-              // Try approach 2: Create with different monetary value
-              console.log('🚀 Attempt 2: Create with adjusted monetary value');
-              const adjustedPayload = {
-                ...opportunityPayload,
-                name: `${leadData.company_name || leadData.name} Opportunity`,
-                monetaryValue: (leadData.loan_amount || 50000) + Math.floor(Math.random() * 100),
-                source: 'Lead System'
-              };
-              
-              const finalResponse = await fetch(`https://services.leadconnectorhq.com/opportunities/`, {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${integration.api_key}`,
-                  'Content-Type': 'application/json',
-                  'Version': '2021-07-28',
-                },
-                body: JSON.stringify(adjustedPayload),
-              });
-              
-              if (finalResponse.ok) {
-                const finalResult = await finalResponse.json();
-                console.log('✅ Final forced opportunity creation successful:', finalResult.opportunity?.id);
-                return { ...finalResult, existing: false, forced: true };
-              } else {
-                const finalError = await finalResponse.json().catch(() => ({}));
-                console.log('❌ All forced creation attempts failed:', finalError);
-                
-                // Log the failure but don't throw - return a warning state
-                console.log('⚠️ CONTINUING DESPITE OPPORTUNITY FAILURE - Contact created successfully');
-                return { 
-                  opportunity: null, 
-                  existing: false, 
-                  forced: false,
-                  error: 'Failed to create opportunity despite multiple attempts'
-                };
-              }
-            }
-          } catch (forceError) {
-            console.error('💥 Error during forced creation attempts:', forceError);
-            // Still don't throw - log and continue
-            console.log('⚠️ CONTINUING DESPITE OPPORTUNITY FAILURE - Contact created successfully');
-            return { 
-              opportunity: null, 
-              existing: false, 
-              forced: false,
-              error: 'Failed to create opportunity despite multiple attempts'
-            };
-          }
+        } else {
+          console.log('⚠️ DUPLICATE REPORTED BUT NO OPPORTUNITY FOUND - Needs manual review');
+          return { 
+            opportunity: null, 
+            existing: false, 
+            duplicateReportedButNotFound: true,
+            ghlTraceId,
+            error: 'GHL reported duplicate opportunity but comprehensive search found none. Manual review required.',
+            needsManualReview: true
+          };
         }
       }
 
@@ -580,9 +562,12 @@ serve(async (req) => {
         ghl_opportunity_id: opportunityResult?.opportunity?.id || null,
         pipeline_id: integration.pipeline_id || null,
         stage_id: opportunityResult?.stageId || null,
-        status: opportunityResult?.opportunity?.id ? 'success' : 
-                (opportunityResult?.error ? 'warning' : 'success'),
-        error_message: opportunityResult?.error || null,
+        status: opportunityResult?.needsManualReview ? 'warning' : 
+                (opportunityResult?.opportunity?.id ? 'success' : 
+                (opportunityResult?.error ? 'warning' : 'success')),
+        error_message: opportunityResult?.needsManualReview ? 
+          'GHL reported duplicate opportunity but none found in comprehensive search. Manual review required.' : 
+          (opportunityResult?.error || null),
         response_data: {
           contactCreated,
           opportunityCreated: !!opportunityResult?.opportunity?.id,
@@ -590,7 +575,13 @@ serve(async (req) => {
           contactId,
           opportunityId: opportunityResult?.opportunity?.id || null,
           forced: opportunityResult?.forced || false,
-          attempts: opportunityResult?.forced ? 'multiple' : 'single'
+          attempts: opportunityResult?.forced ? 'multiple' : 'single',
+          opportunityExists: opportunityResult?.existing || false,
+          opportunityLinked: opportunityResult?.linked || false,
+          originalPipeline: opportunityResult?.originalPipeline,
+          duplicateReportedButNotFound: opportunityResult?.duplicateReportedButNotFound || false,
+          needsManualReview: opportunityResult?.needsManualReview || false,
+          ghlTraceId: opportunityResult?.ghlTraceId
         }
       });
     } catch (logError) {

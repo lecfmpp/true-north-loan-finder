@@ -225,11 +225,57 @@ const GHLLeadManagement = () => {
 
   const getLeadStatus = (lead: Lead) => {
     if (lead.ghl_contact_id && lead.ghl_opportunity_id) {
-      return { status: 'complete', label: 'Contact & Opportunity', color: 'bg-green-500' };
+      return { status: 'complete', label: 'Complete', color: 'bg-green-500' };
     } else if (lead.ghl_contact_id) {
-      return { status: 'partial', label: 'Contact Only', color: 'bg-yellow-500' };
+      return { status: 'contact_only', label: 'Contact Only', color: 'bg-yellow-500' };
     } else {
       return { status: 'pending', label: 'Pending', color: 'bg-gray-500' };
+    }
+  };
+
+  const attachExistingOpportunity = async (leadId: string, opportunityInput?: string) => {
+    try {
+      setSendingLeads(prev => new Set([...prev, leadId]));
+
+      const lead = leads.find(l => l.id === leadId);
+      if (!lead) throw new Error('Lead not found');
+
+      console.log('🔗 Attaching existing opportunity for lead:', leadId);
+
+      let payload: any = { leadId };
+
+      if (opportunityInput) {
+        // Check if it's a URL or ID
+        if (opportunityInput.includes('http') || opportunityInput.includes('gohighlevel')) {
+          payload.opportunityUrl = opportunityInput;
+        } else {
+          payload.opportunityId = opportunityInput;
+        }
+      } else {
+        payload.autoFind = true;
+      }
+
+      const { data, error } = await supabase.functions.invoke('attach-ghl-opportunity', {
+        body: payload
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        toast.success(`Opportunity attached: ${data.opportunityName}`);
+        fetchLeads();
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      console.error('Error attaching opportunity:', error);
+      toast.error(`Failed to attach opportunity: ${error.message}`);
+    } finally {
+      setSendingLeads(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(leadId);
+        return newSet;
+      });
     }
   };
 
@@ -384,24 +430,43 @@ const GHLLeadManagement = () => {
                           )}
                           
                           {lead.ghl_contact_id && !lead.ghl_opportunity_id && (
-                            <Button
-                              onClick={() => sendLeadToGHL(lead.id, true)}
-                              disabled={isSending}
-                              variant="outline"
-                              size="sm"
-                            >
-                              {isSending ? (
-                                <>
-                                  <Clock className="h-4 w-4 mr-2 animate-spin" />
-                                  Creating...
-                                </>
-                              ) : (
-                                <>
-                                  <ExternalLink className="h-4 w-4 mr-2" />
-                                  Create Opportunity
-                                </>
-                              )}
-                            </Button>
+                            <>
+                              <Button
+                                onClick={() => sendLeadToGHL(lead.id, true)}
+                                disabled={isSending}
+                                variant="outline"
+                                size="sm"
+                              >
+                                {isSending ? (
+                                  <>
+                                    <Clock className="h-4 w-4 mr-2 animate-spin" />
+                                    Creating...
+                                  </>
+                                ) : (
+                                  <>
+                                    <ExternalLink className="h-4 w-4 mr-2" />
+                                    Create Opportunity
+                                  </>
+                                )}
+                              </Button>
+                              <Button
+                                onClick={() => attachExistingOpportunity(lead.id)}
+                                disabled={isSending}
+                                variant="secondary"
+                                size="sm"
+                              >
+                                {isSending ? (
+                                  <>
+                                    <Clock className="h-4 w-4 mr-2 animate-spin" />
+                                    Attaching...
+                                  </>
+                                ) : (
+                                  <>
+                                    🔗 Attach Existing
+                                  </>
+                                )}
+                              </Button>
+                            </>
                           )}
                           
                           <Button
@@ -446,18 +511,34 @@ const GHLLeadManagement = () => {
                                     log.status === 'success' ? 'bg-green-500' :
                                     log.status === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
                                   }`} />
-                                  <div className="flex-1 space-y-1">
-                                    <div className="flex items-center justify-between">
-                                      <span className="text-sm font-medium capitalize">
-                                        {log.activity_type.replace('_', ' ')}
-                                      </span>
-                                      <span className="text-xs text-muted-foreground">
-                                        {new Date(log.created_at).toLocaleString()}
-                                      </span>
-                                    </div>
-                                    {log.error_message && (
-                                      <p className="text-sm text-red-600">{log.error_message}</p>
-                                    )}
+                                     <div className="flex-1 space-y-1">
+                                      <div className="flex items-center justify-between">
+                                        <span className="text-sm font-medium capitalize">
+                                          {log.activity_type.replace(/_/g, ' ')}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                          {new Date(log.created_at).toLocaleString()}
+                                        </span>
+                                      </div>
+                                      {log.error_message && (
+                                        <p className="text-sm text-red-600">{log.error_message}</p>
+                                      )}
+                                      {log.details?.ghlTraceId && (
+                                        <p className="text-xs text-muted-foreground">
+                                          GHL Trace: {log.details.ghlTraceId}
+                                        </p>
+                                      )}
+                                      {log.details?.needsManualReview && (
+                                        <p className="text-xs text-orange-600 font-medium">
+                                          ⚠️ Needs manual review
+                                        </p>
+                                      )}
+                                      {log.details?.opportunityLinked && (
+                                        <p className="text-xs text-blue-600">
+                                          🔗 Linked to existing opportunity
+                                          {log.details.originalPipeline && ` (Pipeline: ${log.details.originalPipeline})`}
+                                        </p>
+                                      )}
                                     {log.ghl_contact_id && (
                                       <p className="text-xs text-muted-foreground">
                                         Contact ID: {log.ghl_contact_id}
