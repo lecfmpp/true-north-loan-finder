@@ -59,9 +59,9 @@ serve(async (req) => {
       is_active: integration.is_active
     });
 
-    // Test API connectivity
+    // Test API connectivity using pipelines endpoint (which we actually need)
     console.log('🌐 Testing GHL API connectivity...');
-    const testResponse = await fetch(`https://services.leadconnectorhq.com/locations/${integration.location_id}`, {
+    const pipelineResponse = await fetch(`https://services.leadconnectorhq.com/opportunities/pipelines?locationId=${integration.location_id}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${integration.api_key}`,
@@ -71,23 +71,12 @@ serve(async (req) => {
     });
 
     const apiConnectivity = {
-      status: testResponse.status,
-      statusText: testResponse.statusText,
-      ok: testResponse.ok
+      status: pipelineResponse.status,
+      statusText: pipelineResponse.statusText,
+      ok: pipelineResponse.ok
     };
 
     console.log('📡 API connectivity test result:', apiConnectivity);
-
-    // Fetch pipelines
-    console.log('📊 Fetching pipelines...');
-    const pipelineResponse = await fetch(`https://services.leadconnectorhq.com/opportunities/pipelines?locationId=${integration.location_id}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${integration.api_key}`,
-        'Content-Type': 'application/json',
-        'Version': '2021-07-28',
-      },
-    });
 
     let pipelinesInfo = {};
     let targetPipeline = null;
