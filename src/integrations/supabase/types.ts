@@ -1174,6 +1174,51 @@ export type Database = {
           },
         ]
       }
+      ghl_activity_logs: {
+        Row: {
+          activity_type: string
+          created_at: string
+          error_message: string | null
+          ghl_contact_id: string | null
+          ghl_opportunity_id: string | null
+          id: string
+          lead_id: string
+          partner_id: string
+          pipeline_id: string | null
+          response_data: Json | null
+          stage_id: string | null
+          status: string
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          error_message?: string | null
+          ghl_contact_id?: string | null
+          ghl_opportunity_id?: string | null
+          id?: string
+          lead_id: string
+          partner_id: string
+          pipeline_id?: string | null
+          response_data?: Json | null
+          stage_id?: string | null
+          status: string
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          error_message?: string | null
+          ghl_contact_id?: string | null
+          ghl_opportunity_id?: string | null
+          id?: string
+          lead_id?: string
+          partner_id?: string
+          pipeline_id?: string | null
+          response_data?: Json | null
+          stage_id?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       ghl_integration_logs: {
         Row: {
           created_at: string

@@ -16,7 +16,10 @@ import {
   Building,
   DollarSign,
   Phone,
-  Mail
+  Mail,
+  History,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 
 interface Lead {
@@ -40,6 +43,8 @@ const GHLLeadManagement = () => {
   const [loading, setLoading] = useState(true);
   const [sendingLeads, setSendingLeads] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<'all' | 'pending' | 'sent' | 'error'>('pending');
+  const [selectedLeadLogs, setSelectedLeadLogs] = useState<string | null>(null);
+  const [activityLogs, setActivityLogs] = useState<any[]>([]);
 
   const fetchLeads = async () => {
     try {
@@ -161,6 +166,32 @@ const GHLLeadManagement = () => {
         return newSet;
       });
       console.log(`🏁 ${operation} completed for lead:`, leadId);
+    }
+  };
+
+  const fetchActivityLogs = async (leadId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('ghl_activity_logs')
+        .select('*')
+        .eq('lead_id', leadId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setActivityLogs(data || []);
+    } catch (error) {
+      console.error('Error fetching activity logs:', error);
+      toast.error('Failed to fetch activity logs');
+    }
+  };
+
+  const toggleLeadLogs = async (leadId: string) => {
+    if (selectedLeadLogs === leadId) {
+      setSelectedLeadLogs(null);
+      setActivityLogs([]);
+    } else {
+      setSelectedLeadLogs(leadId);
+      await fetchActivityLogs(leadId);
     }
   };
 
@@ -373,6 +404,19 @@ const GHLLeadManagement = () => {
                             </Button>
                           )}
                           
+                          <Button
+                            onClick={() => toggleLeadLogs(lead.id)}
+                            variant="ghost"
+                            size="sm"
+                          >
+                            <History className="h-4 w-4 mr-2" />
+                            Activity
+                            {selectedLeadLogs === lead.id ? 
+                              <ChevronUp className="h-4 w-4 ml-1" /> : 
+                              <ChevronDown className="h-4 w-4 ml-1" />
+                            }
+                          </Button>
+                          
                           {/* Debug button for leads with opportunities */}
                           {(lead.ghl_contact_id || lead.ghl_opportunity_id) && (
                             <Button
@@ -386,6 +430,52 @@ const GHLLeadManagement = () => {
                         </div>
                       </div>
                     </CardContent>
+                    
+                    {/* Activity Logs Section */}
+                    {selectedLeadLogs === lead.id && (
+                      <CardContent className="pt-0 border-t">
+                        <div className="space-y-3">
+                          <h4 className="font-medium text-sm text-muted-foreground">GHL Activity Log</h4>
+                          {activityLogs.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">No activity recorded yet.</p>
+                          ) : (
+                            <div className="space-y-2">
+                              {activityLogs.map((log) => (
+                                <div key={log.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                                  <div className={`w-2 h-2 rounded-full mt-2 ${
+                                    log.status === 'success' ? 'bg-green-500' :
+                                    log.status === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
+                                  }`} />
+                                  <div className="flex-1 space-y-1">
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-sm font-medium capitalize">
+                                        {log.activity_type.replace('_', ' ')}
+                                      </span>
+                                      <span className="text-xs text-muted-foreground">
+                                        {new Date(log.created_at).toLocaleString()}
+                                      </span>
+                                    </div>
+                                    {log.error_message && (
+                                      <p className="text-sm text-red-600">{log.error_message}</p>
+                                    )}
+                                    {log.ghl_contact_id && (
+                                      <p className="text-xs text-muted-foreground">
+                                        Contact ID: {log.ghl_contact_id}
+                                      </p>
+                                    )}
+                                    {log.ghl_opportunity_id && (
+                                      <p className="text-xs text-muted-foreground">
+                                        Opportunity ID: {log.ghl_opportunity_id}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    )}
                   </Card>
                 );
               })

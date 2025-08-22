@@ -494,6 +494,32 @@ serve(async (req) => {
       .update(updateData)
       .eq("id", leadId);
 
+    // Log the activity
+    try {
+      await supabase.from('ghl_activity_logs').insert({
+        lead_id: leadId,
+        partner_id: targetPartnerId,
+        activity_type: contactCreated ? 'contact_created' : 'contact_updated',
+        ghl_contact_id: contactId,
+        ghl_opportunity_id: opportunityResult?.opportunity?.id || null,
+        pipeline_id: integration.pipeline_id || null,
+        stage_id: opportunityResult?.stageId || null,
+        status: (contactCreated && opportunityResult?.opportunity?.id) ? 'success' : 
+                contactCreated ? 'warning' : 'success',
+        error_message: !opportunityResult?.opportunity?.id && createOpportunity ? 
+                      'Opportunity creation failed - contact exists but no opportunity found' : null,
+        response_data: {
+          contactCreated,
+          opportunityCreated,
+          existingContact: !!existingContactId,
+          contactId,
+          opportunityId: opportunityResult?.opportunity?.id || null
+        }
+      });
+    } catch (logError) {
+      console.error('Failed to log activity:', logError);
+    }
+
     console.log('Lead processing completed successfully');
 
     return new Response(JSON.stringify({
@@ -514,6 +540,21 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error processing lead:', error);
+    
+    // Log the error
+    try {
+      await supabase.from('ghl_activity_logs').insert({
+        lead_id: leadId,
+        partner_id: targetPartnerId,
+        activity_type: 'error',
+        status: 'error',
+        error_message: error.message,
+        response_data: { error: error.message }
+      });
+    } catch (logError) {
+      console.error('Failed to log error:', logError);
+    }
+    
     return new Response(JSON.stringify({
       success: false,
       error: error.message
