@@ -42,7 +42,7 @@ const GHLLeadManagement = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [sendingLeads, setSendingLeads] = useState<Set<string>>(new Set());
-  const [filter, setFilter] = useState<'all' | 'pending' | 'sent' | 'error'>('pending');
+  const [filter, setFilter] = useState<'all' | 'needs-sync' | 'contact-only' | 'complete'>('needs-sync');
   const [selectedLeadLogs, setSelectedLeadLogs] = useState<string | null>(null);
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
 
@@ -86,13 +86,7 @@ const GHLLeadManagement = () => {
         .order('created_at', { ascending: false })
         .limit(50);
 
-      // Apply filters
-      if (filter === 'pending') {
-        query = query.is('ghl_contact_id', null);
-      } else if (filter === 'sent') {
-        query = query.not('ghl_contact_id', 'is', null);
-      }
-
+      // No additional filtering at query level - we'll filter on the frontend
       const { data, error } = await query;
 
       if (error) throw error;
@@ -229,7 +223,7 @@ const GHLLeadManagement = () => {
     } else if (lead.ghl_contact_id) {
       return { status: 'contact_only', label: 'Contact Only', color: 'bg-yellow-500' };
     } else {
-      return { status: 'pending', label: 'Pending', color: 'bg-gray-500' };
+      return { status: 'needs_sync', label: 'Needs Sync', color: 'bg-red-500' };
     }
   };
 
@@ -281,8 +275,9 @@ const GHLLeadManagement = () => {
 
   const filteredLeads = leads.filter(lead => {
     if (filter === 'all') return true;
-    if (filter === 'pending') return !lead.ghl_contact_id;
-    if (filter === 'sent') return lead.ghl_contact_id;
+    if (filter === 'needs-sync') return !lead.ghl_contact_id;
+    if (filter === 'contact-only') return lead.ghl_contact_id && !lead.ghl_opportunity_id;
+    if (filter === 'complete') return lead.ghl_contact_id && lead.ghl_opportunity_id;
     return false;
   });
 
@@ -320,20 +315,24 @@ const GHLLeadManagement = () => {
 
           {/* Filters */}
           <div className="flex gap-2 mb-6">
-            {['all', 'pending', 'sent'].map((filterOption) => (
+            {['all', 'needs-sync', 'contact-only', 'complete'].map((filterOption) => (
               <Button
                 key={filterOption}
                 variant={filter === filterOption ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setFilter(filterOption as any)}
               >
-                {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
+                {filterOption === 'needs-sync' ? 'Needs Sync' : 
+                 filterOption === 'contact-only' ? 'Contact Only' :
+                 filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
                 <Badge className="ml-2" variant="secondary">
                   {filterOption === 'all' 
                     ? leads.length 
-                    : filterOption === 'pending'
+                    : filterOption === 'needs-sync'
                     ? leads.filter(l => !l.ghl_contact_id).length
-                    : leads.filter(l => l.ghl_contact_id).length
+                    : filterOption === 'contact-only'
+                    ? leads.filter(l => l.ghl_contact_id && !l.ghl_opportunity_id).length
+                    : leads.filter(l => l.ghl_contact_id && l.ghl_opportunity_id).length
                   }
                 </Badge>
               </Button>
