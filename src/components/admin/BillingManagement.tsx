@@ -40,6 +40,7 @@ interface PartnerCredit {
   available_credits: number;
   total_purchased: number;
   total_used: number;
+  actual_assignments: number; // New field for actual lead assignments
   created_at: string;
   partners?: {
     name: string;
@@ -103,7 +104,7 @@ export default function BillingManagement() {
       if (clientError) throw clientError;
       if (partnersError) throw partnersError;
 
-      // Fetch partner credits for clients only
+      // Fetch partner credits
       const { data: creditsData, error: creditsError } = await supabase
         .from('partner_lead_credits')
         .select('*')
@@ -111,13 +112,57 @@ export default function BillingManagement() {
 
       if (creditsError) throw creditsError;
 
-      // Merge the data with both client applications and partners
-      const creditsWithPartners = (creditsData || []).map(credit => {
-        // First try to find in client applications
-        const client = (clientApplicationsData || []).find(c => c.user_id === credit.user_id);
+      // Fetch actual lead assignments for all partners
+      const { data: assignmentsData, error: assignmentsError } = await supabase
+        .from('lead_assignments')
+        .select(`
+          partner_id,
+          quiz_response_id,
+          partners!inner (
+            user_id,
+            name,
+            email,
+            company_name
+          )
+        `);
+
+      if (assignmentsError) throw assignmentsError;
+
+      // Count assignments per partner user_id
+      const assignmentCounts = (assignmentsData || []).reduce((acc, assignment) => {
+        const userId = assignment.partners.user_id;
+        acc[userId] = (acc[userId] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      // Get all unique partners from both credits and assignments
+      const allPartnerUserIds = new Set([
+        ...(creditsData || []).map(c => c.user_id),
+        ...Object.keys(assignmentCounts)
+      ]);
+
+      // Create comprehensive partner credits data
+      const creditsWithPartners = Array.from(allPartnerUserIds).map(userId => {
+        // Find existing credit record or create default
+        const existingCredit = (creditsData || []).find(c => c.user_id === userId);
+        const defaultCredit = {
+          id: `default-${userId}`,
+          user_id: userId,
+          available_credits: 0,
+          total_purchased: 0,
+          total_used: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        
+        const credit = existingCredit || defaultCredit;
+        
+        // Find partner info from client applications first
+        const client = (clientApplicationsData || []).find(c => c.user_id === userId);
         if (client) {
           return {
             ...credit,
+            actual_assignments: assignmentCounts[userId] || 0,
             partners: {
               name: client.applicant_name,
               email: client.applicant_email,
@@ -126,20 +171,41 @@ export default function BillingManagement() {
           };
         }
         
-        // Then try to find in partners table
-        const partner = (partnersData || []).find(p => p.user_id === credit.user_id);
-        return {
-          ...credit,
-          partners: partner ? {
-            name: partner.name,
-            email: partner.email,
-            company_name: partner.company_name
-          } : null
-        };
-      });
+        // Then try partners table
+        const partner = (partnersData || []).find(p => p.user_id === userId);
+        if (partner) {
+          return {
+            ...credit,
+            actual_assignments: assignmentCounts[userId] || 0,
+            partners: {
+              name: partner.name,
+              email: partner.email,
+              company_name: partner.company_name
+            }
+          };
+        }
 
-      // Filter out unknown partners (where no partner info is found)
-      const filteredCredits = creditsWithPartners.filter(credit => credit.partners !== null);
+        // If no partner info found but has assignments, try to get from assignments data
+        const assignmentWithPartner = (assignmentsData || []).find(a => a.partners.user_id === userId);
+        if (assignmentWithPartner) {
+          return {
+            ...credit,
+            actual_assignments: assignmentCounts[userId] || 0,
+            partners: {
+              name: assignmentWithPartner.partners.name,
+              email: assignmentWithPartner.partners.email,
+              company_name: assignmentWithPartner.partners.company_name
+            }
+          };
+        }
+
+        return null; // Filter out partners without info
+      }).filter(Boolean);
+
+      // Filter out partners without valid info and sort by assignments desc
+      const filteredCredits = creditsWithPartners
+        .filter(credit => credit?.partners !== null)
+        .sort((a, b) => (b?.actual_assignments || 0) - (a?.actual_assignments || 0));
 
       setPayments((paymentsData as any) || []);
       setPartnerCredits(filteredCredits as any);
@@ -861,28 +927,77 @@ export default function BillingManagement() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Partner</TableHead>
-                  <TableHead>Available</TableHead>
-                  <TableHead>Total Purchased</TableHead>
-                  <TableHead>Leads Assigned</TableHead>
-                  <TableHead>Utilization Rate</TableHead>
+                  <TableHead>Available Credits</TableHead>
+                  <TableHead>Purchased</TableHead>
+                  <TableHead>Credit Assignments</TableHead>
+                  <TableHead>Actual Assignments</TableHead>
+                  <TableHead>Balance</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {partnerCredits.map((credit) => {
+                  const balance = credit.total_purchased - credit.actual_assignments;
                   const utilizationRate = credit.total_purchased > 0 
-                    ? ((credit.total_used / credit.total_purchased) * 100).toFixed(1)
-                    : '0';
+                    ? ((credit.actual_assignments / credit.total_purchased) * 100).toFixed(1)
+                    : credit.actual_assignments > 0 ? '∞' : '0';
+                  
+                  const getBalanceBadge = (balance: number) => {
+                    if (balance < 0) {
+                      return (
+                        <Badge variant="destructive" className="bg-red-100 text-red-800 border-red-200">
+                          {balance}
+                        </Badge>
+                      );
+                    } else if (balance === 0) {
+                      return (
+                        <Badge variant="secondary" className="bg-gray-100 text-gray-700 border-gray-300">
+                          {balance}
+                        </Badge>
+                      );
+                    } else {
+                      return (
+                        <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">
+                          +{balance}
+                        </Badge>
+                      );
+                    }
+                  };
                   
                   return (
                     <TableRow key={credit.id}>
-                      <TableCell>{credit.partners?.name || 'Unknown Partner'}</TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{credit.partners?.name || 'Unknown Partner'}</div>
+                          <div className="text-sm text-muted-foreground">{credit.partners?.company_name}</div>
+                        </div>
+                      </TableCell>
                       <TableCell>
                         {getAvailableCreditsBadge(credit.available_credits)}
                       </TableCell>
-                      <TableCell>{credit.total_purchased}</TableCell>
-                      <TableCell>{credit.total_used}</TableCell>
-                      <TableCell>{utilizationRate}%</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                          {credit.total_purchased}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                          {credit.total_used}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
+                          {credit.actual_assignments}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {getBalanceBadge(balance)}
+                        {balance < 0 && (
+                          <div className="text-xs text-red-600 mt-1">
+                            Owes {Math.abs(balance)} credits
+                          </div>
+                        )}
+                      </TableCell>
                       <TableCell>
                         <Button
                           size="sm"
