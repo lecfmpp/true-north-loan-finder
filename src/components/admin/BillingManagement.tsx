@@ -77,6 +77,63 @@ export default function BillingManagement() {
 
   useEffect(() => {
     fetchBillingData();
+
+    // Set up real-time subscriptions for partner-related tables
+    const partnersChannel = supabase
+      .channel('partners-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'partners'
+        },
+        (payload) => {
+          console.log('Partners table changed:', payload);
+          fetchBillingData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'lender_broker_applications'
+        },
+        (payload) => {
+          console.log('Lender broker applications changed:', payload);
+          fetchBillingData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'partner_lead_credits'
+        },
+        (payload) => {
+          console.log('Partner lead credits changed:', payload);
+          fetchBillingData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'payment_records'
+        },
+        (payload) => {
+          console.log('Payment records changed:', payload);
+          fetchBillingData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(partnersChannel);
+    };
   }, []);
 
   const fetchBillingData = async () => {
