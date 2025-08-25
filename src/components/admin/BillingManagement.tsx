@@ -69,6 +69,7 @@ export default function BillingManagement() {
   const [editPaymentAmount, setEditPaymentAmount] = useState('');
   const [editPaymentStatus, setEditPaymentStatus] = useState('');
   const [editLeadsPurchased, setEditLeadsPurchased] = useState('');
+  const [isProcessingStripePayment, setIsProcessingStripePayment] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -197,7 +198,90 @@ export default function BillingManagement() {
     }
   };
 
+  const handleStripePayment = async () => {
+    if (!selectedPaymentPartner || !leadsPurchased) {
+      toast({
+        title: "Error",
+        description: "Please select a partner and enter number of leads",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      setIsProcessingStripePayment(true);
+      
+      const leadsCount = parseInt(leadsPurchased);
+      if (isNaN(leadsCount) || leadsCount <= 0) {
+        toast({
+          title: "Error",
+          description: "Please enter a valid number of leads",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Find the selected partner
+      const partner = partnerCredits.find(p => p.id === selectedPaymentPartner);
+      if (!partner) {
+        toast({
+          title: "Error",
+          description: "Selected partner not found",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Call the create-partner-payment edge function
+      const { data, error } = await supabase.functions.invoke('create-partner-payment', {
+        body: {
+          leadPackageCount: leadsCount,
+          partnerId: partner.user_id // Use user_id for the partner payment function
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        // Open Stripe checkout in a new tab
+        window.open(data.url, '_blank');
+        
+        toast({
+          title: "Stripe Checkout Opened",
+          description: "Complete the payment in the new tab to add credits to the partner's account"
+        });
+
+        // Reset form and close dialog
+        setManualPaymentDialog(false);
+        setPaymentAmount('');
+        setPaymentMethod('');
+        setPaymentDescription('');
+        setSelectedPaymentPartner('');
+        setLeadsPurchased('');
+        
+        // Refresh data after a short delay to potentially catch the payment
+        setTimeout(() => {
+          fetchBillingData();
+        }, 3000);
+      }
+    } catch (error) {
+      console.error('Error creating Stripe payment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create Stripe payment session",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessingStripePayment(false);
+    }
+  };
+
   const handleManualPayment = async () => {
+    if (paymentMethod === 'stripe') {
+      await handleStripePayment();
+      return;
+    }
+
     if (!paymentAmount || !paymentMethod || !selectedPaymentPartner || !leadsPurchased) {
       toast({
         title: "Error",
@@ -578,34 +662,37 @@ export default function BillingManagement() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div>
-                      <Label>Payment Method</Label>
-                      <Select
-                        value={paymentMethod}
-                        onValueChange={setPaymentMethod}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select payment method" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-background border shadow-lg z-50">
-                          <SelectItem value="etransfer">E-Transfer</SelectItem>
-                          <SelectItem value="cash">Cash</SelectItem>
-                          <SelectItem value="direct_deposit">Direct Deposit</SelectItem>
-                          <SelectItem value="wire_transfer">Wire Transfer</SelectItem>
-                          <SelectItem value="check">Check</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label>Amount ($)</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="Enter payment amount"
-                        value={paymentAmount}
-                        onChange={(e) => setPaymentAmount(e.target.value)}
-                      />
-                    </div>
+                     <div>
+                       <Label>Payment Method</Label>
+                       <Select
+                         value={paymentMethod}
+                         onValueChange={setPaymentMethod}
+                       >
+                         <SelectTrigger className="w-full">
+                           <SelectValue placeholder="Select payment method" />
+                         </SelectTrigger>
+                         <SelectContent className="bg-background border shadow-lg z-50">
+                           <SelectItem value="stripe">Stripe (Credit Card)</SelectItem>
+                           <SelectItem value="etransfer">E-Transfer</SelectItem>
+                           <SelectItem value="cash">Cash</SelectItem>
+                           <SelectItem value="direct_deposit">Direct Deposit</SelectItem>
+                           <SelectItem value="wire_transfer">Wire Transfer</SelectItem>
+                           <SelectItem value="check">Check</SelectItem>
+                         </SelectContent>
+                       </Select>
+                     </div>
+                     {paymentMethod !== 'stripe' && (
+                       <div>
+                         <Label>Amount ($)</Label>
+                         <Input
+                           type="number"
+                           step="0.01"
+                           placeholder="Enter payment amount"
+                           value={paymentAmount}
+                           onChange={(e) => setPaymentAmount(e.target.value)}
+                         />
+                       </div>
+                     )}
                     <div>
                       <Label>Number of Leads</Label>
                       <Input
@@ -623,9 +710,18 @@ export default function BillingManagement() {
                         onChange={(e) => setPaymentDescription(e.target.value)}
                       />
                     </div>
-                    <Button onClick={handleManualPayment} className="w-full">
-                      Create Payment Record
-                    </Button>
+                     <Button 
+                       onClick={handleManualPayment} 
+                       className="w-full"
+                       disabled={isProcessingStripePayment}
+                     >
+                       {isProcessingStripePayment 
+                         ? "Creating Stripe Session..." 
+                         : paymentMethod === 'stripe' 
+                           ? "Create Stripe Checkout" 
+                           : "Create Payment Record"
+                       }
+                     </Button>
                   </div>
                 </DialogContent>
               </Dialog>
