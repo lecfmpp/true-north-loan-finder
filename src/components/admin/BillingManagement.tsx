@@ -70,6 +70,8 @@ export default function BillingManagement() {
   const [editPaymentAmount, setEditPaymentAmount] = useState('');
   const [editPaymentStatus, setEditPaymentStatus] = useState('');
   const [editLeadsPurchased, setEditLeadsPurchased] = useState('');
+  const [editPaymentMethod, setEditPaymentMethod] = useState('');
+  const [editPaymentDescription, setEditPaymentDescription] = useState('');
   const [isProcessingStripePayment, setIsProcessingStripePayment] = useState(false);
   const { toast } = useToast();
 
@@ -446,7 +448,7 @@ export default function BillingManagement() {
   };
 
   const handleEditPayment = async () => {
-    if (!selectedPayment || !editPaymentAmount || !editPaymentStatus || !editLeadsPurchased) {
+    if (!selectedPayment || !editPaymentAmount || !editPaymentStatus || !editLeadsPurchased || !editPaymentMethod) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -485,6 +487,11 @@ export default function BillingManagement() {
           amount: amountInCents,
           status: editPaymentStatus,
           leads_purchased: leadsCount,
+          metadata: {
+            ...selectedPayment.metadata,
+            payment_method: editPaymentMethod,
+            description: editPaymentDescription || selectedPayment.metadata?.description
+          }
         })
         .eq('id', selectedPayment.id);
 
@@ -500,6 +507,8 @@ export default function BillingManagement() {
       setEditPaymentAmount('');
       setEditPaymentStatus('');
       setEditLeadsPurchased('');
+      setEditPaymentMethod('');
+      setEditPaymentDescription('');
       fetchBillingData();
     } catch (error) {
       console.error('Error updating payment:', error);
@@ -825,17 +834,19 @@ export default function BillingManagement() {
                          <TableCell>{new Date(payment.created_at).toLocaleDateString()}</TableCell>
                          <TableCell>
                            <div className="flex gap-2">
-                             <Button
-                               size="sm"
-                               variant="outline"
-                               onClick={() => {
-                                 setSelectedPayment(payment);
-                                 setEditPaymentAmount((payment.amount / 100).toString());
-                                 setEditPaymentStatus(payment.status);
-                                 setEditLeadsPurchased(payment.leads_purchased.toString());
-                                 setEditPaymentDialog(true);
-                               }}
-                             >
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setSelectedPayment(payment);
+                                  setEditPaymentAmount((payment.amount / 100).toString());
+                                  setEditPaymentStatus(payment.status);
+                                  setEditLeadsPurchased(payment.leads_purchased.toString());
+                                  setEditPaymentMethod(payment.metadata?.payment_method || '');
+                                  setEditPaymentDescription(payment.metadata?.description || '');
+                                  setEditPaymentDialog(true);
+                                }}
+                              >
                                <Edit className="h-4 w-4" />
                              </Button>
                              <Button
@@ -1025,42 +1036,69 @@ export default function BillingManagement() {
            <DialogHeader>
              <DialogTitle>Edit Payment Record</DialogTitle>
            </DialogHeader>
-           <div className="space-y-4">
-             <div>
-               <Label>Amount ($)</Label>
-               <Input
-                 type="number"
-                 step="0.01"
-                 value={editPaymentAmount}
-                 onChange={(e) => setEditPaymentAmount(e.target.value)}
-               />
-             </div>
-             <div>
-               <Label>Status</Label>
-               <Select value={editPaymentStatus} onValueChange={setEditPaymentStatus}>
-                 <SelectTrigger className="w-full">
-                   <SelectValue placeholder="Select status" />
-                 </SelectTrigger>
-                 <SelectContent className="bg-background border shadow-lg z-50">
-                   <SelectItem value="pending">Pending</SelectItem>
-                   <SelectItem value="completed">Completed</SelectItem>
-                   <SelectItem value="failed">Failed</SelectItem>
-                   <SelectItem value="refunded">Refunded</SelectItem>
-                 </SelectContent>
-               </Select>
-             </div>
-             <div>
-               <Label>Number of Leads</Label>
-               <Input
-                 type="number"
-                 value={editLeadsPurchased}
-                 onChange={(e) => setEditLeadsPurchased(e.target.value)}
-               />
-             </div>
-             <Button onClick={handleEditPayment} className="w-full">
-               Update Payment Record
-             </Button>
-           </div>
+            <div className="space-y-4">
+              <div>
+                <Label>Amount ($)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={editPaymentAmount}
+                  onChange={(e) => setEditPaymentAmount(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label>Payment Method</Label>
+                <Select
+                  value={editPaymentMethod}
+                  onValueChange={setEditPaymentMethod}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select payment method" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border shadow-lg z-50">
+                    <SelectItem value="stripe">Stripe (Credit Card)</SelectItem>
+                    <SelectItem value="etransfer">E-Transfer</SelectItem>
+                    <SelectItem value="cash">Cash</SelectItem>
+                    <SelectItem value="direct_deposit">Direct Deposit</SelectItem>
+                    <SelectItem value="wire_transfer">Wire Transfer</SelectItem>
+                    <SelectItem value="check">Check</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Status</Label>
+                <Select value={editPaymentStatus} onValueChange={setEditPaymentStatus}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border shadow-lg z-50">
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="failed">Failed</SelectItem>
+                    <SelectItem value="refunded">Refunded</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Number of Leads</Label>
+                <Input
+                  type="number"
+                  value={editLeadsPurchased}
+                  onChange={(e) => setEditLeadsPurchased(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label>Description (Optional)</Label>
+                <Textarea
+                  placeholder="Additional payment details"
+                  value={editPaymentDescription}
+                  onChange={(e) => setEditPaymentDescription(e.target.value)}
+                />
+              </div>
+              <Button onClick={handleEditPayment} className="w-full">
+                Update Payment Record
+              </Button>
+            </div>
          </DialogContent>
        </Dialog>
 
