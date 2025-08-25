@@ -420,11 +420,6 @@ export default function BillingManagement() {
   };
 
   const handleManualPayment = async () => {
-    if (paymentMethod === 'stripe') {
-      await handleStripePayment();
-      return;
-    }
-
     if (!paymentAmount || !paymentMethod || !selectedPaymentPartner || !leadsPurchased) {
       toast({
         title: "Error",
@@ -470,7 +465,7 @@ export default function BillingManagement() {
         return;
       }
 
-      // Create payment record
+      // Create payment record for already completed payment
       const { error: paymentError } = await supabase
         .from('payment_records')
         .insert({
@@ -482,19 +477,19 @@ export default function BillingManagement() {
           leads_purchased: leadsCount,
           metadata: {
             payment_method: paymentMethod,
-            description: paymentDescription || `Manual ${paymentMethod} payment`,
+            description: paymentDescription || `Manual ${paymentMethod} payment - already completed`,
             created_by: 'admin'
           }
         });
 
       if (paymentError) throw paymentError;
 
-      // Also add credits to the partner's account
+      // Add credits to the partner's account
       const { error: creditError } = await supabase.rpc('update_partner_credits', {
         p_user_id: partner.user_id,
         p_credit_change: leadsCount,
         p_transaction_type: 'purchase',
-        p_description: `Manual payment - ${leadsCount} leads purchased via ${paymentMethod}`
+        p_description: `Manual payment record - ${leadsCount} leads purchased via ${paymentMethod}`
       });
 
       if (creditError) throw creditError;
@@ -799,8 +794,11 @@ export default function BillingManagement() {
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Create Manual Payment Record</DialogTitle>
+                    <DialogTitle>Record Completed Payment</DialogTitle>
                   </DialogHeader>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Record a payment that has already been completed and verified outside of the system.
+                  </p>
                   <div className="space-y-4">
                     <div>
                       <Label>Partner</Label>
@@ -839,18 +837,16 @@ export default function BillingManagement() {
                          </SelectContent>
                        </Select>
                      </div>
-                     {paymentMethod !== 'stripe' && (
-                       <div>
-                         <Label>Amount ($)</Label>
-                         <Input
-                           type="number"
-                           step="0.01"
-                           placeholder="Enter payment amount"
-                           value={paymentAmount}
-                           onChange={(e) => setPaymentAmount(e.target.value)}
-                         />
-                       </div>
-                     )}
+                     <div>
+                       <Label>Amount ($)</Label>
+                       <Input
+                         type="number"
+                         step="0.01"
+                         placeholder="Enter payment amount"
+                         value={paymentAmount}
+                         onChange={(e) => setPaymentAmount(e.target.value)}
+                       />
+                     </div>
                     <div>
                       <Label>Number of Leads</Label>
                       <Input
@@ -871,14 +867,8 @@ export default function BillingManagement() {
                      <Button 
                        onClick={handleManualPayment} 
                        className="w-full"
-                       disabled={isProcessingStripePayment}
                      >
-                       {isProcessingStripePayment 
-                         ? "Creating Stripe Session..." 
-                         : paymentMethod === 'stripe' 
-                           ? "Create Stripe Checkout" 
-                           : "Create Payment Record"
-                       }
+                       Record Payment
                      </Button>
                   </div>
                 </DialogContent>
