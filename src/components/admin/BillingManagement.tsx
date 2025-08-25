@@ -158,7 +158,8 @@ export default function BillingManagement() {
       // Fetch all partners from the partners table
       const { data: partnersData, error: partnersError } = await supabase
         .from('partners')
-        .select('*');
+        .select('*')
+        .eq('is_active', true); // Only active partners
 
       if (clientError) throw clientError;
       if (partnersError) throw partnersError;
@@ -194,13 +195,17 @@ export default function BillingManagement() {
         return acc;
       }, {} as Record<string, number>);
 
-      // Get all unique partners from both credits and assignments
+      // Get ALL unique partners from all sources
       const allPartnerUserIds = new Set([
         ...(creditsData || []).map(c => c.user_id),
+        ...(clientApplicationsData || []).map(c => c.user_id).filter(Boolean),
+        ...(partnersData || []).map(p => p.user_id).filter(Boolean),
         ...Object.keys(assignmentCounts)
       ]);
 
-      // Create comprehensive partner credits data
+      console.log('All unique partner user IDs found:', Array.from(allPartnerUserIds));
+
+      // Create comprehensive partner credits data including ALL partners
       const creditsWithPartners = Array.from(allPartnerUserIds).map(userId => {
         // Find existing credit record or create default
         const existingCredit = (creditsData || []).find(c => c.user_id === userId);
@@ -216,21 +221,7 @@ export default function BillingManagement() {
         
         const credit = existingCredit || defaultCredit;
         
-        // Find partner info from client applications first
-        const client = (clientApplicationsData || []).find(c => c.user_id === userId);
-        if (client) {
-          return {
-            ...credit,
-            actual_assignments: assignmentCounts[userId] || 0,
-            partners: {
-              name: client.applicant_name,
-              email: client.applicant_email,
-              company_name: client.company_name
-            }
-          };
-        }
-        
-        // Then try partners table
+        // Find partner info - prioritize partners table, then client applications
         const partner = (partnersData || []).find(p => p.user_id === userId);
         if (partner) {
           return {
@@ -244,7 +235,21 @@ export default function BillingManagement() {
           };
         }
 
-        // If no partner info found but has assignments, try to get from assignments data
+        // Fallback to client applications
+        const client = (clientApplicationsData || []).find(c => c.user_id === userId);
+        if (client) {
+          return {
+            ...credit,
+            actual_assignments: assignmentCounts[userId] || 0,
+            partners: {
+              name: client.applicant_name,
+              email: client.applicant_email,
+              company_name: client.company_name
+            }
+          };
+        }
+
+        // Final fallback to assignment data
         const assignmentWithPartner = (assignmentsData || []).find(a => a.partners.user_id === userId);
         if (assignmentWithPartner) {
           return {
@@ -261,10 +266,23 @@ export default function BillingManagement() {
         return null; // Filter out partners without info
       }).filter(Boolean);
 
-      // Filter out partners without valid info and sort by assignments desc
+      // Sort by: 1) Partners with assignments, 2) Partners with credits, 3) Alphabetically
       const filteredCredits = creditsWithPartners
         .filter(credit => credit?.partners !== null)
-        .sort((a, b) => (b?.actual_assignments || 0) - (a?.actual_assignments || 0));
+        .sort((a, b) => {
+          // First sort by assignments (desc)
+          if ((b?.actual_assignments || 0) !== (a?.actual_assignments || 0)) {
+            return (b?.actual_assignments || 0) - (a?.actual_assignments || 0);
+          }
+          // Then by credits purchased (desc)  
+          if ((b?.total_purchased || 0) !== (a?.total_purchased || 0)) {
+            return (b?.total_purchased || 0) - (a?.total_purchased || 0);
+          }
+          // Finally alphabetically by name
+          return (a?.partners?.name || '').localeCompare(b?.partners?.name || '');
+        });
+
+      console.log('Final partner credits with partners:', filteredCredits.length, 'partners found');
 
       setPayments((paymentsData as any) || []);
       setPartnerCredits(filteredCredits as any);
