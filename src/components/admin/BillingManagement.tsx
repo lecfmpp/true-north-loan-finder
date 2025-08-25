@@ -668,7 +668,14 @@ export default function BillingManagement() {
   const totalRevenue = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0);
   const totalCreditsIssued = partnerCredits.reduce((sum, p) => sum + p.total_purchased, 0);
   const totalCreditsUsed = partnerCredits.reduce((sum, p) => sum + p.total_used, 0);
-  const activePartners = partnerCredits.filter(p => p.available_credits > 0).length;
+  
+  // Active Partners = Partners who have made completed payments for leads
+  const partnersWithPayments = new Set(
+    payments
+      .filter(p => p.status === 'completed' && p.leads_purchased > 0)
+      .map(p => p.user_id)
+  );
+  const activePartners = partnersWithPayments.size;
 
   if (loading) {
     return (
@@ -709,6 +716,7 @@ export default function BillingManagement() {
               <div>
                 <p className="text-sm text-muted-foreground">Active Partners</p>
                 <p className="text-2xl font-bold">{activePartners}</p>
+                <p className="text-xs text-muted-foreground mt-1">Partners with completed payments</p>
               </div>
               <Users className="h-8 w-8 text-blue-600" />
             </div>
