@@ -65,28 +65,51 @@ serve(async (req) => {
       });
     }
 
-    // Get partner information - only commission-based partners, not clients
-    const { data: partner, error: partnerError } = await supabaseClient
+    // Get partner information by id or by user_id (some callers send user_id)
+    let partner: any = null;
+
+    // Try by partners.id first
+    const { data: partnerById, error: partnerIdError } = await supabaseClient
       .from('partners')
       .select('*')
       .eq('id', partnerId)
       .single();
 
-    if (partnerError || !partner) {
-      console.error('Error fetching partner:', partnerError);
-      return new Response(JSON.stringify({ error: 'Partner not found or unauthorized' }), {
-        status: 404,
-        headers: corsHeaders,
-      });
+    if (partnerById) {
+      partner = partnerById;
+    } else {
+      // Fallback: try by partners.user_id
+      const { data: partnerByUser, error: partnerUserError } = await supabaseClient
+        .from('partners')
+        .select('*')
+        .eq('user_id', partnerId)
+        .single();
+
+      if (partnerUserError || !partnerByUser) {
+        console.error('Error fetching partner by id/user_id:', partnerId, partnerIdError, partnerUserError);
+        return new Response(JSON.stringify({ error: 'Partner not found or unauthorized' }), {
+          status: 404,
+          headers: corsHeaders,
+        });
+      }
+      partner = partnerByUser;
     }
 
-    console.log('Partner found:', { partnerId, email: partner.email, name: partner.name });
+    console.log('Partner found:', { partner_param: partnerId, partner_id: partner.id, email: partner.email, name: partner.name });
 
     // Calculate total amount
     const totalAmount = pricing.price_per_lead * leadPackageCount;
     
     // Initialize Stripe
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") || Deno.env.get("STRIPE_API_KEY") || "";
+    if (!stripeKey) {
+      console.error('Missing STRIPE_SECRET_KEY/STRIPE_API_KEY');
+      return new Response(JSON.stringify({ error: 'Stripe secret key not configured' }), {
+        status: 500,
+        headers: corsHeaders,
+      });
+    }
+    const stripe = new Stripe(stripeKey, {
       apiVersion: "2023-10-16",
     });
 
@@ -105,11 +128,11 @@ serve(async (req) => {
       const customer = await stripe.customers.create({
         email: partner.email,
         name: partner.name,
-        metadata: {
-          partner_id: partnerId,
-          user_id: user.id,
-          company_name: partner.company_name
-        }
+          metadata: {
+            partner_id: partner.id,
+            user_id: user.id,
+            company_name: partner.company_name
+          }
       });
       customerId = customer.id;
       console.log('New customer created:', customerId);
@@ -135,7 +158,7 @@ serve(async (req) => {
       success_url: `${req.headers.get("origin")}/admin?payment=success&leads=${leadPackageCount}`,
       cancel_url: `${req.headers.get("origin")}/admin?payment=cancelled`,
       metadata: {
-        partner_id: partnerId,
+        partner_id: partner.id,
         user_id: user.id,
         lead_count: leadPackageCount.toString(),
         price_per_lead: pricing.price_per_lead.toString()
@@ -155,7 +178,7 @@ serve(async (req) => {
         status: 'pending',
         payment_type: 'lead_credits',
         metadata: {
-          partner_id: partnerId,
+          partner_id: partner.id,
           price_per_lead: pricing.price_per_lead,
           session_url: session.url
         }
