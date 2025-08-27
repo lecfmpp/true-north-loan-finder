@@ -77,8 +77,13 @@ const handler = async (req: Request): Promise<Response> => {
             const arrayBuffer = await fileData.arrayBuffer();
             const uint8Array = new Uint8Array(arrayBuffer);
             
-            // Convert to base64 string for Resend
-            const base64String = btoa(String.fromCharCode(...uint8Array));
+            // Convert to base64 string for Resend (handle large files properly)
+            let base64String = '';
+            const chunkSize = 8192;
+            for (let i = 0; i < uint8Array.length; i += chunkSize) {
+              const chunk = uint8Array.subarray(i, i + chunkSize);
+              base64String += btoa(String.fromCharCode(...chunk));
+            }
             
             // Extract filename from path
             const fileName = filePath.split('/').pop() || filePath;
