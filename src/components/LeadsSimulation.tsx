@@ -188,15 +188,10 @@ export const LeadsSimulation = () => {
         const {
           data: leadData,
           error
-        } = await supabase
-          .from('lead_feed')
-          .select('*')
-          .eq('country', selectedCountry)
-          .order('submitted_at', { ascending: false })
-          .limit(20);
-        
+        } = await supabase.from('lead_feed').select('*').eq('country', selectedCountry).order('submitted_at', {
+          ascending: false
+        }).limit(20);
         if (error) throw error;
-        
         if (leadData && leadData.length > 0) {
           const transformedLeads: Lead[] = leadData.map(lead => {
             // Use the processed data from lead_feed table
@@ -234,7 +229,6 @@ export const LeadsSimulation = () => {
 
     // Refresh leads every 30 seconds to show updates
     const interval = setInterval(fetchLeads, 30000);
-    
     return () => {
       clearInterval(interval);
     };
@@ -367,7 +361,7 @@ export const LeadsSimulation = () => {
 
       <section ref={calendlyRef} id="schedule-demo" aria-label="Schedule your 10 Leads Trial" className="max-w-3xl mx-auto mt-8">
         <div className="text-center mb-4">
-          <h2 className="font-bold text-primary text-4xl">Book your ‘10 Leads’ trial call and find out if we can start filling your pipeline this week.</h2>
+          <h2 className="font-bold text-primary text-4xl">Book your ‘20 Leads’ trial call and find out if we can start filling your pipeline this week.</h2>
           <p className="text-sm text-muted-foreground">Pick a time to chat and activate your trial.</p>
         </div>
           <CalendlyInline url="https://calendly.com/leandro-truenorth-businessloan/30min?hide_gdpr_banner=1&primary_color=29df77" height={1100} />
