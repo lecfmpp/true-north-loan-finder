@@ -1386,6 +1386,18 @@ const Admin = () => {
         if (partnerFilter === 'unassigned') {
           return !lead.assigned_partner_id;
         }
+        
+        // Check if applications were sent to this partner's email
+        const selectedPartner = partners.find(p => p.id === partnerFilter);
+        if (selectedPartner) {
+          // Check if any custom emails were sent to this partner's email
+          const leadEmails = leadCustomEmails[lead.id] || [];
+          const sentToPartner = leadEmails.some(email => 
+            email.recipient_emails.includes(selectedPartner.email)
+          );
+          if (sentToPartner) return true;
+        }
+        
         return lead.assigned_partner_id === partnerFilter;
       });
     }
