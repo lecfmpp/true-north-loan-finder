@@ -2327,8 +2327,6 @@ const Admin = () => {
                             {sortField !== 'loan_amount' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
                           </Button>
                         </TableHead>
-                        <TableHead className="min-w-[140px]">Broker Commission</TableHead>
-                        <TableHead className="min-w-[140px]">Platform Commission</TableHead>
                         <TableHead className="min-w-[100px]">
                           <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent hover:text-current" onClick={() => handleSort('credit_score')}>
                             Credit Score
@@ -2365,7 +2363,7 @@ const Admin = () => {
                             {sortField !== 'created_at' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
                           </Button>
                         </TableHead>
-                        {isSuperAdmin && <TableHead className="min-w-[140px]">Email Sequences</TableHead>}
+                        
                       {isSuperAdmin && <>
     <TableHead className="min-w-[100px]">
       <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent hover:text-current" onClick={() => handleSort('attribution_channel')}>
@@ -2451,28 +2449,6 @@ const Admin = () => {
                           <TableCell>
                             <div className="text-sm font-medium">
                               ${lead.loan_amount?.toLocaleString()}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm font-medium">
-                              {(() => {
-                                const loan = Number(lead.partner_loan_amount || 0);
-                                const bPct = (leadAssignments[lead.id]?.partners?.broker_commission_percentage ?? currentPartnerPcts?.broker);
-                                if (!loan || bPct == null) return '—';
-                                const amt = (loan * (Number(bPct) || 0)) / 100;
-                                return `$${amt.toLocaleString()}`;
-                              })()}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm font-medium">
-                              {(() => {
-                                const loan = Number(lead.partner_loan_amount || 0);
-                                const pPct = (leadAssignments[lead.id]?.partners?.platform_commission_percentage ?? currentPartnerPcts?.platform);
-                                if (!loan || pPct == null) return '—';
-                                const amt = (loan * (Number(pPct) || 0)) / 100;
-                                return `$${amt.toLocaleString()}`;
-                              })()}
                             </div>
                           </TableCell>
                           <TableCell>
