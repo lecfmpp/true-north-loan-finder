@@ -649,11 +649,11 @@ export default function ROIManagement() {
       ? filteredSpends.reduce((sum, spend) => sum + (spend.ctr || 0), 0) / filteredSpends.length 
       : 0;
     const costPerClick = totalClicks > 0 ? totalSpend / totalClicks : 0;
-    const costPerLead = metrics.total_leads > 0 ? totalSpend / metrics.total_leads : 0;
+    const costPerLead = totalConversions > 0 ? totalSpend / totalConversions : 0;
     const costPerQualifiedLead = metrics.qualified_leads > 0 ? totalSpend / metrics.qualified_leads : 0;
 
     return {
-      totalLeads: metrics.total_leads,
+      totalLeads: totalConversions, // Show total conversions from ad spend records
       totalSpend,
       costPerLead,
       costPerQualifiedLead,
