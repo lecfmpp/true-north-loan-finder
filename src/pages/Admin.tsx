@@ -102,7 +102,7 @@ import CanadianApplicationsManagement from '@/components/admin/CanadianApplicati
 import SocialProofManagement from '@/components/admin/SocialProofManagement';
 import SettingsManagement from '@/components/admin/SettingsManagement';
 import SimplifiedPartnersManagement from '@/components/admin/SimplifiedPartnersManagement';
-import LeadSourceAnalytics from '@/components/admin/LeadSourceAnalytics';
+import LeadTierAnalytics from '@/components/admin/LeadTierAnalytics';
 import BillingManagement from '@/components/admin/BillingManagement';
 import ROIManagement from '@/components/admin/ROIManagement';
 import ClientsManagement from '@/components/admin/ClientsManagement';
@@ -2801,7 +2801,7 @@ const Admin = () => {
       case 'blog':
         return <BlogManagement />;
       case 'lead-analytics':
-        return <LeadSourceAnalytics />;
+        return <LeadTierAnalytics />;
       case 'social-proof':
         return <SocialProofManagement />;
       case 'settings':
