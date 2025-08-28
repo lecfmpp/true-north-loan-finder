@@ -11,13 +11,16 @@ import CalendlyInline from "@/components/CalendlyInline";
 import SEOHead from "@/components/SEOHead";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { ApplicationAuth } from "@/components/ApplicationAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 import adminDashboardPreview from "@/assets/admin-dashboard-preview.jpg";
 import { toast } from "sonner";
 
 const BrokerSignup = () => {
   const [recentLeads, setRecentLeads] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user, loading: authLoading } = useAuth();
   
   // ROI Calculator state
   const [avgCommission, setAvgCommission] = useState<number | ''>('');
@@ -127,6 +130,16 @@ const BrokerSignup = () => {
     geographicAreas: [] as string[],
     additionalRequirements: ''
   });
+
+  // Auto-fill user's email when authenticated
+  useEffect(() => {
+    if (!authLoading && user) {
+      setFormData(prev => ({
+        ...prev,
+        applicantEmail: user.email || ''
+      }));
+    }
+  }, [user, authLoading]);
   
   const [showForm, setShowForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -138,6 +151,13 @@ const BrokerSignup = () => {
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Require authentication before submission
+    if (!user) {
+      toast.error('You must be logged in to submit a broker application.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -168,10 +188,10 @@ const BrokerSignup = () => {
         });
       }
 
-      // Prepare data to insert into public.broker_signups (anonymous insert allowed via RLS)
+      // Prepare data to insert into public.broker_signups (requires authentication now)
       const insertData = {
         applicant_name: formData.applicantName,
-        applicant_email: formData.applicantEmail,
+        applicant_email: user.email, // Use authenticated user's email for security
         applicant_phone: formData.applicantPhone || null,
         company_name: formData.companyName,
         company_website: formData.companyWebsite || null,
@@ -249,8 +269,47 @@ const BrokerSignup = () => {
   };
 
   const handlePayment = () => {
+    if (!user) {
+      toast.error('Please sign in to submit your broker application.');
+      return;
+    }
     setShowForm(true);
   };
+
+  // Show authentication gate if not logged in
+  if (authLoading) {
+    return <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="text-center">Loading...</div>
+    </div>;
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background">
+        <SEOHead 
+          title="Exclusive Broker Partnership Program - True North Business Loan"
+          description="Join our exclusive broker network and receive pre-qualified business loan leads directly to your inbox. Quality leads that convert into funded deals."
+          keywords={["broker partnership", "business loan leads", "qualified leads", "broker network", "funding leads"]}
+        />
+        
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-md mx-auto">
+            <Card>
+              <CardHeader className="text-center">
+                <CardTitle className="text-2xl font-bold">Broker Partnership Application</CardTitle>
+                <p className="text-muted-foreground">Sign in to submit your broker application and start receiving exclusive leads.</p>
+              </CardHeader>
+              <CardContent>
+                <ApplicationAuth onAuthSuccess={() => window.location.reload()} />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -341,12 +400,12 @@ const BrokerSignup = () => {
                             id="applicantEmail"
                             name="applicantEmail"
                             type="email"
-                            value={formData.applicantEmail}
-                            onChange={handleInputChange}
-                            required
-                            className="w-full px-3 py-2 border border-border rounded-md bg-background"
+                            value={user.email || ''}
+                            disabled
+                            className="w-full px-3 py-2 border border-border rounded-md bg-muted text-muted-foreground"
                             placeholder="your@email.com"
                           />
+                          <p className="text-xs text-muted-foreground mt-1">Using your authenticated account email for security</p>
                         </div>
                         <div>
                           <Label htmlFor="applicantPhone">Phone Number *</Label>
