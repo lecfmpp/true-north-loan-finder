@@ -89,7 +89,7 @@ const formatPhoneNumber = (phone: string) => {
   // Return original if can't format
   return phone;
 };
-import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Trash2, Phone, ChevronDown, ChevronRight, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign, Settings as SettingsIcon, ExternalLink, TrendingUp, ChevronUp, ArrowUpDown, Save, CalendarIcon } from 'lucide-react';
+import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Trash2, Phone, ChevronDown, ChevronRight, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign, Settings as SettingsIcon, ExternalLink, TrendingUp, ChevronUp, ArrowUpDown, Save, CalendarIcon, Webhook, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import Header from '@/components/Header';
@@ -198,6 +198,9 @@ const Admin = () => {
   }>({});
   const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
   const [sendingEmails, setSendingEmails] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [sendingToMake, setSendingToMake] = useState<{
     [key: string]: boolean;
   }>({});
   const [selectedRecipients, setSelectedRecipients] = useState<{
@@ -1062,7 +1065,45 @@ const Admin = () => {
     return () => {
       supabase.removeChannel(partnersChannel);
       supabase.removeChannel(clientsChannel);
-    };
+  };
+  
+  const sendToMake = async (leadId: string, eventType: string = 'manual_send') => {
+    setSendingToMake(prev => ({ ...prev, [leadId]: true }));
+    try {
+      const { error } = await supabase.functions.invoke('send-to-make', {
+        body: { leadId, eventType }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Lead sent to Make.com successfully",
+      });
+    } catch (error: any) {
+      console.error('Error sending to Make:', error);
+      toast({
+        title: "Error", 
+        description: error.message || "Failed to send to Make.com",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingToMake(prev => ({ ...prev, [leadId]: false }));
+    }
+  };
+
+  const bulkSendToMake = async () => {
+    if (selectedLeads.length === 0) return;
+    
+    try {
+      for (const leadId of selectedLeads) {
+        await sendToMake(leadId, 'manual_send');
+      }
+      setSelectedLeads([]);
+    } catch (error) {
+      console.error('Bulk send to Make failed:', error);
+    }
+  };
   }, [user, isAdmin]);
   const sendCustomLeadEmail = async (leadId: string, recipientEmails: string) => {
     // Parse and validate multiple email addresses
@@ -2163,7 +2204,10 @@ const Admin = () => {
                   
                   {/* Action Buttons */}
                   <div className="flex flex-col sm:flex-row gap-2 justify-end">
-                    {selectedLeads.length > 0 && isSuperAdmin && <Button variant="destructive" onClick={() => {
+                    {selectedLeads.length > 0 && isSuperAdmin && <Button variant="outline" onClick={bulkSendToMake}>
+                        <Webhook className="mr-2 h-4 w-4" />
+                        Send {selectedLeads.length} to Make
+                      </Button>}
                     setBulkDelete(true);
                     setDeleteModalOpen(true);
                   }} className="flex items-center gap-2">
@@ -2296,6 +2340,7 @@ const Admin = () => {
     <TableHead className="min-w-[220px]">Source URL</TableHead>
   </>}
                         <TableHead className="min-w-[100px]">Actions</TableHead>
+                        {isSuperAdmin && <TableHead className="min-w-[120px]">Send to Make</TableHead>}
                         {isSuperAdmin && <TableHead className="min-w-[200px]">Send to Partner</TableHead>}
                         {isSuperAdmin && <TableHead className="min-w-[180px]">Assign Lead</TableHead>}
                         {isSuperAdmin && <TableHead className="min-w-[250px]">Custom Email</TableHead>}
@@ -2526,6 +2571,22 @@ const Admin = () => {
                               Call Now
                             </Button>
                           </TableCell>
+                          {isSuperAdmin && <TableCell>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => sendToMake(lead.id)}
+                              disabled={sendingToMake[lead.id]}
+                              className="flex items-center gap-1"
+                            >
+                              {sendingToMake[lead.id] ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : (
+                                <Webhook className="h-3 w-3" />
+                              )}
+                              {sendingToMake[lead.id] ? 'Sending...' : 'Send to Make'}
+                            </Button>
+                          </TableCell>}
                           {isSuperAdmin && <TableCell>
                               {partners.length > 0 ? <div className="flex items-center gap-2">
                                   <Select disabled={sendingEmails[lead.id]} value={selectedRecipients[lead.id] || ""} onValueChange={value => setSelectedRecipients(prev => ({

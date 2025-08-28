@@ -121,3 +121,9 @@ verify_jwt = true
 
 [functions.ghl-reconciliation]
 verify_jwt = true
+
+[functions.send-to-make]
+verify_jwt = true
+
+[functions.update-make-settings]
+verify_jwt = true

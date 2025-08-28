@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/use-auth';
 import { 
   Calendar, 
   Video, 
@@ -21,11 +22,13 @@ import {
   EyeOff,
   ExternalLink,
   HelpCircle,
-  DollarSign
+  DollarSign,
+  Webhook
 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import NotificationEmailSettings from './NotificationEmailSettings';
 import LeadPricingManagement from './LeadPricingManagement';
+import MakeIntegrationManagement from './MakeIntegrationManagement';
 
 interface GoogleSettings {
   serviceAccountKey: string;
@@ -42,6 +45,7 @@ interface GoogleSettings {
 
 const SettingsManagement = () => {
   const { toast } = useToast();
+  const { isSuperAdmin } = useAuth();
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState<{ [key: string]: boolean }>({});
@@ -196,7 +200,7 @@ const SettingsManagement = () => {
       </div>
 
       <Tabs defaultValue="email" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className={`grid w-full ${isSuperAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}>
           <TabsTrigger value="email" className="flex items-center gap-2">
             <Mail className="h-4 w-4" />
             Email Settings
@@ -205,6 +209,12 @@ const SettingsManagement = () => {
             <DollarSign className="h-4 w-4" />
             Lead Pricing
           </TabsTrigger>
+          {isSuperAdmin && (
+            <TabsTrigger value="make-integration" className="flex items-center gap-2">
+              <Webhook className="h-4 w-4" />
+              Make.com
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="email" className="space-y-6">
@@ -214,6 +224,12 @@ const SettingsManagement = () => {
         <TabsContent value="pricing" className="space-y-6">
           <LeadPricingManagement />
         </TabsContent>
+
+        {isSuperAdmin && (
+          <TabsContent value="make-integration" className="space-y-6">
+            <MakeIntegrationManagement />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
