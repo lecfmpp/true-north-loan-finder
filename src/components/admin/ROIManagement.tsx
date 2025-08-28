@@ -9,8 +9,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { TrendingUp, DollarSign, Target, BarChart3, Plus, Upload, FileSpreadsheet, Trash2, Users, Award, FileText, CheckCircle, Calendar, Banknote, Loader2 } from 'lucide-react';
+import { TrendingUp, DollarSign, Target, BarChart3, Plus, Upload, FileSpreadsheet, Trash2, Users, Award, FileText, CheckCircle, Calendar, Banknote, Loader2, Image as ImageIcon } from 'lucide-react';
 import EditableAdSpendTable from './EditableAdSpendTable';
+import { createWorker } from 'tesseract.js';
 
 interface ROIMetrics {
   total_leads: number;
@@ -60,17 +61,22 @@ export default function ROIManagement() {
   const [loading, setLoading] = useState(true);
   const [addSpendDialog, setAddSpendDialog] = useState(false);
   const [csvUploadDialog, setCsvUploadDialog] = useState(false);
+  const [imageUploadDialog, setImageUploadDialog] = useState(false);
   const [cleanupDialog, setCleanupDialog] = useState(false);
   const [dateRangeCleanupDialog, setDateRangeCleanupDialog] = useState(false);
   const [uploadingCsv, setUploadingCsv] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [deletingData, setDeletingData] = useState(false);
   const [cleanupStartDate, setCleanupStartDate] = useState('2025-08-20');
   const [cleanupEndDate, setCleanupEndDate] = useState('2025-08-27');
   const [csvProgress, setCsvProgress] = useState({ current: 0, total: 0, stage: '' });
+  const [imageProgress, setImageProgress] = useState({ current: 0, total: 0, stage: '' });
   const [channelSelectionDialog, setChannelSelectionDialog] = useState(false);
   const [selectedChannel, setSelectedChannel] = useState('');
   const [pendingCsvFile, setPendingCsvFile] = useState<File | null>(null);
+  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const [dateFilter, setDateFilter] = useState('last_7_days');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
@@ -262,7 +268,152 @@ export default function ROIManagement() {
     setChannelSelectionDialog(true);
   };
 
+  const handleImageFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || (!file.type.startsWith('image/') && file.type !== 'application/pdf')) {
+      toast({
+        title: "Error",
+        description: "Please select a valid PNG, JPG, or PDF file",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setPendingImageFile(file);
+    setImageUploadDialog(false);
+    setChannelSelectionDialog(true);
+  };
+
+  const processImageWithOCR = async (file: File): Promise<string> => {
+    const worker = await createWorker('eng');
+    try {
+      const ret = await worker.recognize(file);
+      return ret.data.text;
+    } finally {
+      await worker.terminate();
+    }
+  };
+
+  const parseOCRTextToCSV = (text: string): string => {
+    const lines = text.split('\n').filter(line => line.trim());
+    
+    // Look for tabular data patterns
+    const csvLines: string[] = [];
+    let foundHeader = false;
+    
+    for (const line of lines) {
+      // Skip obvious non-data lines
+      if (line.includes('Campaign performance by Day') || 
+          line.includes('Show rows') || 
+          line.length < 10) {
+        continue;
+      }
+      
+      // Look for lines with multiple data fields separated by spaces/tabs
+      const fields = line.trim().split(/\s{2,}|\t/);
+      if (fields.length >= 4) {
+        if (!foundHeader) {
+          // Create a header row
+          csvLines.push('Campaign,Status,Date,Cost,Clicks,Impressions,CTR,Conversions');
+          foundHeader = true;
+        }
+        
+        // Try to parse the data row
+        const campaign = fields[0] || '';
+        const status = fields[1] || '';
+        const date = fields[2] || '';
+        const cost = fields[3] || '0';
+        const clicks = fields[4] || '0';
+        const impressions = fields[5] || '0';
+        const ctr = fields[6] || '0';
+        const conversions = fields[7] || '0';
+        
+        csvLines.push(`"${campaign}","${status}","${date}","${cost}","${clicks}","${impressions}","${ctr}","${conversions}"`);
+      }
+    }
+    
+    return csvLines.join('\n');
+  };
+
+  const handleImageChannelSelection = async () => {
+    if (!pendingImageFile || !selectedChannel) {
+      toast({
+        title: "Error",
+        description: "Please select a channel",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setUploadingImage(true);
+    setChannelSelectionDialog(false);
+    setImageProgress({ current: 0, total: 100, stage: 'Reading image...' });
+
+    try {
+      setImageProgress({ current: 20, total: 100, stage: 'Extracting text with OCR...' });
+      
+      const ocrText = await processImageWithOCR(pendingImageFile);
+      setImageProgress({ current: 60, total: 100, stage: 'Parsing tabular data...' });
+      
+      const csvContent = parseOCRTextToCSV(ocrText);
+      
+      if (!csvContent || csvContent.split('\n').length < 2) {
+        throw new Error('No tabular data found in image. Please ensure the image contains a clear data table.');
+      }
+      
+      setImageProgress({ current: 80, total: 100, stage: 'Processing data...' });
+      
+      const lines = csvContent.split('\n').filter(line => line.trim());
+      const rowCount = lines.length - 1;
+      
+      const { data, error } = await supabase.functions.invoke('ai-parse-csv', {
+        body: { csvContent, batchSize: rowCount > 1000 ? 100 : 50, defaultChannel: selectedChannel }
+      });
+
+      if (error) throw error;
+
+      setImageProgress({ current: 90, total: 100, stage: 'Finalizing import...' });
+
+      if (data.success) {
+        setImageProgress({ current: 100, total: 100, stage: 'Complete!' });
+        
+        toast({
+          title: "Import Successful!",
+          description: `Successfully imported ${data.inserted} records from ${data.processed} total rows extracted from image.`,
+          duration: 4000
+        });
+        
+        await fetchROIData();
+        
+        setTimeout(() => {
+          fetchROIData();
+        }, 1000);
+      } else {
+        throw new Error(data.error || 'Import failed');
+      }
+    } catch (error) {
+      console.error('Error importing image:', error);
+      toast({
+        title: "Import Failed",
+        description: error instanceof Error ? error.message : "Failed to import image data",
+        variant: "destructive"
+      });
+    } finally {
+      setUploadingImage(false);
+      setPendingImageFile(null);
+      setSelectedChannel('');
+    }
+  };
+
   const handleChannelSelection = async () => {
+    if (pendingCsvFile) {
+      return handleCsvChannelSelection();
+    } else if (pendingImageFile) {
+      return handleImageChannelSelection();
+    }
+  };
+
+  const handleCsvChannelSelection = async () => {
     if (!pendingCsvFile || !selectedChannel) {
       toast({
         title: "Error",
@@ -570,6 +721,57 @@ export default function ROIManagement() {
                     variant="outline"
                   >
                     {uploadingCsv ? 'Processing...' : 'Choose File'}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={imageUploadDialog} onOpenChange={setImageUploadDialog}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <ImageIcon className="h-4 w-4 mr-2" />
+                Import Image
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Import Ad Spend from Image</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="text-sm text-muted-foreground">
+                  <p className="mb-2"><strong>Supported formats:</strong></p>
+                  <ul className="list-disc list-inside space-y-1 mb-4">
+                    <li><strong>PNG:</strong> Campaign performance tables</li>
+                    <li><strong>JPG/JPEG:</strong> Screenshots of ad dashboards</li>
+                    <li><strong>PDF:</strong> Campaign reports with tabular data</li>
+                  </ul>
+                  <p className="mb-2"><strong>Best results with:</strong></p>
+                  <ul className="list-disc list-inside space-y-1">
+                    <li>Clear, high-resolution images</li>
+                    <li>Tables with distinct rows and columns</li>
+                    <li>Good contrast between text and background</li>
+                    <li>Horizontal text (not rotated)</li>
+                  </ul>
+                </div>
+                <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+                  <ImageIcon className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Select an image or PDF file with campaign data
+                  </p>
+                  <input
+                    ref={imageInputRef}
+                    type="file"
+                    accept="image/*,.pdf"
+                    onChange={handleImageFileSelect}
+                    className="hidden"
+                    disabled={uploadingImage}
+                  />
+                  <Button 
+                    onClick={() => imageInputRef.current?.click()}
+                    disabled={uploadingImage}
+                    variant="outline"
+                  >
+                    {uploadingImage ? 'Processing...' : 'Choose File'}
                   </Button>
                 </div>
               </div>
@@ -1084,6 +1286,46 @@ export default function ROIManagement() {
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <FileSpreadsheet className="h-4 w-4" />
                 <span>AI is analyzing and importing your data</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Processing Loading Modal */}
+      {uploadingImage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Blurred Background */}
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
+          
+          {/* Loading Modal */}
+          <div className="relative bg-card border rounded-lg shadow-lg p-8 max-w-md w-full mx-4">
+            <div className="flex flex-col items-center space-y-6">
+              <div className="relative">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                <div className="absolute inset-0 rounded-full border-2 border-primary/20" />
+              </div>
+              
+              <div className="text-center space-y-2">
+                <h3 className="text-lg font-semibold">Processing Image</h3>
+                <p className="text-muted-foreground text-sm">
+                  {imageProgress.stage || 'Reading your image...'}
+                </p>
+              </div>
+              
+              {imageProgress.total > 0 && (
+                <div className="w-full space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Progress</span>
+                    <span>{imageProgress.current}%</span>
+                  </div>
+                  <Progress value={imageProgress.current} className="w-full" />
+                </div>
+              )}
+              
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <ImageIcon className="h-4 w-4" />
+                <span>Using OCR to extract tabular data</span>
               </div>
             </div>
           </div>
