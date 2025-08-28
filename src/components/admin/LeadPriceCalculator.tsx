@@ -537,9 +537,9 @@ const LeadPriceCalculator = () => {
                     max="1000"
                     value={profitMargin}
                     onChange={(e) => setProfitMargin(Number(e.target.value))}
-                    className="w-20 text-center text-2xl font-bold border-0 bg-transparent p-0 h-auto focus:ring-0"
+                    className="w-16 text-center text-3xl font-bold border-0 bg-transparent p-0 h-auto focus:ring-0 text-blue-600"
                   />
-                  <span className="text-2xl font-bold text-blue-600 ml-1">%</span>
+                  <span className="text-3xl font-bold text-blue-600 ml-1">%</span>
                 </div>
               </div>
               
