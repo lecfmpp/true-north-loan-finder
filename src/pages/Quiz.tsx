@@ -1415,78 +1415,52 @@ const Quiz = () => {
                     </p>
                   </div>
                   
-                  <div className="grid grid-cols-1 gap-4 max-w-lg mx-auto">
-                    <label
-                      className={`p-4 md:p-6 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md ${
+                  <div className="grid grid-cols-1 gap-2 md:gap-3 max-w-lg mx-auto">
+                    <Card
+                      className={cn(
+                        "cursor-pointer transition-all duration-300 group hover:shadow-lg border-2",
                         quizData.bankAccountType === "business"
-                          ? "border-primary bg-primary/5 shadow-md"
-                          : "border-border hover:border-primary/50"
-                      }`}
+                          ? "border-secondary bg-secondary/10 shadow-md" 
+                          : "border-border hover:border-secondary/50 hover:bg-secondary/5"
+                      )}
+                      onClick={() => handleOptionSelect('bankAccountType', 'business')}
                     >
-                      <input
-                        type="radio"
-                        name="bankAccountType"
-                        value="business"
-                        checked={quizData.bankAccountType === "business"}
-                        onChange={(e) => setQuizData({...quizData, bankAccountType: e.target.value})}
-                        className="sr-only"
-                      />
-                      <div className="flex items-center space-x-4">
-                        <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
-                          quizData.bankAccountType === "business"
-                            ? "border-primary bg-primary"
-                            : "border-muted-foreground"
-                        }`}>
-                          {quizData.bankAccountType === "business" && (
-                            <div className="w-2.5 h-2.5 bg-white rounded-full" />
-                          )}
-                        </div>
-                        <div>
-                          <div className="font-semibold text-foreground text-base md:text-lg">
-                            Business Bank Account
+                      <CardContent className="p-3 sm:p-4 md:p-6 flex items-center gap-3 md:gap-4 relative min-h-[48px]">
+                        {quizData.bankAccountType === "business" && (
+                          <div className="absolute top-3 right-3">
+                            <Check className="h-5 w-5 md:h-6 md:w-6 text-secondary animate-scale-in" />
                           </div>
-                          <div className="text-sm text-muted-foreground">
-                            Separate account for business transactions
-                          </div>
+                        )}
+                        <Building className="h-6 w-6 md:h-8 md:w-8 text-secondary group-hover:scale-110 transition-transform flex-shrink-0" />
+                        <div className="flex-1">
+                          <h3 className="text-base md:text-lg font-semibold text-primary">Business Bank Account</h3>
+                          <p className="text-xs md:text-sm text-muted-foreground">Separate account for business transactions</p>
                         </div>
-                      </div>
-                    </label>
+                      </CardContent>
+                    </Card>
 
-                    <label
-                      className={`p-4 md:p-6 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md ${
+                    <Card
+                      className={cn(
+                        "cursor-pointer transition-all duration-300 group hover:shadow-lg border-2",
                         quizData.bankAccountType === "personal"
-                          ? "border-primary bg-primary/5 shadow-md"
-                          : "border-border hover:border-primary/50"
-                      }`}
+                          ? "border-secondary bg-secondary/10 shadow-md" 
+                          : "border-border hover:border-secondary/50 hover:bg-secondary/5"
+                      )}
+                      onClick={() => handleOptionSelect('bankAccountType', 'personal')}
                     >
-                      <input
-                        type="radio"
-                        name="bankAccountType"
-                        value="personal"
-                        checked={quizData.bankAccountType === "personal"}
-                        onChange={(e) => setQuizData({...quizData, bankAccountType: e.target.value})}
-                        className="sr-only"
-                      />
-                      <div className="flex items-center space-x-4">
-                        <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
-                          quizData.bankAccountType === "personal"
-                            ? "border-primary bg-primary"
-                            : "border-muted-foreground"
-                        }`}>
-                          {quizData.bankAccountType === "personal" && (
-                            <div className="w-2.5 h-2.5 bg-white rounded-full" />
-                          )}
-                        </div>
-                        <div>
-                          <div className="font-semibold text-foreground text-base md:text-lg">
-                            Personal Bank Account
+                      <CardContent className="p-3 sm:p-4 md:p-6 flex items-center gap-3 md:gap-4 relative min-h-[48px]">
+                        {quizData.bankAccountType === "personal" && (
+                          <div className="absolute top-3 right-3">
+                            <Check className="h-5 w-5 md:h-6 md:w-6 text-secondary animate-scale-in" />
                           </div>
-                          <div className="text-sm text-muted-foreground">
-                            Using personal account for business needs
-                          </div>
+                        )}
+                        <Users className="h-6 w-6 md:h-8 md:w-8 text-secondary group-hover:scale-110 transition-transform flex-shrink-0" />
+                        <div className="flex-1">
+                          <h3 className="text-base md:text-lg font-semibold text-primary">Personal Bank Account</h3>
+                          <p className="text-xs md:text-sm text-muted-foreground">Using personal account for business needs</p>
                         </div>
-                      </div>
-                    </label>
+                      </CardContent>
+                    </Card>
                   </div>
                 </div>
               )}
@@ -1676,8 +1650,8 @@ const Quiz = () => {
                 </div>
               )}
 
-              {/* Navigation - Show Next button only for steps 1, 3, 4, 6, and 7 */}
-              {(currentStep === 1 || currentStep === 3 || currentStep === 4 || currentStep === 6 || currentStep === 7) && (
+              {/* Navigation - Show Next button only for steps 1, 3, 4, and 7 */}
+              {(currentStep === 1 || currentStep === 3 || currentStep === 4 || currentStep === 7) && (
                 <div className="flex justify-between mt-6 md:mt-8 pt-4 md:pt-6 border-t">
                   <Button
                     variant="outline"
@@ -1711,7 +1685,7 @@ const Quiz = () => {
               )}
 
               {/* Back button only for auto-advancing steps */}
-              {(currentStep === 2 || currentStep === 5) && (
+              {(currentStep === 2 || currentStep === 5 || currentStep === 6) && (
                 <div className="flex justify-start mt-6 md:mt-8 pt-4 md:pt-6 border-t">
                   <Button
                     variant="outline"
