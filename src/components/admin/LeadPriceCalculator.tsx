@@ -337,13 +337,22 @@ const LeadPriceCalculator = () => {
 
       if (adSpendError) throw adSpendError;
 
-      const totalCost = adSpendData?.reduce((sum, record) => sum + (record.amount || 0), 0) || 0;
+      const totalAdSpend = adSpendData?.reduce((sum, record) => sum + (record.amount || 0), 0) || 0;
       const totalLeads = count || 0;
-      const costPerLead = totalLeads > 0 ? totalCost / totalLeads : 0;
+      
+      // Calculate proportional cost if filtering is applied
+      let proportionalCost = totalAdSpend;
+      if (hasAnyCriteria && scoreTierCounts.all > 0) {
+        // Calculate cost proportionally based on filtered leads vs total leads
+        const proportion = totalLeads / scoreTierCounts.all;
+        proportionalCost = totalAdSpend * proportion;
+      }
+      
+      const costPerLead = totalLeads > 0 ? proportionalCost / totalLeads : 0;
 
       setLeadStats({
         totalLeads,
-        totalCost,
+        totalCost: proportionalCost,
         costPerLead
       });
 
