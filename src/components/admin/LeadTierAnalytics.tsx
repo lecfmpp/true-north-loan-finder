@@ -31,6 +31,7 @@ const LeadTierAnalytics = () => {
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState("30");
   const [filterType, setFilterType] = useState("all");
+  const [channelFilter, setChannelFilter] = useState("all");
   const [tierData, setTierData] = useState<LeadTierData[]>([]);
   const [dailyData, setDailyData] = useState<DailyTierData[]>([]);
   const [totalStats, setTotalStats] = useState({
@@ -45,7 +46,7 @@ const LeadTierAnalytics = () => {
     if (isSuperAdmin) {
       fetchAnalytics();
     }
-  }, [dateRange, filterType, isSuperAdmin]);
+  }, [dateRange, filterType, channelFilter, isSuperAdmin]);
 
   const getScoreTier = (score: number | null): string => {
     if (!score) return 'No Score';
@@ -176,6 +177,14 @@ const LeadTierAnalytics = () => {
           const canFiles = Array.isArray(lead.canadian_applications?.[0]?.document_files) ? lead.canadian_applications[0].document_files : [];
           const canStatements = Array.isArray(lead.canadian_applications?.[0]?.processing_statements) ? lead.canadian_applications[0].processing_statements : [];
           return usaFiles.length > 0 || canFiles.length > 0 || canStatements.length > 0;
+        });
+      }
+
+      // Apply channel filter
+      if (channelFilter !== 'all') {
+        filteredLeads = filteredLeads.filter(lead => {
+          const normalizedChannel = normalizeChannel(lead.attribution_channel);
+          return normalizedChannel === channelFilter;
         });
       }
 
@@ -353,6 +362,24 @@ const LeadTierAnalytics = () => {
               <SelectItem value="all">All Leads</SelectItem>
               <SelectItem value="applications">Sent Applications</SelectItem>
               <SelectItem value="files">Uploaded Files</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          <Select value={channelFilter} onValueChange={setChannelFilter}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Channels</SelectItem>
+              <SelectItem value="google">Google</SelectItem>
+              <SelectItem value="meta">Meta</SelectItem>
+              <SelectItem value="bing">Bing</SelectItem>
+              <SelectItem value="tiktok">TikTok</SelectItem>
+              <SelectItem value="linkedin">LinkedIn</SelectItem>
+              <SelectItem value="twitter">Twitter</SelectItem>
+              <SelectItem value="organic">Organic</SelectItem>
+              <SelectItem value="direct">Direct</SelectItem>
+              <SelectItem value="referral">Referral</SelectItem>
             </SelectContent>
           </Select>
           
