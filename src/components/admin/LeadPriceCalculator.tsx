@@ -65,6 +65,7 @@ const LeadPriceCalculator = () => {
   const [loading, setLoading] = useState(false);
   const [profitMargin, setProfitMargin] = useState<number>(50); // Default 50% margin
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [scoreTierFilter, setScoreTierFilter] = useState<string>("all");
   const { toast } = useToast();
 
   // Scoring configurations
@@ -72,6 +73,15 @@ const LeadPriceCalculator = () => {
     { value: '20000+', label: 'Above $20K', points: 40, tier: 'Excellent' },
     { value: '10000+', label: 'Above $10K', points: 25, tier: 'Good' },
     { value: '0-10000', label: 'Below $10K', points: 0, tier: 'Not Qualified' }
+  ];
+
+  // Score tier options for high-level filtering
+  const scoreTierOptions = [
+    { value: 'all', label: 'All Scores', color: 'bg-gray-100 text-gray-800 border-gray-200', hoverColor: 'hover:bg-gray-200' },
+    { value: 'premium', label: 'Premium (80+)', color: 'bg-green-100 text-green-800 border-green-200', hoverColor: 'hover:bg-green-200' },
+    { value: 'high-quality', label: 'High Quality (60-79)', color: 'bg-blue-100 text-blue-800 border-blue-200', hoverColor: 'hover:bg-blue-200' },
+    { value: 'medium-quality', label: 'Medium Quality (40-59)', color: 'bg-yellow-100 text-yellow-800 border-yellow-200', hoverColor: 'hover:bg-yellow-200' },
+    { value: 'low-quality', label: 'Low Quality (0-39)', color: 'bg-red-100 text-red-800 border-red-200', hoverColor: 'hover:bg-red-200' }
   ];
 
   const businessAgeOptions = [
@@ -145,7 +155,7 @@ const LeadPriceCalculator = () => {
   // Fetch lead stats based on criteria
   const fetchLeadStats = async (criteria: ScoringCriteria) => {
     // Show all leads if no criteria selected
-    const hasAnyCriteria = criteria.monthlyRevenue || criteria.businessAge || criteria.creditScore || criteria.country || criteria.applicationSubmitted || criteria.homeownerStatus || criteria.bankAccountType || criteria.useOfFunds || dateRange?.from || dateRange?.to;
+    const hasAnyCriteria = criteria.monthlyRevenue || criteria.businessAge || criteria.creditScore || criteria.country || criteria.applicationSubmitted || criteria.homeownerStatus || criteria.bankAccountType || criteria.useOfFunds || dateRange?.from || dateRange?.to || scoreTierFilter !== 'all';
 
     setLoading(true);
     try {
@@ -159,6 +169,24 @@ const LeadPriceCalculator = () => {
         const endDate = new Date(dateRange.to);
         endDate.setHours(23, 59, 59, 999); // End of day
         query = query.lte('created_at', endDate.toISOString());
+      }
+
+      // Apply score tier filter
+      if (scoreTierFilter !== 'all') {
+        switch (scoreTierFilter) {
+          case 'premium':
+            query = query.gte('score', 80);
+            break;
+          case 'high-quality':
+            query = query.gte('score', 60).lt('score', 80);
+            break;
+          case 'medium-quality':
+            query = query.gte('score', 40).lt('score', 60);
+            break;
+          case 'low-quality':
+            query = query.gte('score', 0).lt('score', 40);
+            break;
+        }
       }
 
       // Apply filters based on selected criteria
@@ -274,11 +302,18 @@ const LeadPriceCalculator = () => {
     fetchLeadStats(newCriteria);
   };
 
+  // Handle score tier filter change
+  const handleScoreTierChange = (tier: string) => {
+    setScoreTierFilter(tier);
+    fetchLeadStats(selectedCriteria);
+  };
+
   // Reset filters
   const resetFilters = () => {
     setSelectedCriteria({ monthlyRevenue: '', businessAge: '', creditScore: '', country: '', applicationSubmitted: '', homeownerStatus: '', bankAccountType: '', useOfFunds: '' });
     setScoreBreakdown({ monthlyRevenue: { points: 0, label: '' }, businessAge: { points: 0, label: '' }, creditScore: { points: 0, label: '' }, total: 0 });
     setDateRange(undefined);
+    setScoreTierFilter("all");
     setLeadStats({ totalLeads: 0, totalCost: 0, costPerLead: 0 });
   };
 
@@ -367,6 +402,43 @@ const LeadPriceCalculator = () => {
           </Button>
         </div>
       </div>
+
+      {/* High-Level Score Tier Filter */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <TrendingUp className="h-5 w-5" />
+            <span>Quick Score Filter</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-3">
+            {scoreTierOptions.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => handleScoreTierChange(option.value)}
+                className={cn(
+                  "px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all duration-200 cursor-pointer",
+                  option.color,
+                  option.hoverColor,
+                  scoreTierFilter === option.value 
+                    ? "ring-2 ring-primary ring-offset-2 scale-105 shadow-lg" 
+                    : "shadow-sm hover:shadow-md"
+                )}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+          {scoreTierFilter !== 'all' && (
+            <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                Currently filtering by: <strong>{scoreTierOptions.find(opt => opt.value === scoreTierFilter)?.label}</strong>
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Criteria Selection */}
