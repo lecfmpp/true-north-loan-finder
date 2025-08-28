@@ -188,7 +188,8 @@ const LeadPriceCalculator = () => {
 
   // Handle criteria change
   const handleCriteriaChange = (field: keyof ScoringCriteria, value: string) => {
-    const newCriteria = { ...selectedCriteria, [field]: value };
+    const processedValue = value === 'none' ? '' : value;
+    const newCriteria = { ...selectedCriteria, [field]: processedValue };
     setSelectedCriteria(newCriteria);
     setScoreBreakdown(calculateScore(newCriteria));
     fetchLeadStats(newCriteria);
@@ -240,14 +241,14 @@ const LeadPriceCalculator = () => {
                 Monthly Revenue (40 points max)
               </label>
               <Select
-                value={selectedCriteria.monthlyRevenue}
+                value={selectedCriteria.monthlyRevenue || 'none'}
                 onValueChange={(value) => handleCriteriaChange('monthlyRevenue', value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select monthly revenue range" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">
+                  <SelectItem value="none">
                     <span className="text-muted-foreground">No filter (ignore this criteria)</span>
                   </SelectItem>
                   {monthlyRevenueOptions.map((option) => (
@@ -270,14 +271,14 @@ const LeadPriceCalculator = () => {
                 Business Age (35 points max)
               </label>
               <Select
-                value={selectedCriteria.businessAge}
+                value={selectedCriteria.businessAge || 'none'}
                 onValueChange={(value) => handleCriteriaChange('businessAge', value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select business age" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">
+                  <SelectItem value="none">
                     <span className="text-muted-foreground">No filter (ignore this criteria)</span>
                   </SelectItem>
                   {businessAgeOptions.map((option) => (
@@ -300,14 +301,14 @@ const LeadPriceCalculator = () => {
                 Credit Score (25 points max)
               </label>
               <Select
-                value={selectedCriteria.creditScore}
+                value={selectedCriteria.creditScore || 'none'}
                 onValueChange={(value) => handleCriteriaChange('creditScore', value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select credit score range" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">
+                  <SelectItem value="none">
                     <span className="text-muted-foreground">No filter (ignore this criteria)</span>
                   </SelectItem>
                   {creditScoreOptions.map((option) => (
