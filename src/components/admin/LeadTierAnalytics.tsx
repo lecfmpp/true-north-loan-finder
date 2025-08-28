@@ -71,69 +71,87 @@ const LeadTierAnalytics = () => {
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - parseInt(dateRange));
       
-      // Build the base query
+      // Use the same ROI metrics RPC that the ROI Management uses
+      const { data: roiMetrics, error: roiError } = await supabase
+        .rpc('get_roi_metrics', {
+          start_date: startDate.toISOString().split('T')[0],
+          end_date: new Date().toISOString().split('T')[0]
+        });
+
+      if (roiError) throw roiError;
+
+      // Build the base query for leads with proper joins
       let query = supabase
         .from('quiz_responses')
         .select(`
           id,
           score,
           created_at,
-          attribution_channel,
-          usa_applications!inner(id, document_files),
-          canadian_applications!inner(id, document_files, processing_statements)
+          status,
+          conversion_status,
+          usa_applications(id, document_files),
+          canadian_applications(id, document_files, processing_statements)
         `)
         .gte('created_at', startDate.toISOString())
         .lte('created_at', new Date().toISOString());
 
-      // Apply filters
+      // Apply filters based on type
       if (filterType === 'applications') {
-        // Only leads who sent applications - this is handled by the inner joins above
+        // Get leads who have applications
       } else if (filterType === 'files') {
-        // We'll filter this in the processing logic
-      } else if (filterType === 'all') {
-        // Get all leads regardless of application status
-        query = supabase
-          .from('quiz_responses')
-          .select(`
-            id,
-            score,
-            created_at,
-            attribution_channel,
-            usa_applications(id, document_files),
-            canadian_applications(id, document_files, processing_statements)
-          `)
-          .gte('created_at', startDate.toISOString())
-          .lte('created_at', new Date().toISOString());
+        // Will filter in processing
       }
 
       const { data: leads, error } = await query;
-
       if (error) throw error;
 
-      // Get ad spend data
+      // Get real ad spend data (same as ROI Management)
       const { data: adSpend, error: spendError } = await supabase
         .from('ad_spend_records')
-        .select('amount, date')
+        .select('amount, date, channel, clicks, conversions')
         .gte('date', startDate.toISOString().split('T')[0])
         .lte('date', new Date().toISOString().split('T')[0]);
 
       if (spendError) throw spendError;
 
-      // Process the data
-      const totalSpend = (adSpend || []).reduce((sum, record) => sum + (record.amount || 0), 0);
+      // Use the ROI metrics we fetched (same as ROI Management)
+      const roiData = roiMetrics?.[0] || {
+        total_leads: 0,
+        qualified_leads: 0, 
+        application_leads: 0,
+        funded_leads: 0
+      };
+      
+      // Convert ad spend from cents to dollars (same as ROI Management)
+      const totalSpend = (adSpend || []).reduce((sum, record) => sum + (record.amount / 100), 0);
+      const totalLeads = roiData.total_leads || 0;
+      const qualifiedLeads = roiData.qualified_leads || 0;
+      const applicationLeads = roiData.application_leads || 0;
+      const fundedLeads = roiData.funded_leads || 0;
+      
+      // Calculate cost per lead (same as ROI Management)
+      const costPerLead = totalLeads > 0 ? totalSpend / totalLeads : 0;
+      const costPerQualifiedLead = qualifiedLeads > 0 ? totalSpend / qualifiedLeads : 0;
+      
       const tierStats: Record<string, LeadTierData> = {};
       const dailyStats: Record<string, Record<string, number>> = {};
 
-      (leads || []).forEach(lead => {
-        // Apply file filter if needed
-        if (filterType === 'files') {
+      // Filter leads based on filterType
+      let filteredLeads = leads || [];
+      if (filterType === 'applications') {
+        filteredLeads = filteredLeads.filter(lead => 
+          lead.usa_applications?.length > 0 || lead.canadian_applications?.length > 0
+        );
+      } else if (filterType === 'files') {
+        filteredLeads = filteredLeads.filter(lead => {
           const usaFiles = Array.isArray(lead.usa_applications?.[0]?.document_files) ? lead.usa_applications[0].document_files : [];
           const canFiles = Array.isArray(lead.canadian_applications?.[0]?.document_files) ? lead.canadian_applications[0].document_files : [];
           const canStatements = Array.isArray(lead.canadian_applications?.[0]?.processing_statements) ? lead.canadian_applications[0].processing_statements : [];
-          const hasFiles = usaFiles.length > 0 || canFiles.length > 0 || canStatements.length > 0;
-          if (!hasFiles) return;
-        }
+          return usaFiles.length > 0 || canFiles.length > 0 || canStatements.length > 0;
+        });
+      }
 
+      filteredLeads.forEach(lead => {
         const tier = getScoreTier(lead.score);
         const date = new Date(lead.created_at).toISOString().split('T')[0];
         
@@ -142,7 +160,7 @@ const LeadTierAnalytics = () => {
           tierStats[tier] = {
             tier,
             count: 0,
-            cost_per_lead: 0,
+            cost_per_lead: costPerLead,
             total_cost: 0,
             applications_sent: 0,
             files_uploaded: 0,
@@ -163,11 +181,11 @@ const LeadTierAnalytics = () => {
         dailyStats[date][tier]++;
 
         // Check if application was sent
-        if (lead.usa_applications?.[0] || lead.canadian_applications?.[0]) {
+        if (lead.usa_applications?.length > 0 || lead.canadian_applications?.length > 0) {
           tierStats[tier].applications_sent++;
         }
 
-        // Check if files were uploaded
+        // Check if files were uploaded  
         const usaFiles = Array.isArray(lead.usa_applications?.[0]?.document_files) ? lead.usa_applications[0].document_files : [];
         const canFiles = Array.isArray(lead.canadian_applications?.[0]?.document_files) ? lead.canadian_applications[0].document_files : [];
         const canStatements = Array.isArray(lead.canadian_applications?.[0]?.processing_statements) ? lead.canadian_applications[0].processing_statements : [];
@@ -177,12 +195,8 @@ const LeadTierAnalytics = () => {
         }
       });
 
-      // Calculate costs and rates
-      const totalLeads = Object.values(tierStats).reduce((sum, tier) => sum + tier.count, 0);
-      const costPerLead = totalLeads > 0 ? totalSpend / totalLeads : 0;
-
+      // Calculate tier costs and rates using real metrics
       Object.values(tierStats).forEach(tier => {
-        tier.cost_per_lead = costPerLead;
         tier.total_cost = tier.count * costPerLead;
         tier.application_rate = tier.count > 0 ? (tier.applications_sent / tier.count) * 100 : 0;
         tier.file_upload_rate = tier.count > 0 ? (tier.files_uploaded / tier.count) * 100 : 0;
@@ -196,18 +210,19 @@ const LeadTierAnalytics = () => {
         }))
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-      // Calculate total stats
+      // Calculate aggregated stats from our filtered data
+      const actualTotalLeads = Object.values(tierStats).reduce((sum, tier) => sum + tier.count, 0);
       const totalApplications = Object.values(tierStats).reduce((sum, tier) => sum + tier.applications_sent, 0);
       const totalFilesUploaded = Object.values(tierStats).reduce((sum, tier) => sum + tier.files_uploaded, 0);
       
       setTierData(Object.values(tierStats));
       setDailyData(dailyArray);
       setTotalStats({
-        totalLeads,
+        totalLeads: actualTotalLeads,
         totalCost: totalSpend,
         avgCostPerLead: costPerLead,
-        applicationRate: totalLeads > 0 ? (totalApplications / totalLeads) * 100 : 0,
-        fileUploadRate: totalLeads > 0 ? (totalFilesUploaded / totalLeads) * 100 : 0
+        applicationRate: actualTotalLeads > 0 ? (totalApplications / actualTotalLeads) * 100 : 0,
+        fileUploadRate: actualTotalLeads > 0 ? (totalFilesUploaded / actualTotalLeads) * 100 : 0
       });
 
     } catch (error) {
