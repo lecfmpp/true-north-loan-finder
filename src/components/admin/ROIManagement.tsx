@@ -673,23 +673,12 @@ export default function ROIManagement() {
   };
 
   const getChannelLeads = (channel: string) => {
-    // Count actual leads from quiz_responses by attribution_channel
+    // Count total conversions from ad spend records for this channel
     const { startDate, endDate } = getDateRange();
-    if (!quizResponses?.length) return 0;
-    
-    return quizResponses.filter(lead => {
-      const leadDate = new Date(lead.created_at).toISOString().split('T')[0];
-      const leadChannel = (lead.attribution_channel?.toLowerCase() || 'direct').trim();
-      const targetChannel = channel.toLowerCase().trim();
-      
-      // Handle common channel name variations
-      const normalizedLeadChannel = leadChannel === 'facebook' ? 'meta' : leadChannel;
-      const normalizedTargetChannel = targetChannel === 'facebook' ? 'meta' : targetChannel;
-      
-      return leadDate >= startDate && 
-             leadDate <= endDate && 
-             normalizedLeadChannel === normalizedTargetChannel;
-    }).length;
+    return adSpends
+      .filter(spend => spend.channel === channel && 
+        spend.date >= startDate && spend.date <= endDate)
+      .reduce((total, spend) => total + (spend.conversions || 0), 0);
   };
 
   const getChannelRevenue = (channel: string) => {
