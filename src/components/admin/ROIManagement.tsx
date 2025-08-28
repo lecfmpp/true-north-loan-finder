@@ -58,6 +58,7 @@ const DATE_FILTER_OPTIONS = [
 export default function ROIManagement() {
   const [metrics, setMetrics] = useState<ROIMetrics | null>(null);
   const [adSpends, setAdSpends] = useState<AdSpendRecord[]>([]);
+  const [quizResponses, setQuizResponses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [addSpendDialog, setAddSpendDialog] = useState(false);
   const [csvUploadDialog, setCsvUploadDialog] = useState(false);
@@ -176,7 +177,17 @@ export default function ROIManagement() {
 
       if (spendsError) throw spendsError;
 
+      // Fetch quiz responses (leads) with date range
+      const { data: quizData, error: quizError } = await supabase
+        .from('quiz_responses')
+        .select('id, created_at, attribution_channel')
+        .gte('created_at', startDate)
+        .lte('created_at', endDate);
+
+      if (quizError) throw quizError;
+
       setMetrics(metricsData?.[0] || null);
+      setQuizResponses(quizData || []);
       // Map database data to include impressions field with default value
       setAdSpends((spendsData || []).map(spend => ({ 
         ...spend, 
@@ -662,13 +673,23 @@ export default function ROIManagement() {
   };
 
   const getChannelLeads = (channel: string) => {
-    // For now, we'll estimate leads based on conversions in ad spend records
-    // In a real application, you'd need to track leads by channel properly
+    // Count actual leads from quiz_responses by attribution_channel
     const { startDate, endDate } = getDateRange();
-    return adSpends
-      .filter(spend => spend.channel === channel && 
-        spend.date >= startDate && spend.date <= endDate)
-      .reduce((total, spend) => total + (spend.conversions || 0), 0);
+    if (!quizResponses?.length) return 0;
+    
+    return quizResponses.filter(lead => {
+      const leadDate = new Date(lead.created_at).toISOString().split('T')[0];
+      const leadChannel = (lead.attribution_channel?.toLowerCase() || 'direct').trim();
+      const targetChannel = channel.toLowerCase().trim();
+      
+      // Handle common channel name variations
+      const normalizedLeadChannel = leadChannel === 'facebook' ? 'meta' : leadChannel;
+      const normalizedTargetChannel = targetChannel === 'facebook' ? 'meta' : targetChannel;
+      
+      return leadDate >= startDate && 
+             leadDate <= endDate && 
+             normalizedLeadChannel === normalizedTargetChannel;
+    }).length;
   };
 
   const getChannelRevenue = (channel: string) => {
