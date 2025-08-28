@@ -247,41 +247,17 @@ const LeadTierAnalytics = () => {
       const paidLeadsTotal = Object.keys(spendByChannel).reduce((sum, ch) => sum + (leadsByChannel[ch] || 0), 0);
       const paidGlobalCPL = paidLeadsTotal > 0 ? totalSpend / paidLeadsTotal : 0;
 
-      // Calculate tier-specific CPL using weighted average of channel CPLs
+      // Calculate tier-specific CPL using total ad spend divided by tier lead count
       Object.values(tierStats).forEach(tier => {
         if (tier.count === 0) {
           tier.cost_per_lead = 0;
-          tier.total_cost = 0;
           tier.application_rate = 0;
           tier.file_upload_rate = 0;
           return;
         }
 
-        const tierChannels = tierChannelCounts[tier.tier] || {};
-        let weightedCPL = 0;
-        let totalKnownWeight = 0;
-
-        // Calculate weighted CPL based on tier's channel mix
-        Object.keys(tierChannels).forEach(channel => {
-          const channelLeadsInTier = tierChannels[channel];
-          const channelWeight = channelLeadsInTier / tier.count;
-          
-          if (spendByChannel[channel] && channelCPL[channel] > 0) {
-            // Channel has spend data - use its specific CPL
-            weightedCPL += channelCPL[channel] * channelWeight;
-            totalKnownWeight += channelWeight;
-          }
-        });
-
-        // For leads from channels with no spend data (organic, direct, etc.)
-        // Use the global CPL for the remaining weight
-        const unknownWeight = 1 - totalKnownWeight;
-        if (unknownWeight > 0) {
-          weightedCPL += paidGlobalCPL * unknownWeight;
-        }
-
-        tier.cost_per_lead = weightedCPL;
-        tier.total_cost = tier.count * tier.cost_per_lead;
+        // Simple calculation: total ad spend across all tiers / leads in this tier
+        tier.cost_per_lead = totalSpend / tier.count;
         
         // Calculate real application and file upload rates from actual data
         tier.application_rate = (tier.applications_sent / tier.count) * 100;
@@ -520,10 +496,6 @@ const LeadTierAnalytics = () => {
                     <span className="font-semibold">${tier.cost_per_lead.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Total cost</span>
-                    <span className="font-semibold">${tier.total_cost.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Applications</span>
                     <span className="font-semibold">{tier.application_rate.toFixed(1)}%</span>
                   </div>
@@ -568,47 +540,25 @@ const LeadTierAnalytics = () => {
         </TabsContent>
 
         <TabsContent value="costs" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5" />
-                  Cost per Lead by Tier
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={tierData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="tier" fontSize={12} />
-                    <YAxis />
-                    <Tooltip formatter={(value: any) => [`$${value.toFixed(0)}`, 'Cost per Lead']} />
-                    <Bar dataKey="cost_per_lead" fill="#22c55e" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
-                  Total Spend by Tier
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={tierData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="tier" fontSize={12} />
-                    <YAxis />
-                    <Tooltip formatter={(value: any) => [`$${value.toLocaleString()}`, 'Total Cost']} />
-                    <Bar dataKey="total_cost" fill="#ef4444" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5" />
+                Cost per Lead by Tier
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={400}>
+                <BarChart data={tierData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="tier" fontSize={12} />
+                  <YAxis />
+                  <Tooltip formatter={(value: any) => [`$${value.toFixed(0)}`, 'Cost per Lead']} />
+                  <Bar dataKey="cost_per_lead" fill="#22c55e" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
