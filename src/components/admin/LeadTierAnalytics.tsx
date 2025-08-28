@@ -277,12 +277,15 @@ const LeadTierAnalytics = () => {
       const totalApplications = Object.values(tierStats).reduce((sum, tier) => sum + tier.applications_sent, 0);
       const totalFilesUploaded = Object.values(tierStats).reduce((sum, tier) => sum + tier.files_uploaded, 0);
       
+      // Calculate filtered cost per lead based on the actual filter applied
+      const filteredCostPerLead = actualTotalLeads > 0 ? totalSpend / actualTotalLeads : 0;
+      
       setTierData(Object.values(tierStats));
       setDailyData(dailyArray);
       setTotalStats({
         totalLeads: actualTotalLeads,
         totalCost: totalSpend,
-        avgCostPerLead: costPerLead,
+        avgCostPerLead: filteredCostPerLead, // Use filtered calculation
         applicationRate: actualTotalLeads > 0 ? (totalApplications / actualTotalLeads) * 100 : 0,
         fileUploadRate: actualTotalLeads > 0 ? (totalFilesUploaded / actualTotalLeads) * 100 : 0
       });
