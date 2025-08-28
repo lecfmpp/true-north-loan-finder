@@ -16,6 +16,7 @@ interface ScoringCriteria {
   applicationSubmitted: string;
   homeownerStatus: string;
   bankAccountType: string;
+  useOfFunds: string;
 }
 
 interface ScoreBreakdown {
@@ -39,7 +40,8 @@ const LeadPriceCalculator = () => {
     country: '',
     applicationSubmitted: '',
     homeownerStatus: '',
-    bankAccountType: ''
+    bankAccountType: '',
+    useOfFunds: ''
   });
   
   const [scoreBreakdown, setScoreBreakdown] = useState<ScoreBreakdown>({
@@ -96,6 +98,18 @@ const LeadPriceCalculator = () => {
     { label: 'Personal', value: 'personal' }
   ];
 
+  const useOfFundsOptions = [
+    { label: 'Working Capital', value: 'working-capital' },
+    { label: 'Equipment Purchase', value: 'equipment' },
+    { label: 'Inventory', value: 'inventory' },
+    { label: 'Marketing & Advertising', value: 'marketing' },
+    { label: 'Business Expansion', value: 'expansion' },
+    { label: 'Debt Consolidation', value: 'debt-consolidation' },
+    { label: 'Real Estate', value: 'real-estate' },
+    { label: 'Payroll', value: 'payroll' },
+    { label: 'Other', value: 'other' }
+  ];
+
   // Calculate score breakdown
   const calculateScore = (criteria: ScoringCriteria): ScoreBreakdown => {
     const revenueOption = monthlyRevenueOptions.find(opt => opt.value === criteria.monthlyRevenue);
@@ -125,7 +139,7 @@ const LeadPriceCalculator = () => {
   // Fetch lead stats based on criteria
   const fetchLeadStats = async (criteria: ScoringCriteria) => {
     // Show all leads if no criteria selected
-    const hasAnyCriteria = criteria.monthlyRevenue || criteria.businessAge || criteria.creditScore || criteria.country || criteria.applicationSubmitted || criteria.homeownerStatus || criteria.bankAccountType;
+    const hasAnyCriteria = criteria.monthlyRevenue || criteria.businessAge || criteria.creditScore || criteria.country || criteria.applicationSubmitted || criteria.homeownerStatus || criteria.bankAccountType || criteria.useOfFunds;
 
     setLoading(true);
     try {
@@ -184,6 +198,24 @@ const LeadPriceCalculator = () => {
         query = query.eq('bank_account_type', criteria.bankAccountType);
       }
 
+      if (criteria.useOfFunds) {
+        // Map the filter values to database values
+        const useOfFundsMapping: Record<string, string[]> = {
+          'working-capital': ['working capital', 'working-capital', 'cash flow', 'operating expenses'],
+          'equipment': ['equipment', 'equipment purchase', 'machinery', 'tools'],
+          'inventory': ['inventory', 'stock', 'products'],
+          'marketing': ['marketing', 'advertising', 'promotion'],
+          'expansion': ['expansion', 'grow business', 'growth', 'scale'],
+          'debt-consolidation': ['debt consolidation', 'debt', 'pay off debt'],
+          'real-estate': ['real estate', 'property', 'building'],
+          'payroll': ['payroll', 'staff', 'employees', 'wages'],
+          'other': ['other', 'miscellaneous', 'various']
+        };
+        
+        const mappedValues = useOfFundsMapping[criteria.useOfFunds] || [criteria.useOfFunds];
+        query = query.or(mappedValues.map(val => `use_of_funds.ilike.%${val}%`).join(','));
+      }
+
       const { data, error, count } = await query;
 
       if (error) throw error;
@@ -228,7 +260,7 @@ const LeadPriceCalculator = () => {
 
   // Reset filters
   const resetFilters = () => {
-    setSelectedCriteria({ monthlyRevenue: '', businessAge: '', creditScore: '', country: '', applicationSubmitted: '', homeownerStatus: '', bankAccountType: '' });
+    setSelectedCriteria({ monthlyRevenue: '', businessAge: '', creditScore: '', country: '', applicationSubmitted: '', homeownerStatus: '', bankAccountType: '', useOfFunds: '' });
     setScoreBreakdown({ monthlyRevenue: { points: 0, label: '' }, businessAge: { points: 0, label: '' }, creditScore: { points: 0, label: '' }, total: 0 });
     setLeadStats({ totalLeads: 0, totalCost: 0, costPerLead: 0 });
   };
@@ -468,6 +500,31 @@ const LeadPriceCalculator = () => {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Use of Funds */}
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                Use of Funds
+              </label>
+              <Select
+                value={selectedCriteria.useOfFunds || 'none'}
+                onValueChange={(value) => handleCriteriaChange('useOfFunds', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select use of funds" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">
+                    <span className="text-muted-foreground">No filter (ignore this criteria)</span>
+                  </SelectItem>
+                  {useOfFundsOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </CardContent>
         </Card>
 
@@ -480,7 +537,7 @@ const LeadPriceCalculator = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {(selectedCriteria.monthlyRevenue || selectedCriteria.businessAge || selectedCriteria.creditScore || selectedCriteria.country || selectedCriteria.applicationSubmitted || selectedCriteria.homeownerStatus || selectedCriteria.bankAccountType) ? (
+            {(selectedCriteria.monthlyRevenue || selectedCriteria.businessAge || selectedCriteria.creditScore || selectedCriteria.country || selectedCriteria.applicationSubmitted || selectedCriteria.homeownerStatus || selectedCriteria.bankAccountType || selectedCriteria.useOfFunds) ? (
               <div className="space-y-6">
                 {/* Persona Avatar & Overview */}
                 <div className="text-center p-6 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border-2 border-primary/20">
@@ -571,6 +628,15 @@ const LeadPriceCalculator = () => {
                       </div>
                     </div>
                   )}
+
+                  {selectedCriteria.useOfFunds && (
+                    <div className="p-4 bg-muted/50 rounded-lg">
+                      <div className="text-sm font-medium text-muted-foreground mb-1">Use of Funds</div>
+                      <div className="text-sm">
+                        {useOfFundsOptions.find(opt => opt.value === selectedCriteria.useOfFunds)?.label || 'Unknown'}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Summary */}
@@ -633,7 +699,7 @@ const LeadPriceCalculator = () => {
             </div>
           )}
 
-          {(selectedCriteria.monthlyRevenue || selectedCriteria.businessAge || selectedCriteria.creditScore || selectedCriteria.country || selectedCriteria.applicationSubmitted || selectedCriteria.homeownerStatus || selectedCriteria.bankAccountType) && leadStats.totalLeads > 0 && (
+          {(selectedCriteria.monthlyRevenue || selectedCriteria.businessAge || selectedCriteria.creditScore || selectedCriteria.country || selectedCriteria.applicationSubmitted || selectedCriteria.homeownerStatus || selectedCriteria.bankAccountType || selectedCriteria.useOfFunds) && leadStats.totalLeads > 0 && (
             <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
               <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
                 Pricing Recommendation
