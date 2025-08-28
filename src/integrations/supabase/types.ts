@@ -1730,6 +1730,83 @@ export type Database = {
         }
         Relationships: []
       }
+      make_integration_logs: {
+        Row: {
+          attempts: number
+          created_at: string
+          error_message: string | null
+          event_type: string
+          http_status: number | null
+          id: string
+          lead_id: string | null
+          next_retry_at: string | null
+          response_data: Json | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          error_message?: string | null
+          event_type: string
+          http_status?: number | null
+          id?: string
+          lead_id?: string | null
+          next_retry_at?: string | null
+          response_data?: Json | null
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          error_message?: string | null
+          event_type?: string
+          http_status?: number | null
+          id?: string
+          lead_id?: string | null
+          next_retry_at?: string | null
+          response_data?: Json | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "make_integration_logs_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_responses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      make_integration_settings: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          enabled: boolean
+          event_toggles: Json
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          event_toggles?: Json
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          event_toggles?: Json
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       partner_lead_credits: {
         Row: {
           available_credits: number
