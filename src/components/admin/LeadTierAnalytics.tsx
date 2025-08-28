@@ -195,21 +195,12 @@ const LeadTierAnalytics = () => {
         }
       });
 
-      // Calculate tier costs and rates using proportional ad spend allocation
-      const totalFilteredLeads = Object.values(tierStats).reduce((sum, tier) => sum + tier.count, 0);
-      
+      // Calculate tier costs and rates using actual lead counts and total spend
       Object.values(tierStats).forEach(tier => {
-        if (totalFilteredLeads > 0) {
-          // Allocate ad spend proportionally based on tier's share of total leads
-          const tierSpendAllocation = totalSpend * (tier.count / totalFilteredLeads);
-          // Calculate cost per lead specific to this tier
-          tier.cost_per_lead = tier.count > 0 ? tierSpendAllocation / tier.count : 0;
-          // Total cost is the allocated spend for this tier
-          tier.total_cost = tierSpendAllocation;
-        } else {
-          tier.cost_per_lead = 0;
-          tier.total_cost = 0;
-        }
+        // Use the overall cost per lead (total spend / total leads from ROI metrics)
+        tier.cost_per_lead = costPerLead;
+        // Calculate total cost for this tier based on its lead count
+        tier.total_cost = tier.count * costPerLead;
         
         // Calculate real application and file upload rates from actual data
         tier.application_rate = tier.count > 0 ? (tier.applications_sent / tier.count) * 100 : 0;
