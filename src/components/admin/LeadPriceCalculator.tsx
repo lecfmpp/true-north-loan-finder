@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Calculator, DollarSign, TrendingUp, Percent } from 'lucide-react';
+import { Calculator, DollarSign, TrendingUp, Percent, Crown, Briefcase, User, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -247,6 +247,19 @@ const LeadPriceCalculator = () => {
     return 'Low Quality';
   };
 
+  // Get persona avatar based on score
+  const getPersonaAvatar = (score: number) => {
+    if (score >= 80) {
+      return { icon: Crown, bgColor: 'bg-gradient-to-br from-yellow-100 to-yellow-200 dark:from-yellow-900/50 dark:to-yellow-800/50', iconColor: 'text-yellow-600 dark:text-yellow-400' };
+    } else if (score >= 60) {
+      return { icon: Briefcase, bgColor: 'bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/50 dark:to-blue-800/50', iconColor: 'text-blue-600 dark:text-blue-400' };
+    } else if (score >= 40) {
+      return { icon: User, bgColor: 'bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/50 dark:to-green-800/50', iconColor: 'text-green-600 dark:text-green-400' };
+    } else {
+      return { icon: AlertCircle, bgColor: 'bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/50 dark:to-red-800/50', iconColor: 'text-red-600 dark:text-red-400' };
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -471,10 +484,11 @@ const LeadPriceCalculator = () => {
               <div className="space-y-6">
                 {/* Persona Avatar & Overview */}
                 <div className="text-center p-6 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border-2 border-primary/20">
-                  <div className="w-20 h-20 bg-primary/20 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-primary">
-                      {scoreBreakdown.total > 0 ? scoreBreakdown.total : '?'}
-                    </span>
+                  <div className={`w-20 h-20 ${getPersonaAvatar(scoreBreakdown.total).bgColor} rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg`}>
+                    {(() => {
+                      const AvatarIcon = getPersonaAvatar(scoreBreakdown.total).icon;
+                      return <AvatarIcon className={`w-10 h-10 ${getPersonaAvatar(scoreBreakdown.total).iconColor}`} />;
+                    })()}
                   </div>
                   <h3 className={`text-xl font-bold mb-2 ${getScoreColor(scoreBreakdown.total)}`}>
                     {getScoreTier(scoreBreakdown.total)} Lead
