@@ -11,6 +11,8 @@ interface ScoringCriteria {
   monthlyRevenue: string;
   businessAge: string;
   creditScore: string;
+  country: string;
+  applicationSubmitted: string;
 }
 
 interface ScoreBreakdown {
@@ -30,7 +32,9 @@ const LeadPriceCalculator = () => {
   const [selectedCriteria, setSelectedCriteria] = useState<ScoringCriteria>({
     monthlyRevenue: '',
     businessAge: '',
-    creditScore: ''
+    creditScore: '',
+    country: '',
+    applicationSubmitted: ''
   });
   
   const [scoreBreakdown, setScoreBreakdown] = useState<ScoreBreakdown>({
@@ -65,6 +69,16 @@ const LeadPriceCalculator = () => {
     { value: '0-599', label: 'Below 600', points: 0, tier: 'Not Qualified' }
   ];
 
+  const countryOptions = [
+    { label: 'United States', value: 'US' },
+    { label: 'Canada', value: 'CA' }
+  ];
+
+  const applicationSubmittedOptions = [
+    { label: 'Yes - Has Application', value: 'yes' },
+    { label: 'No - No Application', value: 'no' }
+  ];
+
   // Calculate score breakdown
   const calculateScore = (criteria: ScoringCriteria): ScoreBreakdown => {
     const revenueOption = monthlyRevenueOptions.find(opt => opt.value === criteria.monthlyRevenue);
@@ -94,7 +108,7 @@ const LeadPriceCalculator = () => {
   // Fetch lead stats based on criteria
   const fetchLeadStats = async (criteria: ScoringCriteria) => {
     // Show all leads if no criteria selected
-    const hasAnyCriteria = criteria.monthlyRevenue || criteria.businessAge || criteria.creditScore;
+    const hasAnyCriteria = criteria.monthlyRevenue || criteria.businessAge || criteria.creditScore || criteria.country || criteria.applicationSubmitted;
 
     setLoading(true);
     try {
@@ -128,6 +142,20 @@ const LeadPriceCalculator = () => {
         const mappedValues = creditMapping[criteria.creditScore];
         if (mappedValues) {
           query = query.in('credit_score', mappedValues);
+        }
+      }
+
+      if (criteria.country) {
+        query = query.eq('country', criteria.country);
+      }
+
+      if (criteria.applicationSubmitted) {
+        if (criteria.applicationSubmitted === 'yes') {
+          // Filter for leads that have submitted applications (exist in usa_applications or canadian_applications)
+          query = query.or('id.in.(select quiz_response_id from usa_applications), id.in.(select quiz_response_id from canadian_applications)');
+        } else if (criteria.applicationSubmitted === 'no') {
+          // Filter for leads that have NOT submitted applications
+          query = query.not('id', 'in', '(select quiz_response_id from usa_applications union select quiz_response_id from canadian_applications)');
         }
       }
 
@@ -175,7 +203,7 @@ const LeadPriceCalculator = () => {
 
   // Reset filters
   const resetFilters = () => {
-    setSelectedCriteria({ monthlyRevenue: '', businessAge: '', creditScore: '' });
+    setSelectedCriteria({ monthlyRevenue: '', businessAge: '', creditScore: '', country: '', applicationSubmitted: '' });
     setScoreBreakdown({ monthlyRevenue: { points: 0, label: '' }, businessAge: { points: 0, label: '' }, creditScore: { points: 0, label: '' }, total: 0 });
     setLeadStats({ totalLeads: 0, totalCost: 0, costPerLead: 0 });
   };
@@ -302,6 +330,56 @@ const LeadPriceCalculator = () => {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Country */}
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                Country
+              </label>
+              <Select
+                value={selectedCriteria.country || 'none'}
+                onValueChange={(value) => handleCriteriaChange('country', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select country" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">
+                    <span className="text-muted-foreground">No filter (ignore this criteria)</span>
+                  </SelectItem>
+                  {countryOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Application Submitted */}
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                Application Submitted
+              </label>
+              <Select
+                value={selectedCriteria.applicationSubmitted || 'none'}
+                onValueChange={(value) => handleCriteriaChange('applicationSubmitted', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select application status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">
+                    <span className="text-muted-foreground">No filter (ignore this criteria)</span>
+                  </SelectItem>
+                  {applicationSubmittedOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </CardContent>
         </Card>
 
@@ -415,7 +493,7 @@ const LeadPriceCalculator = () => {
             </div>
           )}
 
-          {(selectedCriteria.monthlyRevenue || selectedCriteria.businessAge || selectedCriteria.creditScore) && leadStats.totalLeads > 0 && (
+          {(selectedCriteria.monthlyRevenue || selectedCriteria.businessAge || selectedCriteria.creditScore || selectedCriteria.country || selectedCriteria.applicationSubmitted) && leadStats.totalLeads > 0 && (
             <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
               <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
                 Pricing Recommendation
