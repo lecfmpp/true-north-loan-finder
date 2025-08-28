@@ -1698,8 +1698,10 @@ const Admin = () => {
     }
   };
   const saveSharedNotes = async (leadId: string) => {
-    const notes = editingNotes[leadId];
-    if (notes === undefined) return;
+    const textarea = sharedNotesRefs.current[leadId];
+    if (!textarea) return;
+    
+    const notes = textarea.value;
 
     setSavingNotes(prev => ({ ...prev, [leadId]: true }));
     try {
@@ -1715,22 +1717,15 @@ const Admin = () => {
         lead.id === leadId ? { ...lead, shared_notes: notes } : lead
       ));
 
-      // Clear editing state
-      setEditingNotes(prev => {
-        const newState = { ...prev };
-        delete newState[leadId];
-        return newState;
-      });
-
       toast({
         title: "Success",
-        description: "Shared notes updated successfully",
+        description: "Notes saved successfully",
       });
     } catch (error) {
       console.error('Error updating shared notes:', error);
       toast({
         title: "Error",
-        description: "Failed to update shared notes",
+        description: "Failed to save notes",
         variant: "destructive"
       });
     } finally {
