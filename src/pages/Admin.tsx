@@ -1062,10 +1062,11 @@ const Admin = () => {
     partnersChannel.subscribe();
     clientsChannel.subscribe();
 
-    return () => {
-      supabase.removeChannel(partnersChannel);
-      supabase.removeChannel(clientsChannel);
-  };
+     return () => {
+       supabase.removeChannel(partnersChannel);
+       supabase.removeChannel(clientsChannel);
+   };
+  }, [user, isAdmin]);
   
   const sendToMake = async (leadId: string, eventType: string = 'manual_send') => {
     setSendingToMake(prev => ({ ...prev, [leadId]: true }));
@@ -1104,7 +1105,7 @@ const Admin = () => {
       console.error('Bulk send to Make failed:', error);
     }
   };
-  }, [user, isAdmin]);
+  
   const sendCustomLeadEmail = async (leadId: string, recipientEmails: string) => {
     // Parse and validate multiple email addresses
     const emailList = recipientEmails.split(',').map(email => email.trim()).filter(email => email);
@@ -2204,13 +2205,14 @@ const Admin = () => {
                   
                   {/* Action Buttons */}
                   <div className="flex flex-col sm:flex-row gap-2 justify-end">
-                    {selectedLeads.length > 0 && isSuperAdmin && <Button variant="outline" onClick={bulkSendToMake}>
+                     {selectedLeads.length > 0 && isSuperAdmin && <Button variant="outline" onClick={bulkSendToMake}>
                         <Webhook className="mr-2 h-4 w-4" />
                         Send {selectedLeads.length} to Make
                       </Button>}
-                    setBulkDelete(true);
-                    setDeleteModalOpen(true);
-                  }} className="flex items-center gap-2">
+                     {selectedLeads.length > 0 && isSuperAdmin && <Button variant="destructive" onClick={() => {
+                       setBulkDelete(true);
+                       setDeleteModalOpen(true);
+                     }} className="flex items-center gap-2">
                         <Trash2 className="h-4 w-4" />
                         Delete Selected ({selectedLeads.length})
                       </Button>}
@@ -2745,7 +2747,7 @@ const Admin = () => {
             {filteredLeads.length === 0 && <div className="text-center py-8 text-muted-foreground">
                 No leads found matching your criteria.
               </div>}
-          </div>;
+          </div>
       case 'applications':
         return <SimplifiedPartnersManagement />;
       case 'partners':
