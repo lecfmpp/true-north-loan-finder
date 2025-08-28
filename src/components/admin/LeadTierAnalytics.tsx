@@ -371,12 +371,10 @@ const LeadTierAnalytics = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Channels</SelectItem>
-              <SelectItem value="google">Google</SelectItem>
+              <SelectItem value="google">Google Ads</SelectItem>
               <SelectItem value="meta">Meta</SelectItem>
-              <SelectItem value="bing">Bing</SelectItem>
               <SelectItem value="tiktok">TikTok</SelectItem>
-              <SelectItem value="linkedin">LinkedIn</SelectItem>
-              <SelectItem value="twitter">Twitter</SelectItem>
+              <SelectItem value="linkedin">LinkedIn Ads</SelectItem>
             </SelectContent>
           </Select>
           
