@@ -56,15 +56,41 @@ serve(async (req) => {
 
     console.log('Starting AI-powered CSV analysis...');
 
-    // Parse CSV structure
-    const lines = csvContent.split('\n').filter(line => line.trim());
+    // Parse CSV structure (robust - handles quotes, commas, CRLF, delimiters)
+    const normalizeNewlines = (s: string) => s.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    const raw = normalizeNewlines(csvContent).trim();
+    const lines = raw.split('\n').filter((l) => l.length > 0);
+    
+    // CSV line splitter that respects quotes and various delimiters
+    const splitCSVLine = (input: string) => {
+      const out: string[] = [];
+      let cur = '';
+      let inQuotes = false;
+      for (let i = 0; i < input.length; i++) {
+        const ch = input[i];
+        if (ch === '"') {
+          if (inQuotes && input[i + 1] === '"') { cur += '"'; i++; continue; }
+          inQuotes = !inQuotes; 
+          continue;
+        }
+        if (!inQuotes && (ch === ',' || ch === ';' || ch === '\t' || ch === '|')) {
+          out.push(cur.trim());
+          cur = '';
+          continue;
+        }
+        cur += ch;
+      }
+      out.push(cur.trim());
+      return out.map((cell) => cell.replace(/^"|"$/g, ''));
+    };
+
     if (lines.length < 2) {
       throw new Error('CSV must have at least a header row and one data row');
     }
 
-    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+    const headers = splitCSVLine(lines[0]).map(h => h.trim().replace(/"/g, ''));
     const sampleRows = lines.slice(1, 4).map(line => 
-      line.split(',').map(cell => cell.trim().replace(/"/g, ''))
+      splitCSVLine(line)
     );
 
     // For larger files, use a simplified approach to avoid timeouts
@@ -179,7 +205,18 @@ Return column indices (0-based) for mapping:
 // Function to handle large files without AI analysis
 async function processLargeFileDirectly(lines: string[], supabase: any, defaultChannel?: string) {
   try {
-    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+    const splitCSVLine = (input: string) => {
+      const out: string[] = []; let cur = ''; let inQuotes = false;
+      for (let i = 0; i < input.length; i++) {
+        const ch = input[i];
+        if (ch === '"') { if (inQuotes && input[i + 1] === '"') { cur += '"'; i++; continue; } inQuotes = !inQuotes; continue; }
+        if (!inQuotes && (ch === ',' || ch === ';' || ch === '\t' || ch === '|')) { out.push(cur.trim()); cur = ''; continue; }
+        cur += ch;
+      }
+      out.push(cur.trim());
+      return out.map((c) => c.replace(/^"|"$/g, ''));
+    };
+    const headers = splitCSVLine(lines[0]).map(h => h.trim().replace(/"/g, ''));
     const dataRows = lines.slice(1);
     
     // Use pattern matching for column detection
@@ -195,7 +232,18 @@ async function processLargeFileDirectly(lines: string[], supabase: any, defaultC
 // Function to process data with given mapping
 async function processWithMapping(lines: string[], mapping: any, supabase: any, defaultChannel?: string) {
   try {
-    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+    const splitCSVLine = (input: string) => {
+      const out: string[] = []; let cur = ''; let inQuotes = false;
+      for (let i = 0; i < input.length; i++) {
+        const ch = input[i];
+        if (ch === '"') { if (inQuotes && input[i + 1] === '"') { cur += '"'; i++; continue; } inQuotes = !inQuotes; continue; }
+        if (!inQuotes && (ch === ',' || ch === ';' || ch === '\t' || ch === '|')) { out.push(cur.trim()); cur = ''; continue; }
+        cur += ch;
+      }
+      out.push(cur.trim());
+      return out.map((c) => c.replace(/^"|"$/g, ''));
+    };
+    const headers = splitCSVLine(lines[0]).map(h => h.trim().replace(/"/g, ''));
     const allDataRows = lines.slice(1);
     
     console.log(`Processing ${allDataRows.length} rows with mapping:`, mapping);
@@ -211,7 +259,7 @@ async function processWithMapping(lines: string[], mapping: any, supabase: any, 
       
       const batchData = batch.map((line, index) => {
         try {
-          const row = line.split(',').map(cell => cell.trim().replace(/"/g, ''));
+          const row = splitCSVLine(line);
           return processRow(row, mapping, i + index + 1, defaultChannel);
         } catch (error) {
           console.warn(`Error processing row ${i + index + 1}:`, error);
@@ -373,8 +421,8 @@ function processRow(row: string[], mapping: any, rowIndex: number, defaultChanne
     processedRow.amount = 10000000; // $100,000 in cents
   }
 
-  // More lenient validation - only require valid date and positive amount
-  if (!processedRow.date || processedRow.amount <= 0) {
+  // Validation - require valid date; allow zero amounts
+  if (!processedRow.date || Number.isNaN(processedRow.amount) || processedRow.amount < 0) {
     console.warn(`Row ${rowIndex} skipped: date=${processedRow.date}, amount=${processedRow.amount}`);
     return null;
   }
