@@ -49,21 +49,19 @@ const LeadTierAnalytics = () => {
 
   const getScoreTier = (score: number | null): string => {
     if (!score) return 'No Score';
-    if (score >= 80) return 'Premium (80+)';
-    if (score >= 60) return 'High (60-79)';
-    if (score >= 40) return 'Medium (40-59)';
-    if (score >= 20) return 'Low (20-39)';
-    return 'Poor (0-19)';
+    if (score >= 85) return 'Exceptional (85+)';
+    if (score >= 65) return 'Strong (65-84)';
+    if (score >= 45) return 'Good (45-64)';
+    return 'Potential (0-44)';
   };
 
   const getTierColor = (tier: string): string => {
     switch (tier) {
-      case 'Premium (80+)': return '#22c55e';
-      case 'High (60-79)': return '#3b82f6';
-      case 'Medium (40-59)': return '#f59e0b';
-      case 'Low (20-39)': return '#ef4444';
-      case 'Poor (0-19)': return '#6b7280';
-      default: return '#9ca3af';
+      case 'Exceptional (85+)': return '#22c55e'; // green
+      case 'Strong (65-84)': return '#3b82f6';    // blue  
+      case 'Good (45-64)': return '#f59e0b';      // yellow
+      case 'Potential (0-44)': return '#ef4444';  // red
+      default: return '#9ca3af';                   // gray
     }
   };
 
