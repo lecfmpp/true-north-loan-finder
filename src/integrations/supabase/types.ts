@@ -2576,6 +2576,23 @@ export type Database = {
           total_estimated_cost: number
         }[]
       }
+      get_public_lead_feed: {
+        Args: { p_country?: string; p_limit?: number }
+        Returns: {
+          business_name: string
+          contact_name: string
+          country: string
+          credit_score_range: string
+          email: string
+          id: string
+          industry: string
+          loan_amount: number
+          loan_type: string
+          phone: string
+          phone_verified: boolean
+          submitted_at: string
+        }[]
+      }
       get_roi_metrics: {
         Args: { end_date?: string; start_date?: string }
         Returns: {

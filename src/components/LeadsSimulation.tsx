@@ -184,24 +184,25 @@ export const LeadsSimulation = () => {
     const fetchLeads = async () => {
       setLoading(true);
       try {
-        // Fetch from lead_feed table which is publicly accessible
+        // Use the secure RPC function that returns masked data
         const {
           data: leadData,
           error
-        } = await supabase.from('lead_feed').select('*').eq('country', selectedCountry).order('submitted_at', {
-          ascending: false
-        }).limit(20);
+        } = await supabase.rpc('get_public_lead_feed', {
+          p_country: selectedCountry,
+          p_limit: 20
+        });
         if (error) throw error;
         if (leadData && leadData.length > 0) {
           const transformedLeads: Lead[] = leadData.map(lead => {
-            // Use the processed data from lead_feed table
-            const businessName = <span className="blur-sm select-none">{lead.business_name}</span>;
+            // Data is already masked at database level for security
+            const businessName = <span>{lead.business_name}</span>;
             return {
               id: lead.id,
               businessName,
-              contactName: maskText(lead.contact_name),
-              email: maskEmail(lead.email),
-              phone: maskPhone(lead.phone),
+              contactName: <span>{lead.contact_name}</span>,
+              email: <span>{lead.email || 'Not available'}</span>,
+              phone: <span>{lead.phone || 'Not available'}</span>,
               loanAmount: `$${Number(lead.loan_amount).toLocaleString()}`,
               submittedAt: new Date(lead.submitted_at),
               creditScore: getCreditScore(lead.credit_score_range),
