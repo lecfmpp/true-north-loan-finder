@@ -364,24 +364,43 @@ export default function ROIManagement() {
       return;
     }
 
+    // Ensure start <= end
+    if (cleanupStartDate > cleanupEndDate) {
+      toast({
+        title: "Invalid range",
+        description: "Start date must be before or equal to end date",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setDeletingData(true);
     
     try {
-      const { error, count } = await supabase
+      const { data: deletedRows, error, count } = await supabase
         .from('ad_spend_records')
-        .delete()
+        .delete({ count: 'exact' })
         .gte('date', cleanupStartDate)
-        .lte('date', cleanupEndDate);
+        .lte('date', cleanupEndDate)
+        .select('id'); // Return deleted rows to verify effect
 
       if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: `Ad spend records from ${cleanupStartDate} to ${cleanupEndDate} have been deleted`
-      });
+      if (!count || count === 0) {
+        toast({
+          title: "No records found",
+          description: `No ad spend records matched ${cleanupStartDate} to ${cleanupEndDate}. Please verify the dates/year.`,
+          variant: "default"
+        });
+      } else {
+        toast({
+          title: "Deleted",
+          description: `Removed ${count} ad spend record(s) from ${cleanupStartDate} to ${cleanupEndDate}`
+        });
+      }
 
       setDateRangeCleanupDialog(false);
-      fetchROIData();
+      await fetchROIData();
     } catch (error) {
       console.error('Error deleting ad spend data:', error);
       toast({
@@ -393,7 +412,6 @@ export default function ROIManagement() {
       setDeletingData(false);
     }
   };
-
 
   const getFilteredMetrics = () => {
     if (!metrics) return {
