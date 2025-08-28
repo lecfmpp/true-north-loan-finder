@@ -102,6 +102,7 @@ import CanadianApplicationsManagement from '@/components/admin/CanadianApplicati
 import SocialProofManagement from '@/components/admin/SocialProofManagement';
 import SettingsManagement from '@/components/admin/SettingsManagement';
 import SimplifiedPartnersManagement from '@/components/admin/SimplifiedPartnersManagement';
+// Lead analytics component
 import LeadTierAnalytics from '@/components/admin/LeadTierAnalytics';
 import BillingManagement from '@/components/admin/BillingManagement';
 import ROIManagement from '@/components/admin/ROIManagement';
