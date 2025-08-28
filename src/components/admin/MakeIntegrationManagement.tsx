@@ -74,6 +74,11 @@ export default function MakeIntegrationManagement() {
             application_submitted: eventToggles?.application_submitted || false
           }
         });
+        
+        // Load the webhook URL if it exists
+        if (data.webhook_url) {
+          setWebhookUrl(data.webhook_url);
+        }
       }
     } catch (error) {
       console.error('Error loading Make settings:', error);
@@ -161,7 +166,7 @@ export default function MakeIntegrationManagement() {
         return;
       }
 
-      const { error } = await supabase.functions.invoke('send-to-make', {
+      const { data, error } = await supabase.functions.invoke('send-to-make', {
         body: {
           leadId: sampleLead.id,
           eventType: 'manual_send',
@@ -173,20 +178,58 @@ export default function MakeIntegrationManagement() {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        // Parse the error to get more detailed information
+        let errorMessage = error.message || 'Unknown error occurred';
+        
+        // Try to extract details from the error
+        if (error.details) {
+          errorMessage = error.details;
+        } else if (typeof error === 'string') {
+          errorMessage = error;
+        }
 
-      toast({
-        title: "Test Successful",
-        description: "Test payload sent to Make.com successfully!",
-      });
+        toast({
+          title: "Test Failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        
+        console.error('Make.com test failed:', error);
+        return;
+      }
+
+      if (data?.success) {
+        toast({
+          title: "Test Successful",
+          description: "Test payload sent to Make.com successfully!",
+        });
+      } else if (data?.error) {
+        toast({
+          title: "Test Failed", 
+          description: data.error + (data.http_status ? ` (HTTP ${data.http_status})` : ''),
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Test Successful",
+          description: "Test payload sent to Make.com successfully!",
+        });
+      }
 
       // Refresh logs to show the test
       setTimeout(() => loadRecentLogs(), 1000);
     } catch (error) {
       console.error('Error testing Make connection:', error);
+      
+      let errorMessage = 'Failed to send test payload to Make.com.';
+      if (error instanceof Error) {
+        errorMessage = `Failed to send test payload: ${error.message}`;
+      }
+      
       toast({
         title: "Test Failed",
-        description: "Failed to send test payload to Make.com.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

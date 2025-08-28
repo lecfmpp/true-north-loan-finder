@@ -183,11 +183,55 @@ Deno.serve(async (req) => {
       })
 
       httpStatus = response.status
-      responseData = await response.json().catch(() => ({ message: 'Non-JSON response' }))
+      const responseText = await response.text()
+      
+      // Try to parse as JSON, otherwise keep as text
+      try {
+        responseData = JSON.parse(responseText)
+      } catch {
+        responseData = { 
+          message: 'Non-JSON response',
+          response_text: responseText.substring(0, 500), // Truncate long responses
+          content_type: response.headers.get('content-type')
+        }
+      }
 
       if (!response.ok) {
-        errorMessage = responseData?.message || `HTTP ${response.status}`
-        console.error('Make.com webhook failed:', errorMessage)
+        // Provide more specific error messages based on status code
+        switch (response.status) {
+          case 410:
+            errorMessage = 'Webhook URL expired or deleted. Please update your Make.com webhook URL.'
+            break
+          case 404:
+            errorMessage = 'Webhook URL not found. Please verify your Make.com webhook URL is correct.'
+            break
+          case 400:
+            errorMessage = 'Bad request. The payload format may not be supported by your Make.com scenario.'
+            break
+          case 401:
+            errorMessage = 'Unauthorized. Check if your Make.com scenario requires authentication.'
+            break
+          case 403:
+            errorMessage = 'Forbidden. Your Make.com scenario may not accept requests from this source.'
+            break
+          case 500:
+            errorMessage = 'Make.com server error. Please try again later or check your scenario.'
+            break
+          default:
+            errorMessage = responseData?.message || responseData?.error || `HTTP ${response.status}: ${response.statusText}`
+        }
+        
+        console.error(`Make.com webhook failed with status ${response.status}:`, {
+          status: response.status,
+          statusText: response.statusText,
+          responseData,
+          webhookUrl: webhookUrl.substring(0, 50) + '...' // Log partial URL for debugging
+        })
+      } else {
+        console.log('Successfully sent to Make.com:', {
+          status: response.status,
+          responseData
+        })
       }
     } catch (error) {
       httpStatus = 0
