@@ -85,12 +85,18 @@ const LeadTierAnalytics = () => {
     try {
       setLoading(true);
       const startDate = new Date();
-      startDate.setDate(startDate.getDate() - parseInt(dateRange));
+      let hasDateFilter = true;
+      
+      if (dateRange === 'all') {
+        hasDateFilter = false;
+      } else {
+        startDate.setDate(startDate.getDate() - parseInt(dateRange));
+      }
       
       // Use the same ROI metrics RPC that the ROI Management uses
       const { data: roiMetrics, error: roiError } = await supabase
         .rpc('get_roi_metrics', {
-          start_date: startDate.toISOString().split('T')[0],
+          start_date: hasDateFilter ? startDate.toISOString().split('T')[0] : '1900-01-01',
           end_date: new Date().toISOString().split('T')[0]
         });
 
@@ -108,9 +114,13 @@ const LeadTierAnalytics = () => {
           attribution_channel,
           usa_applications(id, document_files),
           canadian_applications(id, document_files, processing_statements)
-        `)
-        .gte('created_at', startDate.toISOString())
-        .lte('created_at', new Date().toISOString());
+        `);
+      
+      if (hasDateFilter) {
+        query = query
+          .gte('created_at', startDate.toISOString())
+          .lte('created_at', new Date().toISOString());
+      }
 
       // Apply filters based on type
       if (filterType === 'applications') {
@@ -123,16 +133,23 @@ const LeadTierAnalytics = () => {
       if (error) throw error;
 
       // Get real ad spend data (same as ROI Management) - filtered by date range
-      const { data: adSpend, error: spendError } = await supabase
+      let adSpendQuery = supabase
         .from('ad_spend_records')
-        .select('amount, date, channel, clicks, conversions')
-        .gte('date', startDate.toISOString().split('T')[0])
-        .lte('date', new Date().toISOString().split('T')[0]);
+        .select('amount, date, channel, clicks, conversions');
+      
+      if (hasDateFilter) {
+        adSpendQuery = adSpendQuery
+          .gte('date', startDate.toISOString().split('T')[0])
+          .lte('date', new Date().toISOString().split('T')[0]);
+      }
+
+      const { data: adSpend, error: spendError } = await adSpendQuery;
 
       if (spendError) throw spendError;
 
       // Debug: Log the date range and ad spend records
-      console.log('Date range:', startDate.toISOString().split('T')[0], 'to', new Date().toISOString().split('T')[0]);
+      const dateRangeText = hasDateFilter ? `${startDate.toISOString().split('T')[0]} to ${new Date().toISOString().split('T')[0]}` : 'All time';
+      console.log('Date range:', dateRangeText);
       console.log('Filtered ad spend records:', adSpend?.length || 0);
 
       // Use the ROI metrics we fetched (same as ROI Management)
@@ -145,7 +162,11 @@ const LeadTierAnalytics = () => {
       
       // Convert ad spend from cents to dollars - ONLY from date-filtered records
       const totalSpend = (adSpend || []).reduce((sum, record) => {
-        // Double-check date filtering in case there are edge cases
+        // For "all time", include all records. For date ranges, double-check filtering
+        if (!hasDateFilter) {
+          return sum + (record.amount / 100);
+        }
+        
         const recordDate = record.date;
         const isInRange = recordDate >= startDate.toISOString().split('T')[0] && 
                          recordDate <= new Date().toISOString().split('T')[0];
@@ -386,6 +407,7 @@ const LeadTierAnalytics = () => {
               <SelectItem value="7">Last 7 days</SelectItem>
               <SelectItem value="30">Last 30 days</SelectItem>
               <SelectItem value="90">Last 90 days</SelectItem>
+              <SelectItem value="all">All time</SelectItem>
             </SelectContent>
           </Select>
           
