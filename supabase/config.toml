@@ -116,12 +116,6 @@ verify_jwt = false
 [functions.create-partner-payment]
 verify_jwt = false
 
-[functions.attach-ghl-opportunity]
-verify_jwt = true
-
-[functions.ghl-reconciliation]
-verify_jwt = true
-
 [functions.send-to-make]
 verify_jwt = true
 

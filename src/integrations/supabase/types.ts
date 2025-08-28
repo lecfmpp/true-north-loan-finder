@@ -1174,143 +1174,6 @@ export type Database = {
           },
         ]
       }
-      ghl_activity_logs: {
-        Row: {
-          activity_type: string
-          created_at: string
-          error_message: string | null
-          ghl_contact_id: string | null
-          ghl_opportunity_id: string | null
-          id: string
-          lead_id: string
-          partner_id: string
-          pipeline_id: string | null
-          response_data: Json | null
-          stage_id: string | null
-          status: string
-        }
-        Insert: {
-          activity_type: string
-          created_at?: string
-          error_message?: string | null
-          ghl_contact_id?: string | null
-          ghl_opportunity_id?: string | null
-          id?: string
-          lead_id: string
-          partner_id: string
-          pipeline_id?: string | null
-          response_data?: Json | null
-          stage_id?: string | null
-          status: string
-        }
-        Update: {
-          activity_type?: string
-          created_at?: string
-          error_message?: string | null
-          ghl_contact_id?: string | null
-          ghl_opportunity_id?: string | null
-          id?: string
-          lead_id?: string
-          partner_id?: string
-          pipeline_id?: string | null
-          response_data?: Json | null
-          stage_id?: string | null
-          status?: string
-        }
-        Relationships: []
-      }
-      ghl_integration_logs: {
-        Row: {
-          created_at: string
-          error_message: string | null
-          id: string
-          partner_id: string
-          quiz_response_id: string | null
-          response_data: Json | null
-          status: string
-        }
-        Insert: {
-          created_at?: string
-          error_message?: string | null
-          id?: string
-          partner_id: string
-          quiz_response_id?: string | null
-          response_data?: Json | null
-          status: string
-        }
-        Update: {
-          created_at?: string
-          error_message?: string | null
-          id?: string
-          partner_id?: string
-          quiz_response_id?: string | null
-          response_data?: Json | null
-          status?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ghl_integration_logs_partner_id_fkey"
-            columns: ["partner_id"]
-            isOneToOne: false
-            referencedRelation: "partners"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ghl_integration_logs_quiz_response_id_fkey"
-            columns: ["quiz_response_id"]
-            isOneToOne: false
-            referencedRelation: "quiz_responses"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      ghl_integrations: {
-        Row: {
-          api_key: string
-          created_at: string
-          field_mappings: Json | null
-          id: string
-          is_active: boolean | null
-          location_id: string
-          partner_id: string
-          pipeline_id: string | null
-          updated_at: string
-          webhook_url: string | null
-        }
-        Insert: {
-          api_key: string
-          created_at?: string
-          field_mappings?: Json | null
-          id?: string
-          is_active?: boolean | null
-          location_id: string
-          partner_id: string
-          pipeline_id?: string | null
-          updated_at?: string
-          webhook_url?: string | null
-        }
-        Update: {
-          api_key?: string
-          created_at?: string
-          field_mappings?: Json | null
-          id?: string
-          is_active?: boolean | null
-          location_id?: string
-          partner_id?: string
-          pipeline_id?: string | null
-          updated_at?: string
-          webhook_url?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ghl_integrations_partner_id_fkey"
-            columns: ["partner_id"]
-            isOneToOne: true
-            referencedRelation: "partners"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       lead_assignments: {
         Row: {
           assigned_at: string
@@ -1998,8 +1861,6 @@ export type Database = {
           founding_day: number | null
           founding_month: number | null
           founding_year: number | null
-          ghl_contact_id: string | null
-          ghl_opportunity_id: string | null
           id: string
           lead_value: number | null
           loan_amount: number
@@ -2034,8 +1895,6 @@ export type Database = {
           founding_day?: number | null
           founding_month?: number | null
           founding_year?: number | null
-          ghl_contact_id?: string | null
-          ghl_opportunity_id?: string | null
           id?: string
           lead_value?: number | null
           loan_amount: number
@@ -2070,8 +1929,6 @@ export type Database = {
           founding_day?: number | null
           founding_month?: number | null
           founding_year?: number | null
-          ghl_contact_id?: string | null
-          ghl_opportunity_id?: string | null
           id?: string
           lead_value?: number | null
           loan_amount?: number
