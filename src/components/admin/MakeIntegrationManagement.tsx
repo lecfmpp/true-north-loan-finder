@@ -7,9 +7,10 @@ import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ExternalLink, Send, AlertTriangle } from "lucide-react";
+import { Loader2, ExternalLink, Send, AlertTriangle, Settings, Database } from "lucide-react";
 
 interface MakeSettings {
   enabled: boolean;
@@ -17,6 +18,12 @@ interface MakeSettings {
     lead_created: boolean;
     partner_assigned: boolean;
     application_submitted: boolean;
+  };
+  field_mappings: {
+    lead_fields: Record<string, boolean>;
+    partner_fields: Record<string, boolean>;
+    application_fields: Record<string, boolean>;
+    metadata_fields: Record<string, boolean>;
   };
 }
 
@@ -30,6 +37,49 @@ interface MakeLog {
   lead_id: string;
 }
 
+const LEAD_FIELD_LABELS = {
+  id: 'Lead ID',
+  name: 'Name',
+  email: 'Email',
+  phone: 'Phone',
+  company_name: 'Company Name',
+  loan_amount: 'Loan Amount',
+  monthly_revenue: 'Monthly Revenue',
+  credit_score: 'Credit Score',
+  time_in_business: 'Time in Business',
+  use_of_funds: 'Use of Funds',
+  country: 'Country',
+  city_province: 'City/Province',
+  website: 'Website',
+  attribution_channel: 'Lead Source',
+  attribution_url: 'Source URL',
+  bank_account_type: 'Bank Account Type',
+  homeowner_status: 'Homeowner Status',
+  score: 'Lead Score',
+  status: 'Status',
+  conversion_status: 'Conversion Status',
+  created_at: 'Created Date'
+};
+
+const PARTNER_FIELD_LABELS = {
+  id: 'Partner ID',
+  name: 'Partner Name',
+  email: 'Partner Email',
+  company_name: 'Partner Company'
+};
+
+const APPLICATION_FIELD_LABELS = {
+  include_attachments: 'Include Application Attachments',
+  usa_reference: 'USA Application Reference',
+  canadian_reference: 'Canadian Application Reference'
+};
+
+const METADATA_FIELD_LABELS = {
+  triggered_by_user_id: 'Triggered By User ID',
+  triggered_by_email: 'Triggered By Email',
+  triggered_at: 'Triggered Date'
+};
+
 export default function MakeIntegrationManagement() {
   const [settings, setSettings] = useState<MakeSettings>({
     enabled: false,
@@ -37,6 +87,47 @@ export default function MakeIntegrationManagement() {
       lead_created: false,
       partner_assigned: false,
       application_submitted: false
+    },
+    field_mappings: {
+      lead_fields: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        company_name: true,
+        loan_amount: true,
+        monthly_revenue: false,
+        credit_score: false,
+        time_in_business: false,
+        use_of_funds: false,
+        country: true,
+        city_province: false,
+        website: false,
+        attribution_channel: false,
+        attribution_url: false,
+        bank_account_type: false,
+        homeowner_status: false,
+        score: false,
+        status: true,
+        conversion_status: true,
+        created_at: true
+      },
+      partner_fields: {
+        id: false,
+        name: true,
+        email: true,
+        company_name: true
+      },
+      application_fields: {
+        include_attachments: true,
+        usa_reference: true,
+        canadian_reference: true
+      },
+      metadata_fields: {
+        triggered_by_user_id: false,
+        triggered_by_email: true,
+        triggered_at: true
+      }
     }
   });
   const [webhookUrl, setWebhookUrl] = useState('');
@@ -44,6 +135,7 @@ export default function MakeIntegrationManagement() {
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [recentLogs, setRecentLogs] = useState<MakeLog[]>([]);
+
   const { toast } = useToast();
 
   useEffect(() => {
@@ -66,13 +158,16 @@ export default function MakeIntegrationManagement() {
 
       if (data) {
         const eventToggles = data.event_toggles as any;
+        const fieldMappings = data.field_mappings as any;
+        
         setSettings({
           enabled: data.enabled,
           event_toggles: {
             lead_created: eventToggles?.lead_created || false,
             partner_assigned: eventToggles?.partner_assigned || false,
             application_submitted: eventToggles?.application_submitted || false
-          }
+          },
+          field_mappings: fieldMappings || settings.field_mappings
         });
         
         // Load the webhook URL if it exists
@@ -93,7 +188,7 @@ export default function MakeIntegrationManagement() {
         .from('make_integration_logs')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(5);
+        .limit(10);
 
       if (error) {
         console.error('Error loading Make logs:', error);
@@ -112,25 +207,23 @@ export default function MakeIntegrationManagement() {
       const { error } = await supabase.functions.invoke('update-make-settings', {
         body: {
           enabled: settings.enabled,
-          webhookUrl: webhookUrl.trim() || undefined,
-          eventToggles: settings.event_toggles
+          webhookUrl: webhookUrl.trim(),
+          eventToggles: settings.event_toggles,
+          fieldMappings: settings.field_mappings
         }
       });
 
       if (error) throw error;
 
       toast({
-        title: "Settings Updated",
+        title: "Settings Saved",
         description: "Make.com integration settings have been updated successfully.",
       });
-
-      // Refresh logs after saving
-      loadRecentLogs();
     } catch (error) {
       console.error('Error saving Make settings:', error);
       toast({
         title: "Error",
-        description: "Failed to update Make.com integration settings.",
+        description: "Failed to save Make.com integration settings.",
         variant: "destructive",
       });
     } finally {
@@ -241,8 +334,7 @@ export default function MakeIntegrationManagement() {
     switch (status) {
       case 'success': return 'default';
       case 'failed': return 'destructive';
-      case 'pending': return 'secondary';
-      default: return 'outline';
+      default: return 'secondary';
     }
   };
 
@@ -250,216 +342,280 @@ export default function MakeIntegrationManagement() {
     return new Date(dateString).toLocaleString();
   };
 
-  const maskWebhookUrl = (url: string) => {
-    if (!url) return '';
-    if (url.length <= 20) return '*'.repeat(url.length);
-    return url.substring(0, 10) + '*'.repeat(url.length - 20) + url.substring(url.length - 10);
+  const handleFieldToggle = (section: keyof MakeSettings['field_mappings'], field: string, enabled: boolean) => {
+    setSettings(prev => ({
+      ...prev,
+      field_mappings: {
+        ...prev.field_mappings,
+        [section]: {
+          ...prev.field_mappings[section],
+          [field]: enabled
+        }
+      }
+    }));
   };
+
+  const renderFieldSection = (
+    title: string,
+    section: keyof MakeSettings['field_mappings'],
+    labels: Record<string, string>
+  ) => (
+    <Card className="mb-4">
+      <CardHeader>
+        <CardTitle className="text-base">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Object.entries(settings.field_mappings[section]).map(([field, enabled]) => (
+            <div key={field} className="flex items-center justify-between space-x-2">
+              <Label 
+                htmlFor={`${section}-${field}`} 
+                className="text-sm font-normal flex-1"
+              >
+                {labels[field] || field}
+              </Label>
+              <Switch
+                id={`${section}-${field}`}
+                checked={enabled}
+                onCheckedChange={(checked) => handleFieldToggle(section, field, checked)}
+              />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
+      <Card>
+        <CardContent className="flex items-center justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin mr-2" />
+          <span>Loading settings...</span>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">Make.com Integration</h2>
-        <p className="text-muted-foreground">
-          Configure Make.com webhook integration to automatically send lead data to your Make scenarios.
-        </p>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Integration Settings</CardTitle>
-          <CardDescription>
-            Configure when and how lead data is sent to Make.com
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Enable Integration */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="enabled">Enable Integration</Label>
-              <p className="text-sm text-muted-foreground">
-                Turn on Make.com integration
-              </p>
-            </div>
-            <Switch
-              id="enabled"
-              checked={settings.enabled}
-              onCheckedChange={(checked) =>
-                setSettings({ ...settings, enabled: checked })
-              }
-            />
-          </div>
-
-          <Separator />
-
-          {/* Webhook URL */}
-          <div className="space-y-2">
-            <Label htmlFor="webhook-url">Webhook URL</Label>
-            <Input
-              id="webhook-url"
-              type="url"
-              placeholder="https://hook.make.com/..."
-              value={webhookUrl}
-              onChange={(e) => setWebhookUrl(e.target.value)}
-            />
-            <p className="text-sm text-muted-foreground">
-              Your Make.com webhook URL. This will be stored securely.
-            </p>
-          </div>
-
-          <Separator />
-
-          {/* Event Toggles */}
-          <div className="space-y-4">
-            <div>
-              <Label>Automatic Events</Label>
-              <p className="text-sm text-muted-foreground">
-                Choose which events automatically trigger webhooks to Make.com
-              </p>
-            </div>
-            
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="lead-created">Lead Created</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Send webhook when a new lead submits the quiz
-                  </p>
-                </div>
-                <Switch
-                  id="lead-created"
-                  checked={settings.event_toggles.lead_created}
-                  onCheckedChange={(checked) =>
-                    setSettings({
-                      ...settings,
-                      event_toggles: { ...settings.event_toggles, lead_created: checked }
-                    })
-                  }
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="partner-assigned">Partner Assigned</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Send webhook when a lead is assigned to a partner
-                  </p>
-                </div>
-                <Switch
-                  id="partner-assigned"
-                  checked={settings.event_toggles.partner_assigned}
-                  onCheckedChange={(checked) =>
-                    setSettings({
-                      ...settings,
-                      event_toggles: { ...settings.event_toggles, partner_assigned: checked }
-                    })
-                  }
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="application-submitted">Application Submitted</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Send webhook when a lead submits a loan application
-                  </p>
-                </div>
-                <Switch
-                  id="application-submitted"
-                  checked={settings.event_toggles.application_submitted}
-                  onCheckedChange={(checked) =>
-                    setSettings({
-                      ...settings,
-                      event_toggles: { ...settings.event_toggles, application_submitted: checked }
-                    })
-                  }
-                />
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button onClick={saveSettings} disabled={isSaving}>
-              {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Settings
-            </Button>
-            <Button variant="outline" onClick={testConnection} disabled={isTesting || !webhookUrl.trim()}>
-              {isTesting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              <Send className="mr-2 h-4 w-4" />
-              Test Connection
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Recent Activity */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            Recent Activity
-            <Badge variant="outline">{recentLogs.length}</Badge>
+            <ExternalLink className="h-5 w-5" />
+            Make.com Integration
           </CardTitle>
           <CardDescription>
-            Recent Make.com integration attempts
+            Configure Make.com integration to automatically send lead data to your scenarios. 
+            You can customize which fields are sent and when triggers are activated.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {recentLogs.length === 0 ? (
-            <p className="text-muted-foreground text-center py-4">
-              No recent activity. Try sending a test or enable automatic events.
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {recentLogs.map((log) => (
-                <div key={log.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <Badge variant={getStatusBadgeVariant(log.status)}>
-                        {log.status}
-                      </Badge>
-                      <span className="font-medium">{log.event_type}</span>
-                      {log.http_status && (
-                        <span className="text-sm text-muted-foreground">
-                          HTTP {log.http_status}
-                        </span>
-                      )}
-                    </div>
+          <Tabs defaultValue="general" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="general" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                General
+              </TabsTrigger>
+              <TabsTrigger value="fields" className="flex items-center gap-2">
+                <Database className="h-4 w-4" />
+                Field Selection
+              </TabsTrigger>
+              <TabsTrigger value="logs">Activity Logs</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="general" className="space-y-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="make-enabled">Enable Integration</Label>
+                    <Switch
+                      id="make-enabled"
+                      checked={settings.enabled}
+                      onCheckedChange={(enabled) => 
+                        setSettings(prev => ({ ...prev, enabled }))
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="webhook-url">Webhook URL</Label>
+                    <Input
+                      id="webhook-url"
+                      placeholder="https://hook.make.com/..."
+                      value={webhookUrl}
+                      onChange={(e) => setWebhookUrl(e.target.value)}
+                    />
                     <p className="text-sm text-muted-foreground">
-                      {formatDate(log.created_at)} • Lead ID: {log.lead_id.substring(0, 8)}...
+                      Create a webhook in your Make.com scenario and paste the URL here.
                     </p>
-                    {log.error_message && (
-                      <div className="flex items-center gap-1 text-sm text-destructive">
-                        <AlertTriangle className="h-3 w-3" />
-                        {log.error_message}
-                      </div>
-                    )}
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+
+                <div className="space-y-4">
+                  <Label>Event Triggers</Label>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="trigger-lead-created" className="font-normal">
+                        New lead created
+                      </Label>
+                      <Switch
+                        id="trigger-lead-created"
+                        checked={settings.event_toggles.lead_created}
+                        onCheckedChange={(checked) =>
+                          setSettings(prev => ({
+                            ...prev,
+                            event_toggles: { ...prev.event_toggles, lead_created: checked }
+                          }))
+                        }
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="trigger-partner-assigned" className="font-normal">
+                        Partner assigned to lead
+                      </Label>
+                      <Switch
+                        id="trigger-partner-assigned"
+                        checked={settings.event_toggles.partner_assigned}
+                        onCheckedChange={(checked) =>
+                          setSettings(prev => ({
+                            ...prev,
+                            event_toggles: { ...prev.event_toggles, partner_assigned: checked }
+                          }))
+                        }
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="trigger-application-submitted" className="font-normal">
+                        Application submitted
+                      </Label>
+                      <Switch
+                        id="trigger-application-submitted"
+                        checked={settings.event_toggles.application_submitted}
+                        onCheckedChange={(checked) =>
+                          setSettings(prev => ({
+                            ...prev,
+                            event_toggles: { ...prev.event_toggles, application_submitted: checked }
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="flex gap-2">
+                <Button 
+                  onClick={saveSettings} 
+                  disabled={isSaving}
+                  className="flex items-center gap-2"
+                >
+                  {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  Save Settings
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  onClick={testConnection} 
+                  disabled={isTesting || !webhookUrl.trim()}
+                  className="flex items-center gap-2"
+                >
+                  {isTesting ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
+                  Test Connection
+                </Button>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="fields" className="space-y-4 mt-4">
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  Select which fields to include in the payload sent to Make.com. Only selected fields will be visible to your clients.
+                </AlertDescription>
+              </Alert>
+
+              {renderFieldSection("Lead Information", "lead_fields", LEAD_FIELD_LABELS)}
+              {renderFieldSection("Partner Information", "partner_fields", PARTNER_FIELD_LABELS)}
+              {renderFieldSection("Application Data", "application_fields", APPLICATION_FIELD_LABELS)}
+              {renderFieldSection("System Metadata", "metadata_fields", METADATA_FIELD_LABELS)}
+
+              <div className="flex gap-2 pt-4">
+                <Button 
+                  onClick={saveSettings} 
+                  disabled={isSaving}
+                  className="flex items-center gap-2"
+                >
+                  {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  Save Field Settings
+                </Button>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="logs" className="space-y-4 mt-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Recent Activity</h3>
+                <Button variant="outline" size="sm" onClick={loadRecentLogs}>
+                  Refresh
+                </Button>
+              </div>
+
+              {recentLogs.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No Make.com integration attempts found.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {recentLogs.map((log) => (
+                    <Card key={log.id} className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Badge variant={getStatusBadgeVariant(log.status)}>
+                            {log.status}
+                          </Badge>
+                          <span className="font-medium">{log.event_type}</span>
+                          {log.http_status && (
+                            <span className="text-sm text-muted-foreground">
+                              HTTP {log.http_status}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          {formatDate(log.created_at)}
+                        </span>
+                      </div>
+                      
+                      <div className="mt-2 text-sm text-muted-foreground">
+                        Lead ID: {log.lead_id.substring(0, 8)}...
+                      </div>
+                      
+                      {log.error_message && (
+                        <div className="mt-2 text-sm text-red-600">
+                          ⚠️ {log.error_message}
+                        </div>
+                      )}
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 
-      {/* Info Alert */}
-      <Alert>
-        <ExternalLink className="h-4 w-4" />
-        <AlertDescription>
-          To set up the integration, create a webhook in your Make.com scenario and paste the URL above. 
-          The webhook will receive JSON payloads with lead data, partner information, and application details.
-        </AlertDescription>
-      </Alert>
+      <div className="text-sm text-muted-foreground bg-muted p-4 rounded-lg">
+        <p className="font-medium mb-2">Setup Instructions:</p>
+        <ol className="list-decimal list-inside space-y-1">
+          <li>Create a webhook in your Make.com scenario and paste the URL above</li>
+          <li>Configure which fields you want to send in the "Field Selection" tab</li>
+          <li>Enable the integration and select which events should trigger the webhook</li>
+          <li>Test the connection to verify everything is working</li>
+          <li>The webhook will receive JSON payloads with lead data, partner information, and application details</li>
+        </ol>
+      </div>
     </div>
   );
 }

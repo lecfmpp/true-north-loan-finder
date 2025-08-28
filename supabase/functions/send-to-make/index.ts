@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
     // Check if Make.com integration is enabled
     const { data: settings, error: settingsError } = await supabase
       .from('make_integration_settings')
-      .select('enabled, event_toggles, webhook_url')
+      .select('enabled, event_toggles, webhook_url, field_mappings')
       .single()
 
     if (settingsError) {
@@ -93,67 +93,104 @@ Deno.serve(async (req) => {
       throw new Error('Lead not found')
     }
 
-    // Fetch USA application data
+    // Fetch USA application data with attachments
     const { data: usaApplication } = await supabase
       .from('usa_applications')
-      .select('application_reference_number')
+      .select('application_reference_number, document_files, processing_statements')
       .eq('quiz_response_id', leadId)
       .single()
 
-    // Fetch Canadian application data
+    // Fetch Canadian application data with attachments
     const { data: canadianApplication } = await supabase
       .from('canadian_applications')
-      .select('application_reference_number')
+      .select('application_reference_number, document_files, processing_statements')
       .eq('quiz_response_id', leadId)
       .single()
 
-    // Build Make.com payload
-    const payload = overridePayload || {
-      event_type: eventType,
-      idempotency_key: `${leadId}:${eventType}:${new Date().getTime()}`,
-      lead: {
-        id: lead.id,
-        created_at: lead.created_at,
-        name: lead.name,
-        email: lead.email,
-        phone: lead.phone,
-        company_name: lead.company_name,
-        monthly_revenue: lead.monthly_revenue,
-        loan_amount: lead.loan_amount,
-        credit_score: lead.credit_score,
-        time_in_business: lead.time_in_business,
-        use_of_funds: lead.use_of_funds,
-        country: lead.country,
-        city_province: lead.city_province,
-        website: lead.website,
-        attribution_channel: lead.attribution_channel,
-        attribution_url: lead.attribution_url,
-        bank_account_type: lead.bank_account_type,
-        homeowner_status: lead.homeowner_status,
-        score: lead.score,
-        status: lead.status,
-        conversion_status: lead.conversion_status
-      },
-      partner: lead.lead_assignments?.[0]?.partners ? {
-        id: lead.lead_assignments[0].partners.id,
-        name: lead.lead_assignments[0].partners.name,
-        email: lead.lead_assignments[0].partners.email,
-        company_name: lead.lead_assignments[0].partners.company_name
-      } : null,
-      applications: {
-        usa: {
-          exists: !!usaApplication,
-          reference: usaApplication?.application_reference_number || null
-        },
-        canadian: {
-          exists: !!canadianApplication,
-          reference: canadianApplication?.application_reference_number || null
+    // Get field mappings from settings
+    const fieldMappings = settings.field_mappings || {}
+    const leadFields = fieldMappings.lead_fields || {}
+    const partnerFields = fieldMappings.partner_fields || {}
+    const applicationFields = fieldMappings.application_fields || {}
+    const metadataFields = fieldMappings.metadata_fields || {}
+
+    // Helper function to filter object by field mappings
+    const filterFields = (obj: any, mappings: Record<string, boolean>) => {
+      const filtered: any = {}
+      Object.keys(mappings).forEach(key => {
+        if (mappings[key] && obj[key] !== undefined) {
+          filtered[key] = obj[key]
         }
-      },
-      metadata: {
+      })
+      return filtered
+    }
+
+    // Build Make.com payload with selective field inclusion
+    let payload = overridePayload
+
+    if (!overridePayload) {
+      // Build filtered lead data
+      const filteredLead = filterFields(lead, leadFields)
+
+      // Build filtered partner data
+      let filteredPartner = null
+      if (lead.lead_assignments?.[0]?.partners) {
+        filteredPartner = filterFields(lead.lead_assignments[0].partners, partnerFields)
+      }
+
+      // Build application data with attachments if enabled
+      const applications: any = {}
+      
+      if (applicationFields.usa_reference || applicationFields.include_attachments) {
+        applications.usa = {
+          exists: !!usaApplication
+        }
+        
+        if (applicationFields.usa_reference) {
+          applications.usa.reference = usaApplication?.application_reference_number || null
+        }
+        
+        if (applicationFields.include_attachments && usaApplication) {
+          applications.usa.attachments = {
+            document_files: usaApplication.document_files || [],
+            processing_statements: usaApplication.processing_statements || []
+          }
+        }
+      }
+      
+      if (applicationFields.canadian_reference || applicationFields.include_attachments) {
+        applications.canadian = {
+          exists: !!canadianApplication
+        }
+        
+        if (applicationFields.canadian_reference) {
+          applications.canadian.reference = canadianApplication?.application_reference_number || null
+        }
+        
+        if (applicationFields.include_attachments && canadianApplication) {
+          applications.canadian.attachments = {
+            document_files: canadianApplication.document_files || [],
+            processing_statements: canadianApplication.processing_statements || []
+          }
+        }
+      }
+
+      // Build filtered metadata
+      const potentialMetadata = {
         triggered_by_user_id: user.id,
         triggered_by_email: user.email,
         triggered_at: new Date().toISOString()
+      }
+      const filteredMetadata = filterFields(potentialMetadata, metadataFields)
+
+      // Construct final payload
+      payload = {
+        event_type: eventType,
+        idempotency_key: `${leadId}:${eventType}:${new Date().getTime()}`,
+        lead: filteredLead,
+        partner: filteredPartner,
+        applications,
+        metadata: filteredMetadata
       }
     }
 

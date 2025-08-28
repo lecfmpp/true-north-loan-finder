@@ -1786,6 +1786,7 @@ export type Database = {
           created_by: string | null
           enabled: boolean
           event_toggles: Json
+          field_mappings: Json | null
           id: string
           updated_at: string
           webhook_url: string | null
@@ -1795,6 +1796,7 @@ export type Database = {
           created_by?: string | null
           enabled?: boolean
           event_toggles?: Json
+          field_mappings?: Json | null
           id?: string
           updated_at?: string
           webhook_url?: string | null
@@ -1804,6 +1806,7 @@ export type Database = {
           created_by?: string | null
           enabled?: boolean
           event_toggles?: Json
+          field_mappings?: Json | null
           id?: string
           updated_at?: string
           webhook_url?: string | null

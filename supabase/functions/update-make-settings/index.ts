@@ -12,6 +12,12 @@ interface UpdateSettingsRequest {
     partner_assigned: boolean
     application_submitted: boolean
   }
+  fieldMappings?: {
+    lead_fields: Record<string, boolean>
+    partner_fields: Record<string, boolean>
+    application_fields: Record<string, boolean>
+    metadata_fields: Record<string, boolean>
+  }
 }
 
 Deno.serve(async (req) => {
@@ -47,7 +53,7 @@ Deno.serve(async (req) => {
       )
     }
 
-    const { enabled, webhookUrl, eventToggles }: UpdateSettingsRequest = await req.json()
+    const { enabled, webhookUrl, eventToggles, fieldMappings }: UpdateSettingsRequest = await req.json()
 
     // Update settings in database
     const { data: existingSettings } = await supabase
@@ -63,6 +69,7 @@ Deno.serve(async (req) => {
         .update({
           enabled,
           event_toggles: eventToggles,
+          field_mappings: fieldMappings,
           webhook_url: webhookUrl,
           updated_at: new Date().toISOString()
         })
@@ -76,6 +83,7 @@ Deno.serve(async (req) => {
         .insert({
           enabled,
           event_toggles: eventToggles,
+          field_mappings: fieldMappings,
           webhook_url: webhookUrl,
           created_by: user.id
         })
