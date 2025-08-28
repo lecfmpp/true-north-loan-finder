@@ -724,12 +724,6 @@ const Quiz = () => {
     try {
       const score = calculateScore();
       
-      // Clear any existing session temporarily for anonymous submission
-      const currentSession = await supabase.auth.getSession();
-      if (currentSession.data.session) {
-        console.log('Clearing session for anonymous quiz submission');
-        await supabase.auth.signOut();
-      }
       
       // Convert founding date to time in business format
       let timeInBusiness = '';

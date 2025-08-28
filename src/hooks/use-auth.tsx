@@ -169,51 +169,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
+    console.log('Signing out...');
     try {
-      console.log('Signing out...');
-      const { error } = await supabase.auth.signOut();
-      
-      // Handle the case where session is already expired/invalid
-      if (error && error.message.includes('Session not found')) {
-        console.log('Session already expired, treating as successful logout');
-      } else if (error) {
-        console.error('Supabase signOut error:', error);
-        toast({
-          title: "Error",
-          description: "Failed to sign out. Please try again.",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      console.log('Successfully signed out from Supabase');
-      
-      // Clear all auth state
-      setProfile(null);
-      setUserRoles([]);
-      setUser(null);
-      setSession(null);
-      
-      // Clear any stored auth data
-      localStorage.removeItem('supabase.auth.token');
-      
-      toast({
-        title: "Signed out",
-        description: "You have been successfully signed out"
-      });
-    } catch (error) {
-      console.error('Signout error:', error);
-      // Even if there's an error, clear the local state as the session is likely invalid
-      setProfile(null);
-      setUserRoles([]);
-      setUser(null);
-      setSession(null);
-      
-      toast({
-        title: "Signed out",
-        description: "You have been signed out"
-      });
+      // Try to sign out, but treat any error as non-fatal (session may already be gone)
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.warn('Supabase signOut warning (ignored):', err);
     }
+
+    // Clear all auth state regardless of Supabase response
+    setProfile(null);
+    setUserRoles([]);
+    setUser(null);
+    setSession(null);
+
+    // Clear stored auth tokens (both legacy and v2 keys)
+    try {
+      localStorage.removeItem('supabase.auth.token');
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith('sb-') && k.endsWith('-auth-token'))
+        .forEach((k) => localStorage.removeItem(k));
+    } catch {}
+
+    toast({
+      title: 'Signed out',
+      description: 'You have been successfully signed out'
+    });
   };
 
   // Use new role system for authorization checks
