@@ -285,17 +285,27 @@ export default function ROIManagement() {
   };
 
   const processImageWithOCR = async (file: File): Promise<string> => {
-    // Use hosted worker/core files to satisfy CSP (no blob/data URLs)
-    const worker = await (createWorker as any)('eng', {
-      workerPath: '/tesseract/worker.min.js',
-      corePath: '/tesseract/tesseract-core.wasm.js',
-      logger: () => {},
-    });
+    console.log('Starting OCR process for file:', file.name, file.type);
+    
     try {
+      // Use hosted worker/core files to satisfy CSP (no blob/data URLs)
+      console.log('Creating worker with custom paths...');
+      const worker = await (createWorker as any)('eng', {
+        workerPath: '/tesseract/worker.min.js',
+        corePath: '/tesseract/tesseract-core.wasm.js',
+        logger: (m: any) => console.log('Tesseract:', m),
+      });
+      
+      console.log('Worker created successfully, starting recognition...');
       const ret = await worker.recognize(file);
-      return ret.data.text;
-    } finally {
+      console.log('OCR completed, text length:', ret.data.text.length);
+      console.log('OCR text preview:', ret.data.text.substring(0, 200));
+      
       await worker.terminate();
+      return ret.data.text;
+    } catch (error) {
+      console.error('OCR Error details:', error);
+      throw error;
     }
   };
 
@@ -341,7 +351,13 @@ export default function ROIManagement() {
   };
 
   const handleImageChannelSelection = async () => {
+    console.log('handleImageChannelSelection called with:', { 
+      pendingImageFile: pendingImageFile?.name, 
+      selectedChannel 
+    });
+    
     if (!pendingImageFile || !selectedChannel) {
+      console.error('Missing required data:', { pendingImageFile: !!pendingImageFile, selectedChannel });
       toast({
         title: "Error",
         description: "Please select a channel",
@@ -357,10 +373,14 @@ export default function ROIManagement() {
     try {
       setImageProgress({ current: 20, total: 100, stage: 'Extracting text with OCR...' });
       
+      console.log('Starting OCR process...');
       const ocrText = await processImageWithOCR(pendingImageFile);
+      console.log('OCR completed, parsing data...');
+      
       setImageProgress({ current: 60, total: 100, stage: 'Parsing tabular data...' });
       
       const csvContent = parseOCRTextToCSV(ocrText);
+      console.log('CSV parsing completed, lines:', csvContent.split('\n').length);
       
       if (!csvContent || csvContent.split('\n').length < 2) {
         throw new Error('No tabular data found in image. Please ensure the image contains a clear data table.');
@@ -371,11 +391,15 @@ export default function ROIManagement() {
       const lines = csvContent.split('\n').filter(line => line.trim());
       const rowCount = lines.length - 1;
       
+      console.log('Calling AI parse function with', rowCount, 'rows');
       const { data, error } = await supabase.functions.invoke('ai-parse-csv', {
         body: { csvContent, batchSize: rowCount > 1000 ? 100 : 50, defaultChannel: selectedChannel }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
 
       setImageProgress({ current: 90, total: 100, stage: 'Finalizing import...' });
 
@@ -394,6 +418,7 @@ export default function ROIManagement() {
           fetchROIData();
         }, 1000);
       } else {
+        console.error('Import failed:', data);
         throw new Error(data.error || 'Import failed');
       }
     } catch (error) {
