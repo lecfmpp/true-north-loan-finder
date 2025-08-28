@@ -519,70 +519,65 @@ const LeadPriceCalculator = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center space-x-4">
-              <div className="flex-1">
-                <label className="text-sm font-medium mb-2 block">
-                  Desired Profit Margin (%)
-                </label>
-                <Input
-                  type="number"
-                  min="0"
-                  max="1000"
-                  value={profitMargin}
-                  onChange={(e) => setProfitMargin(Number(e.target.value))}
-                  placeholder="Enter profit margin percentage"
-                  className="w-full"
-                />
-              </div>
-            </div>
-
-            {leadStats.costPerLead > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                <div className="text-center p-4 bg-muted rounded-lg">
-                  <h3 className="text-lg font-semibold text-muted-foreground">Cost Per Lead</h3>
-                  <p className="text-2xl font-bold text-orange-600">
-                    ${(leadStats.costPerLead / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                  </p>
-                </div>
-                
-                <div className="text-center p-4 bg-muted rounded-lg">
-                  <h3 className="text-lg font-semibold text-muted-foreground">Profit Amount</h3>
-                  <p className="text-2xl font-bold text-green-600">
-                    ${((leadStats.costPerLead * profitMargin / 100) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">{profitMargin}% margin</p>
-                </div>
-                
-                <div className="text-center p-4 bg-primary/10 border-2 border-primary/20 rounded-lg">
-                  <h3 className="text-lg font-semibold text-primary">Final Selling Price</h3>
-                  <p className="text-3xl font-bold text-primary">
-                    ${((leadStats.costPerLead * (1 + profitMargin / 100)) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">Cost + {profitMargin}% profit</p>
-                </div>
-              </div>
-            )}
-
-            {leadStats.costPerLead > 0 && (
-              <div className="mt-6 p-4 bg-green-50 dark:bg-green-950 rounded-lg">
-                <h4 className="font-semibold text-green-900 dark:text-green-100 mb-2">
-                  Pricing Summary
-                </h4>
-                <p className="text-sm text-green-800 dark:text-green-200">
-                  With a {profitMargin}% profit margin, you should charge <strong>${((leadStats.costPerLead * (1 + profitMargin / 100)) / 100).toFixed(2)}</strong> per lead.
-                  This gives you a profit of <strong>${((leadStats.costPerLead * profitMargin / 100) / 100).toFixed(2)}</strong> per lead
-                  on top of your cost of <strong>${(leadStats.costPerLead / 100).toFixed(2)}</strong>.
+          {leadStats.costPerLead > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="text-center p-4 bg-muted rounded-lg">
+                <h3 className="text-lg font-semibold text-muted-foreground">Cost Per Lead</h3>
+                <p className="text-3xl font-bold text-orange-600">
+                  ${(leadStats.costPerLead / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </p>
               </div>
-            )}
-
-            {leadStats.costPerLead === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
+              
+              <div className="text-center p-4 bg-muted rounded-lg">
+                <h3 className="text-lg font-semibold text-muted-foreground">Profit Margin</h3>
+                <div className="flex items-center justify-center mt-2">
+                  <Input
+                    type="number"
+                    min="0"
+                    max="1000"
+                    value={profitMargin}
+                    onChange={(e) => setProfitMargin(Number(e.target.value))}
+                    className="w-20 text-center text-2xl font-bold border-0 bg-transparent p-0 h-auto focus:ring-0"
+                  />
+                  <span className="text-2xl font-bold text-blue-600 ml-1">%</span>
+                </div>
+              </div>
+              
+              <div className="text-center p-4 bg-muted rounded-lg">
+                <h3 className="text-lg font-semibold text-muted-foreground">Profit Amount</h3>
+                <p className="text-3xl font-bold text-green-600">
+                  ${((leadStats.costPerLead * profitMargin / 100) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </p>
+              </div>
+              
+              <div className="text-center p-4 bg-primary/10 border-2 border-primary/20 rounded-lg">
+                <h3 className="text-lg font-semibold text-primary">Final Selling Price</h3>
+                <p className="text-3xl font-bold text-primary">
+                  ${((leadStats.costPerLead * (1 + profitMargin / 100)) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <div className="text-muted-foreground">
+                <Percent className="h-12 w-12 mx-auto mb-2 opacity-50" />
                 <p>Select criteria above to calculate pricing with profit margin</p>
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
+          {leadStats.costPerLead > 0 && (
+            <div className="mt-6 p-4 bg-green-50 dark:bg-green-950 rounded-lg">
+              <h4 className="font-semibold text-green-900 dark:text-green-100 mb-2">
+                Pricing Recommendation
+              </h4>
+              <p className="text-sm text-green-800 dark:text-green-200">
+                With a {profitMargin}% profit margin, charge <strong>${((leadStats.costPerLead * (1 + profitMargin / 100)) / 100).toFixed(2)}</strong> per lead.
+                This gives you <strong>${((leadStats.costPerLead * profitMargin / 100) / 100).toFixed(2)}</strong> profit
+                on top of your <strong>${(leadStats.costPerLead / 100).toFixed(2)}</strong> cost.
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
