@@ -153,11 +153,11 @@ const LeadPriceCalculator = () => {
 
       if (criteria.applicationSubmitted) {
         if (criteria.applicationSubmitted === 'yes') {
-          // Filter for leads that have submitted applications (exist in usa_applications or canadian_applications)
-          query = query.or('id.in.(select quiz_response_id from usa_applications), id.in.(select quiz_response_id from canadian_applications)');
+          // Leads that submitted an application (USA or Canadian)
+          query = query.eq('conversion_status', 'application_sent');
         } else if (criteria.applicationSubmitted === 'no') {
-          // Filter for leads that have NOT submitted applications
-          query = query.not('id', 'in', '(select quiz_response_id from usa_applications union select quiz_response_id from canadian_applications)');
+          // Leads without an application submitted
+          query = query.neq('conversion_status', 'application_sent');
         }
       }
 
