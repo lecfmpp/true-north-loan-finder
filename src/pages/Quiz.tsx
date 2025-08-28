@@ -383,7 +383,7 @@ const Quiz = () => {
     }));
   }, []);
 
-  const totalSteps = 6;
+  const totalSteps = 7;
   const progress = (currentStep / totalSteps) * 100;
 
   const useOfFundsOptions = [
@@ -1398,8 +1398,101 @@ const Quiz = () => {
                 </div>
               )}
 
-              {/* Step 6: Contact Information */}
+              {/* Step 6: Bank Account Type */}
               {currentStep === 6 && (
+                <div className="space-y-5 md:space-y-8 animate-fade-in">
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-3 mb-2 md:mb-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-green-500 rounded-full flex items-center justify-center">
+                        <Building className="h-4 sm:h-5 md:h-6 w-4 sm:w-5 md:w-6 text-white" />
+                      </div>
+                      <h3 className="text-lg sm:text-xl md:text-2xl font-bold font-sans text-primary leading-tight">
+                        What type of bank account do you use for your business?
+                      </h3>
+                    </div>
+                    <p className="text-sm sm:text-base md:text-lg text-muted-foreground font-serif">
+                      This helps us understand your banking setup for funding options
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 gap-4 max-w-lg mx-auto">
+                    <label
+                      className={`p-4 md:p-6 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md ${
+                        quizData.bankAccountType === "business"
+                          ? "border-primary bg-primary/5 shadow-md"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="bankAccountType"
+                        value="business"
+                        checked={quizData.bankAccountType === "business"}
+                        onChange={(e) => setQuizData({...quizData, bankAccountType: e.target.value})}
+                        className="sr-only"
+                      />
+                      <div className="flex items-center space-x-4">
+                        <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
+                          quizData.bankAccountType === "business"
+                            ? "border-primary bg-primary"
+                            : "border-muted-foreground"
+                        }`}>
+                          {quizData.bankAccountType === "business" && (
+                            <div className="w-2.5 h-2.5 bg-white rounded-full" />
+                          )}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-foreground text-base md:text-lg">
+                            Business Bank Account
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            Separate account for business transactions
+                          </div>
+                        </div>
+                      </div>
+                    </label>
+
+                    <label
+                      className={`p-4 md:p-6 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md ${
+                        quizData.bankAccountType === "personal"
+                          ? "border-primary bg-primary/5 shadow-md"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="bankAccountType"
+                        value="personal"
+                        checked={quizData.bankAccountType === "personal"}
+                        onChange={(e) => setQuizData({...quizData, bankAccountType: e.target.value})}
+                        className="sr-only"
+                      />
+                      <div className="flex items-center space-x-4">
+                        <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
+                          quizData.bankAccountType === "personal"
+                            ? "border-primary bg-primary"
+                            : "border-muted-foreground"
+                        }`}>
+                          {quizData.bankAccountType === "personal" && (
+                            <div className="w-2.5 h-2.5 bg-white rounded-full" />
+                          )}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-foreground text-base md:text-lg">
+                            Personal Bank Account
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            Using personal account for business needs
+                          </div>
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 7: Contact Information */}
+              {currentStep === 7 && (
                 <div className="space-y-5 md:space-y-8 animate-fade-in">
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-3 mb-2 md:mb-3">
@@ -1550,20 +1643,6 @@ const Quiz = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="bankAccountType" className="text-base md:text-lg font-medium">What type of bank account do you use? *</Label>
-                      <select
-                        id="bankAccountType"
-                        value={quizData.bankAccountType}
-                        onChange={(e) => setQuizData({...quizData, bankAccountType: e.target.value})}
-                        className="mt-1 md:mt-2 text-base md:text-lg py-2 md:py-3 w-full rounded-md border border-input bg-background px-3 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                        required
-                      >
-                        <option value="">Select account type</option>
-                        <option value="business">Business Bank Account</option>
-                        <option value="personal">Personal Bank Account</option>
-                      </select>
-                    </div>
-                    <div>
                       <Label htmlFor="website" className="text-base md:text-lg font-medium">Website (Optional)</Label>
                       <Input
                         id="website"
@@ -1597,8 +1676,8 @@ const Quiz = () => {
                 </div>
               )}
 
-              {/* Navigation - Show Next button only for steps 1, 3, 4, and 6 */}
-              {(currentStep === 1 || currentStep === 3 || currentStep === 4 || currentStep === 6) && (
+              {/* Navigation - Show Next button only for steps 1, 3, 4, 6, and 7 */}
+              {(currentStep === 1 || currentStep === 3 || currentStep === 4 || currentStep === 6 || currentStep === 7) && (
                 <div className="flex justify-between mt-6 md:mt-8 pt-4 md:pt-6 border-t">
                   <Button
                     variant="outline"
