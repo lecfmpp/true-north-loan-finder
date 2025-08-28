@@ -2641,15 +2641,6 @@ export type Database = {
         Args: { phone_number: string }
         Returns: boolean
       }
-      validate_sensitive_field_access: {
-        Args: {
-          p_record_id: string
-          p_record_owner_id: string
-          p_table_name: string
-          p_user_id: string
-        }
-        Returns: boolean
-      }
     }
     Enums: {
       app_role: "superadmin" | "lender" | "broker" | "user" | "client"
