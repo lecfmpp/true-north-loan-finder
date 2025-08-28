@@ -121,7 +121,7 @@ const LeadTierAnalytics = () => {
       const { data: leads, error } = await query;
       if (error) throw error;
 
-      // Get real ad spend data (same as ROI Management)
+      // Get real ad spend data (same as ROI Management) - filtered by date range
       const { data: adSpend, error: spendError } = await supabase
         .from('ad_spend_records')
         .select('amount, date, channel, clicks, conversions')
@@ -129,6 +129,10 @@ const LeadTierAnalytics = () => {
         .lte('date', new Date().toISOString().split('T')[0]);
 
       if (spendError) throw spendError;
+
+      // Debug: Log the date range and ad spend records
+      console.log('Date range:', startDate.toISOString().split('T')[0], 'to', new Date().toISOString().split('T')[0]);
+      console.log('Filtered ad spend records:', adSpend?.length || 0);
 
       // Use the ROI metrics we fetched (same as ROI Management)
       const roiData = roiMetrics?.[0] || {
@@ -138,8 +142,16 @@ const LeadTierAnalytics = () => {
         funded_leads: 0
       };
       
-      // Convert ad spend from cents to dollars (same as ROI Management)
-      const totalSpend = (adSpend || []).reduce((sum, record) => sum + (record.amount / 100), 0);
+      // Convert ad spend from cents to dollars - ONLY from date-filtered records
+      const totalSpend = (adSpend || []).reduce((sum, record) => {
+        // Double-check date filtering in case there are edge cases
+        const recordDate = record.date;
+        const isInRange = recordDate >= startDate.toISOString().split('T')[0] && 
+                         recordDate <= new Date().toISOString().split('T')[0];
+        return isInRange ? sum + (record.amount / 100) : sum;
+      }, 0);
+      
+      console.log('Total spend for date range:', totalSpend);
       const totalLeads = roiData.total_leads || 0;
       const qualifiedLeads = roiData.qualified_leads || 0;
       const applicationLeads = roiData.application_leads || 0;
