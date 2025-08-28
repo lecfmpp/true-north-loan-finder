@@ -293,7 +293,6 @@ export default function ROIManagement() {
       const worker = await (createWorker as any)('eng', {
         workerPath: '/tesseract/worker.min.js',
         corePath: '/tesseract/tesseract-core.wasm.js',
-        logger: (m: any) => console.log('Tesseract:', m),
       });
       
       console.log('Worker created successfully, starting recognition...');
