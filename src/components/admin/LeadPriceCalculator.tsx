@@ -103,10 +103,8 @@ const LeadPriceCalculator = () => {
 
   // Fetch lead stats based on criteria
   const fetchLeadStats = async (criteria: ScoringCriteria) => {
-    if (!criteria.monthlyRevenue && !criteria.businessAge && !criteria.creditScore) {
-      setLeadStats({ totalLeads: 0, totalCost: 0, costPerLead: 0 });
-      return;
-    }
+    // Show all leads if no criteria selected
+    const hasAnyCriteria = criteria.monthlyRevenue || criteria.businessAge || criteria.creditScore;
 
     setLoading(true);
     try {
@@ -249,6 +247,9 @@ const LeadPriceCalculator = () => {
                   <SelectValue placeholder="Select monthly revenue range" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="">
+                    <span className="text-muted-foreground">No filter (ignore this criteria)</span>
+                  </SelectItem>
                   {monthlyRevenueOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       <div className="flex justify-between items-center w-full">
@@ -276,6 +277,9 @@ const LeadPriceCalculator = () => {
                   <SelectValue placeholder="Select business age" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="">
+                    <span className="text-muted-foreground">No filter (ignore this criteria)</span>
+                  </SelectItem>
                   {businessAgeOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       <div className="flex justify-between items-center w-full">
@@ -303,6 +307,9 @@ const LeadPriceCalculator = () => {
                   <SelectValue placeholder="Select credit score range" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="">
+                    <span className="text-muted-foreground">No filter (ignore this criteria)</span>
+                  </SelectItem>
                   {creditScoreOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       <div className="flex justify-between items-center w-full">
@@ -364,19 +371,30 @@ const LeadPriceCalculator = () => {
               </div>
             )}
 
-            <div className="border-t pt-4">
-              <div className="flex justify-between items-center">
-                <span className="font-medium">Total Score:</span>
-                <div className="text-right">
-                  <span className={`text-2xl font-bold ${getScoreColor(scoreBreakdown.total)}`}>
-                    {scoreBreakdown.total}/100
-                  </span>
-                  <p className="text-sm text-muted-foreground">
-                    {getScoreTier(scoreBreakdown.total)}
-                  </p>
+            {(scoreBreakdown.monthlyRevenue.label || scoreBreakdown.businessAge.label || scoreBreakdown.creditScore.label) && (
+              <div className="border-t pt-4">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium">Total Score:</span>
+                  <div className="text-right">
+                    <span className={`text-2xl font-bold ${getScoreColor(scoreBreakdown.total)}`}>
+                      {scoreBreakdown.total}
+                      <span className="text-base text-muted-foreground">
+                        /{(() => {
+                          let maxScore = 0;
+                          if (selectedCriteria.monthlyRevenue) maxScore += 40;
+                          if (selectedCriteria.businessAge) maxScore += 35;
+                          if (selectedCriteria.creditScore) maxScore += 25;
+                          return maxScore || 100;
+                        })()}
+                      </span>
+                    </span>
+                    <p className="text-sm text-muted-foreground">
+                      {getScoreTier(scoreBreakdown.total)}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -418,14 +436,14 @@ const LeadPriceCalculator = () => {
             </div>
           )}
 
-          {scoreBreakdown.total > 0 && (
+          {(selectedCriteria.monthlyRevenue || selectedCriteria.businessAge || selectedCriteria.creditScore) && leadStats.totalLeads > 0 && (
             <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
               <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
                 Pricing Recommendation
               </h4>
               <p className="text-sm text-blue-800 dark:text-blue-200">
-                Based on the selected criteria with a score of {scoreBreakdown.total}/100 ({getScoreTier(scoreBreakdown.total)}), 
-                this lead profile represents {leadStats.totalLeads > 0 ? `${((leadStats.totalLeads / leadStats.totalLeads) * 100).toFixed(1)}%` : '0%'} of your total leads 
+                Based on the selected criteria{scoreBreakdown.total > 0 ? ` with a score of ${scoreBreakdown.total} points (${getScoreTier(scoreBreakdown.total)})` : ''}, 
+                this lead profile matches {leadStats.totalLeads.toLocaleString()} leads 
                 with an average cost of ${(leadStats.costPerLead / 100).toFixed(2)} per lead.
               </p>
             </div>
