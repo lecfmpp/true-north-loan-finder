@@ -293,8 +293,16 @@ const LeadPriceCalculator = () => {
     }
   };
 
+  // Handle score tier filter change
+  const handleScoreTierChange = (tier: string) => {
+    if (isProfileBuilderActive) return; // Don't allow if profile builder is active
+    setScoreTierFilter(tier);
+    fetchLeadStats(selectedCriteria);
+  };
+
   // Handle criteria change
   const handleCriteriaChange = (field: keyof ScoringCriteria, value: string) => {
+    if (isScoreTierFilterActive) return; // Don't allow if score tier filter is active
     const processedValue = value === 'none' ? '' : value;
     const newCriteria = { ...selectedCriteria, [field]: processedValue };
     setSelectedCriteria(newCriteria);
@@ -302,11 +310,11 @@ const LeadPriceCalculator = () => {
     fetchLeadStats(newCriteria);
   };
 
-  // Handle score tier filter change
-  const handleScoreTierChange = (tier: string) => {
-    setScoreTierFilter(tier);
-    fetchLeadStats(selectedCriteria);
-  };
+  // Check if profile builder has any active filters
+  const isProfileBuilderActive = Boolean(selectedCriteria.monthlyRevenue || selectedCriteria.businessAge || selectedCriteria.creditScore || selectedCriteria.country || selectedCriteria.applicationSubmitted || selectedCriteria.homeownerStatus || selectedCriteria.bankAccountType || selectedCriteria.useOfFunds);
+  
+  // Check if score tier filter is active
+  const isScoreTierFilterActive = scoreTierFilter !== 'all';
 
   // Reset filters
   const resetFilters = () => {
@@ -404,33 +412,50 @@ const LeadPriceCalculator = () => {
       </div>
 
       {/* High-Level Score Tier Filter */}
-      <Card>
+      <Card className={cn(isProfileBuilderActive && "opacity-50")}>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <TrendingUp className="h-5 w-5" />
             <span>Quick Score Filter</span>
+            {isProfileBuilderActive && (
+              <Badge variant="secondary" className="ml-2 text-xs">Disabled</Badge>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {isProfileBuilderActive && (
+            <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-950 rounded-lg border border-amber-200 dark:border-amber-800">
+              <p className="text-sm text-amber-800 dark:text-amber-200">
+                <AlertCircle className="h-4 w-4 inline mr-1" />
+                Quick Score Filter is disabled while using Lead Profile Builder. Reset filters to use this section.
+              </p>
+            </div>
+          )}
           <div className="flex flex-wrap gap-3">
             {scoreTierOptions.map((option) => (
               <button
                 key={option.value}
                 onClick={() => handleScoreTierChange(option.value)}
+                disabled={isProfileBuilderActive}
                 className={cn(
-                  "px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all duration-200 cursor-pointer",
-                  option.color,
-                  option.hoverColor,
-                  scoreTierFilter === option.value 
-                    ? "ring-2 ring-primary ring-offset-2 scale-105 shadow-lg" 
-                    : "shadow-sm hover:shadow-md"
+                  "px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all duration-200",
+                  isProfileBuilderActive 
+                    ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed" 
+                    : cn(
+                        option.color,
+                        option.hoverColor,
+                        "cursor-pointer",
+                        scoreTierFilter === option.value 
+                          ? "ring-2 ring-primary ring-offset-2 scale-105 shadow-lg" 
+                          : "shadow-sm hover:shadow-md"
+                      )
                 )}
               >
                 {option.label}
               </button>
             ))}
           </div>
-          {scoreTierFilter !== 'all' && (
+          {scoreTierFilter !== 'all' && !isProfileBuilderActive && (
             <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
               <p className="text-sm text-blue-800 dark:text-blue-200">
                 Currently filtering by: <strong>{scoreTierOptions.find(opt => opt.value === scoreTierFilter)?.label}</strong>
@@ -442,11 +467,24 @@ const LeadPriceCalculator = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Criteria Selection */}
-        <Card>
+        <Card className={cn(isScoreTierFilterActive && "opacity-50")}>
           <CardHeader>
-            <CardTitle>Lead Profile Builder</CardTitle>
+            <CardTitle className="flex items-center space-x-2">
+              <span>Lead Profile Builder</span>
+              {isScoreTierFilterActive && (
+                <Badge variant="secondary" className="ml-2 text-xs">Disabled</Badge>
+              )}
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {isScoreTierFilterActive && (
+              <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-950 rounded-lg border border-amber-200 dark:border-amber-800">
+                <p className="text-sm text-amber-800 dark:text-amber-200">
+                  <AlertCircle className="h-4 w-4 inline mr-1" />
+                  Lead Profile Builder is disabled while using Quick Score Filter. Reset filters to use this section.
+                </p>
+              </div>
+            )}
             {/* Monthly Revenue */}
             <div>
               <label className="text-sm font-medium mb-2 block">
@@ -455,8 +493,9 @@ const LeadPriceCalculator = () => {
               <Select
                 value={selectedCriteria.monthlyRevenue || 'none'}
                 onValueChange={(value) => handleCriteriaChange('monthlyRevenue', value)}
+                disabled={isScoreTierFilterActive}
               >
-                <SelectTrigger>
+                <SelectTrigger className={cn(isScoreTierFilterActive && "opacity-50 cursor-not-allowed")}>
                   <SelectValue placeholder="Select monthly revenue range" />
                 </SelectTrigger>
                 <SelectContent>
@@ -485,8 +524,9 @@ const LeadPriceCalculator = () => {
               <Select
                 value={selectedCriteria.businessAge || 'none'}
                 onValueChange={(value) => handleCriteriaChange('businessAge', value)}
+                disabled={isScoreTierFilterActive}
               >
-                <SelectTrigger>
+                <SelectTrigger className={cn(isScoreTierFilterActive && "opacity-50 cursor-not-allowed")}>
                   <SelectValue placeholder="Select business age" />
                 </SelectTrigger>
                 <SelectContent>
@@ -515,8 +555,9 @@ const LeadPriceCalculator = () => {
               <Select
                 value={selectedCriteria.creditScore || 'none'}
                 onValueChange={(value) => handleCriteriaChange('creditScore', value)}
+                disabled={isScoreTierFilterActive}
               >
-                <SelectTrigger>
+                <SelectTrigger className={cn(isScoreTierFilterActive && "opacity-50 cursor-not-allowed")}>
                   <SelectValue placeholder="Select credit score range" />
                 </SelectTrigger>
                 <SelectContent>
@@ -545,8 +586,9 @@ const LeadPriceCalculator = () => {
               <Select
                 value={selectedCriteria.country || 'none'}
                 onValueChange={(value) => handleCriteriaChange('country', value)}
+                disabled={isScoreTierFilterActive}
               >
-                <SelectTrigger>
+                <SelectTrigger className={cn(isScoreTierFilterActive && "opacity-50 cursor-not-allowed")}>
                   <SelectValue placeholder="Select country" />
                 </SelectTrigger>
                 <SelectContent>
@@ -570,8 +612,9 @@ const LeadPriceCalculator = () => {
               <Select
                 value={selectedCriteria.applicationSubmitted || 'none'}
                 onValueChange={(value) => handleCriteriaChange('applicationSubmitted', value)}
+                disabled={isScoreTierFilterActive}
               >
-                <SelectTrigger>
+                <SelectTrigger className={cn(isScoreTierFilterActive && "opacity-50 cursor-not-allowed")}>
                   <SelectValue placeholder="Select application status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -595,8 +638,9 @@ const LeadPriceCalculator = () => {
               <Select
                 value={selectedCriteria.homeownerStatus || 'none'}
                 onValueChange={(value) => handleCriteriaChange('homeownerStatus', value)}
+                disabled={isScoreTierFilterActive}
               >
-                <SelectTrigger>
+                <SelectTrigger className={cn(isScoreTierFilterActive && "opacity-50 cursor-not-allowed")}>
                   <SelectValue placeholder="Select homeowner status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -620,8 +664,9 @@ const LeadPriceCalculator = () => {
               <Select
                 value={selectedCriteria.bankAccountType || 'none'}
                 onValueChange={(value) => handleCriteriaChange('bankAccountType', value)}
+                disabled={isScoreTierFilterActive}
               >
-                <SelectTrigger>
+                <SelectTrigger className={cn(isScoreTierFilterActive && "opacity-50 cursor-not-allowed")}>
                   <SelectValue placeholder="Select bank account type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -645,8 +690,9 @@ const LeadPriceCalculator = () => {
               <Select
                 value={selectedCriteria.useOfFunds || 'none'}
                 onValueChange={(value) => handleCriteriaChange('useOfFunds', value)}
+                disabled={isScoreTierFilterActive}
               >
-                <SelectTrigger>
+                <SelectTrigger className={cn(isScoreTierFilterActive && "opacity-50 cursor-not-allowed")}>
                   <SelectValue placeholder="Select use of funds" />
                 </SelectTrigger>
                 <SelectContent>
