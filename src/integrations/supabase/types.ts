@@ -1994,6 +1994,42 @@ export type Database = {
         }
         Relationships: []
       }
+      sensitive_data_audit: {
+        Row: {
+          accessed_fields: Json | null
+          action: string
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          record_id: string
+          table_name: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          accessed_fields?: Json | null
+          action: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          record_id: string
+          table_name: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          accessed_fields?: Json | null
+          action?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          record_id?: string
+          table_name?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       social_proof_notifications: {
         Row: {
           amount_funded: number
@@ -2603,6 +2639,15 @@ export type Database = {
       }
       validate_phone: {
         Args: { phone_number: string }
+        Returns: boolean
+      }
+      validate_sensitive_field_access: {
+        Args: {
+          p_record_id: string
+          p_record_owner_id: string
+          p_table_name: string
+          p_user_id: string
+        }
         Returns: boolean
       }
     }
