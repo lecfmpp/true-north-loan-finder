@@ -66,6 +66,13 @@ const LeadPriceCalculator = () => {
   const [profitMargin, setProfitMargin] = useState<number>(50); // Default 50% margin
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [scoreTierFilter, setScoreTierFilter] = useState<string>("all");
+  const [scoreTierCounts, setScoreTierCounts] = useState<Record<string, number>>({
+    all: 0,
+    exceptional: 0,
+    strong: 0,
+    good: 0,
+    potential: 0
+  });
   const { toast } = useToast();
 
   // Scoring configurations
@@ -151,6 +158,65 @@ const LeadPriceCalculator = () => {
     breakdown.total = breakdown.monthlyRevenue.points + breakdown.businessAge.points + breakdown.creditScore.points;
     return breakdown;
   };
+
+  // Fetch score tier counts
+  const fetchScoreTierCounts = async () => {
+    try {
+      const counts: Record<string, number> = {
+        all: 0,
+        exceptional: 0,
+        strong: 0,
+        good: 0,
+        potential: 0
+      };
+
+      // Get all leads count
+      const { count: allCount } = await supabase
+        .from('quiz_responses')
+        .select('*', { count: 'exact', head: true });
+      counts.all = allCount || 0;
+
+      // Get exceptional (85+)
+      const { count: exceptionalCount } = await supabase
+        .from('quiz_responses')
+        .select('*', { count: 'exact', head: true })
+        .gte('score', 85);
+      counts.exceptional = exceptionalCount || 0;
+
+      // Get strong (65-84)
+      const { count: strongCount } = await supabase
+        .from('quiz_responses')
+        .select('*', { count: 'exact', head: true })
+        .gte('score', 65)
+        .lt('score', 85);
+      counts.strong = strongCount || 0;
+
+      // Get good (45-64)
+      const { count: goodCount } = await supabase
+        .from('quiz_responses')
+        .select('*', { count: 'exact', head: true })
+        .gte('score', 45)
+        .lt('score', 65);
+      counts.good = goodCount || 0;
+
+      // Get potential (0-44)
+      const { count: potentialCount } = await supabase
+        .from('quiz_responses')
+        .select('*', { count: 'exact', head: true })
+        .gte('score', 0)
+        .lt('score', 45);
+      counts.potential = potentialCount || 0;
+
+      setScoreTierCounts(counts);
+    } catch (error) {
+      console.error('Error fetching score tier counts:', error);
+    }
+  };
+
+  // Load counts on component mount
+  useEffect(() => {
+    fetchScoreTierCounts();
+  }, []);
 
   // Fetch lead stats based on criteria
   const fetchLeadStats = async (criteria: ScoringCriteria) => {
@@ -438,7 +504,7 @@ const LeadPriceCalculator = () => {
                 onClick={() => handleScoreTierChange(option.value)}
                 disabled={isProfileBuilderActive}
                 className={cn(
-                  "px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all duration-200",
+                  "px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all duration-200 flex items-center space-x-2",
                   isProfileBuilderActive 
                     ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed" 
                     : cn(
@@ -451,7 +517,10 @@ const LeadPriceCalculator = () => {
                       )
                 )}
               >
-                {option.label}
+                <span>{option.label}</span>
+                <div className="w-6 h-6 bg-green-500 text-blue-900 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
+                  {scoreTierCounts[option.value]?.toLocaleString() || '0'}
+                </div>
               </button>
             ))}
           </div>
