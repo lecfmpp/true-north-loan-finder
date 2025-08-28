@@ -59,8 +59,7 @@ const LeadPriceCalculator = () => {
   ];
 
   const businessAgeOptions = [
-    { value: '2+', label: 'More than 2 years', points: 35, tier: 'Established business' },
-    { value: '6m-2y', label: '6 months to 2 years', points: 20, tier: 'Growing business' }
+    { value: '6+', label: '6+ months', points: 35, tier: 'Established business' }
   ];
 
   const creditScoreOptions = [
@@ -124,8 +123,7 @@ const LeadPriceCalculator = () => {
 
       if (criteria.businessAge) {
         const ageMapping: Record<string, string[]> = {
-          '2+': ['5+', '+5', '3-5', '2-3'], // More than 2 years
-          '6m-2y': ['6-12', '1-2'] // 6 months to 2 years
+          '6+': ['6-12', '1-2', '2-3', '3-5', '5+', '+5'] // 6+ months (all established businesses)
         };
         const mappedValues = ageMapping[criteria.businessAge] || [criteria.businessAge];
         query = query.in('time_in_business', mappedValues);
