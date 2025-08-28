@@ -58,7 +58,7 @@ const LeadPriceCalculator = () => {
   // Scoring configurations
   const monthlyRevenueOptions = [
     { value: '20000+', label: 'Above $20K', points: 40, tier: 'Excellent' },
-    { value: '11000-20000', label: '$11K to $20K', points: 25, tier: 'Minimum Threshold' },
+    { value: '10000-20000', label: '$10K to $20K', points: 25, tier: 'Minimum Threshold' },
     { value: '0-10000', label: 'Below $10K', points: 0, tier: 'Not Qualified' }
   ];
 
@@ -121,8 +121,8 @@ const LeadPriceCalculator = () => {
         const revenueRange = criteria.monthlyRevenue;
         if (revenueRange === '20000+') {
           query = query.gte('monthly_revenue', 20000);
-        } else if (revenueRange === '11000-20000') {
-          query = query.gte('monthly_revenue', 11000).lt('monthly_revenue', 20000);
+        } else if (revenueRange === '10000-20000') {
+          query = query.gte('monthly_revenue', 10000).lt('monthly_revenue', 20000);
         } else if (revenueRange === '0-10000') {
           query = query.lt('monthly_revenue', 10000);
         }
