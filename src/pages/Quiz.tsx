@@ -1550,7 +1550,7 @@ const Quiz = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="bankAccountType" className="text-base md:text-lg font-medium">Banking Information *</Label>
+                      <Label htmlFor="bankAccountType" className="text-base md:text-lg font-medium">What type of bank account do you use? *</Label>
                       <select
                         id="bankAccountType"
                         value={quizData.bankAccountType}
