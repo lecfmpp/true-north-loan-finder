@@ -14,6 +14,8 @@ interface ScoringCriteria {
   creditScore: string;
   country: string;
   applicationSubmitted: string;
+  homeownerStatus: string;
+  bankAccountType: string;
 }
 
 interface ScoreBreakdown {
@@ -35,7 +37,9 @@ const LeadPriceCalculator = () => {
     businessAge: '',
     creditScore: '',
     country: '',
-    applicationSubmitted: ''
+    applicationSubmitted: '',
+    homeownerStatus: '',
+    bankAccountType: ''
   });
   
   const [scoreBreakdown, setScoreBreakdown] = useState<ScoreBreakdown>({
@@ -80,6 +84,17 @@ const LeadPriceCalculator = () => {
     { label: 'No - No Application', value: 'no' }
   ];
 
+  const homeownerStatusOptions = [
+    { label: 'Own', value: 'own' },
+    { label: 'Rent', value: 'rent' },
+    { label: 'Other', value: 'other' }
+  ];
+
+  const bankAccountTypeOptions = [
+    { label: 'Business', value: 'business' },
+    { label: 'Personal', value: 'personal' }
+  ];
+
   // Calculate score breakdown
   const calculateScore = (criteria: ScoringCriteria): ScoreBreakdown => {
     const revenueOption = monthlyRevenueOptions.find(opt => opt.value === criteria.monthlyRevenue);
@@ -109,7 +124,7 @@ const LeadPriceCalculator = () => {
   // Fetch lead stats based on criteria
   const fetchLeadStats = async (criteria: ScoringCriteria) => {
     // Show all leads if no criteria selected
-    const hasAnyCriteria = criteria.monthlyRevenue || criteria.businessAge || criteria.creditScore || criteria.country || criteria.applicationSubmitted;
+    const hasAnyCriteria = criteria.monthlyRevenue || criteria.businessAge || criteria.creditScore || criteria.country || criteria.applicationSubmitted || criteria.homeownerStatus || criteria.bankAccountType;
 
     setLoading(true);
     try {
@@ -158,6 +173,14 @@ const LeadPriceCalculator = () => {
         }
       }
 
+      if (criteria.homeownerStatus) {
+        query = query.eq('homeowner_status', criteria.homeownerStatus);
+      }
+
+      if (criteria.bankAccountType) {
+        query = query.eq('bank_account_type', criteria.bankAccountType);
+      }
+
       const { data, error, count } = await query;
 
       if (error) throw error;
@@ -202,7 +225,7 @@ const LeadPriceCalculator = () => {
 
   // Reset filters
   const resetFilters = () => {
-    setSelectedCriteria({ monthlyRevenue: '', businessAge: '', creditScore: '', country: '', applicationSubmitted: '' });
+    setSelectedCriteria({ monthlyRevenue: '', businessAge: '', creditScore: '', country: '', applicationSubmitted: '', homeownerStatus: '', bankAccountType: '' });
     setScoreBreakdown({ monthlyRevenue: { points: 0, label: '' }, businessAge: { points: 0, label: '' }, creditScore: { points: 0, label: '' }, total: 0 });
     setLeadStats({ totalLeads: 0, totalCost: 0, costPerLead: 0 });
   };
@@ -379,76 +402,177 @@ const LeadPriceCalculator = () => {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Homeowner Status */}
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                Homeowner Status
+              </label>
+              <Select
+                value={selectedCriteria.homeownerStatus || 'none'}
+                onValueChange={(value) => handleCriteriaChange('homeownerStatus', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select homeowner status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">
+                    <span className="text-muted-foreground">No filter (ignore this criteria)</span>
+                  </SelectItem>
+                  {homeownerStatusOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Bank Account Type */}
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                Bank Account Type
+              </label>
+              <Select
+                value={selectedCriteria.bankAccountType || 'none'}
+                onValueChange={(value) => handleCriteriaChange('bankAccountType', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select bank account type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">
+                    <span className="text-muted-foreground">No filter (ignore this criteria)</span>
+                  </SelectItem>
+                  {bankAccountTypeOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Score Breakdown */}
+        {/* Lead Persona */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <TrendingUp className="h-5 w-5" />
-              <span>Score Breakdown</span>
+              <span>Lead Persona</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {scoreBreakdown.monthlyRevenue.label && (
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Monthly Revenue:</span>
-                <div className="text-right">
-                  <Badge variant="outline">{scoreBreakdown.monthlyRevenue.points} pts</Badge>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {scoreBreakdown.monthlyRevenue.label}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {scoreBreakdown.businessAge.label && (
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Business Age:</span>
-                <div className="text-right">
-                  <Badge variant="outline">{scoreBreakdown.businessAge.points} pts</Badge>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {scoreBreakdown.businessAge.label}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {scoreBreakdown.creditScore.label && (
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Credit Score:</span>
-                <div className="text-right">
-                  <Badge variant="outline">{scoreBreakdown.creditScore.points} pts</Badge>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {scoreBreakdown.creditScore.label}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {(scoreBreakdown.monthlyRevenue.label || scoreBreakdown.businessAge.label || scoreBreakdown.creditScore.label) && (
-              <div className="border-t pt-4">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium">Total Score:</span>
-                  <div className="text-right">
-                    <span className={`text-2xl font-bold ${getScoreColor(scoreBreakdown.total)}`}>
-                      {scoreBreakdown.total}
-                      <span className="text-base text-muted-foreground">
-                        /{(() => {
-                          let maxScore = 0;
-                          if (selectedCriteria.monthlyRevenue) maxScore += 40;
-                          if (selectedCriteria.businessAge) maxScore += 35;
-                          if (selectedCriteria.creditScore) maxScore += 25;
-                          return maxScore || 100;
-                        })()}
-                      </span>
+          <CardContent>
+            {(selectedCriteria.monthlyRevenue || selectedCriteria.businessAge || selectedCriteria.creditScore || selectedCriteria.country || selectedCriteria.applicationSubmitted || selectedCriteria.homeownerStatus || selectedCriteria.bankAccountType) ? (
+              <div className="space-y-6">
+                {/* Persona Avatar & Overview */}
+                <div className="text-center p-6 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border-2 border-primary/20">
+                  <div className="w-20 h-20 bg-primary/20 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <span className="text-2xl font-bold text-primary">
+                      {scoreBreakdown.total > 0 ? scoreBreakdown.total : '?'}
                     </span>
-                    <p className="text-sm text-muted-foreground">
-                      {getScoreTier(scoreBreakdown.total)}
-                    </p>
                   </div>
+                  <h3 className={`text-xl font-bold mb-2 ${getScoreColor(scoreBreakdown.total)}`}>
+                    {getScoreTier(scoreBreakdown.total)} Lead
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Total Score: {scoreBreakdown.total}/{(() => {
+                      let maxScore = 0;
+                      if (selectedCriteria.monthlyRevenue) maxScore += 40;
+                      if (selectedCriteria.businessAge) maxScore += 35;
+                      if (selectedCriteria.creditScore) maxScore += 25;
+                      return maxScore || 100;
+                    })()} points
+                  </p>
                 </div>
+
+                {/* Persona Details */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {scoreBreakdown.monthlyRevenue.label && (
+                    <div className="p-4 bg-muted/50 rounded-lg">
+                      <div className="text-sm font-medium text-muted-foreground mb-1">Revenue Profile</div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">{scoreBreakdown.monthlyRevenue.label}</span>
+                        <Badge variant="outline">{scoreBreakdown.monthlyRevenue.points} pts</Badge>
+                      </div>
+                    </div>
+                  )}
+
+                  {scoreBreakdown.businessAge.label && (
+                    <div className="p-4 bg-muted/50 rounded-lg">
+                      <div className="text-sm font-medium text-muted-foreground mb-1">Business Maturity</div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">{scoreBreakdown.businessAge.label}</span>
+                        <Badge variant="outline">{scoreBreakdown.businessAge.points} pts</Badge>
+                      </div>
+                    </div>
+                  )}
+
+                  {scoreBreakdown.creditScore.label && (
+                    <div className="p-4 bg-muted/50 rounded-lg">
+                      <div className="text-sm font-medium text-muted-foreground mb-1">Credit Profile</div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">{scoreBreakdown.creditScore.label}</span>
+                        <Badge variant="outline">{scoreBreakdown.creditScore.points} pts</Badge>
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedCriteria.country && (
+                    <div className="p-4 bg-muted/50 rounded-lg">
+                      <div className="text-sm font-medium text-muted-foreground mb-1">Market</div>
+                      <div className="text-sm">
+                        {countryOptions.find(opt => opt.value === selectedCriteria.country)?.label || 'Unknown'}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedCriteria.applicationSubmitted && (
+                    <div className="p-4 bg-muted/50 rounded-lg">
+                      <div className="text-sm font-medium text-muted-foreground mb-1">Application Status</div>
+                      <div className="text-sm">
+                        {applicationSubmittedOptions.find(opt => opt.value === selectedCriteria.applicationSubmitted)?.label || 'Unknown'}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedCriteria.homeownerStatus && (
+                    <div className="p-4 bg-muted/50 rounded-lg">
+                      <div className="text-sm font-medium text-muted-foreground mb-1">Property Status</div>
+                      <div className="text-sm">
+                        {homeownerStatusOptions.find(opt => opt.value === selectedCriteria.homeownerStatus)?.label || 'Unknown'}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedCriteria.bankAccountType && (
+                    <div className="p-4 bg-muted/50 rounded-lg">
+                      <div className="text-sm font-medium text-muted-foreground mb-1">Banking</div>
+                      <div className="text-sm">
+                        {bankAccountTypeOptions.find(opt => opt.value === selectedCriteria.bankAccountType)?.label || 'Unknown'} Account
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Summary */}
+                <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                  <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                    Persona Summary
+                  </h4>
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                    This persona represents a {getScoreTier(scoreBreakdown.total).toLowerCase()} lead profile based on the selected criteria. 
+                    {scoreBreakdown.total >= 60 ? ' This is a strong candidate for premium pricing.' : 
+                     scoreBreakdown.total >= 40 ? ' This represents a moderate-quality lead.' : 
+                     ' This may require additional qualification or lower pricing.'}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <TrendingUp className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                <p>Select criteria to build a lead persona</p>
               </div>
             )}
           </CardContent>
@@ -492,7 +616,7 @@ const LeadPriceCalculator = () => {
             </div>
           )}
 
-          {(selectedCriteria.monthlyRevenue || selectedCriteria.businessAge || selectedCriteria.creditScore || selectedCriteria.country || selectedCriteria.applicationSubmitted) && leadStats.totalLeads > 0 && (
+          {(selectedCriteria.monthlyRevenue || selectedCriteria.businessAge || selectedCriteria.creditScore || selectedCriteria.country || selectedCriteria.applicationSubmitted || selectedCriteria.homeownerStatus || selectedCriteria.bankAccountType) && leadStats.totalLeads > 0 && (
             <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
               <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
                 Pricing Recommendation
