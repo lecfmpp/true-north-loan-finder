@@ -456,14 +456,38 @@ const LeadPriceCalculator = () => {
             ))}
           </div>
           {scoreTierFilter !== 'all' && !isProfileBuilderActive && (
-            <div className="mt-3 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className={cn(
+              "mt-3 p-4 rounded-lg border",
+              scoreTierFilter === 'exceptional' && "bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800",
+              scoreTierFilter === 'strong' && "bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800", 
+              scoreTierFilter === 'good' && "bg-yellow-50 dark:bg-yellow-950 border-yellow-200 dark:border-yellow-800",
+              scoreTierFilter === 'potential' && "bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800"
+            )}>
               <div className="flex items-center space-x-2 mb-3">
-                <TrendingUp className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                <h4 className="font-semibold text-blue-900 dark:text-blue-100">
+                <TrendingUp className={cn(
+                  "h-4 w-4",
+                  scoreTierFilter === 'exceptional' && "text-green-600 dark:text-green-400",
+                  scoreTierFilter === 'strong' && "text-blue-600 dark:text-blue-400",
+                  scoreTierFilter === 'good' && "text-yellow-600 dark:text-yellow-400", 
+                  scoreTierFilter === 'potential' && "text-red-600 dark:text-red-400"
+                )} />
+                <h4 className={cn(
+                  "font-semibold",
+                  scoreTierFilter === 'exceptional' && "text-green-900 dark:text-green-100",
+                  scoreTierFilter === 'strong' && "text-blue-900 dark:text-blue-100",
+                  scoreTierFilter === 'good' && "text-yellow-900 dark:text-yellow-100",
+                  scoreTierFilter === 'potential' && "text-red-900 dark:text-red-100"
+                )}>
                   {scoreTierOptions.find(opt => opt.value === scoreTierFilter)?.label} Score Breakdown
                 </h4>
               </div>
-              <div className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
+              <div className={cn(
+                "space-y-2 text-sm",
+                scoreTierFilter === 'exceptional' && "text-green-800 dark:text-green-200",
+                scoreTierFilter === 'strong' && "text-blue-800 dark:text-blue-200",
+                scoreTierFilter === 'good' && "text-yellow-800 dark:text-yellow-200",
+                scoreTierFilter === 'potential' && "text-red-800 dark:text-red-200"
+              )}>
                 {scoreTierFilter === 'exceptional' && (
                   <>
                     <p><strong>Score Range:</strong> 85-100 points</p>
