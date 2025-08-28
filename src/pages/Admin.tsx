@@ -2341,7 +2341,7 @@ const Admin = () => {
     </TableHead>
     <TableHead className="min-w-[220px]">Source URL</TableHead>
   </>}
-                        <TableHead className="min-w-[100px]">Actions</TableHead>
+                        
                         {isSuperAdmin && <TableHead className="min-w-[120px]">Send to Make</TableHead>}
                         {isSuperAdmin && <TableHead className="min-w-[200px]">Send to Partner</TableHead>}
                         {isSuperAdmin && <TableHead className="min-w-[180px]">Assign Lead</TableHead>}
