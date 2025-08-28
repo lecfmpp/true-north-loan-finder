@@ -2386,7 +2386,7 @@ const Admin = () => {
                             {sortField !== 'partner_loan_amount' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
                           </Button>
                         </TableHead>}
-                        {isSuperAdmin && <TableHead className="min-w-[200px]">Shared Notes</TableHead>}
+                        <TableHead className="min-w-[200px]">Notes</TableHead>
                         {isSuperAdmin && <TableHead className="min-w-[100px]">Admin</TableHead>}
                       </TableRow>
                     </TableHeader>
@@ -2716,29 +2716,29 @@ const Admin = () => {
                                 </div>
                               </div>
                             </TableCell>}
-                          {isSuperAdmin && <TableCell>
-                            <Input type="number" placeholder="Enter amount..." value={lead.partner_loan_amount || ""} onChange={e => updatePartnerLoanAmount(lead.id, e.target.value)} className="w-32" />
-                          </TableCell>}
                            {isSuperAdmin && <TableCell>
-                              <div className="max-w-[200px] space-y-2">
-                                <Textarea
-                                  placeholder="Shared notes..."
-                                  defaultValue={lead.shared_notes || ""}
-                                  rows={2}
-                                  className="text-xs resize-none"
-                                  ref={(el) => { sharedNotesRefs.current[lead.id] = el; }}
-                                />
-                                <Button
-                                  size="sm"
-                                  onClick={() => saveSharedNotes(lead.id)}
-                                  disabled={savingNotes[lead.id]}
-                                  className="w-full"
+                             <Input type="number" placeholder="Enter amount..." value={lead.partner_loan_amount || ""} onChange={e => updatePartnerLoanAmount(lead.id, e.target.value)} className="w-32" />
+                           </TableCell>}
+                           <TableCell>
+                               <div className="max-w-[200px] space-y-2">
+                                 <Textarea
+                                   placeholder="Add notes..."
+                                   defaultValue={lead.shared_notes || ""}
+                                   rows={2}
+                                   className="text-xs resize-none"
+                                   ref={(el) => { sharedNotesRefs.current[lead.id] = el; }}
+                                 />
+                                 <Button
+                                   size="sm"
+                                   onClick={() => saveSharedNotes(lead.id)}
+                                   disabled={savingNotes[lead.id]}
+                                   className="w-full"
                                 >
                                   <Save className="w-3 h-3 mr-1" />
                                   {savingNotes[lead.id] ? "Saving..." : "Save"}
                                 </Button>
                               </div>
-                            </TableCell>}
+                             </TableCell>
                           {isSuperAdmin && <TableCell>
                               <Button variant="destructive" size="sm" onClick={() => {
                           setLeadToDelete(lead.id);
