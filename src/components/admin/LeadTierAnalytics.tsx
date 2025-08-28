@@ -395,7 +395,7 @@ const LeadTierAnalytics = () => {
               <span className="text-sm font-medium text-green-600">Total Cost</span>
             </div>
             <div className="text-4xl font-bold text-green-900 mb-1">
-              ${totalStats.totalCost.toLocaleString()}
+              ${Math.round(totalStats.totalCost).toLocaleString()}
             </div>
             <p className="text-xs text-green-700">Ad spend</p>
           </CardContent>
