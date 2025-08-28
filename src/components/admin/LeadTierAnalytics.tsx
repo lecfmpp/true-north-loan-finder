@@ -377,9 +377,6 @@ const LeadTierAnalytics = () => {
               <SelectItem value="tiktok">TikTok</SelectItem>
               <SelectItem value="linkedin">LinkedIn</SelectItem>
               <SelectItem value="twitter">Twitter</SelectItem>
-              <SelectItem value="organic">Organic</SelectItem>
-              <SelectItem value="direct">Direct</SelectItem>
-              <SelectItem value="referral">Referral</SelectItem>
             </SelectContent>
           </Select>
           
