@@ -29,7 +29,7 @@ const SmallBusinessLoans = lazy(() => import("./pages/SmallBusinessLoans"));
 const MerchantCashAdvance = lazy(() => import("./pages/MerchantCashAdvance"));
 const InvoiceFactoring = lazy(() => import("./pages/InvoiceFactoring"));
 const Auth = lazy(() => import("./pages/Auth"));
-const Admin = lazy(() => import("./pages/Admin"));
+import Admin from "./pages/Admin";
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const Compare = lazy(() => import("./pages/Compare"));
