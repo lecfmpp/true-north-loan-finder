@@ -635,6 +635,10 @@ export default function ROIManagement() {
       costPerClick: 0
     };
 
+    // Always get total conversions from ALL channels for "Total Leads"
+    const allChannelsConversions = adSpends.reduce((sum, spend) => sum + (spend.conversions || 0), 0);
+
+    // Apply channel filter for other metrics
     let filteredSpends = adSpends;
     if (channelFilter !== 'all') {
       filteredSpends = adSpends.filter(spend => spend.channel === channelFilter);
@@ -653,7 +657,7 @@ export default function ROIManagement() {
     const costPerQualifiedLead = metrics.qualified_leads > 0 ? totalSpend / metrics.qualified_leads : 0;
 
     return {
-      totalLeads: totalConversions, // Show total conversions from ad spend records
+      totalLeads: allChannelsConversions, // Always show conversions from ALL channels
       totalSpend,
       costPerLead,
       costPerQualifiedLead,
