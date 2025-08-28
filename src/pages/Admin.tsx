@@ -89,7 +89,7 @@ const formatPhoneNumber = (phone: string) => {
   // Return original if can't format
   return phone;
 };
-import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Trash2, Phone, ChevronDown, ChevronRight, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign, Settings as SettingsIcon, ExternalLink, TrendingUp, ChevronUp, ArrowUpDown, Save, CalendarIcon, Webhook, Loader2 } from 'lucide-react';
+import { Download, Search, Filter, LogOut, Users, FileText, PenTool, Mail, Trash2, Phone, ChevronDown, ChevronRight, CheckSquare, Square, UserCheck, Megaphone, Send, Check, DollarSign, Settings as SettingsIcon, ExternalLink, TrendingUp, ChevronUp, ArrowUpDown, Save, CalendarIcon, Webhook, Loader2, Calculator } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import Header from '@/components/Header';
@@ -104,6 +104,7 @@ import SettingsManagement from '@/components/admin/SettingsManagement';
 import SimplifiedPartnersManagement from '@/components/admin/SimplifiedPartnersManagement';
 // Lead analytics component
 import LeadTierAnalytics from '@/components/admin/LeadTierAnalytics';
+import LeadPriceCalculator from '@/components/admin/LeadPriceCalculator';
 import BillingManagement from '@/components/admin/BillingManagement';
 import ROIManagement from '@/components/admin/ROIManagement';
 import ClientsManagement from '@/components/admin/ClientsManagement';
@@ -1962,6 +1963,10 @@ const Admin = () => {
         value: "lead-analytics",
         icon: TrendingUp
       }, {
+        title: "Lead Price Calculator",
+        value: "lead-price-calculator",
+        icon: Calculator
+      }, {
         title: "Partners",
         value: "partners",
         icon: Users,
@@ -2831,6 +2836,8 @@ const Admin = () => {
         return <BlogManagement />;
       case 'lead-analytics':
         return <LeadTierAnalytics />;
+      case 'lead-price-calculator':
+        return <LeadPriceCalculator />;
       case 'social-proof':
         return <SocialProofManagement />;
       case 'settings':
