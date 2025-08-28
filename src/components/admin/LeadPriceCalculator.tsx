@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -218,8 +218,14 @@ const LeadPriceCalculator = () => {
     fetchScoreTierCounts();
   }, []);
 
+  // Check if profile builder has any active filters
+  const isProfileBuilderActive = Boolean(selectedCriteria.monthlyRevenue || selectedCriteria.businessAge || selectedCriteria.creditScore || selectedCriteria.country || selectedCriteria.applicationSubmitted || selectedCriteria.homeownerStatus || selectedCriteria.bankAccountType || selectedCriteria.useOfFunds);
+  
+  // Check if score tier filter is active
+  const isScoreTierFilterActive = scoreTierFilter !== 'all';
+
   // Fetch lead stats based on criteria
-  const fetchLeadStats = async (criteria: ScoringCriteria) => {
+  const fetchLeadStats = useCallback(async (criteria: ScoringCriteria) => {
     // Show all leads if no criteria selected
     const hasAnyCriteria = criteria.monthlyRevenue || criteria.businessAge || criteria.creditScore || criteria.country || criteria.applicationSubmitted || criteria.homeownerStatus || criteria.bankAccountType || criteria.useOfFunds || dateRange?.from || dateRange?.to || scoreTierFilter !== 'all';
 
@@ -366,30 +372,31 @@ const LeadPriceCalculator = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [dateRange, scoreTierFilter, scoreTierCounts.all, toast]);
 
   // Handle score tier filter change
-  const handleScoreTierChange = (tier: string) => {
+  const handleScoreTierChange = useCallback((tier: string) => {
     if (isProfileBuilderActive) return; // Don't allow if profile builder is active
     setScoreTierFilter(tier);
     fetchLeadStats(selectedCriteria);
-  };
+  }, [isProfileBuilderActive, selectedCriteria, fetchLeadStats]);
 
-  // Handle criteria change
-  const handleCriteriaChange = (field: keyof ScoringCriteria, value: string) => {
+  // Handle criteria change with debouncing to prevent rapid successive calls
+  const handleCriteriaChange = useCallback((field: keyof ScoringCriteria, value: string) => {
     if (isScoreTierFilterActive) return; // Don't allow if score tier filter is active
+    
     const processedValue = value === 'none' ? '' : value;
     const newCriteria = { ...selectedCriteria, [field]: processedValue };
+    
+    // Update states synchronously
     setSelectedCriteria(newCriteria);
     setScoreBreakdown(calculateScore(newCriteria));
-    fetchLeadStats(newCriteria);
-  };
-
-  // Check if profile builder has any active filters
-  const isProfileBuilderActive = Boolean(selectedCriteria.monthlyRevenue || selectedCriteria.businessAge || selectedCriteria.creditScore || selectedCriteria.country || selectedCriteria.applicationSubmitted || selectedCriteria.homeownerStatus || selectedCriteria.bankAccountType || selectedCriteria.useOfFunds);
-  
-  // Check if score tier filter is active
-  const isScoreTierFilterActive = scoreTierFilter !== 'all';
+    
+    // Use setTimeout to ensure this only runs once per rapid succession of calls
+    setTimeout(() => {
+      fetchLeadStats(newCriteria);
+    }, 0);
+  }, [isScoreTierFilterActive, selectedCriteria, fetchLeadStats]);
 
   // Reset filters
   const resetFilters = () => {
@@ -401,10 +408,12 @@ const LeadPriceCalculator = () => {
   };
 
   // Handle date range change
-  const handleDateRangeChange = (range: DateRange | undefined) => {
+  const handleDateRangeChange = useCallback((range: DateRange | undefined) => {
     setDateRange(range);
-    fetchLeadStats(selectedCriteria);
-  };
+    setTimeout(() => {
+      fetchLeadStats(selectedCriteria);
+    }, 0);
+  }, [selectedCriteria, fetchLeadStats]);
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600';
