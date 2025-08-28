@@ -664,6 +664,14 @@ const Admin = () => {
     filterLeads();
   }, [leads, searchTerm, statusFilter, countryFilter, monthlyRevenueFilter, loanAmountFilter, timeInBusinessFilter, applicationSentFilter, partnerFilter, selectedDateRange, sortField, sortDirection]);
 
+  // Update application counts when date range changes
+  useEffect(() => {
+    if (user && isAdmin) {
+      fetchUsaApplicationsCount();
+      fetchCanadianApplicationsCount();
+    }
+  }, [selectedDateRange, user, isAdmin]);
+
   // Real-time subscription for email delivery updates
   useEffect(() => {
     if (!user || !isAdmin) return;
@@ -879,13 +887,24 @@ const Admin = () => {
   };
   const fetchUsaApplicationsCount = async () => {
     try {
-      const {
-        count,
-        error
-      } = await supabase.from('usa_applications').select('*', {
+      let query = supabase.from('usa_applications').select('*', {
         count: 'exact',
         head: true
       });
+
+      // Apply date filter if selected
+      if (selectedDateRange.from) {
+        const startDate = new Date(selectedDateRange.from);
+        const endDate = selectedDateRange.to ? new Date(selectedDateRange.to) : new Date(selectedDateRange.from);
+        
+        // Set time to start/end of day for accurate comparison
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(23, 59, 59, 999);
+        
+        query = query.gte('created_at', startDate.toISOString()).lte('created_at', endDate.toISOString());
+      }
+
+      const { count, error } = await query;
       if (error) throw error;
       setUsaApplicationsCount(count || 0);
     } catch (error) {
@@ -894,13 +913,24 @@ const Admin = () => {
   };
   const fetchCanadianApplicationsCount = async () => {
     try {
-      const {
-        count,
-        error
-      } = await supabase.from('canadian_applications').select('*', {
+      let query = supabase.from('canadian_applications').select('*', {
         count: 'exact',
         head: true
       });
+
+      // Apply date filter if selected
+      if (selectedDateRange.from) {
+        const startDate = new Date(selectedDateRange.from);
+        const endDate = selectedDateRange.to ? new Date(selectedDateRange.to) : new Date(selectedDateRange.from);
+        
+        // Set time to start/end of day for accurate comparison
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(23, 59, 59, 999);
+        
+        query = query.gte('created_at', startDate.toISOString()).lte('created_at', endDate.toISOString());
+      }
+
+      const { count, error } = await query;
       if (error) throw error;
       setCanadianApplicationsCount(count || 0);
     } catch (error) {
