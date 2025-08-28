@@ -445,12 +445,24 @@ function processRow(row: string[], mapping: any, rowIndex: number, defaultChanne
 
 // Helper function to parse amount strings with overflow protection
 function parseAmount(amountStr: string): number {
-  if (!amountStr) return 0;
+  if (!amountStr || amountStr.trim() === '') return 0;
+  
+  const trimmedAmount = amountStr.trim().toLowerCase();
+  
+  // Handle text representations of zero
+  if (trimmedAmount === 'zero' || trimmedAmount === 'nil' || trimmedAmount === 'none' || trimmedAmount === '-') {
+    return 0;
+  }
   
   // Remove currency symbols and spaces, keep only numbers, dots, and minus signs
   const cleanAmount = amountStr.replace(/[^0-9.-]/g, '');
+  
+  // Handle empty string after cleaning
+  if (!cleanAmount || cleanAmount === '') return 0;
+  
   const parsed = parseFloat(cleanAmount);
   
+  // If parsing fails, return 0 (this ensures zero values are preserved)
   if (isNaN(parsed)) return 0;
   
   // Prevent numeric overflow - PostgreSQL INTEGER max is 2,147,483,647 cents (about $21M)
