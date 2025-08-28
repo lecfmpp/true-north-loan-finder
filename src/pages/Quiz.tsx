@@ -29,7 +29,8 @@ import {
   Calendar,
   CreditCard,
   Loader2,
-  ChevronDown
+  ChevronDown,
+  Key
 } from "lucide-react";
 import {
   Command,
@@ -63,6 +64,7 @@ interface QuizData {
   phone: string;
   companyName: string;
   bankAccountType: string;
+  homeownerStatus: string;
   website: string;
   country: string;
   stateProvince: string;
@@ -160,6 +162,7 @@ const Quiz = () => {
     phone: "",
     companyName: "",
     bankAccountType: "",
+    homeownerStatus: "",
     website: "",
     country: "",
     stateProvince: "",
@@ -383,7 +386,7 @@ const Quiz = () => {
     }));
   }, []);
 
-  const totalSteps = 7;
+  const totalSteps = 8;
   const progress = (currentStep / totalSteps) * 100;
 
   const useOfFundsOptions = [
@@ -890,7 +893,9 @@ const Quiz = () => {
       case 3: return quizData.foundingMonth !== "" && quizData.foundingYear !== "";
       case 4: return quizData.monthlyRevenue[0] > 0;
       case 5: return quizData.creditScore !== "";
-      case 6: return quizData.name && quizData.email && quizData.phone && quizData.companyName && quizData.country && quizData.stateProvince;
+      case 6: return quizData.bankAccountType !== "";
+      case 7: return quizData.homeownerStatus !== "";
+      case 8: return quizData.name && quizData.email && quizData.phone && quizData.companyName && quizData.country && quizData.stateProvince;
       default: return true;
     }
   };
@@ -1466,8 +1471,75 @@ const Quiz = () => {
                 </div>
               )}
 
-              {/* Step 7: Contact Information */}
+              {/* Step 7: Homeowner Status */}
               {currentStep === 7 && (
+                <div className="space-y-5 md:space-y-8 animate-fade-in">
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-3 mb-2 md:mb-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-green-500 rounded-full flex items-center justify-center">
+                        <Home className="h-4 sm:h-5 md:h-6 w-4 sm:w-5 md:w-6 text-white" />
+                      </div>
+                      <h3 className="text-lg sm:text-xl md:text-2xl font-bold font-sans text-primary leading-tight">
+                        Do you own your home or rent?
+                      </h3>
+                    </div>
+                    <p className="text-sm sm:text-base md:text-lg text-muted-foreground font-serif">
+                      This helps us understand your financial stability for better loan options
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 gap-2 md:gap-3 max-w-lg mx-auto">
+                    <Card
+                      className={cn(
+                        "cursor-pointer transition-all duration-300 group hover:shadow-lg border-2",
+                        quizData.homeownerStatus === "homeowner"
+                          ? "border-secondary bg-secondary/10 shadow-md" 
+                          : "border-border hover:border-secondary/50 hover:bg-secondary/5"
+                      )}
+                      onClick={() => handleOptionSelect('homeownerStatus', 'homeowner')}
+                    >
+                      <CardContent className="p-3 sm:p-4 md:p-6 flex items-center gap-3 md:gap-4 relative min-h-[48px]">
+                        {quizData.homeownerStatus === "homeowner" && (
+                          <div className="absolute top-3 right-3">
+                            <Check className="h-5 w-5 md:h-6 md:w-6 text-secondary animate-scale-in" />
+                          </div>
+                        )}
+                        <Home className="h-6 w-6 md:h-8 md:w-8 text-secondary group-hover:scale-110 transition-transform flex-shrink-0" />
+                        <div className="flex-1">
+                          <h3 className="text-base md:text-lg font-semibold text-primary">I own my home</h3>
+                          <p className="text-xs md:text-sm text-muted-foreground">You have property ownership</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card
+                      className={cn(
+                        "cursor-pointer transition-all duration-300 group hover:shadow-lg border-2",
+                        quizData.homeownerStatus === "renter"
+                          ? "border-secondary bg-secondary/10 shadow-md" 
+                          : "border-border hover:border-secondary/50 hover:bg-secondary/5"
+                      )}
+                      onClick={() => handleOptionSelect('homeownerStatus', 'renter')}
+                    >
+                      <CardContent className="p-3 sm:p-4 md:p-6 flex items-center gap-3 md:gap-4 relative min-h-[48px]">
+                        {quizData.homeownerStatus === "renter" && (
+                          <div className="absolute top-3 right-3">
+                            <Check className="h-5 w-5 md:h-6 md:w-6 text-secondary animate-scale-in" />
+                          </div>
+                        )}
+                        <Key className="h-6 w-6 md:h-8 md:w-8 text-secondary group-hover:scale-110 transition-transform flex-shrink-0" />
+                        <div className="flex-1">
+                          <h3 className="text-base md:text-lg font-semibold text-primary">I rent my home</h3>
+                          <p className="text-xs md:text-sm text-muted-foreground">You currently rent your residence</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 8: Contact Information */}
+              {currentStep === 8 && (
                 <div className="space-y-5 md:space-y-8 animate-fade-in">
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-3 mb-2 md:mb-3">
@@ -1651,8 +1723,8 @@ const Quiz = () => {
                 </div>
               )}
 
-              {/* Navigation - Show Next button only for steps 1, 3, 4, and 7 */}
-              {(currentStep === 1 || currentStep === 3 || currentStep === 4 || currentStep === 7) && (
+              {/* Navigation - Show Next button only for steps 1, 3, 4, and 8 */}
+              {(currentStep === 1 || currentStep === 3 || currentStep === 4 || currentStep === 8) && (
                 <div className="flex justify-between mt-6 md:mt-8 pt-4 md:pt-6 border-t">
                   <Button
                     variant="outline"
@@ -1686,7 +1758,7 @@ const Quiz = () => {
               )}
 
               {/* Back button only for auto-advancing steps */}
-              {(currentStep === 2 || currentStep === 5 || currentStep === 6) && (
+              {(currentStep === 2 || currentStep === 5 || currentStep === 6 || currentStep === 7) && (
                 <div className="flex justify-start mt-6 md:mt-8 pt-4 md:pt-6 border-t">
                   <Button
                     variant="outline"
