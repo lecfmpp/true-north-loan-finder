@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { TrendingUp, DollarSign, Target, BarChart3, Plus, Upload, FileSpreadsheet, Trash2, Users, Award, FileText, CheckCircle, Calendar, Banknote, Loader2, Image as ImageIcon } from 'lucide-react';
@@ -1122,14 +1123,30 @@ export default function ROIManagement() {
 
         <Card>
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Cost per Qualified Lead</p>
-                <p className="text-2xl font-bold">${getFilteredMetrics().costPerQualifiedLead.toFixed(2)}</p>
-                <p className="text-xs text-muted-foreground">Qualified lead cost</p>
-              </div>
-              <Award className="h-8 w-8 text-purple-600" />
-            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger className="w-full">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Cost per Qualified Lead</p>
+                      <p className="text-2xl font-bold">${getFilteredMetrics().costPerQualifiedLead.toFixed(2)}</p>
+                      <p className="text-xs text-muted-foreground">Qualified lead cost</p>
+                    </div>
+                    <Award className="h-8 w-8 text-purple-600" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-sm">
+                  <div className="text-center">
+                    <p className="font-semibold mb-2">Qualified Lead Criteria:</p>
+                    <ul className="text-sm text-left space-y-1">
+                      <li>• Monthly revenue ≥ $10,000</li>
+                      <li>• Time in business ≥ 6 months</li>
+                      <li>• Credit score ≥ 600</li>
+                    </ul>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </CardContent>
         </Card>
       </div>
