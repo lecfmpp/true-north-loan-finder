@@ -65,6 +65,21 @@ const LeadTierAnalytics = () => {
     }
   };
 
+  // Normalize channels from both spend and leads to a common set
+  const normalizeChannel = (name?: string | null): string => {
+    const n = (name || 'unknown').toLowerCase().trim();
+    if (/google|gads|adwords|sem/.test(n)) return 'google';
+    if (/meta|facebook|instagram|fb|ig/.test(n)) return 'meta';
+    if (/bing|microsoft/.test(n)) return 'bing';
+    if (/tiktok/.test(n)) return 'tiktok';
+    if (/linkedin/.test(n)) return 'linkedin';
+    if (/twitter|\bx\b/.test(n)) return 'twitter';
+    if (/organic|seo/.test(n)) return 'organic';
+    if (/direct/.test(n)) return 'direct';
+    if (/referr/.test(n)) return 'referral';
+    return n;
+  };
+
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
@@ -155,21 +170,24 @@ const LeadTierAnalytics = () => {
       // Build channel spending data (convert cents to dollars)
       const spendByChannel: Record<string, number> = {};
       (adSpend || []).forEach(record => {
-        const normalizedChannel = (record.channel || 'unknown').trim().toLowerCase();
+        const normalizedChannel = normalizeChannel(record.channel);
         spendByChannel[normalizedChannel] = (spendByChannel[normalizedChannel] || 0) + (record.amount / 100);
       });
 
-      // Build leads by channel and tier-channel mapping
+      // Build leads by channel (use ALL leads in range, not filtered) and tier-channel mapping
       const leadsByChannel: Record<string, number> = {};
       const tierChannelCounts: Record<string, Record<string, number>> = {};
 
+      const leadsAll = leads || [];
+      leadsAll.forEach(l => {
+        const ch = normalizeChannel(l.attribution_channel);
+        leadsByChannel[ch] = (leadsByChannel[ch] || 0) + 1;
+      });
+
       filteredLeads.forEach(lead => {
         const tier = getScoreTier(lead.score);
-        const normalizedChannel = (lead.attribution_channel || 'unknown').trim().toLowerCase();
+        const normalizedChannel = normalizeChannel(lead.attribution_channel);
         const date = new Date(lead.created_at).toISOString().split('T')[0];
-        
-        // Count leads by channel
-        leadsByChannel[normalizedChannel] = (leadsByChannel[normalizedChannel] || 0) + 1;
         
         // Count leads by tier and channel
         if (!tierChannelCounts[tier]) {
@@ -225,6 +243,10 @@ const LeadTierAnalytics = () => {
         channelCPL[channel] = channelLeads > 0 ? channelSpend / channelLeads : 0;
       });
 
+      // Compute paid-only global CPL for fallback weighting
+      const paidLeadsTotal = Object.keys(spendByChannel).reduce((sum, ch) => sum + (leadsByChannel[ch] || 0), 0);
+      const paidGlobalCPL = paidLeadsTotal > 0 ? totalSpend / paidLeadsTotal : 0;
+
       // Calculate tier-specific CPL using weighted average of channel CPLs
       Object.values(tierStats).forEach(tier => {
         if (tier.count === 0) {
@@ -255,7 +277,7 @@ const LeadTierAnalytics = () => {
         // Use the global CPL for the remaining weight
         const unknownWeight = 1 - totalKnownWeight;
         if (unknownWeight > 0) {
-          weightedCPL += costPerLead * unknownWeight;
+          weightedCPL += paidGlobalCPL * unknownWeight;
         }
 
         tier.cost_per_lead = weightedCPL;
@@ -495,7 +517,7 @@ const LeadTierAnalytics = () => {
                 <CardContent className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Cost per lead</span>
-                    <span className="font-semibold">${tier.cost_per_lead.toFixed(0)}</span>
+                    <span className="font-semibold">${tier.cost_per_lead.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Total cost</span>
