@@ -61,8 +61,11 @@ export default function ROIManagement() {
   const [addSpendDialog, setAddSpendDialog] = useState(false);
   const [csvUploadDialog, setCsvUploadDialog] = useState(false);
   const [cleanupDialog, setCleanupDialog] = useState(false);
+  const [dateRangeCleanupDialog, setDateRangeCleanupDialog] = useState(false);
   const [uploadingCsv, setUploadingCsv] = useState(false);
   const [deletingData, setDeletingData] = useState(false);
+  const [cleanupStartDate, setCleanupStartDate] = useState('2025-08-20');
+  const [cleanupEndDate, setCleanupEndDate] = useState('2025-08-27');
   const [csvProgress, setCsvProgress] = useState({ current: 0, total: 0, stage: '' });
   const [channelSelectionDialog, setChannelSelectionDialog] = useState(false);
   const [selectedChannel, setSelectedChannel] = useState('');
@@ -351,6 +354,46 @@ export default function ROIManagement() {
     }
   };
 
+  const handleDateRangeCleanup = async () => {
+    if (!cleanupStartDate || !cleanupEndDate) {
+      toast({
+        title: "Error",
+        description: "Please select both start and end dates",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setDeletingData(true);
+    
+    try {
+      const { error, count } = await supabase
+        .from('ad_spend_records')
+        .delete()
+        .gte('date', cleanupStartDate)
+        .lte('date', cleanupEndDate);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Ad spend records from ${cleanupStartDate} to ${cleanupEndDate} have been deleted`
+      });
+
+      setDateRangeCleanupDialog(false);
+      fetchROIData();
+    } catch (error) {
+      console.error('Error deleting ad spend data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete ad spend records",
+        variant: "destructive"
+      });
+    } finally {
+      setDeletingData(false);
+    }
+  };
+
 
   const getFilteredMetrics = () => {
     if (!metrics) return {
@@ -499,7 +542,7 @@ export default function ROIManagement() {
             <DialogTrigger asChild>
               <Button variant="outline" className="text-destructive hover:bg-destructive hover:text-destructive-foreground">
                 <Trash2 className="h-4 w-4 mr-2" />
-                Clean Data
+                Clean All Data
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -529,6 +572,65 @@ export default function ROIManagement() {
                     disabled={deletingData}
                   >
                     {deletingData ? 'Deleting...' : 'Delete All Data'}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={dateRangeCleanupDialog} onOpenChange={setDateRangeCleanupDialog}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="text-orange-600 hover:bg-orange-50 hover:text-orange-700">
+                <Calendar className="h-4 w-4 mr-2" />
+                Clean Date Range
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Delete Ad Spend Records by Date Range</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Delete ad spend records within a specific date range. This action cannot be undone.
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="cleanup-start-date">Start Date</Label>
+                    <Input
+                      id="cleanup-start-date"
+                      type="date"
+                      value={cleanupStartDate}
+                      onChange={(e) => setCleanupStartDate(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="cleanup-end-date">End Date</Label>
+                    <Input
+                      id="cleanup-end-date"
+                      type="date"
+                      value={cleanupEndDate}
+                      onChange={(e) => setCleanupEndDate(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                  <p className="text-sm font-medium text-orange-700">
+                    📅 This will delete records from {cleanupStartDate} to {cleanupEndDate}
+                  </p>
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setDateRangeCleanupDialog(false)}
+                    disabled={deletingData}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    onClick={handleDateRangeCleanup}
+                    disabled={deletingData}
+                  >
+                    {deletingData ? 'Deleting...' : 'Delete Date Range'}
                   </Button>
                 </div>
               </div>
