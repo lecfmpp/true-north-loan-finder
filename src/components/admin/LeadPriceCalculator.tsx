@@ -4,9 +4,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Calculator, DollarSign, TrendingUp, Percent, Crown, Briefcase, User, AlertCircle } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calculator, DollarSign, TrendingUp, Percent, Crown, Briefcase, User, AlertCircle, CalendarIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { DateRange } from 'react-day-picker';
 
 interface ScoringCriteria {
   monthlyRevenue: string;
@@ -59,6 +64,7 @@ const LeadPriceCalculator = () => {
 
   const [loading, setLoading] = useState(false);
   const [profitMargin, setProfitMargin] = useState<number>(50); // Default 50% margin
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const { toast } = useToast();
 
   // Scoring configurations
@@ -139,11 +145,21 @@ const LeadPriceCalculator = () => {
   // Fetch lead stats based on criteria
   const fetchLeadStats = async (criteria: ScoringCriteria) => {
     // Show all leads if no criteria selected
-    const hasAnyCriteria = criteria.monthlyRevenue || criteria.businessAge || criteria.creditScore || criteria.country || criteria.applicationSubmitted || criteria.homeownerStatus || criteria.bankAccountType || criteria.useOfFunds;
+    const hasAnyCriteria = criteria.monthlyRevenue || criteria.businessAge || criteria.creditScore || criteria.country || criteria.applicationSubmitted || criteria.homeownerStatus || criteria.bankAccountType || criteria.useOfFunds || dateRange?.from || dateRange?.to;
 
     setLoading(true);
     try {
       let query = supabase.from('quiz_responses').select('*', { count: 'exact' });
+
+      // Apply date range filter
+      if (dateRange?.from) {
+        query = query.gte('created_at', dateRange.from.toISOString());
+      }
+      if (dateRange?.to) {
+        const endDate = new Date(dateRange.to);
+        endDate.setHours(23, 59, 59, 999); // End of day
+        query = query.lte('created_at', endDate.toISOString());
+      }
 
       // Apply filters based on selected criteria
       if (criteria.monthlyRevenue) {
@@ -262,7 +278,14 @@ const LeadPriceCalculator = () => {
   const resetFilters = () => {
     setSelectedCriteria({ monthlyRevenue: '', businessAge: '', creditScore: '', country: '', applicationSubmitted: '', homeownerStatus: '', bankAccountType: '', useOfFunds: '' });
     setScoreBreakdown({ monthlyRevenue: { points: 0, label: '' }, businessAge: { points: 0, label: '' }, creditScore: { points: 0, label: '' }, total: 0 });
+    setDateRange(undefined);
     setLeadStats({ totalLeads: 0, totalCost: 0, costPerLead: 0 });
+  };
+
+  // Handle date range change
+  const handleDateRangeChange = (range: DateRange | undefined) => {
+    setDateRange(range);
+    fetchLeadStats(selectedCriteria);
   };
 
   const getScoreColor = (score: number) => {
@@ -299,9 +322,50 @@ const LeadPriceCalculator = () => {
           <Calculator className="h-6 w-6 text-primary" />
           <h2 className="text-2xl font-bold">Lead Price Calculator</h2>
         </div>
-        <Button onClick={resetFilters} variant="outline">
-          Reset Filters
-        </Button>
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <label className="text-sm font-medium">Date Range:</label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-[280px] justify-start text-left font-normal",
+                    !dateRange?.from && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dateRange?.from ? (
+                    dateRange.to ? (
+                      <>
+                        {format(dateRange.from, "LLL dd, y")} -{" "}
+                        {format(dateRange.to, "LLL dd, y")}
+                      </>
+                    ) : (
+                      format(dateRange.from, "LLL dd, y")
+                    )
+                  ) : (
+                    <span>Pick a date range</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  initialFocus
+                  mode="range"
+                  defaultMonth={dateRange.from}
+                  selected={dateRange}
+                  onSelect={handleDateRangeChange}
+                  numberOfMonths={2}
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          <Button onClick={resetFilters} variant="outline">
+            Reset Filters
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
