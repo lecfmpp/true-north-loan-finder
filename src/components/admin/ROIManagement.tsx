@@ -377,25 +377,44 @@ export default function ROIManagement() {
     setDeletingData(true);
     
     try {
-      const { data: deletedRows, error, count } = await supabase
+      // Build inclusive list of date strings (yyyy-MM-dd) in the selected range
+      const start = new Date(`${cleanupStartDate}T00:00:00`);
+      const end = new Date(`${cleanupEndDate}T00:00:00`);
+      const dates: string[] = [];
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        dates.push(d.toISOString().slice(0, 10));
+      }
+
+      // Also include +1 day for each date to account for prior CSV timezone shift
+      const shifted = dates.map(ds => {
+        const d = new Date(`${ds}T00:00:00`);
+        d.setDate(d.getDate() + 1);
+        return d.toISOString().slice(0, 10);
+      });
+
+      const targets = Array.from(new Set([...dates, ...shifted]));
+
+      const { error, count } = await supabase
         .from('ad_spend_records')
         .delete({ count: 'exact' })
-        .gte('date', cleanupStartDate)
-        .lte('date', cleanupEndDate)
-        .select('id'); // Return deleted rows to verify effect
+        .in('date', targets);
 
       if (error) throw error;
+
+      const rangeLabel = cleanupStartDate === cleanupEndDate
+        ? cleanupStartDate
+        : `${cleanupStartDate} to ${cleanupEndDate}`;
 
       if (!count || count === 0) {
         toast({
           title: "No records found",
-          description: `No ad spend records matched ${cleanupStartDate} to ${cleanupEndDate}. Please verify the dates/year.`,
+          description: `No ad spend records matched ${rangeLabel}. If these are visible as that local date, they may be stored one day ahead due to timezone; try selecting the adjacent day.`,
           variant: "default"
         });
       } else {
         toast({
           title: "Deleted",
-          description: `Removed ${count} ad spend record(s) from ${cleanupStartDate} to ${cleanupEndDate}`
+          description: `Removed ${count} ad spend record(s) for ${rangeLabel}`
         });
       }
 
