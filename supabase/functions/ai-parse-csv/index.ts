@@ -119,16 +119,22 @@ serve(async (req) => {
 Headers: ${headers.join(', ')}
 Sample rows: ${JSON.stringify(sampleRows)}
 
+IMPORTANT: Look for columns that contain ACTUAL DATES (like "8/27/2025", "2025-08-27", etc.), not campaign names or date ranges. The date column should contain individual dates for each row, not campaign names like "Campaign #1".
+
+Common date column names: "Day", "Date", "Period", "Time"
+Common campaign column names: "Campaign", "Campaign name", "Ad group"
+Common amount column names: "Cost", "Spend", "Amount", "Budget"
+
 Return column indices (0-based) for mapping:
 {
   "mapping": {
-    "date": 0,
-    "channel": 1, 
-    "amount": 2,
-    "campaign_name": 3,
-    "clicks": null,
-    "ctr": null,
-    "conversions": null
+    "date": [index of column with actual dates],
+    "channel": [index of channel/platform column], 
+    "amount": [index of cost/spend column],
+    "campaign_name": [index of campaign name column],
+    "clicks": [index of clicks column or null],
+    "ctr": [index of CTR column or null],
+    "conversions": [index of conversions column or null]
   },
   "confidence": 0.95
 }`;
