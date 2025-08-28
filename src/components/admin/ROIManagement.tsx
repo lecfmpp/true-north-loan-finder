@@ -285,7 +285,12 @@ export default function ROIManagement() {
   };
 
   const processImageWithOCR = async (file: File): Promise<string> => {
-    const worker = await createWorker('eng');
+    // Use hosted worker/core files to satisfy CSP (no blob/data URLs)
+    const worker = await (createWorker as any)('eng', {
+      workerPath: '/tesseract/worker.min.js',
+      corePath: '/tesseract/tesseract-core.wasm.js',
+      logger: () => {},
+    });
     try {
       const ret = await worker.recognize(file);
       return ret.data.text;
