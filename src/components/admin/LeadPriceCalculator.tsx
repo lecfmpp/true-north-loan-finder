@@ -456,10 +456,43 @@ const LeadPriceCalculator = () => {
             ))}
           </div>
           {scoreTierFilter !== 'all' && !isProfileBuilderActive && (
-            <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
-              <p className="text-sm text-blue-800 dark:text-blue-200">
-                Currently filtering by: <strong>{scoreTierOptions.find(opt => opt.value === scoreTierFilter)?.label}</strong>
-              </p>
+            <div className="mt-3 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+              <div className="flex items-center space-x-2 mb-3">
+                <TrendingUp className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <h4 className="font-semibold text-blue-900 dark:text-blue-100">
+                  {scoreTierOptions.find(opt => opt.value === scoreTierFilter)?.label} Score Breakdown
+                </h4>
+              </div>
+              <div className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
+                {scoreTierFilter === 'exceptional' && (
+                  <>
+                    <p><strong>Score Range:</strong> 85-100 points</p>
+                    <p><strong>Typical Profile:</strong> $20K+ monthly revenue (40 pts) + 6+ months in business (35 pts) + 600+ credit score (25 pts)</p>
+                    <p><strong>Quality:</strong> Premium leads with highest conversion potential and loan approval rates</p>
+                  </>
+                )}
+                {scoreTierFilter === 'strong' && (
+                  <>
+                    <p><strong>Score Range:</strong> 65-84 points</p>
+                    <p><strong>Typical Profile:</strong> $10K+ monthly revenue (25 pts) + 6+ months in business (35 pts) + 600+ credit score (25 pts)</p>
+                    <p><strong>Quality:</strong> High-quality leads with good conversion potential and approval rates</p>
+                  </>
+                )}
+                {scoreTierFilter === 'good' && (
+                  <>
+                    <p><strong>Score Range:</strong> 45-64 points</p>
+                    <p><strong>Typical Profile:</strong> $20K+ monthly revenue (40 pts) + 6+ months in business (35 pts) + Below 600 credit (0 pts) OR lower revenue combinations</p>
+                    <p><strong>Quality:</strong> Moderate-quality leads requiring additional qualification</p>
+                  </>
+                )}
+                {scoreTierFilter === 'potential' && (
+                  <>
+                    <p><strong>Score Range:</strong> 0-44 points</p>
+                    <p><strong>Typical Profile:</strong> Below $10K monthly revenue (0 pts) + newer businesses or poor credit combinations</p>
+                    <p><strong>Quality:</strong> Requires significant qualification or alternative lending solutions</p>
+                  </>
+                )}
+              </div>
             </div>
           )}
         </CardContent>
