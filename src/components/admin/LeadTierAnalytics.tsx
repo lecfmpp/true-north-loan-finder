@@ -89,6 +89,7 @@ const LeadTierAnalytics = () => {
           created_at,
           status,
           conversion_status,
+          attribution_channel,
           usa_applications(id, document_files),
           canadian_applications(id, document_files, processing_statements)
         `)
@@ -151,16 +152,37 @@ const LeadTierAnalytics = () => {
         });
       }
 
+      // Build channel spending data (convert cents to dollars)
+      const spendByChannel: Record<string, number> = {};
+      (adSpend || []).forEach(record => {
+        const normalizedChannel = (record.channel || 'unknown').trim().toLowerCase();
+        spendByChannel[normalizedChannel] = (spendByChannel[normalizedChannel] || 0) + (record.amount / 100);
+      });
+
+      // Build leads by channel and tier-channel mapping
+      const leadsByChannel: Record<string, number> = {};
+      const tierChannelCounts: Record<string, Record<string, number>> = {};
+
       filteredLeads.forEach(lead => {
         const tier = getScoreTier(lead.score);
+        const normalizedChannel = (lead.attribution_channel || 'unknown').trim().toLowerCase();
         const date = new Date(lead.created_at).toISOString().split('T')[0];
+        
+        // Count leads by channel
+        leadsByChannel[normalizedChannel] = (leadsByChannel[normalizedChannel] || 0) + 1;
+        
+        // Count leads by tier and channel
+        if (!tierChannelCounts[tier]) {
+          tierChannelCounts[tier] = {};
+        }
+        tierChannelCounts[tier][normalizedChannel] = (tierChannelCounts[tier][normalizedChannel] || 0) + 1;
         
         // Initialize tier stats
         if (!tierStats[tier]) {
           tierStats[tier] = {
             tier,
             count: 0,
-            cost_per_lead: costPerLead,
+            cost_per_lead: 0,
             total_cost: 0,
             applications_sent: 0,
             files_uploaded: 0,
@@ -195,16 +217,53 @@ const LeadTierAnalytics = () => {
         }
       });
 
-      // Calculate tier costs and rates using actual lead counts and total spend
+      // Calculate channel-level CPL (Cost Per Lead)
+      const channelCPL: Record<string, number> = {};
+      Object.keys(spendByChannel).forEach(channel => {
+        const channelSpend = spendByChannel[channel];
+        const channelLeads = leadsByChannel[channel] || 0;
+        channelCPL[channel] = channelLeads > 0 ? channelSpend / channelLeads : 0;
+      });
+
+      // Calculate tier-specific CPL using weighted average of channel CPLs
       Object.values(tierStats).forEach(tier => {
-        // Use the overall cost per lead (total spend / total leads from ROI metrics)
-        tier.cost_per_lead = costPerLead;
-        // Calculate total cost for this tier based on its lead count
-        tier.total_cost = tier.count * costPerLead;
+        if (tier.count === 0) {
+          tier.cost_per_lead = 0;
+          tier.total_cost = 0;
+          tier.application_rate = 0;
+          tier.file_upload_rate = 0;
+          return;
+        }
+
+        const tierChannels = tierChannelCounts[tier.tier] || {};
+        let weightedCPL = 0;
+        let totalKnownWeight = 0;
+
+        // Calculate weighted CPL based on tier's channel mix
+        Object.keys(tierChannels).forEach(channel => {
+          const channelLeadsInTier = tierChannels[channel];
+          const channelWeight = channelLeadsInTier / tier.count;
+          
+          if (spendByChannel[channel] && channelCPL[channel] > 0) {
+            // Channel has spend data - use its specific CPL
+            weightedCPL += channelCPL[channel] * channelWeight;
+            totalKnownWeight += channelWeight;
+          }
+        });
+
+        // For leads from channels with no spend data (organic, direct, etc.)
+        // Use the global CPL for the remaining weight
+        const unknownWeight = 1 - totalKnownWeight;
+        if (unknownWeight > 0) {
+          weightedCPL += costPerLead * unknownWeight;
+        }
+
+        tier.cost_per_lead = weightedCPL;
+        tier.total_cost = tier.count * tier.cost_per_lead;
         
         // Calculate real application and file upload rates from actual data
-        tier.application_rate = tier.count > 0 ? (tier.applications_sent / tier.count) * 100 : 0;
-        tier.file_upload_rate = tier.count > 0 ? (tier.files_uploaded / tier.count) * 100 : 0;
+        tier.application_rate = (tier.applications_sent / tier.count) * 100;
+        tier.file_upload_rate = (tier.files_uploaded / tier.count) * 100;
       });
 
       // Prepare daily data for charts
