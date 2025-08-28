@@ -17,7 +17,7 @@ interface MakeSettings {
   event_toggles: {
     lead_created: boolean;
     partner_assigned: boolean;
-    application_submitted: boolean;
+    auto_send_on_assignment: boolean;
   };
   field_mappings: {
     lead_fields: Record<string, boolean>;
@@ -71,7 +71,10 @@ const PARTNER_FIELD_LABELS = {
 const APPLICATION_FIELD_LABELS = {
   include_attachments: 'Include Application Attachments',
   usa_reference: 'USA Application Reference',
-  canadian_reference: 'Canadian Application Reference'
+  canadian_reference: 'Canadian Application Reference',
+  bundle_application: 'Bundle Application Data',
+  include_bundle_file: 'Include Bundle File',
+  bundle_as_json: 'Bundle as JSON Format'
 };
 
 const METADATA_FIELD_LABELS = {
@@ -86,7 +89,7 @@ export default function MakeIntegrationManagement() {
     event_toggles: {
       lead_created: false,
       partner_assigned: false,
-      application_submitted: false
+      auto_send_on_assignment: true
     },
     field_mappings: {
       lead_fields: {
@@ -121,7 +124,10 @@ export default function MakeIntegrationManagement() {
       application_fields: {
         include_attachments: true,
         usa_reference: true,
-        canadian_reference: true
+        canadian_reference: true,
+        bundle_application: true,
+        include_bundle_file: false,
+        bundle_as_json: true
       },
       metadata_fields: {
         triggered_by_user_id: false,
@@ -165,7 +171,7 @@ export default function MakeIntegrationManagement() {
           event_toggles: {
             lead_created: eventToggles?.lead_created || false,
             partner_assigned: eventToggles?.partner_assigned || false,
-            application_submitted: eventToggles?.application_submitted || false
+            auto_send_on_assignment: eventToggles?.auto_send_on_assignment !== false
           },
           field_mappings: fieldMappings || settings.field_mappings
         });
@@ -488,16 +494,16 @@ export default function MakeIntegrationManagement() {
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="trigger-application-submitted" className="font-normal">
-                        Application submitted
+                      <Label htmlFor="trigger-auto-send" className="font-normal">
+                        Auto-send on partner assignment
                       </Label>
                       <Switch
-                        id="trigger-application-submitted"
-                        checked={settings.event_toggles.application_submitted}
+                        id="trigger-auto-send"
+                        checked={settings.event_toggles.auto_send_on_assignment}
                         onCheckedChange={(checked) =>
                           setSettings(prev => ({
                             ...prev,
-                            event_toggles: { ...prev.event_toggles, application_submitted: checked }
+                            event_toggles: { ...prev.event_toggles, auto_send_on_assignment: checked }
                           }))
                         }
                       />

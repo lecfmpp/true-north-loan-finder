@@ -344,6 +344,20 @@ const Admin = () => {
       if (qrError) {
         console.warn('quiz_responses update failed (non-blocking):', qrError);
       }
+
+      // Trigger auto-send to Make.com if enabled
+      try {
+        await supabase.functions.invoke('auto-send-make-on-assignment', {
+          body: {
+            leadId,
+            partnerId,
+            assignedBy: user?.id
+          }
+        });
+      } catch (makeError) {
+        console.warn('Make.com auto-send failed (non-blocking):', makeError);
+      }
+
       toast({
         title: "Success",
         description: "Lead assigned to partner successfully"
@@ -467,6 +481,20 @@ const Admin = () => {
         assigned_at: new Date().toISOString()
       }).eq('quiz_response_id', leadId);
       if (error) throw error;
+
+      // Trigger auto-send to Make.com if enabled
+      try {
+        await supabase.functions.invoke('auto-send-make-on-assignment', {
+          body: {
+            leadId,
+            partnerId: newPartnerId,
+            assignedBy: user?.id
+          }
+        });
+      } catch (makeError) {
+        console.warn('Make.com auto-send failed (non-blocking):', makeError);
+      }
+
       toast({
         title: "Success",
         description: "Partner assignment updated successfully"
@@ -539,6 +567,22 @@ const Admin = () => {
         error
       } = await supabase.from('lead_assignments').insert(assignments);
       if (error) throw error;
+
+      // Trigger auto-send to Make.com for each assignment if enabled
+      try {
+        for (const leadId of unassignedLeads) {
+          await supabase.functions.invoke('auto-send-make-on-assignment', {
+            body: {
+              leadId,
+              partnerId,
+              assignedBy: user?.id
+            }
+          });
+        }
+      } catch (makeError) {
+        console.warn('Make.com bulk auto-send failed (non-blocking):', makeError);
+      }
+
       toast({
         title: "Success",
         description: `${unassignedLeads.length} lead(s) assigned to partner successfully`

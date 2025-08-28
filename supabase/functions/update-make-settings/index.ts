@@ -10,7 +10,7 @@ interface UpdateSettingsRequest {
   eventToggles: {
     lead_created: boolean
     partner_assigned: boolean
-    application_submitted: boolean
+    auto_send_on_assignment: boolean
   }
   fieldMappings?: {
     lead_fields: Record<string, boolean>

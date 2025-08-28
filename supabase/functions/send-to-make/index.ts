@@ -6,7 +6,7 @@ const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
 interface SendToMakeRequest {
   leadId: string
-  eventType: 'lead_created' | 'partner_assigned' | 'application_submitted' | 'manual_send'
+  eventType: 'lead_created' | 'partner_assigned' | 'manual_send'
   overridePayload?: any
 }
 
@@ -93,17 +93,17 @@ Deno.serve(async (req) => {
       throw new Error('Lead not found')
     }
 
-    // Fetch USA application data with attachments
+    // Fetch USA application data with all fields for bundling
     const { data: usaApplication } = await supabase
       .from('usa_applications')
-      .select('application_reference_number, document_files, processing_statements')
+      .select('*')
       .eq('quiz_response_id', leadId)
       .single()
 
-    // Fetch Canadian application data with attachments
+    // Fetch Canadian application data with all fields for bundling
     const { data: canadianApplication } = await supabase
       .from('canadian_applications')
-      .select('application_reference_number, document_files, processing_statements')
+      .select('*')
       .eq('quiz_response_id', leadId)
       .single()
 
@@ -138,39 +138,94 @@ Deno.serve(async (req) => {
         filteredPartner = filterFields(lead.lead_assignments[0].partners, partnerFields)
       }
 
-      // Build application data with attachments if enabled
+      // Helper function to convert file paths to public URLs
+      const convertFilesToUrls = (files: any[]) => {
+        if (!Array.isArray(files)) return []
+        return files.map(file => {
+          if (typeof file === 'string') {
+            return `${supabaseUrl}/storage/v1/object/public/application-documents/${file}`
+          }
+          if (file?.name) {
+            return `${supabaseUrl}/storage/v1/object/public/application-documents/${file.name}`
+          }
+          return file
+        })
+      }
+
+      // Build application bundle
       const applications: any = {}
       
-      if (applicationFields.usa_reference || applicationFields.include_attachments) {
-        applications.usa = {
-          exists: !!usaApplication
+      if (applicationFields.bundle_application && (usaApplication || canadianApplication)) {
+        const bundle: any = {}
+        
+        if (usaApplication) {
+          const usaData = { ...usaApplication }
+          // Convert file attachments to public URLs
+          if (usaData.document_files) {
+            usaData.document_files = convertFilesToUrls(usaData.document_files)
+          }
+          if (usaData.processing_statements) {
+            usaData.processing_statements = convertFilesToUrls(usaData.processing_statements)
+          }
+          bundle.usa_application = usaData
         }
         
-        if (applicationFields.usa_reference) {
-          applications.usa.reference = usaApplication?.application_reference_number || null
+        if (canadianApplication) {
+          const canadianData = { ...canadianApplication }
+          // Convert file attachments to public URLs
+          if (canadianData.document_files) {
+            canadianData.document_files = convertFilesToUrls(canadianData.document_files)
+          }
+          if (canadianData.processing_statements) {
+            canadianData.processing_statements = convertFilesToUrls(canadianData.processing_statements)
+          }
+          bundle.canadian_application = canadianData
         }
         
-        if (applicationFields.include_attachments && usaApplication) {
-          applications.usa.attachments = {
-            document_files: usaApplication.document_files || [],
-            processing_statements: usaApplication.processing_statements || []
+        if (applicationFields.bundle_as_json) {
+          applications.application_bundle = JSON.stringify(bundle, null, 2)
+        } else {
+          applications.application_bundle = bundle
+        }
+        
+        applications.bundle_info = {
+          has_usa_application: !!usaApplication,
+          has_canadian_application: !!canadianApplication,
+          format: applicationFields.bundle_as_json ? 'json_string' : 'object'
+        }
+      } else {
+        // Legacy format for backwards compatibility
+        if (applicationFields.usa_reference || applicationFields.include_attachments) {
+          applications.usa = {
+            exists: !!usaApplication
+          }
+          
+          if (applicationFields.usa_reference) {
+            applications.usa.reference = usaApplication?.application_reference_number || null
+          }
+          
+          if (applicationFields.include_attachments && usaApplication) {
+            applications.usa.attachments = {
+              document_files: convertFilesToUrls(usaApplication.document_files || []),
+              processing_statements: convertFilesToUrls(usaApplication.processing_statements || [])
+            }
           }
         }
-      }
-      
-      if (applicationFields.canadian_reference || applicationFields.include_attachments) {
-        applications.canadian = {
-          exists: !!canadianApplication
-        }
         
-        if (applicationFields.canadian_reference) {
-          applications.canadian.reference = canadianApplication?.application_reference_number || null
-        }
-        
-        if (applicationFields.include_attachments && canadianApplication) {
-          applications.canadian.attachments = {
-            document_files: canadianApplication.document_files || [],
-            processing_statements: canadianApplication.processing_statements || []
+        if (applicationFields.canadian_reference || applicationFields.include_attachments) {
+          applications.canadian = {
+            exists: !!canadianApplication
+          }
+          
+          if (applicationFields.canadian_reference) {
+            applications.canadian.reference = canadianApplication?.application_reference_number || null
+          }
+          
+          if (applicationFields.include_attachments && canadianApplication) {
+            applications.canadian.attachments = {
+              document_files: convertFilesToUrls(canadianApplication.document_files || []),
+              processing_statements: convertFilesToUrls(canadianApplication.processing_statements || [])
+            }
           }
         }
       }
