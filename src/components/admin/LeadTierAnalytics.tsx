@@ -292,11 +292,19 @@ const LeadTierAnalytics = () => {
       // Calculate filtered cost per lead based on the actual filter applied
       const filteredCostPerLead = actualTotalLeads > 0 ? totalSpend / actualTotalLeads : 0;
       
+      console.log('Metrics calculation:', {
+        actualTotalLeads,
+        totalSpend,
+        filteredCostPerLead,
+        dateRange,
+        filterType
+      });
+      
       setTierData(Object.values(tierStats));
       setDailyData(dailyArray);
       setTotalStats({
         totalLeads: actualTotalLeads,
-        totalCost: totalSpend,
+        totalCost: totalSpend, // Already filtered by date range above
         avgCostPerLead: filteredCostPerLead, // Use filtered calculation
         applicationRate: actualTotalLeads > 0 ? (totalApplications / actualTotalLeads) * 100 : 0,
         fileUploadRate: actualTotalLeads > 0 ? (totalFilesUploaded / actualTotalLeads) * 100 : 0
