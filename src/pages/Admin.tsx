@@ -132,6 +132,7 @@ interface QuizResponse {
   city_province: string;
   attribution_channel?: string;
   attribution_url?: string | null;
+  bank_account_type?: string;
   // Add application tracking
   has_usa_application?: boolean;
   has_canadian_application?: boolean;
@@ -2205,6 +2206,7 @@ const Admin = () => {
                             {sortField !== 'monthly_revenue' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
                           </Button>
                         </TableHead>
+                        {isSuperAdmin && <TableHead className="min-w-[120px]">Bank Account Type</TableHead>}
                         <TableHead className="min-w-[120px]">
                           <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent hover:text-current" onClick={() => handleSort('loan_amount')}>
                             Loan Amount
@@ -2318,6 +2320,13 @@ const Admin = () => {
                               ${lead.monthly_revenue?.toLocaleString()}/mo
                             </div>
                           </TableCell>
+                          {isSuperAdmin && (
+                            <TableCell>
+                              <div className="text-sm font-medium capitalize">
+                                {lead.bank_account_type || '—'}
+                              </div>
+                            </TableCell>
+                          )}
                           <TableCell>
                             <div className="text-sm font-medium">
                               ${lead.loan_amount?.toLocaleString()}

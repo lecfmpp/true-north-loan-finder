@@ -1904,6 +1904,7 @@ export type Database = {
           assignment_date: string | null
           attribution_channel: string | null
           attribution_url: string | null
+          bank_account_type: string | null
           city_province: string | null
           company_name: string | null
           conversion_status: string | null
@@ -1939,6 +1940,7 @@ export type Database = {
           assignment_date?: string | null
           attribution_channel?: string | null
           attribution_url?: string | null
+          bank_account_type?: string | null
           city_province?: string | null
           company_name?: string | null
           conversion_status?: string | null
@@ -1974,6 +1976,7 @@ export type Database = {
           assignment_date?: string | null
           attribution_channel?: string | null
           attribution_url?: string | null
+          bank_account_type?: string | null
           city_province?: string | null
           company_name?: string | null
           conversion_status?: string | null

@@ -790,7 +790,8 @@ const Quiz = () => {
         score: score,
         status: 'New',
         attribution_channel: finalAttribution,
-        attribution_url: sourceUrl
+        attribution_url: sourceUrl,
+        bank_account_type: data.bankAccountType
       };
 
       const { data: savedResponseId, error } = await (supabase as any).rpc('submit_quiz_response', { p: payload });
