@@ -75,13 +75,13 @@ const LeadPriceCalculator = () => {
     { value: '0-10000', label: 'Below $10K', points: 0, tier: 'Not Qualified' }
   ];
 
-  // Score tier options for high-level filtering
+  // Score tier options for high-level filtering (matching Leads table nomenclature)
   const scoreTierOptions = [
     { value: 'all', label: 'All Scores', color: 'bg-gray-100 text-gray-800 border-gray-200', hoverColor: 'hover:bg-gray-200' },
-    { value: 'premium', label: 'Premium (80+)', color: 'bg-green-100 text-green-800 border-green-200', hoverColor: 'hover:bg-green-200' },
-    { value: 'high-quality', label: 'High Quality (60-79)', color: 'bg-blue-100 text-blue-800 border-blue-200', hoverColor: 'hover:bg-blue-200' },
-    { value: 'medium-quality', label: 'Medium Quality (40-59)', color: 'bg-yellow-100 text-yellow-800 border-yellow-200', hoverColor: 'hover:bg-yellow-200' },
-    { value: 'low-quality', label: 'Low Quality (0-39)', color: 'bg-red-100 text-red-800 border-red-200', hoverColor: 'hover:bg-red-200' }
+    { value: 'exceptional', label: 'Exceptional (85+)', color: 'bg-green-100 text-green-800 border-green-200', hoverColor: 'hover:bg-green-200' },
+    { value: 'strong', label: 'Strong (65-84)', color: 'bg-blue-100 text-blue-800 border-blue-200', hoverColor: 'hover:bg-blue-200' },
+    { value: 'good', label: 'Good (45-64)', color: 'bg-yellow-100 text-yellow-800 border-yellow-200', hoverColor: 'hover:bg-yellow-200' },
+    { value: 'potential', label: 'Potential (0-44)', color: 'bg-red-100 text-red-800 border-red-200', hoverColor: 'hover:bg-red-200' }
   ];
 
   const businessAgeOptions = [
@@ -174,17 +174,17 @@ const LeadPriceCalculator = () => {
       // Apply score tier filter
       if (scoreTierFilter !== 'all') {
         switch (scoreTierFilter) {
-          case 'premium':
-            query = query.gte('score', 80);
+          case 'exceptional':
+            query = query.gte('score', 85);
             break;
-          case 'high-quality':
-            query = query.gte('score', 60).lt('score', 80);
+          case 'strong':
+            query = query.gte('score', 65).lt('score', 85);
             break;
-          case 'medium-quality':
-            query = query.gte('score', 40).lt('score', 60);
+          case 'good':
+            query = query.gte('score', 45).lt('score', 65);
             break;
-          case 'low-quality':
-            query = query.gte('score', 0).lt('score', 40);
+          case 'potential':
+            query = query.gte('score', 0).lt('score', 45);
             break;
         }
       }
