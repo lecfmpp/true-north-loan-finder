@@ -197,7 +197,11 @@ const LeadTierAnalytics = () => {
 
       // Calculate tier costs and rates using real metrics
       Object.values(tierStats).forEach(tier => {
+        // Use real cost per lead from total spend divided by actual lead count
+        tier.cost_per_lead = costPerLead;
+        // Calculate total cost based on actual tier lead count and real cost per lead
         tier.total_cost = tier.count * costPerLead;
+        // Calculate real application and file upload rates from actual data
         tier.application_rate = tier.count > 0 ? (tier.applications_sent / tier.count) * 100 : 0;
         tier.file_upload_rate = tier.count > 0 ? (tier.files_uploaded / tier.count) * 100 : 0;
       });
