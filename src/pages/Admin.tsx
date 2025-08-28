@@ -178,6 +178,8 @@ const Admin = () => {
   const [usaDraftsCount, setUsaDraftsCount] = useState(0);
   const [canadianApplicationsCount, setCanadianApplicationsCount] = useState(0);
   const [canadianDraftsCount, setCanadianDraftsCount] = useState(0);
+  const [partnerUsaApplicationsCount, setPartnerUsaApplicationsCount] = useState(0);
+  const [partnerCanadianApplicationsCount, setPartnerCanadianApplicationsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -704,6 +706,7 @@ const Admin = () => {
       fetchUsaDraftsCount();
       fetchCanadianApplicationsCount();
       fetchCanadianDraftsCount();
+      fetchPartnerApplicationsCounts();
     }
   }, [user, isAdmin, isSuperAdmin, userRoles]);
   useEffect(() => {
@@ -715,6 +718,7 @@ const Admin = () => {
     if (user && isAdmin) {
       fetchUsaApplicationsCount();
       fetchCanadianApplicationsCount();
+      fetchPartnerApplicationsCounts();
     }
   }, [selectedDateRange, user, isAdmin]);
 
@@ -981,6 +985,63 @@ const Admin = () => {
       setCanadianApplicationsCount(count || 0);
     } catch (error) {
       console.error('Error fetching Canadian applications count:', error);
+    }
+  };
+
+  const fetchPartnerApplicationsCounts = async () => {
+    try {
+      // Fetch USA applications with assigned partners
+      let usaQuery = supabase
+        .from('usa_applications')
+        .select('quiz_response_id', { count: 'exact', head: true })
+        .not('quiz_response_id', 'is', null);
+
+      // Apply date filter if selected
+      if (selectedDateRange.from) {
+        const startDate = new Date(selectedDateRange.from);
+        const endDate = selectedDateRange.to ? new Date(selectedDateRange.to) : new Date(selectedDateRange.from);
+        
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(23, 59, 59, 999);
+        
+        usaQuery = usaQuery.gte('created_at', startDate.toISOString()).lte('created_at', endDate.toISOString());
+      }
+
+      const { count: usaCount, error: usaError } = await usaQuery;
+      if (usaError) throw usaError;
+
+      // Get quiz response IDs that have assigned partners
+      const { data: assignedLeads, error: assignedError } = await supabase
+        .from('quiz_responses')
+        .select('id')
+        .not('assigned_partner_id', 'is', null);
+
+      if (assignedError) throw assignedError;
+
+      const assignedLeadIds = assignedLeads?.map(lead => lead.id) || [];
+
+      // Count USA applications from assigned leads
+      const usaPartnerQuery = supabase
+        .from('usa_applications')
+        .select('*', { count: 'exact', head: true })
+        .in('quiz_response_id', assignedLeadIds);
+
+      const { count: partnerUsaCount, error: partnerUsaError } = await usaPartnerQuery;
+      if (partnerUsaError) throw partnerUsaError;
+
+      // Count Canadian applications from assigned leads
+      const canadianPartnerQuery = supabase
+        .from('canadian_applications')
+        .select('*', { count: 'exact', head: true })
+        .in('quiz_response_id', assignedLeadIds);
+
+      const { count: partnerCanadianCount, error: partnerCanadianError } = await canadianPartnerQuery;
+      if (partnerCanadianError) throw partnerCanadianError;
+
+      setPartnerUsaApplicationsCount(partnerUsaCount || 0);
+      setPartnerCanadianApplicationsCount(partnerCanadianCount || 0);
+    } catch (error) {
+      console.error('Error fetching partner applications count:', error);
     }
   };
   const fetchUsaDraftsCount = async () => {
@@ -2046,9 +2107,9 @@ const Admin = () => {
                   <CardTitle className="text-sm font-medium">Applications</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{usaApplicationsCount + canadianApplicationsCount}</div>
+                  <div className="text-2xl font-bold">{partnerUsaApplicationsCount + partnerCanadianApplicationsCount}</div>
                   <div className="text-xs text-muted-foreground">
-                    {filteredLeads.length > 0 ? Math.round(((usaApplicationsCount + canadianApplicationsCount) / filteredLeads.length) * 100) : 0}% of total
+                    From partner-assigned leads
                   </div>
                 </CardContent>
               </Card>
