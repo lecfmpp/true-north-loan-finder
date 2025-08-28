@@ -61,10 +61,7 @@ const LeadPriceCalculator = () => {
   ];
 
   const creditScoreOptions = [
-    { value: '750+', label: '750+', points: 25, tier: 'Excellent credit' },
-    { value: '700-749', label: '700-749', points: 20, tier: 'Good credit' },
-    { value: '650-699', label: '650-699', points: 15, tier: 'Fair credit' },
-    { value: '600-649', label: '600-649', points: 10, tier: 'Minimum threshold' },
+    { value: '600+', label: 'Above 600', points: 25, tier: 'Qualified credit' },
     { value: '0-599', label: 'Below 600', points: 0, tier: 'Not Qualified' }
   ];
 
@@ -125,11 +122,8 @@ const LeadPriceCalculator = () => {
 
       if (criteria.creditScore) {
         const creditMapping: Record<string, string[]> = {
-          '750+': ['excellent'],
-          '700-749': ['good'],
-          '650-699': ['fair'],
-          '600-649': ['poor'],
-          '0-599': ['very-poor', 'unsure']
+          '600+': ['excellent', 'good', 'fair', 'poor'], // Above 600
+          '0-599': ['very-poor', 'unsure'] // Below 600
         };
         const mappedValues = creditMapping[criteria.creditScore];
         if (mappedValues) {
