@@ -62,6 +62,7 @@ interface QuizData {
   email: string;
   phone: string;
   companyName: string;
+  bankAccountType: string;
   website: string;
   country: string;
   stateProvince: string;
@@ -158,6 +159,7 @@ const Quiz = () => {
     email: "",
     phone: "",
     companyName: "",
+    bankAccountType: "",
     website: "",
     country: "",
     stateProvince: "",
@@ -1546,6 +1548,20 @@ const Quiz = () => {
                         className="mt-1 md:mt-2 text-base md:text-lg py-2 md:py-3"
                         required
                       />
+                    </div>
+                    <div>
+                      <Label htmlFor="bankAccountType" className="text-base md:text-lg font-medium">Banking Information *</Label>
+                      <select
+                        id="bankAccountType"
+                        value={quizData.bankAccountType}
+                        onChange={(e) => setQuizData({...quizData, bankAccountType: e.target.value})}
+                        className="mt-1 md:mt-2 text-base md:text-lg py-2 md:py-3 w-full rounded-md border border-input bg-background px-3 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        required
+                      >
+                        <option value="">Select account type</option>
+                        <option value="business">Business Bank Account</option>
+                        <option value="personal">Personal Bank Account</option>
+                      </select>
                     </div>
                     <div>
                       <Label htmlFor="website" className="text-base md:text-lg font-medium">Website (Optional)</Label>
