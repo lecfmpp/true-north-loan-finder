@@ -353,7 +353,7 @@ const LeadPriceCalculator = () => {
                 <Calendar
                   initialFocus
                   mode="range"
-                  defaultMonth={dateRange.from}
+                  defaultMonth={dateRange?.from}
                   selected={dateRange}
                   onSelect={handleDateRangeChange}
                   numberOfMonths={2}
