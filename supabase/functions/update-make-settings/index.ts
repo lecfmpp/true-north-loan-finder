@@ -49,13 +49,6 @@ Deno.serve(async (req) => {
 
     const { enabled, webhookUrl, eventToggles }: UpdateSettingsRequest = await req.json()
 
-    // Update webhook URL in environment if provided
-    if (webhookUrl) {
-      // Note: In production, this would need to use Supabase's secrets API
-      // For now, we'll assume the webhook URL is set via the Supabase dashboard
-      console.log('Webhook URL should be updated in Supabase secrets:', webhookUrl)
-    }
-
     // Update settings in database
     const { data: existingSettings } = await supabase
       .from('make_integration_settings')
@@ -70,6 +63,7 @@ Deno.serve(async (req) => {
         .update({
           enabled,
           event_toggles: eventToggles,
+          webhook_url: webhookUrl,
           updated_at: new Date().toISOString()
         })
         .eq('id', existingSettings.id)
@@ -82,6 +76,7 @@ Deno.serve(async (req) => {
         .insert({
           enabled,
           event_toggles: eventToggles,
+          webhook_url: webhookUrl,
           created_by: user.id
         })
         .select()

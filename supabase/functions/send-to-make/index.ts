@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
     // Check if Make.com integration is enabled
     const { data: settings, error: settingsError } = await supabase
       .from('make_integration_settings')
-      .select('enabled, event_toggles')
+      .select('enabled, event_toggles, webhook_url')
       .single()
 
     if (settingsError) {
@@ -157,10 +157,13 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Get webhook URL from secrets
-    const webhookUrl = Deno.env.get('MAKE_WEBHOOK_URL')
+    // Get webhook URL from settings table
+    const webhookUrl = settings.webhook_url;
     if (!webhookUrl) {
-      throw new Error('Make.com webhook URL not configured')
+      return new Response(
+        JSON.stringify({ error: 'Make.com webhook URL not configured. Please set it in the Make.com Integration settings.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     // Send to Make.com
