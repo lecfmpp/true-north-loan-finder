@@ -68,10 +68,10 @@ const LeadTierAnalytics = () => {
 
   const getTierCriteria = (tier: string): string => {
     switch (tier) {
-      case 'Exceptional (85+)': return 'High revenue, excellent credit, established business';
-      case 'Strong (65-84)': return 'Good revenue, solid credit, stable business';  
-      case 'Good (45-64)': return 'Moderate revenue, fair credit, growing business';
-      case 'Potential (0-44)': return 'Lower revenue, poor credit, newer business';
+      case 'Exceptional (85+)': return '$100K+ revenue • 750+ credit • 5+ years';
+      case 'Strong (65-84)': return '$50K-100K revenue • 650-750 credit • 2-5 years';  
+      case 'Good (45-64)': return '$25K-50K revenue • 580-650 credit • 1-2 years';
+      case 'Potential (0-44)': return '<$25K revenue • <580 credit • <1 year';
       default: return 'Score not calculated or incomplete data';
     }
   };
