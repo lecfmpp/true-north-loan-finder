@@ -66,6 +66,16 @@ const LeadTierAnalytics = () => {
     }
   };
 
+  const getTierCriteria = (tier: string): string => {
+    switch (tier) {
+      case 'Exceptional (85+)': return 'High revenue, excellent credit, established business';
+      case 'Strong (65-84)': return 'Good revenue, solid credit, stable business';  
+      case 'Good (45-64)': return 'Moderate revenue, fair credit, growing business';
+      case 'Potential (0-44)': return 'Lower revenue, poor credit, newer business';
+      default: return 'Score not calculated or incomplete data';
+    }
+  };
+
   // Normalize channels from both spend and leads to a common set
   const normalizeChannel = (name?: string | null): string => {
     const n = (name || 'unknown').toLowerCase().trim();
@@ -551,7 +561,10 @@ const LeadTierAnalytics = () => {
               <Card key={tier.tier} className="border-l-4" style={{ borderLeftColor: getTierColor(tier.tier) }}>
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{tier.tier}</CardTitle>
+                    <div>
+                      <CardTitle className="text-lg">{tier.tier}</CardTitle>
+                      <p className="text-xs text-muted-foreground mt-1">{getTierCriteria(tier.tier)}</p>
+                    </div>
                     <Badge style={{ backgroundColor: getTierColor(tier.tier), color: 'white' }}>
                       {tier.count} leads
                     </Badge>
