@@ -159,7 +159,7 @@ const LeadPriceCalculator = () => {
     return breakdown;
   };
 
-  // Fetch score tier counts
+  // Fetch score tier counts with date range filtering (to match LeadTierAnalytics)
   const fetchScoreTierCounts = async () => {
     try {
       const counts: Record<string, number> = {
@@ -170,39 +170,49 @@ const LeadPriceCalculator = () => {
         potential: 0
       };
 
-      // Get all leads count
-      const { count: allCount } = await supabase
-        .from('quiz_responses')
-        .select('*', { count: 'exact', head: true });
+      // Helper function to build base query with date filters
+      const buildBaseQuery = () => {
+        let query = supabase.from('quiz_responses').select('*', { count: 'exact', head: true });
+        
+        // Apply same date range filter as used in fetchLeadStats
+        if (dateRange?.from) {
+          const startDate = new Date(dateRange.from);
+          startDate.setHours(0, 0, 0, 0); // Start of day
+          query = query.gte('created_at', startDate.toISOString());
+        }
+
+        if (dateRange?.to) {
+          const endDate = new Date(dateRange.to);
+          endDate.setHours(23, 59, 59, 999); // End of day
+          query = query.lte('created_at', endDate.toISOString());
+        }
+        
+        return query;
+      };
+
+      // Get all leads count with date filter
+      const { count: allCount } = await buildBaseQuery();
       counts.all = allCount || 0;
 
-      // Get exceptional (85+)
-      const { count: exceptionalCount } = await supabase
-        .from('quiz_responses')
-        .select('*', { count: 'exact', head: true })
+      // Get exceptional (85+) with date filter
+      const { count: exceptionalCount } = await buildBaseQuery()
         .gte('score', 85);
       counts.exceptional = exceptionalCount || 0;
 
-      // Get strong (65-84)
-      const { count: strongCount } = await supabase
-        .from('quiz_responses')
-        .select('*', { count: 'exact', head: true })
+      // Get strong (65-84) with date filter
+      const { count: strongCount } = await buildBaseQuery()
         .gte('score', 65)
         .lt('score', 85);
       counts.strong = strongCount || 0;
 
-      // Get good (45-64)
-      const { count: goodCount } = await supabase
-        .from('quiz_responses')
-        .select('*', { count: 'exact', head: true })
+      // Get good (45-64) with date filter
+      const { count: goodCount } = await buildBaseQuery()
         .gte('score', 45)
         .lt('score', 65);
       counts.good = goodCount || 0;
 
-      // Get potential (0-44)
-      const { count: potentialCount } = await supabase
-        .from('quiz_responses')
-        .select('*', { count: 'exact', head: true })
+      // Get potential (0-44) with date filter
+      const { count: potentialCount } = await buildBaseQuery()
         .gte('score', 0)
         .lt('score', 45);
       counts.potential = potentialCount || 0;
@@ -213,10 +223,10 @@ const LeadPriceCalculator = () => {
     }
   };
 
-  // Load counts on component mount
+  // Load counts on component mount and when date range changes
   useEffect(() => {
     fetchScoreTierCounts();
-  }, []);
+  }, [dateRange]); // Added dateRange dependency
 
   // Check if profile builder has any active filters
   const isProfileBuilderActive = Boolean(selectedCriteria.monthlyRevenue || selectedCriteria.businessAge || selectedCriteria.creditScore || selectedCriteria.country || selectedCriteria.applicationSubmitted || selectedCriteria.homeownerStatus || selectedCriteria.bankAccountType || selectedCriteria.useOfFunds);
