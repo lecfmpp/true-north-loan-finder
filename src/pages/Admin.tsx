@@ -265,7 +265,27 @@ const Admin = () => {
   const handleCallNow = (phone: string) => {
     window.open(`tel:${phone}`, '_self');
   };
-  const fetchLeadAssignments = async () => {
+  // Helper function to get all assignments for a lead
+  const getLeadAssignments = (leadId: string) => {
+    return Object.values(leadAssignments).filter(
+      assignment => assignment.quiz_response_id === leadId
+    );
+  };
+
+  // Helper function to check if lead is assigned to any partner
+  const isLeadAssigned = (leadId: string) => {
+    return getLeadAssignments(leadId).length > 0;
+  };
+
+  // Helper function to get the primary (most recent) assignment for a lead
+  const getPrimaryAssignment = (leadId: string) => {
+    const assignments = getLeadAssignments(leadId);
+    if (assignments.length === 0) return null;
+    
+    return assignments.sort((a, b) => 
+      new Date(b.assigned_at).getTime() - new Date(a.assigned_at).getTime()
+    )[0];
+  };
     try {
       const {
         data,
@@ -286,11 +306,19 @@ const Admin = () => {
   };
   const assignLeadToPartner = async (leadId: string, partnerId: string) => {
     try {
-      // Check if lead is already assigned
-      if (leadAssignments[leadId]) {
+      // Check if lead is already assigned to this specific partner
+      const existingAssignments = Object.values(leadAssignments).filter(
+        assignment => assignment.quiz_response_id === leadId
+      );
+      
+      const alreadyAssignedToPartner = existingAssignments.some(
+        assignment => assignment.partner_id === partnerId
+      );
+      
+      if (alreadyAssignedToPartner) {
         toast({
-          title: "Lead Already Assigned",
-          description: `This lead is already assigned to ${leadAssignments[leadId].partners.name}`,
+          title: "Already Assigned",
+          description: `This lead is already assigned to this partner`,
           variant: "destructive"
         });
         return;
@@ -373,6 +401,30 @@ const Admin = () => {
       toast({
         title: "Error",
         description: "Failed to assign lead to partner",
+        variant: "destructive"
+      });
+    }
+  };
+  // Remove a specific assignment by assignment ID
+  const removeSpecificAssignment = async (assignmentId: string) => {
+    try {
+      const { error } = await supabase
+        .from('lead_assignments')
+        .delete()
+        .eq('id', assignmentId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Assignment removed successfully"
+      });
+      fetchLeadAssignments(); // Refresh assignments
+    } catch (error) {
+      console.error('Error removing assignment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to remove assignment",
         variant: "destructive"
       });
     }
@@ -516,17 +568,29 @@ const Admin = () => {
   };
   const assignLeadsToPartner = async (leadIds: string[], partnerId: string) => {
     try {
-      // Filter out already assigned leads
-      const unassignedLeads = leadIds.filter(leadId => !leadAssignments[leadId]);
-      const alreadyAssigned = leadIds.filter(leadId => leadAssignments[leadId]);
-      if (alreadyAssigned.length > 0) {
+      // Filter out leads already assigned to this specific partner
+      const availableLeads = leadIds.filter(leadId => {
+        const existingAssignments = Object.values(leadAssignments).filter(
+          assignment => assignment.quiz_response_id === leadId
+        );
+        return !existingAssignments.some(assignment => assignment.partner_id === partnerId);
+      });
+      
+      const alreadyAssignedToPartner = leadIds.filter(leadId => {
+        const existingAssignments = Object.values(leadAssignments).filter(
+          assignment => assignment.quiz_response_id === leadId
+        );
+        return existingAssignments.some(assignment => assignment.partner_id === partnerId);
+      });
+      
+      if (alreadyAssignedToPartner.length > 0) {
         toast({
           title: "Some Leads Already Assigned",
-          description: `${alreadyAssigned.length} lead(s) were already assigned and skipped`,
+          description: `${alreadyAssignedToPartner.length} lead(s) were already assigned to this partner and skipped`,
           variant: "destructive"
         });
       }
-      if (unassignedLeads.length === 0) return;
+      if (availableLeads.length === 0) return;
 
       // Get partner's user_id for credit deduction
       const { data: partnerData, error: partnerError } = await supabase
@@ -547,22 +611,22 @@ const Admin = () => {
       // Check and deduct credits before assignment (batch deduction)
       const { data: creditResult, error: creditError } = await supabase.rpc('update_partner_credits', {
         p_user_id: partnerData.user_id,
-        p_credit_change: -unassignedLeads.length,
+        p_credit_change: -availableLeads.length,
         p_transaction_type: 'usage',
-        p_description: `Bulk lead assignment: ${unassignedLeads.length} leads`,
+        p_description: `Bulk lead assignment: ${availableLeads.length} leads`,
         p_reference_id: null
       });
 
       if (creditError) {
         toast({
           title: "Insufficient Credits",
-          description: `${partnerData.name} doesn't have enough credits for ${unassignedLeads.length} lead assignment(s)`,
+          description: `${partnerData.name} doesn't have enough credits for ${availableLeads.length} lead assignment(s)`,
           variant: "destructive"
         });
         return;
       }
 
-      const assignments = unassignedLeads.map(leadId => ({
+      const assignments = availableLeads.map(leadId => ({
         quiz_response_id: leadId,
         partner_id: partnerId,
         assigned_by: user?.id,
@@ -575,7 +639,7 @@ const Admin = () => {
 
       // Trigger auto-send to Make.com for each assignment if enabled
       try {
-        for (const leadId of unassignedLeads) {
+        for (const leadId of availableLeads) {
           await supabase.functions.invoke('auto-send-make-on-assignment', {
             body: {
               leadId,
@@ -590,7 +654,7 @@ const Admin = () => {
 
       toast({
         title: "Success",
-        description: `${unassignedLeads.length} lead(s) assigned to partner successfully`
+        description: `${availableLeads.length} lead(s) assigned to partner successfully`
       });
       setSelectedLeads([]);
       setSelectedPartner('');
@@ -650,7 +714,7 @@ const Admin = () => {
           if (matchedPartnerId) break;
         }
         if (!matchedPartnerId) continue;
-        const existing = leadAssignments[lead.id];
+        const existing = getPrimaryAssignment(lead.id);
         if (!existing) {
           await assignLeadToPartner(lead.id, matchedPartnerId);
           created += 1;
@@ -2682,7 +2746,7 @@ const Admin = () => {
                                   </Select>
                                   {selectedRecipients[lead.id] && <Button size="sm" onClick={async () => {
                             // First assign the lead if not already assigned
-                            if (!leadAssignments[lead.id]) {
+                            if (!isLeadAssigned(lead.id)) {
                               await assignLeadToPartner(lead.id, selectedRecipients[lead.id]);
                             }
                             // Then send the email
@@ -2701,37 +2765,44 @@ const Admin = () => {
                                 </div>}
                             </TableCell>}
                           {isSuperAdmin && <TableCell>
-                              {leadAssignments[lead.id] ? <div className="flex flex-col gap-2">
-                                  <div className="flex items-center justify-between">
-                                     <div className="flex flex-col">
-                                       <div className="text-sm font-medium text-green-700">
-                                         Assigned to: {leadAssignments[lead.id].partners.name}
-                                       </div>
-                                       <div className="text-xs text-blue-600">
-                                         📧 {leadAssignments[lead.id].partners.email}
-                                       </div>
-                                       <div className="text-xs text-muted-foreground">
-                                         {format(new Date(leadAssignments[lead.id].assigned_at), 'MMM dd, yyyy')}
-                                       </div>
-                                     </div>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <Select value={leadAssignments[lead.id].partner_id} onValueChange={partnerId => changePartnerAssignment(lead.id, partnerId)}>
+                              {isLeadAssigned(lead.id) ? <div className="flex flex-col gap-2">
+                                  {getLeadAssignments(lead.id).map((assignment, index) => (
+                                    <div key={assignment.id} className="flex items-center justify-between p-2 border rounded">
+                                      <div className="flex flex-col">
+                                        <div className="text-sm font-medium text-green-700">
+                                          {index === 0 ? 'Primary: ' : 'Also assigned: '}{assignment.partners.name}
+                                        </div>
+                                        <div className="text-xs text-blue-600">
+                                          📧 {assignment.partners.email}
+                                        </div>
+                                        <div className="text-xs text-muted-foreground">
+                                          {format(new Date(assignment.assigned_at), 'MMM dd, yyyy')}
+                                        </div>
+                                      </div>
+                                      <Button 
+                                        size="sm" 
+                                        variant="outline" 
+                                        className="h-8 px-2 text-xs" 
+                                        onClick={() => removeSpecificAssignment(assignment.id)}
+                                      >
+                                        <Trash2 className="w-3 h-3" />
+                                      </Button>
+                                    </div>
+                                  ))}
+                                  <div className="flex items-center gap-2 mt-2">
+                                    <Select value="" onValueChange={partnerId => assignLeadToPartner(lead.id, partnerId)}>
                                       <SelectTrigger className="w-32 h-8 text-xs">
-                                        <SelectValue placeholder="Change" />
+                                        <SelectValue placeholder="Add partner" />
                                       </SelectTrigger>
                                       <SelectContent className="bg-background border shadow-md z-50">
-                                         {assignmentOptions.map(option => <SelectItem key={option.id} value={option.id}>
-                                             <div className="flex items-center gap-2">
-                                               <UserCheck className="w-3 h-3" />
-                                               {option.name} - {option.type === 'client' ? 'Client' : 'Partner'}
-                                             </div>
-                                           </SelectItem>)}
+                                        {assignmentOptions.map(option => <SelectItem key={option.id} value={option.id}>
+                                            <div className="flex items-center gap-2">
+                                              <UserCheck className="w-3 h-3" />
+                                              {option.name} - {option.type === 'client' ? 'Client' : 'Partner'}
+                                            </div>
+                                          </SelectItem>)}
                                       </SelectContent>
                                     </Select>
-                                    <Button size="sm" variant="outline" className="h-8 px-2 text-xs" onClick={() => removePartnerAssignment(lead.id)}>
-                                      <Trash2 className="w-3 h-3" />
-                                    </Button>
                                   </div>
                                 </div> : partners.length > 0 ? <div className="flex items-center gap-2">
                                   <Select value="" onValueChange={partnerId => assignLeadToPartner(lead.id, partnerId)}>
@@ -2865,7 +2936,8 @@ const Admin = () => {
         return <div>Select a menu item</div>;
     }
   };
-  return <SidebarProvider>
+  return (
+    <SidebarProvider>
       <div className="dashboard-container min-h-screen bg-background w-full">
         {/* Top header - spans full width */}
         <div className="app-header">
@@ -2955,6 +3027,7 @@ const Admin = () => {
           </DialogContent>
         </Dialog>
       </div>
-    </SidebarProvider>;
+    </SidebarProvider>
+  );
 };
 export default Admin;
