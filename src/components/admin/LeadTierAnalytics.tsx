@@ -325,11 +325,11 @@ const LeadTierAnalytics = () => {
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
       // Calculate aggregated stats from our filtered data
-      const actualTotalLeads = Object.values(tierStats).reduce((sum, tier) => sum + tier.applications_sent, 0); // Use applications_sent instead of count
+      const actualTotalLeads = filteredLeads.length; // Use actual filtered leads count to match Leads tab
       const totalApplications = Object.values(tierStats).reduce((sum, tier) => sum + tier.applications_sent, 0);
       const totalFilesUploaded = Object.values(tierStats).reduce((sum, tier) => sum + tier.files_uploaded, 0);
       
-      // Calculate filtered cost per conversion (applications) based on the actual filter applied
+      // Calculate filtered cost per conversion based on the actual filter applied
       const filteredCostPerLead = actualTotalLeads > 0 ? totalSpend / actualTotalLeads : 0;
       
       console.log('Metrics calculation:', {
