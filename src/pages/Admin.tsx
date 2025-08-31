@@ -2119,7 +2119,10 @@ const Admin = () => {
       setApplicationSentFilter('all');
     }
   };
+  console.log('Admin component starting');
+  
   const renderContent = () => {
+    console.log('renderContent function called');
     switch (activeTab) {
       case 'leads':
       case 'partner-leads':
@@ -2891,7 +2894,7 @@ const Admin = () => {
             {filteredLeads.length === 0 && <div className="text-center py-8 text-muted-foreground">
                 No leads found matching your criteria.
               </div>}
-          </div>
+          </div>;
       case 'applications':
         return <SimplifiedPartnersManagement />;
       case 'partners':
@@ -2936,6 +2939,9 @@ const Admin = () => {
         return <div>Select a menu item</div>;
     }
   };
+  
+  console.log('About to return JSX');
+  console.log('Admin component ending');
   return (
     <SidebarProvider>
       <div className="dashboard-container min-h-screen bg-background w-full">
@@ -3029,5 +3035,6 @@ const Admin = () => {
       </div>
     </SidebarProvider>
   );
-};
+}
+
 export default Admin;
