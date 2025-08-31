@@ -1015,14 +1015,14 @@ const LeadPriceCalculator = () => {
               <div className="text-center p-4 bg-muted rounded-lg">
                 <h3 className="text-lg font-semibold text-muted-foreground">Total Cost</h3>
                 <p className="text-3xl font-bold text-green-600">
-                  ${(leadStats.totalCost / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  ${(leadStats.totalCost / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               </div>
               
               <div className="text-center p-4 bg-muted rounded-lg">
                 <h3 className="text-lg font-semibold text-muted-foreground">Cost Per Lead</h3>
                 <p className="text-3xl font-bold text-orange-600">
-                  ${(leadStats.costPerLead / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  ${(leadStats.costPerLead / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               </div>
             </div>
@@ -1057,7 +1057,7 @@ const LeadPriceCalculator = () => {
               <div className="text-center p-4 bg-muted rounded-lg">
                 <h3 className="text-lg font-semibold text-muted-foreground">Cost Per Lead</h3>
                 <p className="text-3xl font-bold text-orange-600">
-                  ${(leadStats.costPerLead / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  ${(leadStats.costPerLead / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               </div>
               
@@ -1079,14 +1079,14 @@ const LeadPriceCalculator = () => {
               <div className="text-center p-4 bg-muted rounded-lg">
                 <h3 className="text-lg font-semibold text-muted-foreground">Profit Amount</h3>
                 <p className="text-3xl font-bold text-green-600">
-                  ${((leadStats.costPerLead * profitMargin / 100) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  ${((leadStats.costPerLead * profitMargin / 100) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               </div>
               
               <div className="text-center p-4 bg-primary/10 border-2 border-primary/20 rounded-lg">
                 <h3 className="text-lg font-semibold text-primary">Final Selling Price</h3>
                 <p className="text-3xl font-bold text-primary">
-                  ${((leadStats.costPerLead * (1 + profitMargin / 100)) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  ${((leadStats.costPerLead * (1 + profitMargin / 100)) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               </div>
             </div>
