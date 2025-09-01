@@ -150,7 +150,7 @@ const BrokerSignup = () => {
               <Button 
                 size="lg" 
                 className="bg-primary hover:bg-primary/90 text-primary-foreground px-8"
-                onClick={() => document.getElementById('calendly-section')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => document.getElementById('hero-calendly')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 Book "25 Leads Trial" Strategy Call
               </Button>
@@ -160,7 +160,7 @@ const BrokerSignup = () => {
             </div>
 
             {/* Always Visible Calendly Widget */}
-            <div className="mt-12 max-w-4xl mx-auto">
+            <div id="hero-calendly" className="mt-12 max-w-4xl mx-auto">
               <CalendlyInline 
                 url="https://calendly.com/leandro-truenorth-businessloan/30min" 
                 height={1200} 
