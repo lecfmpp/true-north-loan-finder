@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { CheckCircle, DollarSign, TrendingUp, Users, Shield, Phone, Mail, MapPin, Clock, Star } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
 import Header from "@/components/Header";
@@ -431,6 +432,173 @@ const BrokerSignup = () => {
 
           <div className="max-w-4xl mx-auto">
             <CalendlyInline url="https://calendly.com/leandro-truenorth-businessloan/30min" height={700} />
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-16 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Frequently Asked Questions
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                Everything you need to know about our exclusive lead program
+              </p>
+            </div>
+
+            <Accordion type="single" collapsible className="space-y-4">
+              <AccordionItem value="funding-types" className="border border-border rounded-lg px-6">
+                <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                  What types of funding do your leads look for?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <div className="pt-4">
+                    <p className="mb-4 font-medium">We target the full spectrum of alternative finance:</p>
+                    <ul className="space-y-2 list-disc pl-6">
+                      <li>Merchant Cash Advances (MCAs)</li>
+                      <li>Online Term Loans & Working Capital</li>
+                      <li>Invoice Factoring</li>
+                      <li>Equipment Leasing & Financing</li>
+                      <li>Commercial Real Estate</li>
+                      <li>General Business Loans</li>
+                      <li>Custom Campaigns for your specific niche</li>
+                    </ul>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="out-of-profile" className="border border-border rounded-lg px-6">
+                <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                  What if a lead is out of profile?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <div className="pt-4">
+                    <p className="mb-4 font-medium text-primary">Our Quality Guarantee</p>
+                    <ul className="space-y-2 list-disc pl-6">
+                      <li>A rigorous pre-qualification process is our first line of defense</li>
+                      <li>Simple replacement policy for any invalid leads</li>
+                      <li>Easy process through your CRM portal to request a new lead</li>
+                      <li>This is a core part of our commitment to quality and partnership</li>
+                    </ul>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="exclusive-leads" className="border border-border rounded-lg px-6">
+                <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                  Do you sell leads that someone already called?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <div className="pt-4">
+                    <p className="mb-4 font-medium text-primary">100% Exclusive Leads. Period.</p>
+                    <ul className="space-y-2 list-disc pl-6">
+                      <li>Every lead you buy is yours and yours alone</li>
+                      <li>The lead is never resold, allowing you to build a long-term pipeline</li>
+                      <li>Our model is built on trust and creating a durable competitive advantage for you</li>
+                      <li>This directly addresses a major industry pain point of leads being sold to multiple buyers</li>
+                    </ul>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="starting-volume" className="border border-border rounded-lg px-6">
+                <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                  What is the recommended starting volume?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <div className="pt-4">
+                    <p className="mb-4 font-medium text-primary">Setting You Up For Success</p>
+                    <ul className="space-y-2 list-disc pl-6">
+                      <li>We recommend a minimum of 50 leads to start</li>
+                      <li>This provides enough volume for a statistically significant test of your sales process</li>
+                      <li>Gives our team sufficient data to begin optimizing campaign performance specifically for you</li>
+                      <li>A consistent volume of qualified leads is key to establishing predictable cash flow and a strong partnership</li>
+                    </ul>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="pricing" className="border border-border rounded-lg px-6">
+                <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                  How much is the price per lead?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <div className="pt-4">
+                    <p className="mb-4 font-medium text-primary">Transparent Pricing for Qualified Leads</p>
+                    <ul className="space-y-2 list-disc pl-6">
+                      <li>Our lead prices start at $100 per lead</li>
+                      <li>The final price is directly related to your specific qualification requirements—a more qualified lead is more valuable</li>
+                      <li>We filter leads based on criteria you set: Minimum Time in Business, Average Monthly or Annual Revenue, Estimated Personal Credit Score</li>
+                      <li>You are paying for a pre-vetted opportunity that fits your underwriting box, not just raw data</li>
+                      <li>Let's connect on a call to build a custom quote based on the exact lead profile you need</li>
+                    </ul>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="lead-sources" className="border border-border rounded-lg px-6">
+                <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                  Where do your leads come from?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <div className="pt-4">
+                    <p className="mb-4 font-medium text-primary">High-Intent Sources for High-Quality Leads</p>
+                    <ul className="space-y-2 list-disc pl-6">
+                      <li><strong>Google Ads & Organic Search:</strong> We don't use low-quality sources</li>
+                      <li><strong>Intercepting the Borrower's Journey:</strong> We capture business owners during the "Solution Exploration" and "Lender Discovery" stages, when their intent is highest</li>
+                      <li><strong>Niche Targeting:</strong> We focus on long-tail, high-intent keywords (e.g., "financing for new restaurant equipment") to attract the most qualified audience</li>
+                    </ul>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="process-timeline" className="border border-border rounded-lg px-6">
+                <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                  What's the process and when do I get leads?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <div className="pt-4">
+                    <p className="mb-4 font-medium text-primary">Simple Onboarding, Fast Results</p>
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3">
+                        <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">1</span>
+                        <span>Sign the straightforward agreement</span>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">2</span>
+                        <span>Complete payment via a secure link</span>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">3</span>
+                        <span>We handle all setup and campaign launch</span>
+                      </div>
+                      <div className="bg-primary/10 p-3 rounded-lg mt-4">
+                        <p className="font-semibold text-primary">Result: You will see the first leads in your CRM and email within 3 business days</p>
+                      </div>
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="higher-volume" className="border border-border rounded-lg px-6">
+                <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                  What if I need a higher volume?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <div className="pt-4">
+                    <p className="mb-4 font-medium text-primary">We Scale With Your Business</p>
+                    <ul className="space-y-2 list-disc pl-6">
+                      <li>Our campaigns are designed for scalability</li>
+                      <li>We will create a custom ramp-up plan to meet your volume goals</li>
+                      <li>Recommended approach: Start with a baseline (e.g., 10 leads/day) and grow weekly as we optimize performance</li>
+                    </ul>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
         </div>
       </section>
