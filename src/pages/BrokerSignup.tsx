@@ -482,47 +482,6 @@ const BrokerSignup = () => {
         </div>
       </section>
 
-      {/* Quality Guarantee */}
-      <section className="py-16 bg-gradient-to-br from-primary/5 to-secondary/5">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-              Quality Guarantee
-            </h2>
-            <p className="text-lg text-muted-foreground mb-8">
-              <span className="text-primary font-semibold">Our Promise</span> - High Converting Leads
-            </p>
-            
-            <div className="grid md:grid-cols-2 gap-8 mb-12">
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <Shield className="w-12 h-12 text-primary mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-foreground mb-2">100% Money Back Guarantee</h3>
-                  <p className="text-muted-foreground text-sm">
-                    If you're not satisfied with the quality of our leads within the first 30 days, we'll refund your investment.
-                  </p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <Star className="w-12 h-12 text-primary mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-foreground mb-2">Lead Quality Promise</h3>
-                  <p className="text-muted-foreground text-sm">
-                    Every lead is pre-qualified and verified before delivery. We guarantee fresh, exclusive leads that haven't been sold to other brokers.
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="flex flex-col items-center gap-4">
-              <p className="text-2xl font-bold text-primary">24hrs</p>
-              <p className="text-lg text-muted-foreground">Average Response Time</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Calendly Section */}
       <section className="py-16">
         <div className="container mx-auto px-4">
