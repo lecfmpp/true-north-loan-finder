@@ -367,7 +367,7 @@ const BrokerSignup = () => {
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center p-4 bg-muted/50 rounded-lg">
-                      <span className="text-muted-foreground">Total Monthly Spend</span>
+                      <span className="text-muted-foreground">Total Lead Cost</span>
                       <span className="text-lg font-semibold text-foreground">${totalSpend.toLocaleString()}</span>
                     </div>
                     
