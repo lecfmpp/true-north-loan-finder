@@ -183,7 +183,7 @@ const BrokerSignup = () => {
               <p className="text-lg text-primary-foreground/80">
                 Plug in your numbers. Watch your potential profits unfold. 
                 <span className="text-primary-foreground font-semibold block mt-2">
-                  Because seeing is believing—and believing is buying.
+                  These metrics aren't made up—they're from real brokers who've walked this path.
                 </span>
               </p>
             </div>
