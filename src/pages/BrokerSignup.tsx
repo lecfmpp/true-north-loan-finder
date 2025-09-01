@@ -172,54 +172,6 @@ const BrokerSignup = () => {
 
 
 
-      {/* Leads Simulation */}
-      
-
-      {/* Target Audience */}
-      <section className="py-16 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Our Target Audience
-              </h2>
-              <p className="text-lg text-muted-foreground">
-                <span className="text-primary font-semibold">Business Owners ready to Fund</span>
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              {targetAudience.map((audience, index) => <Card key={index} className="h-full">
-                  <CardHeader>
-                    <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                      <Users className="w-8 h-8 text-primary" />
-                    </div>
-                    <CardTitle className="text-xl text-foreground">{audience.title}</CardTitle>
-                    <p className="text-primary font-semibold">{audience.revenue}</p>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">{audience.description}</p>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-green-600" />
-                        <span>{audience.timeInBusiness}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-green-600" />
-                        <span>{audience.creditScore}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-green-600" />
-                        <span>{audience.fundingNeed}</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>)}
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Transparent Pricing / ROI Calculator */}
       <section className="py-20 bg-gradient-to-r from-primary to-secondary text-primary-foreground">
         <div className="container mx-auto px-4">
@@ -374,8 +326,50 @@ const BrokerSignup = () => {
         </div>
       </section>
 
-      {/* Dashboard Preview */}
-      
+      {/* Target Audience */}
+      <section className="py-16 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Our Target Audience
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                <span className="text-primary font-semibold">Business Owners ready to Fund</span>
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {targetAudience.map((audience, index) => <Card key={index} className="h-full">
+                  <CardHeader>
+                    <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                      <Users className="w-8 h-8 text-primary" />
+                    </div>
+                    <CardTitle className="text-xl text-foreground">{audience.title}</CardTitle>
+                    <p className="text-primary font-semibold">{audience.revenue}</p>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground mb-4">{audience.description}</p>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                        <span>{audience.timeInBusiness}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                        <span>{audience.creditScore}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                        <span>{audience.fundingNeed}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>)}
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Partnership Benefits */}
       <section className="py-16 bg-muted/30">
