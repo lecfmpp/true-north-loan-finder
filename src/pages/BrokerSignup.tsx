@@ -140,7 +140,7 @@ const BrokerSignup = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-              Book your '<span className="text-primary">10 Leads</span>' trial call and find out if we can start filling your pipeline this week.
+              Book your '<span className="text-primary">25 Leads</span>' trial call and find out if we can start filling your pipeline this week.
             </h2>
             
             <div className="bg-card rounded-lg shadow-lg p-8 max-w-2xl mx-auto">
