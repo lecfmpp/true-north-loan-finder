@@ -323,9 +323,12 @@ const BrokerSignup = () => {
                   </div>
 
                   <div>
-                    <label className="block text-lg font-semibold text-foreground mb-3">
-                      How many qualified leads do you need each month to hit your targets?
-                    </label>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="bg-green-600 text-blue-900 font-bold text-sm px-2 py-1 rounded-md">1</div>
+                      <label className="block text-lg font-semibold text-foreground">
+                        How many qualified leads do you need each month to hit your targets?
+                      </label>
+                    </div>
                     <div className="text-lg font-semibold text-primary mb-2">{leadsPerMonth[0]} leads per month</div>
                     <Slider value={leadsPerMonth} onValueChange={setLeadsPerMonth} max={500} min={50} step={10} className="w-full" />
                     <div className="flex justify-between text-xs text-muted-foreground mt-4">
@@ -335,7 +338,10 @@ const BrokerSignup = () => {
                   </div>
 
                   <div>
-                    <label className="block text-lg font-semibold text-foreground mb-3">What's your current closing rate on qualified leads?</label>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="bg-green-600 text-blue-900 font-bold text-sm px-2 py-1 rounded-md">2</div>
+                      <label className="block text-lg font-semibold text-foreground">What's your current closing rate on qualified leads?</label>
+                    </div>
                     <div className="text-lg font-semibold text-primary mb-2">{fundRate[0]}% funding rate</div>
                     <Slider value={fundRate} onValueChange={setFundRate} max={80} min={20} step={1} className="w-full" />
                     <div className="flex justify-between text-xs text-muted-foreground mt-4">
@@ -345,9 +351,12 @@ const BrokerSignup = () => {
                   </div>
 
                   <div>
-                    <label className="block text-lg font-semibold text-foreground mb-3">
-                      What's your average commission per funded deal?
-                    </label>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="bg-green-600 text-blue-900 font-bold text-sm px-2 py-1 rounded-md">3</div>
+                      <label className="block text-lg font-semibold text-foreground">
+                        What's your average commission per funded deal?
+                      </label>
+                    </div>
                     <div className="text-lg font-semibold text-primary mb-2">${avgRevenuePerDeal[0].toLocaleString()} per funded business</div>
                     <Slider value={avgRevenuePerDeal} onValueChange={setAvgRevenuePerDeal} max={20000} min={3500} step={100} className="w-full" />
                     <div className="flex justify-between text-xs text-muted-foreground mt-4">
