@@ -39,6 +39,7 @@ const ApplicationSuccess = lazy(() => import("./pages/ApplicationSuccess"));
 const ApplicationStatus = lazy(() => import("./pages/ApplicationStatus"));
 const CanadianApplication = lazy(() => import("./pages/CanadianApplication"));
 const BrokerSignup = lazy(() => import("./pages/BrokerSignup"));
+const BrokerLpVideo = lazy(() => import("./pages/BrokerLpVideo"));
 const BrokerPaymentSuccess = lazy(() => import("./pages/BrokerPaymentSuccess"));
 // Removed ConfirmPartner component
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -166,6 +167,11 @@ const App = () => {
               <Route path="/broker-signup" element={
                 <Suspense fallback={<PageLoader />}>
                   <BrokerSignup />
+                </Suspense>
+              } />
+              <Route path="/broker-lp-video" element={
+                <Suspense fallback={<PageLoader />}>
+                  <BrokerLpVideo />
                 </Suspense>
               } />
               <Route path="/broker-payment-success" element={
