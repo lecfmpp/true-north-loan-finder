@@ -33,7 +33,7 @@ function getYouTubeEmbedUrl(url: string): string | null {
     }
     
     if (videoId) {
-      return `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&autoplay=0`;
+      return `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&autoplay=0`;
     }
   } catch (error) {
     console.error("Error parsing YouTube URL:", error);
@@ -91,7 +91,7 @@ const VideoEmbed: React.FC<VideoEmbedProps> = ({ url, embedCode, title = "Video"
           src={embedUrl}
           title={title}
           className="w-full h-full border-0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
           loading="lazy"
           referrerPolicy="strict-origin-when-cross-origin"
