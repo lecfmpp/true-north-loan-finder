@@ -130,40 +130,40 @@ const BrokerSignup = () => {
       <Header />
 
       {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+      <section className="py-12 lg:py-20 bg-gradient-to-br from-primary/5 via-background to-secondary/5">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <Badge className="mb-6 bg-primary/10 text-primary border-primary/20" variant="outline">
+            <Badge className="mb-4 lg:mb-6 bg-primary/10 text-primary border-primary/20 text-sm px-4 py-2" variant="outline">
               PARTNER WITH US TODAY
             </Badge>
             
-            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
+            <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold text-foreground mb-4 lg:mb-6 leading-tight">
               Stop Paying for the Same Old Lists Every Broker Calls. Start Getting{" "}
               <span className="text-primary">Exclusive Leads</span> That Buy Back Your Time.
             </h1>
             
-            <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl text-muted-foreground mb-6 lg:mb-8 max-w-3xl mx-auto">
               Join our exclusive broker network and receive pre-qualified, exclusive business loan leads delivered directly to your inbox. No more cold calling shared lists or competing with dozens of other brokers.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 lg:gap-4 justify-center mb-8 lg:mb-12">
               <Button 
                 size="lg" 
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 lg:px-8 text-base lg:text-lg"
                 onClick={() => document.getElementById('hero-calendly')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 Book "25 Leads Trial" Strategy Call
               </Button>
-              <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary/10">
+              <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary/10 text-base lg:text-lg px-6 lg:px-8">
                 View Sample Leads
               </Button>
             </div>
 
             {/* Always Visible Calendly Widget */}
-            <div id="hero-calendly" className="mt-12 max-w-4xl mx-auto">
+            <div id="hero-calendly" className="max-w-4xl mx-auto">
               <CalendlyInline 
                 url="https://calendly.com/leandro-truenorth-businessloan/30min" 
-                height={1200} 
+                height={680} 
               />
             </div>
           </div>
