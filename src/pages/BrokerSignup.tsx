@@ -343,7 +343,7 @@ const BrokerSignup = () => {
                       value={fundRate}
                       onValueChange={setFundRate}
                       max={80}
-                      min={5}
+                      min={15}
                       step={1}
                       className="w-full"
                     />
