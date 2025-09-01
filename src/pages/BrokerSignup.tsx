@@ -74,7 +74,7 @@ const BrokerSignup = () => {
     title: "Established Business Owner",
     revenue: "$300K - $2M Annual Revenue",
     description: "Profitable businesses looking to expand, purchase equipment, or increase working capital.",
-    timeInBusiness: "2+ years in business",
+    timeInBusiness: "6+ months in business",
     creditScore: "640+ credit score",
     fundingNeed: "$25K - $500K funding need"
   }, {
