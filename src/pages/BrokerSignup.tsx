@@ -72,7 +72,7 @@ const BrokerSignup = () => {
   }];
   const targetAudience = [{
     title: "Established Business Owner",
-    revenue: "$500K - $2M Annual Revenue",
+    revenue: "$300K - $2M Annual Revenue",
     description: "Profitable businesses looking to expand, purchase equipment, or increase working capital.",
     timeInBusiness: "2+ years in business",
     creditScore: "640+ credit score",
