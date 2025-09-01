@@ -360,27 +360,7 @@ const BrokerSignup = () => {
       </section>
 
       {/* Dashboard Preview */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Your Dashboard Preview
-            </h2>
-            <p className="text-lg text-muted-foreground mb-12">
-              See how the Lead Data Dashboard looks
-            </p>
-            
-            <div className="bg-card rounded-lg shadow-2xl p-4 border">
-              <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-                <div className="text-muted-foreground">
-                  <TrendingUp className="w-16 h-16 mx-auto mb-4" />
-                  <p className="text-lg">Interactive Dashboard Preview</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Partnership Benefits */}
       <section className="py-16 bg-muted/30">
