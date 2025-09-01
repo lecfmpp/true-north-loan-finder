@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,8 @@ import SEOHead from "@/components/SEOHead";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CalendlyInline from "@/components/CalendlyInline";
+import { supabase } from "@/integrations/supabase/client";
+import VideoEmbed from "@/components/VideoEmbed";
 const BrokerSignup = () => {
   const costPerLead = 100; // Fixed at $100
   const [leadsPerMonth, setLeadsPerMonth] = useState([100]);
@@ -18,6 +20,26 @@ const BrokerSignup = () => {
   const funded = Math.round(applications * (fundRate[0] / 100));
   const totalCommission = funded * avgRevenuePerDeal[0];
   const roi = totalSpend > 0 ? Math.round((totalCommission - totalSpend) / totalSpend * 100) : 0;
+
+  // Load video settings for the trial section video
+  const [videoSettings, setVideoSettings] = useState<{ video_url: string | null; embed_code: string | null; video_title: string | null } | null>(null);
+  const [videoError, setVideoError] = useState<string | null>(null);
+  useEffect(() => {
+    const loadVideo = async () => {
+      const { data, error } = await supabase
+        .from('video_settings')
+        .select('*')
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .single();
+      if (error && (error as any).code !== 'PGRST116') {
+        setVideoError(error.message);
+      } else {
+        setVideoSettings(data);
+      }
+    };
+    loadVideo();
+  }, []);
 
   // Sample leads data
   const sampleLeads = [{
@@ -144,10 +166,16 @@ const BrokerSignup = () => {
             </h2>
             
             <div className="bg-card rounded-lg shadow-lg p-8 max-w-2xl mx-auto">
-              <div className="aspect-video bg-muted rounded-lg mb-6 flex items-center justify-center">
-                <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center">
-                  <div className="w-0 h-0 border-l-8 border-l-primary-foreground border-t-6 border-t-transparent border-b-6 border-b-transparent ml-1"></div>
-                </div>
+              <div className="aspect-video bg-muted rounded-lg mb-6 overflow-hidden">
+                {videoSettings?.embed_code ? (
+                  <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: videoSettings.embed_code }} />
+                ) : videoSettings?.video_url ? (
+                  <VideoEmbed url={videoSettings.video_url || undefined} title={videoSettings.video_title || 'Broker Program Video'} />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                    Video will appear here once configured.
+                  </div>
+                )}
               </div>
               <p className="text-lg text-muted-foreground">
                 See exactly how our exclusive lead system works and get your first 10 leads delivered within 48 hours.
