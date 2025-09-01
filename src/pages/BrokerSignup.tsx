@@ -157,22 +157,15 @@ const BrokerSignup = () => {
 
             {/* Always Visible Calendly Widget */}
             <div className="mt-12 max-w-4xl mx-auto">
-              <div 
-                className="calendly-inline-widget" 
-                data-url="https://calendly.com/leandro-truenorth-businessloan/30min" 
-                style={{minWidth: '320px', height: '700px'}}
-              ></div>
+              <CalendlyInline 
+                url="https://calendly.com/leandro-truenorth-businessloan/30min" 
+                height={700} 
+              />
             </div>
           </div>
         </div>
       </section>
 
-      {/* Calendly Script */}
-      <script 
-        type="text/javascript" 
-        src="https://assets.calendly.com/assets/external/widget.js" 
-        async
-      ></script>
 
       {/* Trial Section */}
       <section className="py-16 bg-muted/30">
