@@ -8,126 +8,101 @@ import SEOHead from "@/components/SEOHead";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CalendlyInline from "@/components/CalendlyInline";
-
 const BrokerSignup = () => {
   const costPerLead = 100; // Fixed at $100
   const [leadsPerMonth, setLeadsPerMonth] = useState([100]);
   const [fundRate, setFundRate] = useState([25]);
   const [avgRevenuePerDeal, setAvgRevenuePerDeal] = useState([3500]);
-
   const totalSpend = costPerLead * leadsPerMonth[0];
   const applications = Math.round(leadsPerMonth[0] * 0.2); // Assuming 20% application rate from leads
   const funded = Math.round(applications * (fundRate[0] / 100));
   const totalCommission = funded * avgRevenuePerDeal[0];
-  const roi = totalSpend > 0 ? Math.round(((totalCommission - totalSpend) / totalSpend) * 100) : 0;
+  const roi = totalSpend > 0 ? Math.round((totalCommission - totalSpend) / totalSpend * 100) : 0;
 
   // Sample leads data
-  const sampleLeads = [
-    {
-      businessName: "Tony's Italian Restaurant",
-      contactName: "Tony Rodriguez", 
-      loanAmount: "$75,000",
-      industry: "Restaurant",
-      creditScore: 680,
-      timeAgo: "2 mins ago",
-      phone: "(555) 123-4567",
-      email: "tony@tonysitalian.com"
-    },
-    {
-      businessName: "Advanced Auto Repair",
-      contactName: "Michael Chen",
-      loanAmount: "$125,000", 
-      industry: "Automotive",
-      creditScore: 720,
-      timeAgo: "5 mins ago",
-      phone: "(555) 987-6543",
-      email: "mike@advancedauto.com"
-    },
-    {
-      businessName: "Sunshine Daycare Center",
-      contactName: "Sarah Johnson",
-      loanAmount: "$50,000",
-      industry: "Childcare", 
-      creditScore: 650,
-      timeAgo: "8 mins ago",
-      phone: "(555) 456-7890",
-      email: "sarah@sunshinedaycare.com"
-    }
-  ];
-
-  const targetAudience = [
-    {
-      title: "Established Business Owner",
-      revenue: "$500K - $2M Annual Revenue",
-      description: "Profitable businesses looking to expand, purchase equipment, or increase working capital.",
-      timeInBusiness: "2+ years in business",
-      creditScore: "640+ credit score",
-      fundingNeed: "$25K - $500K funding need"
-    },
-    {
-      title: "High-Growth Companies", 
-      revenue: "$1M+ Annual Revenue",
-      description: "Fast-growing companies needing capital to scale operations, hire staff, or expand locations.",
-      timeInBusiness: "3+ years in business", 
-      creditScore: "680+ credit score",
-      fundingNeed: "$100K - $1M funding need"
-    },
-    {
-      title: "Asset-Rich Businesses",
-      revenue: "$750K+ Annual Revenue", 
-      description: "Equipment-heavy businesses in construction, manufacturing, transportation, and medical fields.",
-      timeInBusiness: "2+ years in business",
-      creditScore: "620+ credit score", 
-      fundingNeed: "$50K - $2M funding need"
-    }
-  ];
-
-  const benefits = [
-    {
-      title: "Pre-Qualified Leads Only",
-      description: "Every lead is pre-screened and qualified before delivery",
-      percentage: "98%",
-      metric: "Qualification Rate"
-    },
-    {
-      title: "Exclusive For Your Rights",
-      description: "Leads are delivered exclusively to you - no competition",
-      percentage: "100%", 
-      metric: "Exclusivity Rate"
-    },
-    {
-      title: "Competitive Lead Price Points",
-      description: "Industry-leading prices with volume discounts available",
-      percentage: "50%+",
-      metric: "Cost Savings"
-    },
-    {
-      title: "Same-Day Lead Delivery",
-      description: "Leads delivered within hours of qualification",
-      percentage: "2x Faster",
-      metric: "Speed vs Industry"
-    },
-    {
-      title: "In-House Lead Sources",
-      description: "All leads generated through our proprietary channels",
-      percentage: "100%",
-      metric: "First-Party Data"
-    },
-    {
-      title: "Performance Analytics",
-      description: "Real-time tracking and performance optimization",
-      percentage: "Real Time", 
-      metric: "Analytics Updates"
-    }
-  ];
-
-  return (
-    <div className="min-h-screen bg-background">
-      <SEOHead 
-        title="Broker Partnership Program - True North Business Loan"
-        description="Join our exclusive broker partnership program and start earning competitive commissions on high-quality business loan referrals."
-        keywords={["broker partnership", "business loan broker", "earn commissions", "broker program", "exclusive leads"]}
-      />
+  const sampleLeads = [{
+    businessName: "Tony's Italian Restaurant",
+    contactName: "Tony Rodriguez",
+    loanAmount: "$75,000",
+    industry: "Restaurant",
+    creditScore: 680,
+    timeAgo: "2 mins ago",
+    phone: "(555) 123-4567",
+    email: "tony@tonysitalian.com"
+  }, {
+    businessName: "Advanced Auto Repair",
+    contactName: "Michael Chen",
+    loanAmount: "$125,000",
+    industry: "Automotive",
+    creditScore: 720,
+    timeAgo: "5 mins ago",
+    phone: "(555) 987-6543",
+    email: "mike@advancedauto.com"
+  }, {
+    businessName: "Sunshine Daycare Center",
+    contactName: "Sarah Johnson",
+    loanAmount: "$50,000",
+    industry: "Childcare",
+    creditScore: 650,
+    timeAgo: "8 mins ago",
+    phone: "(555) 456-7890",
+    email: "sarah@sunshinedaycare.com"
+  }];
+  const targetAudience = [{
+    title: "Established Business Owner",
+    revenue: "$500K - $2M Annual Revenue",
+    description: "Profitable businesses looking to expand, purchase equipment, or increase working capital.",
+    timeInBusiness: "2+ years in business",
+    creditScore: "640+ credit score",
+    fundingNeed: "$25K - $500K funding need"
+  }, {
+    title: "High-Growth Companies",
+    revenue: "$1M+ Annual Revenue",
+    description: "Fast-growing companies needing capital to scale operations, hire staff, or expand locations.",
+    timeInBusiness: "3+ years in business",
+    creditScore: "680+ credit score",
+    fundingNeed: "$100K - $1M funding need"
+  }, {
+    title: "Asset-Rich Businesses",
+    revenue: "$750K+ Annual Revenue",
+    description: "Equipment-heavy businesses in construction, manufacturing, transportation, and medical fields.",
+    timeInBusiness: "2+ years in business",
+    creditScore: "620+ credit score",
+    fundingNeed: "$50K - $2M funding need"
+  }];
+  const benefits = [{
+    title: "Pre-Qualified Leads Only",
+    description: "Every lead is pre-screened and qualified before delivery",
+    percentage: "98%",
+    metric: "Qualification Rate"
+  }, {
+    title: "Exclusive For Your Rights",
+    description: "Leads are delivered exclusively to you - no competition",
+    percentage: "100%",
+    metric: "Exclusivity Rate"
+  }, {
+    title: "Competitive Lead Price Points",
+    description: "Industry-leading prices with volume discounts available",
+    percentage: "50%+",
+    metric: "Cost Savings"
+  }, {
+    title: "Same-Day Lead Delivery",
+    description: "Leads delivered within hours of qualification",
+    percentage: "2x Faster",
+    metric: "Speed vs Industry"
+  }, {
+    title: "In-House Lead Sources",
+    description: "All leads generated through our proprietary channels",
+    percentage: "100%",
+    metric: "First-Party Data"
+  }, {
+    title: "Performance Analytics",
+    description: "Real-time tracking and performance optimization",
+    percentage: "Real Time",
+    metric: "Analytics Updates"
+  }];
+  return <div className="min-h-screen bg-background">
+      <SEOHead title="Broker Partnership Program - True North Business Loan" description="Join our exclusive broker partnership program and start earning competitive commissions on high-quality business loan referrals." keywords={["broker partnership", "business loan broker", "earn commissions", "broker program", "exclusive leads"]} />
       
       <Header />
 
@@ -196,8 +171,7 @@ const BrokerSignup = () => {
             </div>
 
             <div className="grid gap-4 md:gap-6">
-              {sampleLeads.map((lead, index) => (
-                <Card key={index} className="border-l-4 border-l-primary">
+              {sampleLeads.map((lead, index) => <Card key={index} className="border-l-4 border-l-primary">
                   <CardContent className="p-6">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="flex-1">
@@ -234,8 +208,7 @@ const BrokerSignup = () => {
                       </Button>
                     </div>
                   </CardContent>
-                </Card>
-              ))}
+                </Card>)}
             </div>
           </div>
         </div>
@@ -255,8 +228,7 @@ const BrokerSignup = () => {
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">
-              {targetAudience.map((audience, index) => (
-                <Card key={index} className="h-full">
+              {targetAudience.map((audience, index) => <Card key={index} className="h-full">
                   <CardHeader>
                     <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                       <Users className="w-8 h-8 text-primary" />
@@ -281,8 +253,7 @@ const BrokerSignup = () => {
                       </div>
                     </div>
                   </CardContent>
-                </Card>
-              ))}
+                </Card>)}
             </div>
           </div>
         </div>
@@ -348,9 +319,7 @@ const BrokerSignup = () => {
                       </div>
                     </div>
                     
-                    <p className="text-xs text-muted-foreground">
-                      Pre-qualified, exclusive leads delivered within hours
-                    </p>
+                    
                   </div>
 
                   <div>
@@ -358,14 +327,7 @@ const BrokerSignup = () => {
                       How many qualified leads do you need each month to hit your targets?
                     </label>
                     <div className="text-lg font-semibold text-primary mb-2">{leadsPerMonth[0]} leads per month</div>
-                    <Slider
-                      value={leadsPerMonth}
-                      onValueChange={setLeadsPerMonth}
-                      max={500}
-                      min={50}
-                      step={10}
-                      className="w-full"
-                    />
+                    <Slider value={leadsPerMonth} onValueChange={setLeadsPerMonth} max={500} min={50} step={10} className="w-full" />
                     <div className="flex justify-between text-xs text-muted-foreground mt-4">
                       <span>50 leads</span>
                       <span>500 leads</span>
@@ -377,14 +339,7 @@ const BrokerSignup = () => {
                       What's your current closing rate on pre-qualified leads?
                     </label>
                     <div className="text-lg font-semibold text-primary mb-2">{fundRate[0]}% funding rate</div>
-                    <Slider
-                      value={fundRate}
-                      onValueChange={setFundRate}
-                      max={80}
-                      min={25}
-                      step={1}
-                      className="w-full"
-                    />
+                    <Slider value={fundRate} onValueChange={setFundRate} max={80} min={25} step={1} className="w-full" />
                     <div className="flex justify-between text-xs text-muted-foreground mt-4">
                       <span>25% (Industry Average)</span>
                       <span>80% (Top Performers)</span>
@@ -396,14 +351,7 @@ const BrokerSignup = () => {
                       What's your average commission per funded deal?
                     </label>
                     <div className="text-lg font-semibold text-primary mb-2">${avgRevenuePerDeal[0].toLocaleString()} per funded business</div>
-                    <Slider
-                      value={avgRevenuePerDeal}
-                      onValueChange={setAvgRevenuePerDeal}
-                      max={20000}
-                      min={3500}
-                      step={100}
-                      className="w-full"   
-                    />
+                    <Slider value={avgRevenuePerDeal} onValueChange={setAvgRevenuePerDeal} max={20000} min={3500} step={100} className="w-full" />
                     <div className="flex justify-between text-xs text-muted-foreground mt-4">
                       <span>$3,500 (Small Deals)</span>
                       <span>$20,000 (Large Deals)</span>
@@ -504,16 +452,14 @@ const BrokerSignup = () => {
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">
-              {benefits.map((benefit, index) => (
-                <Card key={index} className="text-center h-full">
+              {benefits.map((benefit, index) => <Card key={index} className="text-center h-full">
                   <CardContent className="p-6">
                     <div className="text-4xl font-bold text-primary mb-2">{benefit.percentage}</div>
                     <div className="text-sm text-muted-foreground mb-4">{benefit.metric}</div>
                     <h3 className="text-lg font-semibold text-foreground mb-3">{benefit.title}</h3>
                     <p className="text-muted-foreground text-sm">{benefit.description}</p>
                   </CardContent>
-                </Card>
-              ))}
+                </Card>)}
             </div>
           </div>
         </div>
@@ -532,17 +478,12 @@ const BrokerSignup = () => {
           </div>
 
           <div className="max-w-4xl mx-auto">
-            <CalendlyInline 
-              url="https://calendly.com/leandro-truenorth-businessloan/30min" 
-              height={700} 
-            />
+            <CalendlyInline url="https://calendly.com/leandro-truenorth-businessloan/30min" height={700} />
           </div>
         </div>
       </section>
 
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default BrokerSignup;
