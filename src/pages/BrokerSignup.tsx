@@ -159,7 +159,7 @@ const BrokerSignup = () => {
             <div className="mt-12 max-w-4xl mx-auto">
               <CalendlyInline 
                 url="https://calendly.com/leandro-truenorth-businessloan/30min" 
-                height={700} 
+                height={1200} 
               />
             </div>
           </div>
@@ -413,7 +413,7 @@ const BrokerSignup = () => {
           </div>
 
           <div className="max-w-4xl mx-auto">
-            <CalendlyInline url="https://calendly.com/leandro-truenorth-businessloan/30min" height={700} />
+            <CalendlyInline url="https://calendly.com/leandro-truenorth-businessloan/30min" height={1200} />
           </div>
         </div>
       </section>
