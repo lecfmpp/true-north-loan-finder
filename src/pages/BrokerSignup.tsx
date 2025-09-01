@@ -158,61 +158,7 @@ const BrokerSignup = () => {
       </section>
 
       {/* Leads Simulation */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                <span className="text-primary">28 Minute</span> Merchant Cash Advance TrueNorth Business
-              </h2>
-              <p className="text-lg text-muted-foreground">
-                Live feed of actual leads being generated right now
-              </p>
-            </div>
-
-            <div className="grid gap-4 md:gap-6">
-              {sampleLeads.map((lead, index) => <Card key={index} className="border-l-4 border-l-primary">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold text-lg text-foreground">{lead.businessName}</h3>
-                          <Badge variant="secondary">{lead.industry}</Badge>
-                          <Badge variant="outline" className="text-green-600 border-green-600">
-                            {lead.timeAgo}
-                          </Badge>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                          <div>
-                            <span className="text-muted-foreground">Contact:</span>
-                            <p className="font-medium">{lead.contactName}</p>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Loan Amount:</span>
-                            <p className="font-medium text-primary">{lead.loanAmount}</p>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Credit Score:</span>
-                            <p className="font-medium">{lead.creditScore}</p>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Phone:</span>
-                            <p className="font-medium blur-sm select-none">{lead.phone}</p>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                        Unlock Trial
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>)}
-            </div>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Target Audience */}
       <section className="py-16 bg-muted/30">
@@ -282,7 +228,7 @@ const BrokerSignup = () => {
                 <CardContent className="space-y-6">
                   <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
                     <label className="block text-sm font-medium text-foreground mb-3">
-                      Minimum Criteria Lead Profile - ${costPerLead} per lead
+                      Good Tier Lead (45-64) - ${costPerLead} per lead
                     </label>
                     
                     <div className="grid grid-cols-2 gap-3 mb-3">
@@ -306,7 +252,7 @@ const BrokerSignup = () => {
                         <DollarSign className="w-4 h-4 text-primary" />
                         <div>
                           <p className="text-xs text-muted-foreground">Loan Amount</p>
-                          <p className="text-sm font-semibold">$25K+</p>
+                          <p className="text-sm font-semibold">$25K - $250K</p>
                         </div>
                       </div>
                       
@@ -323,12 +269,9 @@ const BrokerSignup = () => {
                   </div>
 
                   <div>
-                    <div className="flex items-start gap-3 mb-3">
-                      <div className="bg-green-600 text-blue-900 font-bold text-sm px-2 py-1 rounded-md">1</div>
-                      <label className="block text-lg font-semibold text-foreground">
-                        How many qualified leads do you need each month to hit your targets?
-                      </label>
-                    </div>
+                    <label className="block text-lg font-semibold text-foreground mb-3">
+                      How many qualified leads do you need each month to hit your targets?
+                    </label>
                     <div className="text-lg font-semibold text-primary mb-2">{leadsPerMonth[0]} leads per month</div>
                     <Slider value={leadsPerMonth} onValueChange={setLeadsPerMonth} max={500} min={50} step={10} className="w-full" />
                     <div className="flex justify-between text-xs text-muted-foreground mt-4">
@@ -338,25 +281,19 @@ const BrokerSignup = () => {
                   </div>
 
                   <div>
-                    <div className="flex items-start gap-3 mb-3">
-                      <div className="bg-green-600 text-blue-900 font-bold text-sm px-2 py-1 rounded-md">2</div>
-                      <label className="block text-lg font-semibold text-foreground">What's your current closing rate on qualified leads?</label>
-                    </div>
+                    <label className="block text-lg font-semibold text-foreground mb-3">What's your current closing rate on qualified leads?</label>
                     <div className="text-lg font-semibold text-primary mb-2">{fundRate[0]}% funding rate</div>
                     <Slider value={fundRate} onValueChange={setFundRate} max={80} min={20} step={1} className="w-full" />
                     <div className="flex justify-between text-xs text-muted-foreground mt-4">
-                      <span>20% Client's Average</span>
+                      <span>20% (Industry Average)</span>
                       <span>80% (Top Performers)</span>
                     </div>
                   </div>
 
                   <div>
-                    <div className="flex items-start gap-3 mb-3">
-                      <div className="bg-green-600 text-blue-900 font-bold text-sm px-2 py-1 rounded-md">3</div>
-                      <label className="block text-lg font-semibold text-foreground">
-                        What's your average commission per funded deal?
-                      </label>
-                    </div>
+                    <label className="block text-lg font-semibold text-foreground mb-3">
+                      What's your average commission per funded deal?
+                    </label>
                     <div className="text-lg font-semibold text-primary mb-2">${avgRevenuePerDeal[0].toLocaleString()} per funded business</div>
                     <Slider value={avgRevenuePerDeal} onValueChange={setAvgRevenuePerDeal} max={20000} min={3500} step={100} className="w-full" />
                     <div className="flex justify-between text-xs text-muted-foreground mt-4">
@@ -376,7 +313,7 @@ const BrokerSignup = () => {
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center p-4 bg-muted/50 rounded-lg">
-                      <span className="text-muted-foreground">Total Lead Cost</span>
+                      <span className="text-muted-foreground">Total Monthly Spend</span>
                       <span className="text-lg font-semibold text-foreground">${totalSpend.toLocaleString()}</span>
                     </div>
                     
