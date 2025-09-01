@@ -13,13 +13,13 @@ const BrokerSignup = () => {
   const costPerLead = 100; // Fixed at $100
   const [leadsPerMonth, setLeadsPerMonth] = useState([100]);
   const [fundRate, setFundRate] = useState([15]);
-  const [avgFundedAmount, setAvgFundedAmount] = useState([75000]);
+  const [avgRevenuePerDeal, setAvgRevenuePerDeal] = useState([3000]);
   const [commissionRate, setCommissionRate] = useState([8]);
 
   const totalSpend = costPerLead * leadsPerMonth[0];
   const applications = Math.round(leadsPerMonth[0] * 0.2); // Assuming 20% application rate from leads
   const funded = Math.round(applications * (fundRate[0] / 100));
-  const totalCommission = funded * avgFundedAmount[0] * (commissionRate[0] / 100);
+  const totalCommission = funded * avgRevenuePerDeal[0];
   const roi = totalSpend > 0 ? Math.round(((totalCommission - totalSpend) / totalSpend) * 100) : 0;
 
   // Sample leads data
@@ -352,14 +352,14 @@ const BrokerSignup = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-2">
-                      Avg Funded Amount: ${avgFundedAmount[0].toLocaleString()}
+                      Avg Revenue per Funded Business: ${avgRevenuePerDeal[0].toLocaleString()}
                     </label>
                     <Slider
-                      value={avgFundedAmount}
-                      onValueChange={setAvgFundedAmount}
-                      max={200000}
-                      min={25000}
-                      step={5000}
+                      value={avgRevenuePerDeal}
+                      onValueChange={setAvgRevenuePerDeal}
+                      max={20000}
+                      min={500}
+                      step={100}
                       className="w-full"   
                     />
                   </div>
