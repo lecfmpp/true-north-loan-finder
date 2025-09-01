@@ -12,8 +12,8 @@ import CalendlyInline from "@/components/CalendlyInline";
 const BrokerSignup = () => {
   const costPerLead = 100; // Fixed at $100
   const [leadsPerMonth, setLeadsPerMonth] = useState([100]);
-  const [fundRate, setFundRate] = useState([15]);
-  const [avgRevenuePerDeal, setAvgRevenuePerDeal] = useState([3000]);
+  const [fundRate, setFundRate] = useState([25]);
+  const [avgRevenuePerDeal, setAvgRevenuePerDeal] = useState([3500]);
 
   const totalSpend = costPerLead * leadsPerMonth[0];
   const applications = Math.round(leadsPerMonth[0] * 0.2); // Assuming 20% application rate from leads
@@ -343,7 +343,7 @@ const BrokerSignup = () => {
                       value={fundRate}
                       onValueChange={setFundRate}
                       max={80}
-                      min={15}
+                      min={25}
                       step={1}
                       className="w-full"
                     />
@@ -357,7 +357,7 @@ const BrokerSignup = () => {
                       value={avgRevenuePerDeal}
                       onValueChange={setAvgRevenuePerDeal}
                       max={20000}
-                      min={2500}
+                      min={3500}
                       step={100}
                       className="w-full"   
                     />
