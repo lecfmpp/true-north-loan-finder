@@ -310,14 +310,46 @@ const BrokerSignup = () => {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Cost Per Lead (Fixed)
+                    <label className="block text-sm font-medium text-foreground mb-3">
+                      Good Tier Lead Profile - ${costPerLead} per lead
                     </label>
-                    <div className="text-2xl font-bold text-primary">
-                      ${costPerLead}
+                    
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4 text-primary" />
+                        <div>
+                          <p className="text-xs text-muted-foreground">Monthly Revenue</p>
+                          <p className="text-sm font-semibold">$50K - $150K</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-primary" />
+                        <div>
+                          <p className="text-xs text-muted-foreground">Time in Business</p>
+                          <p className="text-sm font-semibold">2+ Years</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="w-4 h-4 text-primary" />
+                        <div>
+                          <p className="text-xs text-muted-foreground">Loan Amount</p>
+                          <p className="text-sm font-semibold">$25K - $250K</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <Star className="w-4 h-4 text-primary" />
+                        <div>
+                          <p className="text-xs text-muted-foreground">Credit Score</p>
+                          <p className="text-sm font-semibold">640+</p>
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Transparent, competitive pricing for all partners
+                    
+                    <p className="text-xs text-muted-foreground">
+                      Pre-qualified, exclusive leads delivered within hours
                     </p>
                   </div>
 
