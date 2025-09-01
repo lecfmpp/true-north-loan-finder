@@ -357,7 +357,7 @@ const BrokerSignup = () => {
                       value={avgRevenuePerDeal}
                       onValueChange={setAvgRevenuePerDeal}
                       max={20000}
-                      min={500}
+                      min={2000}
                       step={100}
                       className="w-full"   
                     />
