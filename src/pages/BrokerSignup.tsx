@@ -323,7 +323,7 @@ const BrokerSignup = () => {
                   </div>
 
                   <div>
-                    <div className="flex items-center gap-3 mb-3">
+                    <div className="flex items-start gap-3 mb-3">
                       <div className="bg-green-600 text-blue-900 font-bold text-sm px-2 py-1 rounded-md">1</div>
                       <label className="block text-lg font-semibold text-foreground">
                         How many qualified leads do you need each month to hit your targets?
@@ -338,7 +338,7 @@ const BrokerSignup = () => {
                   </div>
 
                   <div>
-                    <div className="flex items-center gap-3 mb-3">
+                    <div className="flex items-start gap-3 mb-3">
                       <div className="bg-green-600 text-blue-900 font-bold text-sm px-2 py-1 rounded-md">2</div>
                       <label className="block text-lg font-semibold text-foreground">What's your current closing rate on qualified leads?</label>
                     </div>
@@ -351,7 +351,7 @@ const BrokerSignup = () => {
                   </div>
 
                   <div>
-                    <div className="flex items-center gap-3 mb-3">
+                    <div className="flex items-start gap-3 mb-3">
                       <div className="bg-green-600 text-blue-900 font-bold text-sm px-2 py-1 rounded-md">3</div>
                       <label className="block text-lg font-semibold text-foreground">
                         What's your average commission per funded deal?
