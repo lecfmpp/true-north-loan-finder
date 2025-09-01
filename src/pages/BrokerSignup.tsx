@@ -178,10 +178,13 @@ const BrokerSignup = () => {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
-                Transparent Pricing
+                "Show Me The Money" Calculator
               </h2>
               <p className="text-lg text-primary-foreground/80">
-                <span className="text-primary-foreground font-semibold">Results</span> - Calculator ROI-Calculator for Brokers
+                Plug in your numbers. Watch your potential profits unfold. 
+                <span className="text-primary-foreground font-semibold block mt-2">
+                  Because seeing is believing—and believing is buying.
+                </span>
               </p>
             </div>
 
