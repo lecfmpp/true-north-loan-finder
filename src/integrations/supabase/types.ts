@@ -2528,6 +2528,33 @@ export type Database = {
         }
         Relationships: []
       }
+      video_settings: {
+        Row: {
+          created_at: string
+          embed_code: string | null
+          id: string
+          updated_at: string
+          video_title: string | null
+          video_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          embed_code?: string | null
+          id?: string
+          updated_at?: string
+          video_title?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          embed_code?: string | null
+          id?: string
+          updated_at?: string
+          video_title?: string | null
+          video_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

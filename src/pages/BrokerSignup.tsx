@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,17 +7,104 @@ import { CheckCircle, DollarSign, TrendingUp, Users, Shield, Phone, Mail, MapPin
 import SEOHead from "@/components/SEOHead";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
 
 const BrokerSignup = () => {
   const costPerLead = 100; // Fixed at $100
   const [leadsPerMonth, setLeadsPerMonth] = useState([100]);
   const [fundRate, setFundRate] = useState([25]);
   const [avgRevenuePerDeal, setAvgRevenuePerDeal] = useState([3500]);
+  const [videoSettings, setVideoSettings] = useState<{
+    video_url?: string;
+    embed_code?: string;
+    video_title: string;
+  } | null>(null);
   const totalSpend = costPerLead * leadsPerMonth[0];
   const applications = Math.round(leadsPerMonth[0] * 0.2); // Assuming 20% application rate from leads
   const funded = Math.round(applications * (fundRate[0] / 100));
   const totalCommission = funded * avgRevenuePerDeal[0];
   const roi = totalSpend > 0 ? Math.round((totalCommission - totalSpend) / totalSpend * 100) : 0;
+
+  useEffect(() => {
+    loadVideoSettings();
+  }, []);
+
+  const loadVideoSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('video_settings')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error loading video settings:', error);
+        return;
+      }
+
+      if (data) {
+        setVideoSettings(data);
+      }
+    } catch (error) {
+      console.error('Error loading video settings:', error);
+    }
+  };
+
+  const renderVideo = () => {
+    if (!videoSettings) return null;
+
+    // If embed code is provided, use it (it takes priority)
+    if (videoSettings.embed_code) {
+      return (
+        <div 
+          className="aspect-video bg-muted rounded-lg overflow-hidden"
+          dangerouslySetInnerHTML={{ __html: videoSettings.embed_code }}
+        />
+      );
+    }
+
+    // If video URL is provided, create an iframe
+    if (videoSettings.video_url) {
+      let embedUrl = videoSettings.video_url;
+      
+      // Convert YouTube URLs to embed format
+      if (embedUrl.includes('youtube.com/watch?v=')) {
+        const videoId = embedUrl.split('v=')[1]?.split('&')[0];
+        embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      } else if (embedUrl.includes('youtu.be/')) {
+        const videoId = embedUrl.split('youtu.be/')[1]?.split('?')[0];
+        embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      }
+      // Convert Vimeo URLs to embed format  
+      else if (embedUrl.includes('vimeo.com/')) {
+        const videoId = embedUrl.split('vimeo.com/')[1]?.split('?')[0];
+        embedUrl = `https://player.vimeo.com/video/${videoId}`;
+      }
+
+      return (
+        <div className="aspect-video bg-muted rounded-lg overflow-hidden">
+          <iframe
+            src={embedUrl}
+            className="w-full h-full"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            title={videoSettings.video_title}
+          />
+        </div>
+      );
+    }
+
+    // Fallback to placeholder
+    return (
+      <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
+        <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center">
+          <div className="w-0 h-0 border-l-8 border-l-primary-foreground border-t-6 border-t-transparent border-b-6 border-b-transparent ml-1"></div>
+        </div>
+      </div>
+    );
+  };
 
   // Sample leads data
   const sampleLeads = [{
@@ -144,10 +231,8 @@ const BrokerSignup = () => {
             </h2>
             
             <div className="bg-card rounded-lg shadow-lg p-8 max-w-2xl mx-auto">
-              <div className="aspect-video bg-muted rounded-lg mb-6 flex items-center justify-center">
-                <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center">
-                  <div className="w-0 h-0 border-l-8 border-l-primary-foreground border-t-6 border-t-transparent border-b-6 border-b-transparent ml-1"></div>
-                </div>
+              <div className="mb-6">
+                {renderVideo()}
               </div>
               <p className="text-lg text-muted-foreground">
                 See exactly how our exclusive lead system works and get your first 10 leads delivered within 48 hours.
@@ -252,7 +337,7 @@ const BrokerSignup = () => {
                         <DollarSign className="w-4 h-4 text-primary" />
                         <div>
                           <p className="text-xs text-muted-foreground">Loan Amount</p>
-                          <p className="text-sm font-semibold">$25K - $250K</p>
+                          <p className="text-sm font-semibold">$25K+</p>
                         </div>
                       </div>
                       

@@ -29,6 +29,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import NotificationEmailSettings from './NotificationEmailSettings';
 import LeadPricingManagement from './LeadPricingManagement';
 import MakeIntegrationManagement from './MakeIntegrationManagement';
+import VideoManagement from './VideoManagement';
 
 interface GoogleSettings {
   serviceAccountKey: string;
@@ -200,7 +201,7 @@ const SettingsManagement = () => {
       </div>
 
       <Tabs defaultValue="email" className="space-y-6">
-        <TabsList className={`grid w-full ${isSuperAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}>
+        <TabsList className={`grid w-full ${isSuperAdmin ? 'grid-cols-4' : 'grid-cols-3'}`}>
           <TabsTrigger value="email" className="flex items-center gap-2">
             <Mail className="h-4 w-4" />
             Email Settings
@@ -208,6 +209,10 @@ const SettingsManagement = () => {
           <TabsTrigger value="pricing" className="flex items-center gap-2">
             <DollarSign className="h-4 w-4" />
             Lead Pricing
+          </TabsTrigger>
+          <TabsTrigger value="video" className="flex items-center gap-2">
+            <Video className="h-4 w-4" />
+            Video Settings
           </TabsTrigger>
           {isSuperAdmin && (
             <TabsTrigger value="make-integration" className="flex items-center gap-2">
@@ -223,6 +228,10 @@ const SettingsManagement = () => {
 
         <TabsContent value="pricing" className="space-y-6">
           <LeadPricingManagement />
+        </TabsContent>
+
+        <TabsContent value="video" className="space-y-6">
+          <VideoManagement />
         </TabsContent>
 
         {isSuperAdmin && (
