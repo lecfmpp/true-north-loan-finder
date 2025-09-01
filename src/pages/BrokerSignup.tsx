@@ -311,7 +311,7 @@ const BrokerSignup = () => {
                 <CardContent className="space-y-6">
                   <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
                     <label className="block text-sm font-medium text-foreground mb-3">
-                      Good Tier Lead Profile - ${costPerLead} per lead
+                      Good Tier Lead (45-64) - ${costPerLead} per lead
                     </label>
                     
                     <div className="grid grid-cols-2 gap-3 mb-3">
@@ -319,7 +319,7 @@ const BrokerSignup = () => {
                         <TrendingUp className="w-4 h-4 text-primary" />
                         <div>
                           <p className="text-xs text-muted-foreground">Monthly Revenue</p>
-                          <p className="text-sm font-semibold">$50K - $150K</p>
+                          <p className="text-sm font-semibold">Minimum $25K</p>
                         </div>
                       </div>
                       
@@ -327,7 +327,7 @@ const BrokerSignup = () => {
                         <Clock className="w-4 h-4 text-primary" />
                         <div>
                           <p className="text-xs text-muted-foreground">Time in Business</p>
-                          <p className="text-sm font-semibold">2+ Years</p>
+                          <p className="text-sm font-semibold">Minimum 6 Months</p>
                         </div>
                       </div>
                       
@@ -343,7 +343,7 @@ const BrokerSignup = () => {
                         <Star className="w-4 h-4 text-primary" />
                         <div>
                           <p className="text-xs text-muted-foreground">Credit Score</p>
-                          <p className="text-sm font-semibold">640+</p>
+                          <p className="text-sm font-semibold">Minimum 600</p>
                         </div>
                       </div>
                     </div>
