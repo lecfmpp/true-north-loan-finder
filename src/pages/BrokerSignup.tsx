@@ -7,7 +7,7 @@ import { CheckCircle, DollarSign, TrendingUp, Users, Shield, Phone, Mail, MapPin
 import SEOHead from "@/components/SEOHead";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import CalendlyInline from "@/components/CalendlyInline";
+
 const BrokerSignup = () => {
   const costPerLead = 100; // Fixed at $100
   const [leadsPerMonth, setLeadsPerMonth] = useState([100]);
@@ -422,7 +422,8 @@ const BrokerSignup = () => {
           </div>
 
           <div className="max-w-4xl mx-auto">
-            <CalendlyInline url="https://calendly.com/leandro-truenorth-businessloan/30min" height={700} />
+            <div className="calendly-inline-widget" data-url="https://calendly.com/leandro-truenorth-businessloan/30min?hide_gdpr_banner=1" style={{minWidth: "320px", height: "700px"}}></div>
+            <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
           </div>
         </div>
       </section>
