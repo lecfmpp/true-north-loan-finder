@@ -337,7 +337,7 @@ const BrokerSignup = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-2">
-                      Fund Rate: {fundRate[0]}%
+                      Client Close: {fundRate[0]}%
                     </label>
                     <Slider
                       value={fundRate}
