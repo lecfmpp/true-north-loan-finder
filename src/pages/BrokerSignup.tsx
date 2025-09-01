@@ -343,7 +343,7 @@ const BrokerSignup = () => {
                     <Slider
                       value={fundRate}
                       onValueChange={setFundRate}
-                      max={30}
+                      max={80}
                       min={5}
                       step={1}
                       className="w-full"
