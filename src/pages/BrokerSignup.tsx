@@ -280,7 +280,7 @@ const BrokerSignup = () => {
                         <DollarSign className="w-4 h-4 text-primary" />
                         <div>
                           <p className="text-xs text-muted-foreground">Loan Amount</p>
-                          <p className="text-sm font-semibold">$25K - $250K</p>
+                          <p className="text-sm font-semibold">Minimum 25k</p>
                         </div>
                       </div>
                       
