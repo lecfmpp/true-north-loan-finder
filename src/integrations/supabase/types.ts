@@ -2533,6 +2533,8 @@ export type Database = {
           created_at: string
           embed_code: string | null
           id: string
+          is_active: boolean
+          page_identifier: string
           updated_at: string
           video_title: string | null
           video_url: string | null
@@ -2541,6 +2543,8 @@ export type Database = {
           created_at?: string
           embed_code?: string | null
           id?: string
+          is_active?: boolean
+          page_identifier?: string
           updated_at?: string
           video_title?: string | null
           video_url?: string | null
@@ -2549,6 +2553,8 @@ export type Database = {
           created_at?: string
           embed_code?: string | null
           id?: string
+          is_active?: boolean
+          page_identifier?: string
           updated_at?: string
           video_title?: string | null
           video_url?: string | null
