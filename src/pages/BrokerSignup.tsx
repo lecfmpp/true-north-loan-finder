@@ -354,8 +354,8 @@ const BrokerSignup = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-3">
-                      📊 How many qualified leads do you need each month to hit your targets?
+                    <label className="block text-lg font-semibold text-foreground mb-3">
+                      How many qualified leads do you need each month to hit your targets?
                     </label>
                     <div className="text-lg font-semibold text-primary mb-2">{leadsPerMonth[0]} leads per month</div>
                     <Slider
@@ -366,15 +366,15 @@ const BrokerSignup = () => {
                       step={10}
                       className="w-full"
                     />
-                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                    <div className="flex justify-between text-xs text-muted-foreground mt-4">
                       <span>50 leads</span>
                       <span>500 leads</span>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-3">
-                      🎯 What's your current closing rate on pre-qualified leads?
+                    <label className="block text-lg font-semibold text-foreground mb-3">
+                      What's your current closing rate on pre-qualified leads?
                     </label>
                     <div className="text-lg font-semibold text-primary mb-2">{fundRate[0]}% funding rate</div>
                     <Slider
@@ -385,15 +385,15 @@ const BrokerSignup = () => {
                       step={1}
                       className="w-full"
                     />
-                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                    <div className="flex justify-between text-xs text-muted-foreground mt-4">
                       <span>25% (Industry Average)</span>
                       <span>80% (Top Performers)</span>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-3">
-                      💰 What's your average commission per funded deal?
+                    <label className="block text-lg font-semibold text-foreground mb-3">
+                      What's your average commission per funded deal?
                     </label>
                     <div className="text-lg font-semibold text-primary mb-2">${avgRevenuePerDeal[0].toLocaleString()} per funded business</div>
                     <Slider
@@ -404,7 +404,7 @@ const BrokerSignup = () => {
                       step={100}
                       className="w-full"   
                     />
-                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                    <div className="flex justify-between text-xs text-muted-foreground mt-4">
                       <span>$3,500 (Small Deals)</span>
                       <span>$20,000 (Large Deals)</span>
                     </div>
