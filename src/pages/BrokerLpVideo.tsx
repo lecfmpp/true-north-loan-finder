@@ -23,15 +23,15 @@ const BrokerLpVideo = () => {
   const roi = totalSpend > 0 ? Math.round((totalCommission - totalSpend) / totalSpend * 100) : 0;
 
   // Load video settings for the video section
-  const [videoSettings, setVideoSettings] = useState<{ video_url: string | null; embed_code: string | null; video_title: string | null } | null>(null);
+  const [videoSettings, setVideoSettings] = useState<{ video_url: string | null; embed_code: string | null; video_title: string | null; page_identifier?: string; is_active?: boolean } | null>(null);
   const [videoError, setVideoError] = useState<string | null>(null);
   useEffect(() => {
     const loadVideo = async () => {
       const { data, error } = await supabase
         .from('video_settings')
         .select('*')
-        .order('updated_at', { ascending: false })
-        .limit(1)
+        .eq('page_identifier', 'broker-lp-video')
+        .eq('is_active', true)
         .single();
       if (error && (error as any).code !== 'PGRST116') {
         setVideoError(error.message);
