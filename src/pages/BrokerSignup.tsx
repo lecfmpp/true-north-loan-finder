@@ -388,6 +388,11 @@ const BrokerSignup = () => {
                       <span className="text-2xl font-bold text-primary">${totalCommission.toLocaleString()}</span>
                     </div>
                     
+                    <div className="flex justify-between items-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <span className="text-blue-800 font-medium">Gross Profit</span>
+                      <span className="text-2xl font-bold text-blue-600">${(totalCommission - totalSpend).toLocaleString()}</span>
+                    </div>
+                    
                     <div className="flex justify-between items-center p-4 bg-green-50 rounded-lg border border-green-200">
                       <span className="text-green-800 font-medium">Monthly ROI</span>
                       <span className="text-2xl font-bold text-green-600">{roi}%</span>
