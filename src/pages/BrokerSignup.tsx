@@ -95,7 +95,7 @@ const BrokerSignup = () => {
   const benefits = [{
     title: "Pre-Qualified Leads Only",
     description: "Every lead is pre-screened and qualified before delivery",
-    percentage: "98%",
+    percentage: "20%",
     metric: "Qualification Rate"
   }, {
     title: "Exclusive For Your Rights",
