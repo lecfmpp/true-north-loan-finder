@@ -394,11 +394,6 @@ const BrokerSignup = () => {
                     </div>
                     
                     <div className="flex justify-between items-center p-4 bg-muted/50 rounded-lg">
-                      <span className="text-muted-foreground">Applications Generated</span>
-                      <span className="text-lg font-semibold text-foreground">{applications}</span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center p-4 bg-muted/50 rounded-lg">
                       <span className="text-muted-foreground">Deals Funded</span>
                       <span className="text-lg font-semibold text-primary">{funded}</span>
                     </div>
@@ -413,14 +408,10 @@ const BrokerSignup = () => {
                       <span className="text-2xl font-bold text-green-600">{roi}%</span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 text-center">
+                    <div className="grid grid-cols-3 gap-4 text-center">
                       <div className="bg-muted/50 p-4 rounded-lg">
                         <p className="text-2xl font-bold text-primary">{leadsPerMonth[0]}</p>
                         <p className="text-sm text-muted-foreground">Leads/Month</p>
-                      </div>
-                      <div className="bg-muted/50 p-4 rounded-lg">
-                        <p className="text-2xl font-bold text-blue-600">{applications}</p>
-                        <p className="text-sm text-muted-foreground">Applications</p>
                       </div>
                       <div className="bg-muted/50 p-4 rounded-lg">
                         <p className="text-2xl font-bold text-green-600">{funded}</p>
