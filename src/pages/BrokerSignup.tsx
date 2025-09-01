@@ -170,23 +170,10 @@ const BrokerSignup = () => {
         </div>
       </section>
 
-      {/* Calendly Section */}
-      <section id="calendly-section" className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-              Ready to Start Getting Exclusive Leads?
-            </h2>
-            <p className="text-xl text-muted-foreground mb-8">
-              Book a strategy call to discuss your lead requirements and get started with your first batch of pre-qualified leads.
-            </p>
-          </div>
 
-          <div className="max-w-4xl mx-auto">
-            <CalendlyInline url="https://calendly.com/leandro-truenorth-businessloan/30min" height={1200} />
-          </div>
-        </div>
-      </section>
+
+      {/* Leads Simulation */}
+      
 
       {/* Target Audience */}
       <section className="py-16 bg-muted/30">
@@ -413,6 +400,24 @@ const BrokerSignup = () => {
                   </CardContent>
                 </Card>)}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Calendly Section */}
+      <section id="calendly-section" className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
+              Ready to Start Getting Exclusive Leads?
+            </h2>
+            <p className="text-xl text-muted-foreground mb-8">
+              Book a strategy call to discuss your lead requirements and get started with your first batch of pre-qualified leads.
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto">
+            <CalendlyInline url="https://calendly.com/leandro-truenorth-businessloan/30min" height={1200} />
           </div>
         </div>
       </section>
