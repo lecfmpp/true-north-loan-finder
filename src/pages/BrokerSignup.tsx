@@ -329,7 +329,7 @@ const BrokerSignup = () => {
                       value={leadsPerMonth}
                       onValueChange={setLeadsPerMonth}
                       max={500}
-                      min={10}
+                      min={50}
                       step={10}
                       className="w-full"
                     />
