@@ -34,7 +34,7 @@ const BrokerSignup = () => {
       const { data, error } = await supabase
         .from('video_settings')
         .select('*')
-        .order('created_at', { ascending: false })
+        .order('updated_at', { ascending: false })
         .limit(1)
         .single();
 
