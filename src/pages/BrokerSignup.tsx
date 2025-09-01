@@ -167,33 +167,6 @@ const BrokerSignup = () => {
       </section>
 
 
-      {/* Trial Section */}
-      <section className="py-16 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-              Book your '<span className="text-primary">25 Leads</span>' trial call and find out if we can start filling your pipeline this week.
-            </h2>
-            
-            <div className="bg-card rounded-lg shadow-lg p-8 max-w-2xl mx-auto">
-              <div className="aspect-video bg-muted rounded-lg mb-6 overflow-hidden">
-                {videoSettings?.embed_code ? (
-                  <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: videoSettings.embed_code }} />
-                ) : videoSettings?.video_url ? (
-                  <VideoEmbed url={videoSettings.video_url || undefined} title={videoSettings.video_title || 'Broker Program Video'} />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                    Video will appear here once configured.
-                  </div>
-                )}
-              </div>
-              <p className="text-lg text-muted-foreground">
-                See exactly how our exclusive lead system works and get your first 10 leads delivered within 48 hours.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Leads Simulation */}
       
