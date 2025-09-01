@@ -10,17 +10,14 @@ import Footer from "@/components/Footer";
 import CalendlyInline from "@/components/CalendlyInline";
 
 const BrokerSignup = () => {
-  const [costPerLead, setCostPerLead] = useState([50]);
+  const costPerLead = 100; // Fixed at $100
   const [leadsPerMonth, setLeadsPerMonth] = useState([100]);
-  const [contactRate, setContactRate] = useState([80]);
-  const [applicationRate, setApplicationRate] = useState([25]);
   const [fundRate, setFundRate] = useState([15]);
   const [avgFundedAmount, setAvgFundedAmount] = useState([75000]);
   const [commissionRate, setCommissionRate] = useState([8]);
 
-  const totalSpend = costPerLead[0] * leadsPerMonth[0];
-  const contacted = Math.round(leadsPerMonth[0] * (contactRate[0] / 100));
-  const applications = Math.round(contacted * (applicationRate[0] / 100));
+  const totalSpend = costPerLead * leadsPerMonth[0];
+  const applications = Math.round(leadsPerMonth[0] * 0.2); // Assuming 20% application rate from leads
   const funded = Math.round(applications * (fundRate[0] / 100));
   const totalCommission = funded * avgFundedAmount[0] * (commissionRate[0] / 100);
   const roi = totalSpend > 0 ? Math.round(((totalCommission - totalSpend) / totalSpend) * 100) : 0;
@@ -313,18 +310,16 @@ const BrokerSignup = () => {
                   <p className="text-muted-foreground">Calculate your potential returns</p>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div>
+                  <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
                     <label className="block text-sm font-medium text-foreground mb-2">
-                      Cost Per Lead: ${costPerLead[0]}
+                      Cost Per Lead (Fixed)
                     </label>
-                    <Slider
-                      value={costPerLead}
-                      onValueChange={setCostPerLead}
-                      max={200}
-                      min={25}
-                      step={5}
-                      className="w-full"
-                    />
+                    <div className="text-2xl font-bold text-primary">
+                      ${costPerLead}
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Transparent, competitive pricing for all partners
+                    </p>
                   </div>
 
                   <div>
@@ -337,34 +332,6 @@ const BrokerSignup = () => {
                       max={500}
                       min={10}
                       step={10}
-                      className="w-full"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Contact Rate: {contactRate[0]}%
-                    </label>
-                    <Slider
-                      value={contactRate}
-                      onValueChange={setContactRate}
-                      max={100}
-                      min={50}
-                      step={5}
-                      className="w-full"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Application Rate: {applicationRate[0]}%
-                    </label>
-                    <Slider
-                      value={applicationRate}
-                      onValueChange={setApplicationRate}
-                      max={50}
-                      min={10}
-                      step={5}
                       className="w-full"
                     />
                   </div>
@@ -427,11 +394,6 @@ const BrokerSignup = () => {
                     </div>
                     
                     <div className="flex justify-between items-center p-4 bg-muted/50 rounded-lg">
-                      <span className="text-muted-foreground">Leads Contacted</span>
-                      <span className="text-lg font-semibold text-foreground">{contacted}</span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center p-4 bg-muted/50 rounded-lg">
                       <span className="text-muted-foreground">Applications Generated</span>
                       <span className="text-lg font-semibold text-foreground">{applications}</span>
                     </div>
@@ -449,6 +411,25 @@ const BrokerSignup = () => {
                     <div className="flex justify-between items-center p-4 bg-green-50 rounded-lg border border-green-200">
                       <span className="text-green-800 font-medium">Monthly ROI</span>
                       <span className="text-2xl font-bold text-green-600">{roi}%</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 text-center">
+                      <div className="bg-muted/50 p-4 rounded-lg">
+                        <p className="text-2xl font-bold text-primary">{leadsPerMonth[0]}</p>
+                        <p className="text-sm text-muted-foreground">Leads/Month</p>
+                      </div>
+                      <div className="bg-muted/50 p-4 rounded-lg">
+                        <p className="text-2xl font-bold text-blue-600">{applications}</p>
+                        <p className="text-sm text-muted-foreground">Applications</p>
+                      </div>
+                      <div className="bg-muted/50 p-4 rounded-lg">
+                        <p className="text-2xl font-bold text-green-600">{funded}</p>
+                        <p className="text-sm text-muted-foreground">Funded</p>
+                      </div>
+                      <div className="bg-muted/50 p-4 rounded-lg">
+                        <p className="text-2xl font-bold text-primary">${costPerLead}</p>
+                        <p className="text-sm text-muted-foreground">Cost/Lead</p>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
