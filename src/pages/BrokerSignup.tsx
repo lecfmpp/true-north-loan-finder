@@ -147,7 +147,11 @@ const BrokerSignup = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8">
+              <Button 
+                size="lg" 
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8"
+                onClick={() => document.getElementById('calendly-section')?.scrollIntoView({ behavior: 'smooth' })}
+              >
                 Book "25 Leads Trial" Strategy Call
               </Button>
               <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary/10">
@@ -401,7 +405,7 @@ const BrokerSignup = () => {
       </section>
 
       {/* Calendly Section */}
-      <section className="py-16">
+      <section id="calendly-section" className="py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center mb-8">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
