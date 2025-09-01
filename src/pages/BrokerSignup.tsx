@@ -335,9 +335,7 @@ const BrokerSignup = () => {
                   </div>
 
                   <div>
-                    <label className="block text-lg font-semibold text-foreground mb-3">
-                      What's your current closing rate on pre-qualified leads?
-                    </label>
+                    <label className="block text-lg font-semibold text-foreground mb-3">What's your current closing rate on qualified leads?</label>
                     <div className="text-lg font-semibold text-primary mb-2">{fundRate[0]}% funding rate</div>
                     <Slider value={fundRate} onValueChange={setFundRate} max={80} min={25} step={1} className="w-full" />
                     <div className="flex justify-between text-xs text-muted-foreground mt-4">
