@@ -256,7 +256,7 @@ const BrokerSignup = () => {
                 <CardContent className="space-y-6">
                   <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
                     <label className="block text-sm font-medium text-foreground mb-3">
-                      Good Tier Lead (45-64) - ${costPerLead} per lead
+                      Good Tier Lead - ${costPerLead} per lead
                     </label>
                     
                     <div className="grid grid-cols-2 gap-3 mb-3">
