@@ -59,41 +59,91 @@ const handler = async (req: Request): Promise<Response> => {
     if (application.document_files && Array.isArray(application.document_files)) {
       for (const filePath of application.document_files) {
         try {
-          // Extract just the path from full URL if needed
+          // Extract the storage path from various URL formats
           let storageFilePath = filePath;
+          
           if (filePath.startsWith('http')) {
-            // Extract path from Supabase public URL
-            // Format: https://project.supabase.co/storage/v1/object/public/bucket-name/path
-            const match = filePath.match(/\/storage\/v1\/object\/public\/application-documents\/(.+)$/);
-            storageFilePath = match ? match[1] : filePath;
+            // Handle both public and private URL formats
+            // Private: https://project.supabase.co/storage/v1/object/application-documents/path
+            // Public: https://project.supabase.co/storage/v1/object/public/application-documents/path
+            const privateMatch = filePath.match(/\/storage\/v1\/object\/application-documents\/(.+)$/);
+            const publicMatch = filePath.match(/\/storage\/v1\/object\/public\/application-documents\/(.+)$/);
+            
+            if (publicMatch) {
+              storageFilePath = publicMatch[1];
+            } else if (privateMatch) {
+              storageFilePath = privateMatch[1];
+            } else {
+              // If no match, try to extract the file name from the path
+              const urlParts = filePath.split('/');
+              const fileNameWithTimestamp = urlParts[urlParts.length - 1];
+              storageFilePath = `applications/${fileNameWithTimestamp}`;
+            }
           }
           
           console.log(`Downloading file: ${storageFilePath}`);
+          
+          // Try to download using the service role key (has access to private buckets)
           const { data: fileData, error: fileError } = await supabase.storage
             .from('application-documents')
             .download(storageFilePath);
 
           if (!fileError && fileData) {
+            console.log(`Successfully downloaded file: ${storageFilePath}`);
             const arrayBuffer = await fileData.arrayBuffer();
-            const uint8Array = new Uint8Array(arrayBuffer);
+            const base64String = btoa(
+              String.fromCharCode(...new Uint8Array(arrayBuffer))
+            );
             
-            // Convert to base64 string for Resend (handle large files properly)
-            let base64String = '';
-            const chunkSize = 8192;
-            for (let i = 0; i < uint8Array.length; i += chunkSize) {
-              const chunk = uint8Array.subarray(i, i + chunkSize);
-              base64String += btoa(String.fromCharCode(...chunk));
+            // Extract filename from path (get the original filename if possible)
+            let fileName = filePath.split('/').pop() || filePath;
+            if (fileName.includes('-')) {
+              // Remove timestamp prefix from filename (format: timestamp-originalname)
+              const parts = fileName.split('-');
+              if (parts.length > 1) {
+                fileName = parts.slice(1).join('-');
+              }
             }
-            
-            // Extract filename from path
-            const fileName = filePath.split('/').pop() || filePath;
             
             attachments.push({
               filename: fileName,
               content: base64String,
             });
           } else {
-            console.error(`Failed to download file ${filePath}:`, fileError);
+            console.error(`Failed to download file ${storageFilePath}:`, fileError);
+            
+            // If the direct path failed, try with 'applications/' prefix
+            if (!storageFilePath.startsWith('applications/')) {
+              const alternativePath = `applications/${storageFilePath}`;
+              console.log(`Retrying with path: ${alternativePath}`);
+              
+              const { data: retryData, error: retryError } = await supabase.storage
+                .from('application-documents')
+                .download(alternativePath);
+                
+              if (!retryError && retryData) {
+                console.log(`Successfully downloaded file on retry: ${alternativePath}`);
+                const arrayBuffer = await retryData.arrayBuffer();
+                const base64String = btoa(
+                  String.fromCharCode(...new Uint8Array(arrayBuffer))
+                );
+                
+                let fileName = filePath.split('/').pop() || filePath;
+                if (fileName.includes('-')) {
+                  const parts = fileName.split('-');
+                  if (parts.length > 1) {
+                    fileName = parts.slice(1).join('-');
+                  }
+                }
+                
+                attachments.push({
+                  filename: fileName,
+                  content: base64String,
+                });
+              } else {
+                console.error(`Retry also failed for ${alternativePath}:`, retryError);
+              }
+            }
           }
         } catch (error) {
           console.error('File processing error for', filePath, ':', error);
