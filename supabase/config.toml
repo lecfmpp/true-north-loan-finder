@@ -130,3 +130,9 @@ verify_jwt = true
 
 [functions.auto-send-make-on-assignment]
 verify_jwt = false
+
+[functions.download-application-file]
+verify_jwt = true
+
+[functions.send-application-email]
+verify_jwt = true

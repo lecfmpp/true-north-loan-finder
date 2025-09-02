@@ -694,91 +694,33 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
         throw new Error('File path is empty or undefined');
       }
 
-      // Extract relative path from full URL if it's a Supabase storage URL
-      let relativePath = filePath;
-      const publicMatch = filePath.match(/\/storage\/v1\/object\/public\/application-documents\/(.+)$/);
-      const privateMatch = filePath.match(/\/storage\/v1\/object\/application-documents\/(.+)$/);
-      if (publicMatch) {
-        relativePath = publicMatch[1];
-      } else if (privateMatch) {
-        relativePath = privateMatch[1];
-      } else {
-        const idx = filePath.lastIndexOf('applications/');
-        if (idx !== -1) {
-          relativePath = filePath.substring(idx);
-        }
+      // Use our edge function to download the file
+      const response = await fetch('https://kgwcogltpsmapxnjzjhm.supabase.co/functions/v1/download-application-file', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2NvZ2x0cHNtYXB4bmp6amhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNTI5MjAsImV4cCI6MjA2NzkyODkyMH0.zTQ6IUFqaSOiTNuEMVbIoqIKIPCbLT9GgPvsnTtYVEI`,
+        },
+        body: JSON.stringify({ filePath, fileName })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Download failed');
       }
 
-      // Try downloading from Supabase storage first
-      try {
-        const { data, error } = await supabase.storage
-          .from('application-documents')
-          .download(relativePath);
-
-        if (error) throw error;
-
-        if (!data) {
-          throw new Error('No file data received from storage');
-        }
-
-        // Create a download link
-        const url = URL.createObjectURL(data);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        toast.success("File downloaded successfully");
-        return;
-      } catch (storageError) {
-        console.warn('Storage download failed, trying signed URL then direct fetch:', storageError);
-        
-        // Attempt to generate a signed URL (works even for private buckets when permitted)
-        try {
-          const { data: signed, error: signedErr } = await supabase.storage
-            .from('application-documents')
-            .createSignedUrl(relativePath, 60);
-          
-          if (!signedErr && signed?.signedUrl) {
-            const response = await fetch(signed.signedUrl);
-            if (!response.ok) throw new Error(`Signed URL fetch failed: ${response.statusText}`);
-            const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            toast.success("File downloaded successfully");
-            return;
-          }
-        } catch (signedUrlError) {
-          console.warn('Signed URL generation failed:', signedUrlError);
-        }
-        
-        // Fallback: fetch the URL directly (works only if bucket/object is public)
-        const response = await fetch(filePath);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch file: ${response.statusText}`);
-        }
-        
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        toast.success("File downloaded successfully");
-      }
+      // Create a blob from the response and trigger download
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast.success("File downloaded successfully");
     } catch (error) {
       console.error('Error downloading file:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
