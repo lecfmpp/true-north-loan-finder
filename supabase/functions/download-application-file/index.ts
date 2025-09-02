@@ -20,17 +20,28 @@ const handler = async (req: Request): Promise<Response> => {
     const { filePath, fileName }: DownloadFileRequest = await req.json();
 
     if (!filePath || !fileName) {
+      console.error('Missing required parameters:', { filePath, fileName });
       return new Response(
         JSON.stringify({ error: "Missing filePath or fileName" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
+    console.log('Download request:', { filePath, fileName });
+
     // Initialize Supabase client with service role key for full access
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    
+    if (!supabaseUrl || !serviceRoleKey) {
+      console.error('Missing Supabase configuration');
+      return new Response(
+        JSON.stringify({ error: "Server configuration error" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     // Extract relative path from full URL if needed
     let relativePath = filePath;
@@ -56,17 +67,38 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Downloading file from storage: ${relativePath}`);
 
-    // Download the file using service role (bypasses RLS)
-    const { data, error } = await supabase.storage
+    // Try to download the file using service role (bypasses RLS)
+    let { data, error } = await supabase.storage
       .from('application-documents')
       .download(relativePath);
 
+    // If direct download fails, try with signed URL as fallback
     if (error) {
-      console.error('Storage download error:', error);
-      return new Response(
-        JSON.stringify({ error: `Failed to download file: ${error.message}` }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      console.log('Direct download failed, trying signed URL fallback:', error.message);
+      
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+        .from('application-documents')
+        .createSignedUrl(relativePath, 60); // 60 seconds expiry
+      
+      if (signedUrlError) {
+        console.error('Signed URL creation failed:', signedUrlError);
+        return new Response(
+          JSON.stringify({ error: `Failed to access file: ${signedUrlError.message}` }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      
+      // Fetch the file using the signed URL
+      const fileResponse = await fetch(signedUrlData.signedUrl);
+      if (!fileResponse.ok) {
+        console.error('Failed to fetch file via signed URL:', fileResponse.status);
+        return new Response(
+          JSON.stringify({ error: "Failed to fetch file" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      
+      data = await fileResponse.blob();
     }
 
     if (!data) {
@@ -113,7 +145,7 @@ const handler = async (req: Request): Promise<Response> => {
         ...corsHeaders,
         'Content-Type': contentType,
         'Content-Disposition': `attachment; filename="${fileName}"`,
-        'Content-Length': data.size.toString(),
+        'Content-Length': data.size?.toString() || '0',
       }
     });
 

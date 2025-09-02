@@ -757,12 +757,18 @@ const filterApplications = () => {
         throw new Error('File path is empty or undefined');
       }
 
+      // Get user session for authentication
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session?.access_token) {
+        throw new Error('Authentication required');
+      }
+
       // Use our edge function to download the file
       const response = await fetch('https://kgwcogltpsmapxnjzjhm.supabase.co/functions/v1/download-application-file', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2NvZ2x0cHNtYXB4bmp6amhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNTI5MjAsImV4cCI6MjA2NzkyODkyMH0.zTQ6IUFqaSOiTNuEMVbIoqIKIPCbLT9GgPvsnTtYVEI`,
+          'Authorization': `Bearer ${session.session.access_token}`,
         },
         body: JSON.stringify({ filePath, fileName })
       });
