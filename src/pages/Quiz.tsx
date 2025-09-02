@@ -711,6 +711,10 @@ const Quiz = () => {
     }, 600);
   };
 
+  // Email utilities
+  const sanitizeEmail = (value?: string) => (value || '').trim().replace(/[\s,;]+$/, '').toLowerCase();
+  const isValidEmail = (email: string) => /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(email);
+
   const saveQuizResponse = async (data: QuizData) => {
     setIsSubmitting(true);
     
@@ -769,6 +773,17 @@ const Quiz = () => {
         setIsSubmitting(false);
         return;
       }
+      // Validate and sanitize email before submission
+      const sanitizedEmail = sanitizeEmail(data.email || '');
+      if (!isValidEmail(sanitizedEmail)) {
+        toast({
+          title: "Invalid email address",
+          description: "Please enter a valid email (e.g., name@domain.com).",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
 
       // Save to local Supabase database
       const payload = {
@@ -778,7 +793,7 @@ const Quiz = () => {
         monthly_revenue: data.monthlyRevenue[0],
         credit_score: data.creditScore,
         name: data.name,
-        email: data.email,
+        email: sanitizedEmail,
         phone: sanitizedPhone,
         company_name: data.companyName,
         website: data.website,
@@ -806,8 +821,8 @@ const Quiz = () => {
             type: 'quiz',
             data: {
               name: data.name,
-              email: data.email,
-              phone: data.phone,
+              email: sanitizedEmail,
+              phone: sanitizedPhone,
               loan_amount: data.loanAmount[0],
               monthly_revenue: data.monthlyRevenue[0],
               credit_score: data.creditScore,
@@ -831,8 +846,8 @@ const Quiz = () => {
       const queryParams = new URLSearchParams({
         amount: data.loanAmount[0].toString(),
         name: data.name,
-        email: data.email,
-        phone: data.phone,
+        email: sanitizedEmail,
+        phone: sanitizedPhone,
         score: score.toString(),
         responseId: String(savedResponseId),
         revenue: data.monthlyRevenue[0].toString(),
@@ -854,6 +869,12 @@ const Quiz = () => {
         toast({
           title: "Invalid phone number",
           description: "Please enter a valid phone (10-15 digits).",
+          variant: "destructive",
+        });
+      } else if (errMsg.includes('invalid email')) {
+        toast({
+          title: "Invalid email address",
+          description: "Please enter a valid email (e.g., name@domain.com).",
           variant: "destructive",
         });
       } else {
@@ -890,7 +911,18 @@ const Quiz = () => {
       case 5: return quizData.creditScore !== "";
       case 6: return quizData.bankAccountType !== "";
       case 7: return quizData.homeownerStatus !== "";
-      case 8: return quizData.name && quizData.email && quizData.phone && quizData.companyName && quizData.country && quizData.stateProvince;
+      case 8: {
+        const emailOk = isValidEmail(sanitizeEmail(quizData.email || ""));
+        const phoneDigits = (quizData.phone || "").replace(/[^\d]/g, "");
+        return Boolean(
+          quizData.name &&
+          emailOk &&
+          phoneDigits.length >= 10 &&
+          quizData.companyName &&
+          quizData.country &&
+          quizData.stateProvince
+        );
+      }
       default: return true;
     }
   };
