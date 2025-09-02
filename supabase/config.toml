@@ -111,10 +111,16 @@ backend = "postgres"
 verify_jwt = false
 
 [functions.create-partner]
-verify_jwt = false
+verify_jwt = true
 
 [functions.create-partner-payment]
-verify_jwt = false
+verify_jwt = true
+
+[functions.create-broker-payment]
+verify_jwt = true
+
+[functions.create-client-payment]
+verify_jwt = true
 
 [functions.send-to-make]
 verify_jwt = true

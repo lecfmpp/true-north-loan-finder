@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
 import OptimizedImage from "@/components/OptimizedImage";
+import DOMPurify from 'dompurify';
 
 interface BlogPost {
   id: string;
@@ -270,7 +271,7 @@ const BlogPost = () => {
 
             {/* Content Container with new blog-content styling */}
             <div className="blog-content" ref={contentRef}>
-              <div dangerouslySetInnerHTML={{ __html: post.content }} />
+              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />
             </div>
 
             {/* CTA Section */}

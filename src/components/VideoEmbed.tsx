@@ -1,4 +1,5 @@
 import React from "react";
+import DOMPurify from 'dompurify';
 
 interface VideoEmbedProps {
   url?: string;
@@ -57,12 +58,12 @@ function getVimeoEmbedUrl(url: string): string | null {
 }
 
 const VideoEmbed: React.FC<VideoEmbedProps> = ({ url, embedCode, title = "Video" }) => {
-  // If embed code is provided, use it directly
+  // If embed code is provided, sanitize and use it
   if (embedCode?.trim()) {
     return (
       <div 
         className="w-full h-full" 
-        dangerouslySetInnerHTML={{ __html: embedCode }} 
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(embedCode) }} 
       />
     );
   }
