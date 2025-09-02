@@ -515,7 +515,7 @@ export type Database = {
           type_of_entity: string
           updated_at: string
           use_of_funds: string
-          user_id: string | null
+          user_id: string
           zip: string
           zip_owner: string
           zip_owner_2: string | null
@@ -578,7 +578,7 @@ export type Database = {
           type_of_entity: string
           updated_at?: string
           use_of_funds: string
-          user_id?: string | null
+          user_id: string
           zip: string
           zip_owner: string
           zip_owner_2?: string | null
@@ -641,7 +641,7 @@ export type Database = {
           type_of_entity?: string
           updated_at?: string
           use_of_funds?: string
-          user_id?: string | null
+          user_id?: string
           zip?: string
           zip_owner?: string
           zip_owner_2?: string | null
@@ -2225,7 +2225,7 @@ export type Database = {
           telephone_number: string
           updated_at: string
           use_of_funds: string
-          user_id: string | null
+          user_id: string
           website: string | null
           years_in_business: number
           zip: string
@@ -2286,7 +2286,7 @@ export type Database = {
           telephone_number: string
           updated_at?: string
           use_of_funds: string
-          user_id?: string | null
+          user_id: string
           website?: string | null
           years_in_business: number
           zip: string
@@ -2347,7 +2347,7 @@ export type Database = {
           telephone_number?: string
           updated_at?: string
           use_of_funds?: string
-          user_id?: string | null
+          user_id?: string
           website?: string | null
           years_in_business?: number
           zip?: string
@@ -2408,7 +2408,7 @@ export type Database = {
           telephone_number: string
           updated_at: string
           use_of_funds: string
-          user_id: string | null
+          user_id: string
           website: string | null
           zip: string
         }
@@ -2450,7 +2450,7 @@ export type Database = {
           telephone_number: string
           updated_at?: string
           use_of_funds: string
-          user_id?: string | null
+          user_id: string
           website?: string | null
           zip: string
         }
@@ -2492,7 +2492,7 @@ export type Database = {
           telephone_number?: string
           updated_at?: string
           use_of_funds?: string
-          user_id?: string | null
+          user_id?: string
           website?: string | null
           zip?: string
         }
