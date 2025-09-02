@@ -97,17 +97,36 @@ let lastErr: any = null;
 
 // Verification-only mode: check if any candidate key exists and return JSON
 if (verifyOnly) {
+  // Try direct signed URL for candidate keys
   for (const key of candidateKeys) {
     const { data: signed, error } = await supabase.storage
       .from('application-documents')
       .createSignedUrl(key, 60);
     if (!error && signed?.signedUrl) {
       return new Response(
-        JSON.stringify({ exists: true, key }),
+        JSON.stringify({ exists: true, key, method: 'direct' }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
   }
+
+  // Fallback: search the bucket by filename across common paths
+  const baseName = (relativePath.split('/').pop() || relativePath).trim();
+  const searchPaths = ['', 'applications', 'usa', 'canadian', 'uploads', 'documents'];
+  for (const p of searchPaths) {
+    const { data: list, error: listErr } = await supabase.storage
+      .from('application-documents')
+      .list(p, { search: baseName, limit: 100 });
+    if (!listErr && list && list.length > 0) {
+      const match = list.find((i) => i.name === baseName) || list[0];
+      const foundKey = p ? `${p}/${match.name}` : match.name;
+      return new Response(
+        JSON.stringify({ exists: true, key: foundKey, method: 'search' }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+  }
+
   return new Response(
     JSON.stringify({ exists: false, tried: candidateKeys }),
     { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -131,33 +150,59 @@ if (verifyOnly) {
       console.log('Direct download failed for key:', key, e?.message || e || 'unknown');
     }
 
-    // If direct download failed for all candidates, try signed URL with the first candidate
-    if (!data) {
-      const key = candidateKeys[0];
-      console.log('Direct download failed, trying signed URL fallback for key:', key);
-      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+if (!data) {
+  let key = candidateKeys[0];
+  const baseName = (relativePath.split('/').pop() || relativePath).trim();
+  const searchPaths = ['', 'applications', 'usa', 'canadian', 'uploads', 'documents'];
+
+  // Try to locate by filename anywhere in the bucket
+  for (const p of searchPaths) {
+    const { data: list, error: listErr } = await supabase.storage
+      .from('application-documents')
+      .list(p, { search: baseName, limit: 100 });
+    if (!listErr && list && list.length > 0) {
+      const match = list.find((i) => i.name === baseName) || list[0];
+      key = p ? `${p}/${match.name}` : match.name;
+      console.log('Found key via search:', key);
+      const { data: d2, error: e2 } = await supabase.storage
         .from('application-documents')
-        .createSignedUrl(key, 60); // 60 seconds expiry
-
-      if (signedUrlError) {
-        console.error('Signed URL creation failed:', signedUrlError);
-        return new Response(
-          JSON.stringify({ error: `Failed to access file: ${signedUrlError.message}`, tried: candidateKeys }),
-          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        .download(key);
+      if (!e2 && d2) {
+        data = d2 as Blob;
+        relativePath = key;
+        break;
       }
-
-      const fileResponse = await fetch(signedUrlData.signedUrl);
-      if (!fileResponse.ok) {
-        console.error('Failed to fetch file via signed URL:', fileResponse.status);
-        return new Response(
-          JSON.stringify({ error: 'Failed to fetch file', tried: candidateKeys }),
-          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      data = await fileResponse.blob();
     }
+  }
+
+  // Signed URL fallback (for access-restricted objects)
+  if (!data) {
+    console.log('Direct download failed, trying signed URL fallback for key:', key);
+    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+      .from('application-documents')
+      .createSignedUrl(key, 60);
+
+    if (signedUrlError) {
+      console.error('Signed URL creation failed:', signedUrlError);
+      return new Response(
+        JSON.stringify({ error: `Failed to access file: ${signedUrlError.message}`, tried: candidateKeys }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const fileResponse = await fetch(signedUrlData.signedUrl);
+    if (!fileResponse.ok) {
+      console.error('Failed to fetch file via signed URL:', fileResponse.status);
+      return new Response(
+        JSON.stringify({ error: 'Failed to fetch file', tried: candidateKeys }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    data = await fileResponse.blob();
+    relativePath = key;
+  }
+}
 
     if (!data) {
       return new Response(

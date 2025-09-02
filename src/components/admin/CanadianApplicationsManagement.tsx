@@ -754,12 +754,15 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
           body: JSON.stringify({ filePath: normalized, verifyOnly: true })
         });
         const verifyJson = await verifyRes.json().catch(() => ({}));
-        if (verifyJson?.exists === false) {
-          toast.error('File not found in storage. It may have been deleted or never uploaded.');
-        } else {
-          const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-          toast.error(`Failed to download file: ${errorMessage}`);
-        }
+if (verifyJson?.exists === false) {
+  toast.error('File not found in storage. It may have been deleted or never uploaded.');
+} else if (verifyJson?.exists && verifyJson.key) {
+  toast.message('Found file in storage under a different path. Retrying download...');
+  await downloadFileFromStorage(verifyJson.key, fileName);
+} else {
+  const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+  toast.error(`Failed to download file: ${errorMessage}`);
+}
       } catch (e) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
         toast.error(`Failed to download file: ${errorMessage}`);
