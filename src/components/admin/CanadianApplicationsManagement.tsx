@@ -696,10 +696,17 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
 
       // Extract relative path from full URL if it's a Supabase storage URL
       let relativePath = filePath;
-      const supabaseStoragePattern = /\/storage\/v1\/object\/public\/application-documents\/(.+)$/;
-      const match = filePath.match(supabaseStoragePattern);
-      if (match) {
-        relativePath = match[1];
+      const publicMatch = filePath.match(/\/storage\/v1\/object\/public\/application-documents\/(.+)$/);
+      const privateMatch = filePath.match(/\/storage\/v1\/object\/application-documents\/(.+)$/);
+      if (publicMatch) {
+        relativePath = publicMatch[1];
+      } else if (privateMatch) {
+        relativePath = privateMatch[1];
+      } else {
+        const idx = filePath.lastIndexOf('applications/');
+        if (idx !== -1) {
+          relativePath = filePath.substring(idx);
+        }
       }
 
       // Try downloading from Supabase storage first
@@ -727,9 +734,34 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
         toast.success("File downloaded successfully");
         return;
       } catch (storageError) {
-        console.warn('Storage download failed, trying direct URL fetch:', storageError);
+        console.warn('Storage download failed, trying signed URL then direct fetch:', storageError);
         
-        // Fallback: fetch the URL directly
+        // Attempt to generate a signed URL (works even for private buckets when permitted)
+        try {
+          const { data: signed, error: signedErr } = await supabase.storage
+            .from('application-documents')
+            .createSignedUrl(relativePath, 60);
+          
+          if (!signedErr && signed?.signedUrl) {
+            const response = await fetch(signed.signedUrl);
+            if (!response.ok) throw new Error(`Signed URL fetch failed: ${response.statusText}`);
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            toast.success("File downloaded successfully");
+            return;
+          }
+        } catch (signedUrlError) {
+          console.warn('Signed URL generation failed:', signedUrlError);
+        }
+        
+        // Fallback: fetch the URL directly (works only if bucket/object is public)
         const response = await fetch(filePath);
         if (!response.ok) {
           throw new Error(`Failed to fetch file: ${response.statusText}`);
