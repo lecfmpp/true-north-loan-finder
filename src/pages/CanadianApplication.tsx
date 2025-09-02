@@ -380,11 +380,8 @@ const CanadianApplication = () => {
           continue;
         }
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('application-documents')
-          .getPublicUrl(filePath);
-
-        uploadedFiles.push(publicUrl);
+        // Store the file path instead of public URL since bucket is private
+        uploadedFiles.push(filePath);
       }
 
       if (uploadedFiles.length > 0) {

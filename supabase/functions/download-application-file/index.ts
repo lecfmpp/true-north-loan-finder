@@ -63,18 +63,19 @@ const handler = async (req: Request): Promise<Response> => {
         .replace(/\/storage\/v1\/object\/application-documents\//, '')
         .replace(/^\/+/, '');
 
+      // If it's already a valid storage path, return as-is
+      if (input.startsWith('applications/')) {
+        return input;
+      }
+
       // If it's only a filename, default to applications/ prefix
       if (!input.includes('/')) {
         return `applications/${input}`;
       }
 
-      // If it doesn't start with applications/, but clearly ends with a filename in that folder
-      if (!input.startsWith('applications/')) {
-        const lastSegment = input.split('/').pop() || input;
-        return `applications/${lastSegment}`;
-      }
-
-      return input;
+      // Extract just the filename if it looks like a full path
+      const lastSegment = input.split('/').pop() || input;
+      return `applications/${lastSegment}`;
     };
 
     let relativePath = normalizePath(filePath);
@@ -82,11 +83,13 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Downloading file from storage: ${relativePath}`);
 
-    // Try a few likely key variants without altering global policies
+    // Try multiple key variants to handle different storage patterns
     const candidateKeys = Array.from(new Set([
       relativePath,
       relativePath.replace(/^applications\//, ''),
-    ]));
+      relativePath.includes('/') ? relativePath.split('/').pop() : relativePath,
+      `applications/${relativePath.split('/').pop()}`,
+    ].filter(Boolean)));
 
     let data: Blob | null = null;
     let lastErr: any = null;
