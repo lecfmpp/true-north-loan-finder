@@ -765,6 +765,45 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_data_audit: {
+        Row: {
+          action: string
+          contact_data: Json
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          record_id: string | null
+          risk_score: number | null
+          table_name: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          contact_data: Json
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          record_id?: string | null
+          risk_score?: number | null
+          table_name: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          contact_data?: Json
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          record_id?: string | null
+          risk_score?: number | null
+          table_name?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       content_briefs: {
         Row: {
           competitors: Json | null
