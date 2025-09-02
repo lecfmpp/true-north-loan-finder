@@ -9,6 +9,7 @@ const corsHeaders = {
 interface DownloadFileRequest {
   filePath: string;
   fileName: string;
+  verifyOnly?: boolean;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -17,17 +18,17 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { filePath, fileName }: DownloadFileRequest = await req.json();
+    const { filePath, fileName, verifyOnly }: DownloadFileRequest = await req.json();
 
-    if (!filePath || !fileName) {
-      console.error('Missing required parameters:', { filePath, fileName });
+    if (!filePath || (!fileName && !verifyOnly)) {
+      console.error('Missing required parameters:', { filePath, fileName, verifyOnly });
       return new Response(
         JSON.stringify({ error: "Missing filePath or fileName" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log('Download request:', { filePath, fileName });
+    console.log('Download request:', { filePath, fileName, verifyOnly });
 
     // Initialize Supabase client with service role key for full access
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
@@ -91,8 +92,28 @@ const handler = async (req: Request): Promise<Response> => {
       `applications/${relativePath.split('/').pop()}`,
     ].filter(Boolean)));
 
-    let data: Blob | null = null;
-    let lastErr: any = null;
+let data: Blob | null = null;
+let lastErr: any = null;
+
+// Verification-only mode: check if any candidate key exists and return JSON
+if (verifyOnly) {
+  for (const key of candidateKeys) {
+    const { data: signed, error } = await supabase.storage
+      .from('application-documents')
+      .createSignedUrl(key, 60);
+    if (!error && signed?.signedUrl) {
+      return new Response(
+        JSON.stringify({ exists: true, key }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+  }
+  return new Response(
+    JSON.stringify({ exists: false, tried: candidateKeys }),
+    { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+  );
+}
+
 
     for (const key of candidateKeys) {
       console.log('Attempting direct download using key:', key);

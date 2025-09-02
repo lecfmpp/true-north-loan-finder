@@ -804,8 +804,28 @@ const filterApplications = () => {
       toast.success('File downloaded successfully');
     } catch (error) {
       console.error('Error downloading file:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      toast.error(`Failed to download file: ${errorMessage}`);
+      try {
+        const { data: session } = await supabase.auth.getSession();
+        const normalized = normalizeForServer(filePath);
+        const verifyRes = await fetch('https://kgwcogltpsmapxnjzjhm.supabase.co/functions/v1/download-application-file', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.session?.access_token || ''}`,
+          },
+          body: JSON.stringify({ filePath: normalized, verifyOnly: true })
+        });
+        const verifyJson = await verifyRes.json().catch(() => ({}));
+        if (verifyJson?.exists === false) {
+          toast.error('File not found in storage. It may have been deleted or never uploaded.');
+        } else {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+          toast.error(`Failed to download file: ${errorMessage}`);
+        }
+      } catch (e) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        toast.error(`Failed to download file: ${errorMessage}`);
+      }
     }
   };
 
