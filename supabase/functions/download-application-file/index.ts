@@ -43,61 +43,95 @@ const handler = async (req: Request): Promise<Response> => {
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    // Extract relative path from full URL if needed
-    let relativePath = filePath;
-    
-    // Handle different URL formats
-    const publicMatch = filePath.match(/\/storage\/v1\/object\/public\/application-documents\/(.+)$/);
-    const privateMatch = filePath.match(/\/storage\/v1\/object\/application-documents\/(.+)$/);
-    
-    if (publicMatch) {
-      relativePath = publicMatch[1];
-    } else if (privateMatch) {
-      relativePath = privateMatch[1];
-    } else {
-      // If it's just a filename or relative path, assume it's in applications folder
-      if (!filePath.startsWith('applications/')) {
-        const idx = filePath.lastIndexOf('/');
-        const actualFileName = idx !== -1 ? filePath.substring(idx + 1) : filePath;
-        relativePath = `applications/${actualFileName}`;
-      } else {
-        relativePath = filePath;
+    // Extract a clean relative path from various input formats
+    const normalizePath = (input: string): string => {
+      try {
+        // Strip query/hash and get pathname when it's a full URL
+        if (/^https?:\/\//i.test(input)) {
+          const u = new URL(input);
+          input = decodeURIComponent(u.pathname);
+        } else {
+          input = decodeURIComponent(input);
+        }
+      } catch (_) {
+        // If URL parsing fails, continue with raw input
       }
-    }
+
+      // Remove known Supabase storage prefixes
+      input = input
+        .replace(/\/storage\/v1\/object\/public\/application-documents\//, '')
+        .replace(/\/storage\/v1\/object\/application-documents\//, '')
+        .replace(/^\/+/, '');
+
+      // If it's only a filename, default to applications/ prefix
+      if (!input.includes('/')) {
+        return `applications/${input}`;
+      }
+
+      // If it doesn't start with applications/, but clearly ends with a filename in that folder
+      if (!input.startsWith('applications/')) {
+        const lastSegment = input.split('/').pop() || input;
+        return `applications/${lastSegment}`;
+      }
+
+      return input;
+    };
+
+    let relativePath = normalizePath(filePath);
+    console.log('Normalized storage path:', relativePath);
 
     console.log(`Downloading file from storage: ${relativePath}`);
 
-    // Try to download the file using service role (bypasses RLS)
-    let { data, error } = await supabase.storage
-      .from('application-documents')
-      .download(relativePath);
+    // Try a few likely key variants without altering global policies
+    const candidateKeys = Array.from(new Set([
+      relativePath,
+      relativePath.replace(/^applications\//, ''),
+    ]));
 
-    // If direct download fails, try with signed URL as fallback
-    if (error) {
-      console.log('Direct download failed, trying signed URL fallback:', error.message);
-      
+    let data: Blob | null = null;
+    let lastErr: any = null;
+
+    for (const key of candidateKeys) {
+      console.log('Attempting direct download using key:', key);
+      const { data: d, error: e } = await supabase.storage
+        .from('application-documents')
+        .download(key);
+
+      if (!e && d) {
+        data = d as Blob;
+        relativePath = key; // found working key
+        break;
+      }
+
+      lastErr = e;
+      console.log('Direct download failed for key:', key, e?.message || e || 'unknown');
+    }
+
+    // If direct download failed for all candidates, try signed URL with the first candidate
+    if (!data) {
+      const key = candidateKeys[0];
+      console.log('Direct download failed, trying signed URL fallback for key:', key);
       const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from('application-documents')
-        .createSignedUrl(relativePath, 60); // 60 seconds expiry
-      
+        .createSignedUrl(key, 60); // 60 seconds expiry
+
       if (signedUrlError) {
         console.error('Signed URL creation failed:', signedUrlError);
         return new Response(
-          JSON.stringify({ error: `Failed to access file: ${signedUrlError.message}` }),
+          JSON.stringify({ error: `Failed to access file: ${signedUrlError.message}`, tried: candidateKeys }),
           { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      
-      // Fetch the file using the signed URL
+
       const fileResponse = await fetch(signedUrlData.signedUrl);
       if (!fileResponse.ok) {
         console.error('Failed to fetch file via signed URL:', fileResponse.status);
         return new Response(
-          JSON.stringify({ error: "Failed to fetch file" }),
+          JSON.stringify({ error: 'Failed to fetch file', tried: candidateKeys }),
           { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      
+
       data = await fileResponse.blob();
     }
 

@@ -686,36 +686,49 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
     toast.success("PDF downloaded successfully");
   };
 
+  const normalizeForServer = (input: string) => {
+    try {
+      if (!input) return input;
+      // Prefer sending a clean relative path to reduce ambiguity server-side
+      if (/^https?:\/\//i.test(input)) {
+        const u = new URL(input);
+        const pathname = decodeURIComponent(u.pathname);
+        return pathname
+          .replace(/\/storage\/v1\/object\/public\/application-documents\//, '')
+          .replace(/\/storage\/v1\/object\/application-documents\//, '')
+          .replace(/^\/+/, '');
+      }
+      return decodeURIComponent(input);
+    } catch {
+      return input;
+    }
+  };
+
   const downloadFileFromStorage = async (filePath: string, fileName: string) => {
     try {
       console.log('Attempting to download file:', { filePath, fileName });
-      
-      if (!filePath) {
-        throw new Error('File path is empty or undefined');
-      }
+      if (!filePath) throw new Error('File path is empty or undefined');
+
+      const normalized = normalizeForServer(filePath);
 
       // Get user session for authentication
       const { data: session } = await supabase.auth.getSession();
-      if (!session.session?.access_token) {
-        throw new Error('Authentication required');
-      }
+      if (!session.session?.access_token) throw new Error('Authentication required');
 
-      // Use our edge function to download the file
       const response = await fetch('https://kgwcogltpsmapxnjzjhm.supabase.co/functions/v1/download-application-file', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.session.access_token}`,
         },
-        body: JSON.stringify({ filePath, fileName })
+        body: JSON.stringify({ filePath: normalized, fileName })
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || 'Download failed');
       }
 
-      // Create a blob from the response and trigger download
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -726,7 +739,7 @@ const CanadianApplicationsManagement: React.FC<CanadianApplicationsManagementPro
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       
-      toast.success("File downloaded successfully");
+      toast.success('File downloaded successfully');
     } catch (error) {
       console.error('Error downloading file:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
