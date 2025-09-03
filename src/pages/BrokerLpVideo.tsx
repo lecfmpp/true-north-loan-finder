@@ -148,28 +148,28 @@ const BrokerLpVideo = () => {
       <Header />
 
       {/* Hero Section */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-12 lg:py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-block mb-8">
-              <span className="bg-green-500 text-white px-6 py-2 rounded-full text-sm font-medium">
+            <div className="inline-block mb-4 lg:mb-8">
+              <span className="bg-green-500 text-white px-4 lg:px-6 py-2 rounded-full text-sm font-medium">
                 Exclusive Business Loan Leads for Brokers
               </span>
             </div>
             
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold text-gray-900 mb-4 lg:mb-6 leading-tight">
               Stop Paying for the Same Old Lists Every Broker Calls. Start Getting{" "}
               <span className="text-green-500">Exclusive Leads</span> That Buy Back Your Time.
             </h1>
             
-            <p className="text-xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl text-gray-600 mb-8 lg:mb-12 max-w-4xl mx-auto leading-relaxed">
               Join our exclusive broker network and receive pre-qualified, exclusive business loan leads delivered directly to your inbox. No more cold calling shared lists or competing with dozens of other brokers.
             </p>
             
             <div className="flex justify-center">
               <Button 
                 size="lg" 
-                className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 text-lg font-medium rounded-lg"
+                className="bg-green-500 hover:bg-green-600 text-white px-6 lg:px-8 py-3 lg:py-4 text-base lg:text-lg font-medium rounded-lg"
                 onClick={() => window.open('https://wa.me/16478623292?text=Hi%20Leandro!%20I%20want%20to%20buy%20qualified%20leads.%20Can%20you%20help%20me,%20please?', '_blank')}
               >
                 💬 Contact on WhatsApp
@@ -180,14 +180,14 @@ const BrokerLpVideo = () => {
       </section>
 
       {/* Transparent Pricing / ROI Calculator */}
-      <section className="py-20 bg-gradient-to-r from-primary to-secondary text-primary-foreground">
+      <section className="py-12 lg:py-20 bg-gradient-to-r from-primary to-secondary text-primary-foreground">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
+            <div className="text-center mb-8 lg:mb-12">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-primary-foreground mb-3 lg:mb-4">
                 "Show Me The Money" Calculator
               </h2>
-              <p className="text-lg text-primary-foreground/80">
+              <p className="text-base lg:text-lg text-primary-foreground/80">
                 Plug in your numbers. Watch your potential profits unfold. 
                 <span className="text-primary-foreground font-semibold block mt-2">
                   These metrics aren't made up—they're from real brokers who've walked this path.
@@ -195,7 +195,7 @@ const BrokerLpVideo = () => {
               </p>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-8">
+            <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
               {/* Calculator Inputs */}
               <Card>
                 <CardHeader>
@@ -337,19 +337,19 @@ const BrokerLpVideo = () => {
       </section>
 
       {/* Target Audience */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-12 lg:py-16 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            <div className="text-center mb-8 lg:mb-12">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-3 lg:mb-4">
                 Our Target Audience
               </h2>
-              <p className="text-lg text-muted-foreground">
+              <p className="text-base lg:text-lg text-muted-foreground">
                 <span className="text-primary font-semibold">Business Owners ready to Fund</span>
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {targetAudience.map((audience, index) => <Card key={index} className="h-full">
                   <CardHeader>
                     <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
@@ -382,19 +382,19 @@ const BrokerLpVideo = () => {
       </section>
 
       {/* Partnership Benefits */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-12 lg:py-16 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            <div className="text-center mb-8 lg:mb-12">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-3 lg:mb-4">
                 Partnership Benefits
               </h2>
-              <p className="text-lg text-muted-foreground">
+              <p className="text-base lg:text-lg text-muted-foreground">
                 
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {benefits.map((benefit, index) => <Card key={index} className="text-center h-full">
                   <CardContent className="p-6">
                     <div className="text-4xl font-bold text-primary mb-2">{benefit.percentage}</div>
@@ -409,18 +409,18 @@ const BrokerLpVideo = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-primary to-secondary text-primary-foreground">
+      <section className="py-12 lg:py-16 bg-gradient-to-r from-primary to-secondary text-primary-foreground">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-6">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-primary-foreground mb-4 lg:mb-6">
               Ready to Start Getting Exclusive Leads?
             </h2>
-            <p className="text-xl text-primary-foreground/80 mb-8">
+            <p className="text-lg lg:text-xl text-primary-foreground/80 mb-6 lg:mb-8">
               Book a strategy call to discuss your lead requirements and get started with your first batch of pre-qualified leads.
             </p>
             <Button 
               size="lg" 
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-8"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 lg:px-8 text-base lg:text-lg"
               onClick={() => window.open('https://calendly.com/leandro-truenorth-businessloan/30min', '_blank')}
             >
               Book Your Strategy Call Now
@@ -430,14 +430,14 @@ const BrokerLpVideo = () => {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-12 lg:py-16 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            <div className="text-center mb-8 lg:mb-12">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-3 lg:mb-4">
                 Frequently Asked Questions
               </h2>
-              <p className="text-lg text-muted-foreground">
+              <p className="text-base lg:text-lg text-muted-foreground">
                 Everything you need to know about our exclusive lead program
               </p>
             </div>
