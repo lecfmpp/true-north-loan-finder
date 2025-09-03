@@ -166,21 +166,13 @@ const BrokerLpVideo = () => {
               Join our exclusive broker network and receive pre-qualified, exclusive business loan leads delivered directly to your inbox. No more cold calling shared lists or competing with dozens of other brokers.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex justify-center">
               <Button 
                 size="lg" 
                 className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 text-lg font-medium rounded-lg"
                 onClick={() => window.open('https://wa.me/16478623292?text=Hi%20Leandro!%20I%20want%20to%20buy%20qualified%20leads.%20Can%20you%20help%20me,%20please?', '_blank')}
               >
                 💬 Contact on WhatsApp
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline"
-                className="border-2 border-gray-300 text-gray-900 hover:bg-gray-50 px-8 py-4 text-lg font-medium rounded-lg"
-                onClick={() => window.open('https://calendly.com/leandro-truenorth-businessloan/30min', '_blank')}
-              >
-                How It Works
               </Button>
             </div>
           </div>
