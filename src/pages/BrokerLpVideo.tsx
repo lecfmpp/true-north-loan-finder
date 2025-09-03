@@ -42,6 +42,21 @@ const BrokerLpVideo = () => {
     loadVideo();
   }, []);
 
+  // Add spyme.ca tracking pixel for broker-lp-video
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.defer = true;
+    script.src = 'https://spyme.ca/pixel/3YrvJp3rVFdILZYx';
+    document.head.appendChild(script);
+
+    return () => {
+      // Cleanup: remove the script when component unmounts
+      if (document.head.contains(script)) {
+        document.head.removeChild(script);
+      }
+    };
+  }, []);
+
   // Sample leads data
   const sampleLeads = [{
     businessName: "Tony's Italian Restaurant",
