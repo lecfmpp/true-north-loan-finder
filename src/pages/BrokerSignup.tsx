@@ -154,9 +154,6 @@ const BrokerSignup = () => {
               >
                 Book "25 Leads Trial" Strategy Call
               </Button>
-              <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary/10 text-base lg:text-lg px-6 lg:px-8">
-                View Sample Leads
-              </Button>
             </div>
 
             {/* Always Visible Calendly Widget */}
