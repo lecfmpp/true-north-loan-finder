@@ -842,7 +842,37 @@ const Quiz = () => {
       // This can be enabled later manually by admins if needed
       console.log('Email sequence disabled by default for quiz submissions');
 
-      // Redirect to Results page first so users can review their pre-qualification
+      // Check if this is a Canadian lead with monthly revenue below $20k
+      const isCanadian = data.country === 'CA';
+      const monthlyRevenue = data.monthlyRevenue[0];
+      const shouldRedirectToMerchantGrowth = isCanadian && monthlyRevenue < 20000;
+
+      if (shouldRedirectToMerchantGrowth) {
+        console.log('Redirecting Canadian lead with <$20k monthly revenue to Merchant Growth');
+        
+        // Redirect to Merchant Growth redirect page with necessary parameters
+        const merchantGrowthParams = new URLSearchParams({
+          amount: data.loanAmount[0].toString(),
+          name: data.name,
+          email: sanitizedEmail,
+          phone: sanitizedPhone,
+          score: score.toString(),
+          responseId: String(savedResponseId),
+          revenue: data.monthlyRevenue[0].toString(),
+          company: data.companyName || '',
+          country: data.country || '',
+          submitted: 'true'
+        });
+
+        // Persist response id for tracking
+        try { localStorage.setItem('quiz_response_id', String(savedResponseId)); } catch {}
+
+        const merchantGrowthUrl = `/merchant-growth-redirect?${merchantGrowthParams.toString()}`;
+        window.location.href = merchantGrowthUrl;
+        return;
+      }
+
+      // Default flow: Redirect to Results page for non-qualifying leads
       const queryParams = new URLSearchParams({
         amount: data.loanAmount[0].toString(),
         name: data.name,

@@ -7,6 +7,7 @@ import { Routes, Route, BrowserRouter } from "react-router-dom";
 // Defer heavy widgets to improve LCP/CLS
 import { lazy, Suspense } from "react";
 const LazySocialProofWidget = lazy(() => import("@/components/SocialProofWidget"));
+const MerchantGrowthRedirect = lazy(() => import("@/components/MerchantGrowthRedirect"));
 import ConsentBanner from "@/components/ConsentBanner";
 
 import ScrollToTop from "@/components/ScrollToTop";
@@ -177,6 +178,11 @@ const App = () => {
               <Route path="/broker-payment-success" element={
                 <Suspense fallback={<PageLoader />}>
                   <BrokerPaymentSuccess />
+                </Suspense>
+              } />
+              <Route path="/merchant-growth-redirect" element={
+                <Suspense fallback={<PageLoader />}>
+                  <MerchantGrowthRedirect />
                 </Suspense>
               } />
               {/* Removed confirm-partner route */}
