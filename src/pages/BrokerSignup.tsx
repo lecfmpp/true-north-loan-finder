@@ -145,26 +145,28 @@ const BrokerSignup = () => {
       <Header />
 
       {/* Hero Section */}
-      <section className="py-12 lg:py-20 bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+      <section className="py-12 lg:py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <Badge className="mb-4 lg:mb-6 bg-primary/10 text-primary border-primary/20 text-sm px-4 py-2" variant="outline">
-              PARTNER WITH US TODAY
-            </Badge>
+            <div className="inline-block mb-4 lg:mb-8">
+              <span className="bg-green-500 text-white px-4 lg:px-6 py-2 rounded-full text-sm font-medium">
+                Exclusive Business Loan Leads for Brokers
+              </span>
+            </div>
             
-            <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold text-foreground mb-4 lg:mb-6 leading-tight">
+            <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold text-gray-900 mb-4 lg:mb-6 leading-tight">
               Stop Paying for the Same Old Lists Every Broker Calls. Start Getting{" "}
-              <span className="text-primary">Exclusive Leads</span> That Buy Back Your Time.
+              <span className="text-green-500">Exclusive Leads</span> That Buy Back Your Time.
             </h1>
             
-            <p className="text-lg md:text-xl text-muted-foreground mb-6 lg:mb-8 max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl text-gray-600 mb-8 lg:mb-12 max-w-4xl mx-auto leading-relaxed">
               Join our exclusive broker network and receive pre-qualified, exclusive business loan leads delivered directly to your inbox. No more cold calling shared lists or competing with dozens of other brokers.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-3 lg:gap-4 justify-center mb-8 lg:mb-12">
               <Button 
                 size="lg" 
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 lg:px-8 text-base lg:text-lg"
+                className="bg-green-500 hover:bg-green-600 text-white px-6 lg:px-8 py-3 lg:py-4 text-base lg:text-lg font-medium rounded-lg"
                 onClick={() => document.getElementById('hero-calendly')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 Book "25 Leads Trial" Strategy Call
