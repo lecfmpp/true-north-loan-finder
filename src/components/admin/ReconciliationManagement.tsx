@@ -56,25 +56,42 @@ export default function ReconciliationManagement() {
 
   const loadPartners = async () => {
     try {
-      // Simple fetch without complex type chaining
-      const partners = await fetch('/api/partners') // fallback approach
-        .catch(async () => {
-          // Direct supabase call as backup
-          const res = await fetch(`https://kgwcogltpsmapxnjzjhm.supabase.co/rest/v1/partners?status=eq.active&select=id,name,email,company_name&order=name`, {
-            headers: {
-              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2NvZ2x0cHNtYXB4bmp6amhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNTI5MjAsImV4cCI6MjA2NzkyODkyMH0.zTQ6IUFqaSOiTNuEMVbIoqIKIPCbLT9GgPvsnTtYVEI',
-              'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2NvZ2x0cHNtYXB4bmp6amhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNTI5MjAsImV4cCI6MjA2NzkyODkyMH0.zTQ6IUFqaSOiTNuEMVbIoqIKIPCbLT9GgPvsnTtYVEI`
-            }
-          });
-          return res.json();
+      // Simple fetch approach first
+      try {
+        const response = await fetch(`https://kgwcogltpsmapxnjzjhm.supabase.co/rest/v1/partners?status=eq.active&select=id,name,email,company_name&order=name`, {
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2NvZ2x0cHNtYXB4bmp6amhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNTI5MjAsImV4cCI6MjA2NzkyODkyMH0.zTQ6IUFqaSOiTNuEMVbIoqIKIPCbLT9GgPvsnTtYVEI',
+            'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnd2NvZ2x0cHNtYXB4bmp6amhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzNTI5MjAsImV4cCI6MjA2NzkyODkyMH0.zTQ6IUFqaSOiTNuEMVbIoqIKIPCbLT9GgPvsnTtYVEI`,
+            'Content-Type': 'application/json'
+          }
         });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setPartners(Array.isArray(data) ? data : []);
+          return;
+        }
+      } catch (fetchError) {
+        console.error('Direct fetch failed:', fetchError);
+      }
+
+      // Last resort fallback - manually set some test partners if all else fails
+      setPartners([
+        { id: '1', name: 'Test Partner 1', email: 'partner1@example.com', company_name: 'Company 1' },
+        { id: '2', name: 'Test Partner 2', email: 'partner2@example.com', company_name: 'Company 2' }
+      ]);
       
-      setPartners(Array.isArray(partners) ? partners : []);
+      toast({
+        title: 'Warning',
+        description: 'Using test data. Please check partner configuration.',
+        variant: 'destructive',
+      });
+      
     } catch (error) {
-      console.error('Error fetching partners:', error);
+      console.error('Error loading partners:', error);
       toast({
         title: 'Error',
-        description: 'Failed to fetch partners',
+        description: 'Failed to load partners',
         variant: 'destructive',
       });
     }
@@ -309,31 +326,38 @@ export default function ReconciliationManagement() {
     }
   };
 
-  const quickReconcileEzio = async () => {
-    const ezio = partners.find(p => p.email === 'ezio@primedloans.com');
-    if (!ezio) {
+  const quickReconcileAll = async () => {
+    if (!selectedPartnerId) {
       toast({
         title: 'Error',
-        description: 'Ezio not found in partners',
+        description: 'Please select a partner first',
         variant: 'destructive',
       });
       return;
     }
 
-    setSelectedPartnerId(ezio.id);
-    await analyzePartnerDiscrepancies(ezio.id);
+    await analyzePartnerDiscrepancies(selectedPartnerId);
     
-    // Auto-select target leads after analysis
+    // Auto-select all leads that were emailed but not assigned
     setTimeout(() => {
       if (reconciliationData) {
         const targetLeads = reconciliationData.discrepancies
-          .filter(d => 
-            (d.lead_name.includes('Prajwal Shah') || d.lead_name.includes('Jackie')) &&
-            d.emailed_to_partner && !d.assigned_to_partner
-          )
+          .filter(d => d.emailed_to_partner && !d.assigned_to_partner)
           .map(d => d.lead_id);
         
         setSelectedLeads(targetLeads);
+        
+        if (targetLeads.length > 0) {
+          toast({
+            title: 'Success',
+            description: `Auto-selected ${targetLeads.length} leads that need assignment`,
+          });
+        } else {
+          toast({
+            title: 'Info',
+            description: 'No leads found that need reconciliation',
+          });
+        }
       }
     }, 1000);
   };
@@ -380,12 +404,13 @@ export default function ReconciliationManagement() {
             </div>
             <div className="flex items-end">
               <Button 
-                onClick={quickReconcileEzio}
+                onClick={quickReconcileAll}
                 variant="outline"
                 className="flex items-center gap-2"
+                disabled={!selectedPartnerId}
               >
                 <Zap className="h-4 w-4" />
-                Quick Fix Ezio
+                Auto-Select Discrepancies
               </Button>
             </div>
           </div>
