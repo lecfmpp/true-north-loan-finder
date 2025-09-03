@@ -90,11 +90,13 @@ const CanadianApplication = () => {
   const { user, loading } = useAuth();
   const totalSteps = 2;
   
-  // Redirect Canadian leads under $20k monthly revenue to Merchant Growth if they reached here by mistake
+  // Redirect Canadian leads with $10k-$20k monthly revenue and minimum 6 months in business to Merchant Growth if they reached here by mistake
   useEffect(() => {
     const revenueParam = parseInt(searchParams.get('monthlyRevenue') || searchParams.get('revenue') || '0', 10);
+    const timeInBusiness = searchParams.get('timeInBusiness') || '';
+    const hasMinimumBusinessAge = timeInBusiness !== 'startup';
     // Since this is the Canadian application, treat as CA context
-    if (revenueParam > 0 && revenueParam < 20000) {
+    if (revenueParam >= 10000 && revenueParam < 20000 && hasMinimumBusinessAge) {
       const params = new URLSearchParams({
         amount: searchParams.get('loanAmount') || '0',
         name: searchParams.get('name') || '',

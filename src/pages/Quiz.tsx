@@ -842,13 +842,17 @@ const Quiz = () => {
       // This can be enabled later manually by admins if needed
       console.log('Email sequence disabled by default for quiz submissions');
 
-      // Check if this is a Canadian lead with monthly revenue below $20k
+      // Check if this is a Canadian lead with monthly revenue $10k-$20k and minimum 6 months in business
       const isCanadian = data.country === 'CA';
       const monthlyRevenue = data.monthlyRevenue[0];
-      const shouldRedirectToMerchantGrowth = isCanadian && monthlyRevenue < 20000;
+      const hasMinimumBusinessAge = timeInBusiness !== 'startup'; // Exclude businesses under 6 months
+      const shouldRedirectToMerchantGrowth = isCanadian && 
+        monthlyRevenue >= 10000 && 
+        monthlyRevenue < 20000 && 
+        hasMinimumBusinessAge;
 
       if (shouldRedirectToMerchantGrowth) {
-        console.log('Redirecting Canadian lead with <$20k monthly revenue to Merchant Growth');
+        console.log('Redirecting Canadian lead with $10k-$20k monthly revenue and 6+ months in business to Merchant Growth');
         
         // Redirect to Merchant Growth redirect page with necessary parameters
         const merchantGrowthParams = new URLSearchParams({
