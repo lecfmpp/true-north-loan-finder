@@ -167,43 +167,11 @@ const BrokerLpVideo = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8"
-                onClick={() => window.open('https://calendly.com/leandro-truenorth-businessloan/30min', '_blank')}
+                className="bg-green-500 hover:bg-green-600 text-white px-8"
+                onClick={() => window.open('https://wa.me/16478623292?text=Hi%20Leandro!%20I%20want%20to%20buy%20qualified%20leads.%20Can%20you%20help%20me,%20please?', '_blank')}
               >
-                Book "25 Leads Trial" Strategy Call
+                💬 Contact on WhatsApp
               </Button>
-              <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary/10">
-                View Sample Leads
-              </Button>
-            </div>
-
-            {/* Video Section */}
-            <div className="mt-12 max-w-4xl mx-auto">
-              <div className="bg-muted/30 rounded-lg p-8">
-                <h3 className="text-2xl font-bold text-foreground mb-6">
-                  Watch Our Partnership Overview
-                </h3>
-                <div className="aspect-video rounded-lg overflow-hidden bg-muted">
-                  {videoError ? (
-                    <div className="flex items-center justify-center h-full text-muted-foreground">
-                      <p>Video temporarily unavailable. Please book a call to learn more.</p>
-                    </div>
-                  ) : videoSettings?.video_url || videoSettings?.embed_code ? (
-                    <VideoEmbed 
-                      url={videoSettings.video_url} 
-                      embedCode={videoSettings.embed_code}
-                      title={videoSettings.video_title || "Partnership Overview Video"}
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-muted-foreground">
-                      <div className="text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                        <p>Loading video...</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
             </div>
           </div>
         </div>
