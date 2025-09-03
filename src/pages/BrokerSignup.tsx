@@ -162,8 +162,8 @@ const BrokerSignup = () => {
             {/* Always Visible Calendly Widget */}
             <div id="hero-calendly" className="max-w-4xl mx-auto">
               <CalendlyInline 
-                url="https://calendly.com/leandro-truenorth-businessloan/30min" 
-                height={680} 
+                url="https://calendly.com/leandro-truenorth-businessloan?hide_gdpr_banner=1" 
+                height={700} 
               />
             </div>
           </div>
@@ -414,7 +414,7 @@ const BrokerSignup = () => {
           </div>
 
           <div className="max-w-4xl mx-auto">
-            <CalendlyInline url="https://calendly.com/leandro-truenorth-businessloan/30min" height={1200} />
+            <CalendlyInline url="https://calendly.com/leandro-truenorth-businessloan?hide_gdpr_banner=1" height={1200} />
           </div>
         </div>
       </section>
