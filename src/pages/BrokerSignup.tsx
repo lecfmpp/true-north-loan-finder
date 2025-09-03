@@ -155,15 +155,15 @@ const BrokerSignup = () => {
                 Book "25 Leads Trial" Strategy Call
               </Button>
             </div>
-
-            {/* Always Visible Calendly Widget */}
-            <div id="hero-calendly" className="max-w-4xl mx-auto">
-              <CalendlyInline 
-                url="https://calendly.com/leandro-truenorth-businessloan/30min?hide_gdpr_banner=1" 
-                height={700} 
-              />
-            </div>
           </div>
+        </div>
+        
+        {/* Always Visible Calendly Widget - Outside container for full width */}
+        <div id="hero-calendly" className="w-full">
+          <CalendlyInline 
+            url="https://calendly.com/leandro-truenorth-businessloan/30min?hide_gdpr_banner=1" 
+            height={700} 
+          />
         </div>
       </section>
 
