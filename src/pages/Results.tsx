@@ -220,12 +220,12 @@ const Results = () => {
       finalMonthlyRevenue
     });
 
-    // NEW: Redirect Canadian leads with $10k-$20k monthly revenue and minimum 6 months in business to Merchant Growth
+    // NEW: Redirect Canadian leads with $10k-$19,999 monthly revenue and minimum 6 months in business to Merchant Growth
     const timeInBusiness = quizData?.time_in_business || searchParams.get('timeInBusiness') || '';
     const hasMinimumBusinessAge = timeInBusiness !== 'startup';
     if (finalCountry === 'CA' && 
         finalMonthlyRevenue >= 10000 && 
-        finalMonthlyRevenue < 20000 && 
+        finalMonthlyRevenue <= 19999 && 
         hasMinimumBusinessAge) {
       console.log('Redirecting to Merchant Growth from Results');
       navigate(`/merchant-growth-redirect?${applicationParams.toString()}`);
