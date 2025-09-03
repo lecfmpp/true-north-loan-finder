@@ -208,18 +208,30 @@ const Results = () => {
     const countryFromParams = searchParams.get('country');
     const finalCountry = country || countryFromParams;
     
+    // Determine monthly revenue for redirect logic
+    const revenueFromQuiz = typeof quizData?.monthly_revenue === 'number' ? quizData?.monthly_revenue : undefined;
+    const revenueFromParams = parseInt(searchParams.get('revenue') || searchParams.get('monthlyRevenue') || '0', 10);
+    const finalMonthlyRevenue = (revenueFromQuiz ?? revenueFromParams ?? 0) as number;
+
     console.log('Country routing debug:', { 
       countryFromQuizData: country, 
       countryFromParams, 
-      finalCountry 
+      finalCountry,
+      finalMonthlyRevenue
     });
+
+    // NEW: Redirect Canadian leads under $20k monthly revenue to Merchant Growth
+    if (finalCountry === 'CA' && finalMonthlyRevenue < 20000) {
+      console.log('Redirecting to Merchant Growth from Results');
+      navigate(`/merchant-growth-redirect?${applicationParams.toString()}`);
+      return;
+    }
     
     const applicationRoute = finalCountry === 'CA' ? '/application-canadian' : '/application-usa';
     
     console.log(`Navigating to ${applicationRoute} with params:`, applicationParams.toString());
     navigate(`${applicationRoute}?${applicationParams.toString()}`);
   };
-
   const handleAuthSuccess = () => {
     console.log('Authentication successful, proceeding to application');
     proceedToApplication();

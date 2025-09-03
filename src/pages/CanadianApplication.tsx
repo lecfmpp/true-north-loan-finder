@@ -90,6 +90,27 @@ const CanadianApplication = () => {
   const { user, loading } = useAuth();
   const totalSteps = 2;
   
+  // Redirect Canadian leads under $20k monthly revenue to Merchant Growth if they reached here by mistake
+  useEffect(() => {
+    const revenueParam = parseInt(searchParams.get('monthlyRevenue') || searchParams.get('revenue') || '0', 10);
+    // Since this is the Canadian application, treat as CA context
+    if (revenueParam > 0 && revenueParam < 20000) {
+      const params = new URLSearchParams({
+        amount: searchParams.get('loanAmount') || '0',
+        name: searchParams.get('name') || '',
+        email: searchParams.get('email') || '',
+        phone: searchParams.get('phone') || '',
+        score: searchParams.get('score') || '',
+        responseId: searchParams.get('quizResponseId') || '',
+        revenue: String(revenueParam),
+        company: searchParams.get('company') || '',
+        country: 'CA',
+        submitted: 'true'
+      });
+      navigate(`/merchant-growth-redirect?${params.toString()}`, { replace: true });
+    }
+  }, [navigate, searchParams]);
+  
   const [formData, setFormData] = useState<CanadianApplicationData>({
     legal_business_name: "",
     dba_name: "",
