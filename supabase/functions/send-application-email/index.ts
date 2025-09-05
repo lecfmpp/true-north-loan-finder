@@ -91,9 +91,18 @@ const handler = async (req: Request): Promise<Response> => {
           if (!fileError && fileData) {
             console.log(`Successfully downloaded file: ${storageFilePath}`);
             const arrayBuffer = await fileData.arrayBuffer();
-            const base64String = btoa(
-              String.fromCharCode(...new Uint8Array(arrayBuffer))
-            );
+            
+            // Convert to base64 safely for large files
+            const uint8Array = new Uint8Array(arrayBuffer);
+            let binaryString = '';
+            const chunkSize = 8192; // Process in 8KB chunks to avoid stack overflow
+            
+            for (let i = 0; i < uint8Array.length; i += chunkSize) {
+              const chunk = uint8Array.slice(i, i + chunkSize);
+              binaryString += String.fromCharCode(...chunk);
+            }
+            
+            const base64String = btoa(binaryString);
             
             // Extract filename from path (get the original filename if possible)
             let fileName = filePath.split('/').pop() || filePath;
@@ -124,9 +133,18 @@ const handler = async (req: Request): Promise<Response> => {
               if (!retryError && retryData) {
                 console.log(`Successfully downloaded file on retry: ${alternativePath}`);
                 const arrayBuffer = await retryData.arrayBuffer();
-                const base64String = btoa(
-                  String.fromCharCode(...new Uint8Array(arrayBuffer))
-                );
+                
+                // Convert to base64 safely for large files
+                const uint8Array = new Uint8Array(arrayBuffer);
+                let binaryString = '';
+                const chunkSize = 8192; // Process in 8KB chunks to avoid stack overflow
+                
+                for (let i = 0; i < uint8Array.length; i += chunkSize) {
+                  const chunk = uint8Array.slice(i, i + chunkSize);
+                  binaryString += String.fromCharCode(...chunk);
+                }
+                
+                const base64String = btoa(binaryString);
                 
                 let fileName = filePath.split('/').pop() || filePath;
                 if (fileName.includes('-')) {
