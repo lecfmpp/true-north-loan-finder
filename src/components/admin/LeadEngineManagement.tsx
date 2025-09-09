@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Settings, Activity, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 import ValidationRulesManagement from './ValidationRulesManagement';
-import RoutingRulesManagement from './RoutingRulesManagement';
+import BiddingTreeManagement from './BiddingTreeManagement';
 import SupplierManagement from './SupplierManagement';
 import BuyerManagement from './BuyerManagement';
 import LeadQueueManagement from './LeadQueueManagement';
@@ -16,10 +16,11 @@ import EngineAnalytics from './EngineAnalytics';
 
 interface EngineSettings {
   validation_enabled: boolean;
-  routing_enabled: boolean;
+  ping_tree_enabled: boolean;
   ping_post_enabled: boolean;
   default_hold_duration: number;
   max_ping_timeout: number;
+  min_bid_amount: number;
 }
 
 interface EngineStats {
@@ -34,10 +35,11 @@ interface EngineStats {
 const LeadEngineManagement = () => {
   const [settings, setSettings] = useState<EngineSettings>({
     validation_enabled: true,
-    routing_enabled: true,
+    ping_tree_enabled: true,
     ping_post_enabled: false,
     default_hold_duration: 24,
-    max_ping_timeout: 10
+    max_ping_timeout: 10,
+    min_bid_amount: 50
   });
   const [stats, setStats] = useState<EngineStats>({
     total_leads_processed: 0,
@@ -68,7 +70,7 @@ const LeadEngineManagement = () => {
       data?.forEach(setting => {
         const value = setting.setting_value;
         if (setting.setting_key === 'validation_enabled' || 
-            setting.setting_key === 'routing_enabled' || 
+            setting.setting_key === 'ping_tree_enabled' || 
             setting.setting_key === 'ping_post_enabled') {
           settingsMap[setting.setting_key] = value === 'true' || value === true;
         } else {
@@ -181,17 +183,17 @@ const LeadEngineManagement = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Lead Distribution Engine</h1>
+          <h1 className="text-3xl font-bold">Lead Bidding Engine</h1>
           <p className="text-muted-foreground">
-            Automated lead validation, routing, and monetization system
+            Ping Tree bidding system - leads go to highest bidders first
           </p>
         </div>
         <div className="flex items-center space-x-2">
           <Badge variant={settings.validation_enabled ? "default" : "secondary"}>
             Validation {settings.validation_enabled ? "ON" : "OFF"}
           </Badge>
-          <Badge variant={settings.routing_enabled ? "default" : "secondary"}>
-            Routing {settings.routing_enabled ? "ON" : "OFF"}
+          <Badge variant={settings.ping_tree_enabled ? "default" : "secondary"}>
+            Ping Tree {settings.ping_tree_enabled ? "ON" : "OFF"}
           </Badge>
         </div>
       </div>
@@ -258,14 +260,14 @@ const LeadEngineManagement = () => {
               
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-medium">Smart Routing</h4>
+                  <h4 className="font-medium">Ping Tree Bidding</h4>
                   <p className="text-sm text-muted-foreground">
-                    Route leads to best matching buyers
+                    Enable hierarchical bidding system
                   </p>
                 </div>
                 <Switch
-                  checked={settings.routing_enabled}
-                  onCheckedChange={(checked) => updateSetting('routing_enabled', checked)}
+                  checked={settings.ping_tree_enabled}
+                  onCheckedChange={(checked) => updateSetting('ping_tree_enabled', checked)}
                   disabled={saving}
                 />
               </div>
@@ -287,6 +289,13 @@ const LeadEngineManagement = () => {
               </div>
 
               <div className="space-y-2">
+                <h4 className="font-medium">Minimum Bid Amount</h4>
+                <p className="text-sm text-muted-foreground">
+                  Minimum bid required to participate: ${settings.min_bid_amount}
+                </p>
+              </div>
+
+              <div className="space-y-2">
                 <h4 className="font-medium">Payment Hold Duration</h4>
                 <p className="text-sm text-muted-foreground">
                   Hours to hold leads for payment: {settings.default_hold_duration}h
@@ -301,7 +310,7 @@ const LeadEngineManagement = () => {
       <Tabs defaultValue="validation" className="space-y-4">
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="validation">Validation Rules</TabsTrigger>
-          <TabsTrigger value="routing">Routing Rules</TabsTrigger>
+          <TabsTrigger value="bidding">Bidding Tree</TabsTrigger>
           <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
           <TabsTrigger value="buyers">Buyers</TabsTrigger>
           <TabsTrigger value="queue">Queue Management</TabsTrigger>
@@ -312,8 +321,8 @@ const LeadEngineManagement = () => {
           <ValidationRulesManagement />
         </TabsContent>
 
-        <TabsContent value="routing">
-          <RoutingRulesManagement />
+        <TabsContent value="bidding">
+          <BiddingTreeManagement />
         </TabsContent>
 
         <TabsContent value="suppliers">
