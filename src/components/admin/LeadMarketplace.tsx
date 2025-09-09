@@ -51,12 +51,12 @@ const LeadMarketplace: React.FC = () => {
   const [bidAmount, setBidAmount] = useState('');
   const [bidNotes, setBidNotes] = useState('');
   const [filters, setFilters] = useState({
-    country: '',
-    industry: '',
-    loan_type: '',
+    country: 'all',
+    industry: 'all',
+    loan_type: 'all',
     min_amount: '',
     max_amount: '',
-    status: '',
+    status: 'all',
     search: ''
   });
   const { toast } = useToast();
@@ -228,10 +228,10 @@ const LeadMarketplace: React.FC = () => {
   };
 
   const filteredLeads = leads.filter(lead => {
-    if (filters.country && lead.country !== filters.country) return false;
-    if (filters.industry && lead.industry !== filters.industry) return false;
-    if (filters.loan_type && lead.loan_type !== filters.loan_type) return false;
-    if (filters.status && lead.status !== filters.status) return false;
+    if (filters.country !== 'all' && lead.country !== filters.country) return false;
+    if (filters.industry !== 'all' && lead.industry !== filters.industry) return false;
+    if (filters.loan_type !== 'all' && lead.loan_type !== filters.loan_type) return false;
+    if (filters.status !== 'all' && lead.status !== filters.status) return false;
     if (filters.min_amount && lead.loan_amount < parseInt(filters.min_amount)) return false;
     if (filters.max_amount && lead.loan_amount > parseInt(filters.max_amount)) return false;
     if (filters.search && !lead.business_name.toLowerCase().includes(filters.search.toLowerCase()) && 
@@ -346,12 +346,12 @@ const LeadMarketplace: React.FC = () => {
             
             <div>
               <Label>Country</Label>
-              <Select value={filters.country} onValueChange={(value) => setFilters(prev => ({ ...prev, country: value }))}>
+              <Select value={filters.country} onValueChange={(value) => setFilters(prev => ({ ...prev, country: value === 'all' ? '' : value }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="All" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Countries</SelectItem>
+                  <SelectItem value="all">All Countries</SelectItem>
                   <SelectItem value="US">United States</SelectItem>
                   <SelectItem value="CA">Canada</SelectItem>
                 </SelectContent>
@@ -360,12 +360,12 @@ const LeadMarketplace: React.FC = () => {
             
             <div>
               <Label>Industry</Label>
-              <Select value={filters.industry} onValueChange={(value) => setFilters(prev => ({ ...prev, industry: value }))}>
+              <Select value={filters.industry} onValueChange={(value) => setFilters(prev => ({ ...prev, industry: value === 'all' ? '' : value }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="All" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Industries</SelectItem>
+                  <SelectItem value="all">All Industries</SelectItem>
                   <SelectItem value="Restaurant">Restaurant</SelectItem>
                   <SelectItem value="Technology">Technology</SelectItem>
                   <SelectItem value="Construction">Construction</SelectItem>
@@ -377,12 +377,12 @@ const LeadMarketplace: React.FC = () => {
             
             <div>
               <Label>Loan Type</Label>
-              <Select value={filters.loan_type} onValueChange={(value) => setFilters(prev => ({ ...prev, loan_type: value }))}>
+              <Select value={filters.loan_type} onValueChange={(value) => setFilters(prev => ({ ...prev, loan_type: value === 'all' ? '' : value }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="All" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Types</SelectItem>
+                  <SelectItem value="all">All Types</SelectItem>
                   <SelectItem value="Term Loan">Term Loan</SelectItem>
                   <SelectItem value="SBA Loan">SBA Loan</SelectItem>
                   <SelectItem value="Equipment Financing">Equipment Financing</SelectItem>
@@ -393,12 +393,12 @@ const LeadMarketplace: React.FC = () => {
             
             <div>
               <Label>Status</Label>
-              <Select value={filters.status} onValueChange={(value) => setFilters(prev => ({ ...prev, status: value }))}>
+              <Select value={filters.status} onValueChange={(value) => setFilters(prev => ({ ...prev, status: value === 'all' ? '' : value }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="All" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Status</SelectItem>
+                  <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="available">Available</SelectItem>
                   <SelectItem value="bidding">Active Bidding</SelectItem>
                   <SelectItem value="sold">Sold</SelectItem>
