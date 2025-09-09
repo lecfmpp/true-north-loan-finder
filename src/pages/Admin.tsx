@@ -112,7 +112,6 @@ import ClientsManagement from '@/components/admin/ClientsManagement';
 import ReportDashboard from '@/components/admin/ReportDashboard';
 import Footer from '@/components/Footer';
 import PartnerROIDashboard from '@/components/partner/PartnerROIDashboard';
-import ReconciliationManagement from '@/components/admin/ReconciliationManagement';
 import LeadEngineManagement from '@/components/admin/LeadEngineManagement';
 interface QuizResponse {
   id: string;
@@ -1974,9 +1973,9 @@ const Admin = () => {
         icon: Users,
         count: partners.length
       }, {
-        title: "Reconciliation",
-        value: "reconciliation",
-        icon: UserCheck
+        title: "Lead Engine",
+        value: "lead-engine", 
+        icon: SettingsIcon
       }, {
         title: "Clients",
         value: "clients",
@@ -2852,8 +2851,6 @@ const Admin = () => {
         return <SettingsManagement />;
       case 'partner-payments':
         return <div className="p-6 text-center text-muted-foreground">Payment & Access is temporarily disabled.</div>;
-      case 'reconciliation':
-        return <ReconciliationManagement />;
       case 'clients':
         return <ClientsManagement />;
       case 'billing':
