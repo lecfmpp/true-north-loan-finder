@@ -595,6 +595,7 @@ const LeadMarketplace: React.FC = () => {
                     {sortField !== 'time_in_business' && <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />}
                   </Button>
                 </TableHead>
+                <TableHead className="min-w-[180px]">Use of Funds</TableHead>
                 <TableHead className="min-w-[100px]">
                   <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent hover:text-current" onClick={() => handleSort('score')}>
                     Score
@@ -659,6 +660,11 @@ const LeadMarketplace: React.FC = () => {
                   <TableCell>
                     <div className="text-sm text-muted-foreground">
                       {formatBusinessAge(lead.time_in_business)}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm text-muted-foreground max-w-[180px] truncate" title={lead.use_of_funds}>
+                      {lead.use_of_funds}
                     </div>
                   </TableCell>
                   <TableCell>
