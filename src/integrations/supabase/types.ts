@@ -214,6 +214,90 @@ export type Database = {
           },
         ]
       }
+      bidding_campaigns: {
+        Row: {
+          bid_amount: number
+          campaign_id: string
+          created_at: string
+          current_daily_count: number
+          current_monthly_count: number
+          current_weekly_count: number
+          daily_cap: number | null
+          id: string
+          is_active: boolean
+          last_daily_reset: string | null
+          last_monthly_reset: string | null
+          last_weekly_reset: string | null
+          lead_criteria: Json
+          leads_won: number
+          monthly_cap: number | null
+          partner_id: string
+          priority: number
+          total_spent: number
+          updated_at: string
+          weekly_cap: number | null
+        }
+        Insert: {
+          bid_amount: number
+          campaign_id: string
+          created_at?: string
+          current_daily_count?: number
+          current_monthly_count?: number
+          current_weekly_count?: number
+          daily_cap?: number | null
+          id?: string
+          is_active?: boolean
+          last_daily_reset?: string | null
+          last_monthly_reset?: string | null
+          last_weekly_reset?: string | null
+          lead_criteria?: Json
+          leads_won?: number
+          monthly_cap?: number | null
+          partner_id: string
+          priority?: number
+          total_spent?: number
+          updated_at?: string
+          weekly_cap?: number | null
+        }
+        Update: {
+          bid_amount?: number
+          campaign_id?: string
+          created_at?: string
+          current_daily_count?: number
+          current_monthly_count?: number
+          current_weekly_count?: number
+          daily_cap?: number | null
+          id?: string
+          is_active?: boolean
+          last_daily_reset?: string | null
+          last_monthly_reset?: string | null
+          last_weekly_reset?: string | null
+          lead_criteria?: Json
+          leads_won?: number
+          monthly_cap?: number | null
+          partner_id?: string
+          priority?: number
+          total_spent?: number
+          updated_at?: string
+          weekly_cap?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bidding_campaigns_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bidding_campaigns_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blog_posts: {
         Row: {
           author: string
@@ -563,6 +647,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      campaigns: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          quiz_form_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          quiz_form_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          quiz_form_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       canadian_application_drafts: {
         Row: {
