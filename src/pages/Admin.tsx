@@ -113,6 +113,7 @@ import ReportDashboard from '@/components/admin/ReportDashboard';
 import Footer from '@/components/Footer';
 import PartnerROIDashboard from '@/components/partner/PartnerROIDashboard';
 import LeadEngineManagement from '@/components/admin/LeadEngineManagement';
+import LeadMarketplace from '@/components/admin/LeadMarketplace';
 interface QuizResponse {
   id: string;
   name: string;
@@ -1977,9 +1978,9 @@ const Admin = () => {
         value: "lead-engine", 
         icon: SettingsIcon
       }, {
-        title: "Clients",
-        value: "clients",
-        icon: Users
+        title: "Lead Marketplace",
+        value: "lead-marketplace",
+        icon: DollarSign
       }, {
         title: "USA Applications",
         value: "usa-applications",
@@ -2823,6 +2824,8 @@ const Admin = () => {
           </div>
       case 'lead-engine':
         return <LeadEngineManagement />;
+      case 'lead-marketplace':
+        return <LeadMarketplace />;
       case 'applications':
         return <SimplifiedPartnersManagement />;
       case 'partners':
@@ -2851,8 +2854,6 @@ const Admin = () => {
         return <SettingsManagement />;
       case 'partner-payments':
         return <div className="p-6 text-center text-muted-foreground">Payment & Access is temporarily disabled.</div>;
-      case 'clients':
-        return <ClientsManagement />;
       case 'billing':
         return <BillingManagement />;
       case 'roi':
