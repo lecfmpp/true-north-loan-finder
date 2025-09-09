@@ -74,6 +74,7 @@ const ScoreRulesManagement = () => {
       const { data, error } = await supabase
         .from('lead_score_rules')
         .select('*')
+        .order('criteria_field', { ascending: true })
         .order('score_points', { ascending: false });
 
       if (error) throw error;
@@ -292,14 +293,24 @@ const ScoreRulesManagement = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="score_points">Score Points</Label>
-                    <Input
-                      id="score_points"
-                      type="number"
-                      value={formData.score_points}
-                      onChange={(e) => setFormData({...formData, score_points: parseInt(e.target.value) || 0})}
-                      placeholder="10"
-                      required
-                    />
+                    <Select 
+                      value={formData.score_points.toString()} 
+                      onValueChange={(value) => setFormData({...formData, score_points: parseInt(value) || 0})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select points" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border z-50">
+                        <SelectItem value="5">5 Points - Minor Bonus</SelectItem>
+                        <SelectItem value="10">10 Points - Small Bonus</SelectItem>
+                        <SelectItem value="15">15 Points - Good Bonus</SelectItem>
+                        <SelectItem value="20">20 Points - Strong Bonus</SelectItem>
+                        <SelectItem value="25">25 Points - Major Bonus</SelectItem>
+                        <SelectItem value="30">30 Points - Excellent Bonus</SelectItem>
+                        <SelectItem value="35">35 Points - Premium Bonus</SelectItem>
+                        <SelectItem value="40">40 Points - Maximum Bonus</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
@@ -310,12 +321,11 @@ const ScoreRulesManagement = () => {
                       <SelectTrigger>
                         <SelectValue placeholder="Select field" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-background border z-50">
                         <SelectItem value="loan_amount">Loan Amount</SelectItem>
                         <SelectItem value="monthly_revenue">Monthly Revenue</SelectItem>
                         <SelectItem value="credit_score">Credit Score</SelectItem>
                         <SelectItem value="time_in_business">Time in Business</SelectItem>
-                        <SelectItem value="use_of_funds">Use of Funds</SelectItem>
                         <SelectItem value="country">Country</SelectItem>
                       </SelectContent>
                     </Select>
@@ -326,7 +336,7 @@ const ScoreRulesManagement = () => {
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-background border z-50">
                         <SelectItem value="greater_than">Greater Than</SelectItem>
                         <SelectItem value="less_than">Less Than</SelectItem>
                         <SelectItem value="equals">Equals</SelectItem>
@@ -393,8 +403,9 @@ const ScoreRulesManagement = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Criteria Field</TableHead>
                 <TableHead>Rule Name</TableHead>
-                <TableHead>Criteria</TableHead>
+                <TableHead>Condition</TableHead>
                 <TableHead>Points</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Actions</TableHead>
@@ -403,6 +414,11 @@ const ScoreRulesManagement = () => {
             <TableBody>
               {rules.map((rule) => (
                 <TableRow key={rule.id}>
+                  <TableCell>
+                    <Badge variant="outline" className="capitalize">
+                      {rule.criteria_field.replace('_', ' ')}
+                    </Badge>
+                  </TableCell>
                   <TableCell>
                     <div>
                       <div className="font-medium">{rule.rule_name}</div>
@@ -413,7 +429,7 @@ const ScoreRulesManagement = () => {
                   </TableCell>
                   <TableCell>
                     <code className="text-sm bg-muted px-2 py-1 rounded">
-                      {rule.criteria_field} {rule.criteria_operator} {rule.criteria_value}
+                      {rule.criteria_operator} {rule.criteria_value}
                     </code>
                   </TableCell>
                   <TableCell>
@@ -448,7 +464,7 @@ const ScoreRulesManagement = () => {
               ))}
               {rules.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                     No score rules configured. Add a rule to start scoring leads.
                   </TableCell>
                 </TableRow>
