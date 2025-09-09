@@ -360,6 +360,144 @@ export type Database = {
         }
         Relationships: []
       }
+      buyer_lead_caps: {
+        Row: {
+          buyer_id: string | null
+          current_daily_count: number
+          current_monthly_count: number
+          current_weekly_count: number
+          daily_cap: number | null
+          id: string
+          last_daily_reset: string | null
+          last_monthly_reset: string | null
+          last_weekly_reset: string | null
+          monthly_cap: number | null
+          updated_at: string
+          weekly_cap: number | null
+        }
+        Insert: {
+          buyer_id?: string | null
+          current_daily_count?: number
+          current_monthly_count?: number
+          current_weekly_count?: number
+          daily_cap?: number | null
+          id?: string
+          last_daily_reset?: string | null
+          last_monthly_reset?: string | null
+          last_weekly_reset?: string | null
+          monthly_cap?: number | null
+          updated_at?: string
+          weekly_cap?: number | null
+        }
+        Update: {
+          buyer_id?: string | null
+          current_daily_count?: number
+          current_monthly_count?: number
+          current_weekly_count?: number
+          daily_cap?: number | null
+          id?: string
+          last_daily_reset?: string | null
+          last_monthly_reset?: string | null
+          last_weekly_reset?: string | null
+          monthly_cap?: number | null
+          updated_at?: string
+          weekly_cap?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buyer_lead_caps_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: true
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      buyer_payment_settings: {
+        Row: {
+          auto_charge: boolean
+          buyer_id: string | null
+          created_at: string
+          hold_duration_hours: number | null
+          id: string
+          payment_per_lead: number | null
+          requires_prepayment: boolean
+          stripe_customer_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          auto_charge?: boolean
+          buyer_id?: string | null
+          created_at?: string
+          hold_duration_hours?: number | null
+          id?: string
+          payment_per_lead?: number | null
+          requires_prepayment?: boolean
+          stripe_customer_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          auto_charge?: boolean
+          buyer_id?: string | null
+          created_at?: string
+          hold_duration_hours?: number | null
+          id?: string
+          payment_per_lead?: number | null
+          requires_prepayment?: boolean
+          stripe_customer_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buyer_payment_settings_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: true
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      buyer_schedules: {
+        Row: {
+          buyer_id: string | null
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          is_active: boolean
+          start_time: string
+          timezone: string
+        }
+        Insert: {
+          buyer_id?: string | null
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          is_active?: boolean
+          start_time: string
+          timezone?: string
+        }
+        Update: {
+          buyer_id?: string | null
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          start_time?: string
+          timezone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buyer_schedules_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       call_bookings: {
         Row: {
           booking_status: string
@@ -1359,6 +1497,33 @@ export type Database = {
           },
         ]
       }
+      lead_engine_settings: {
+        Row: {
+          description: string | null
+          id: string
+          setting_key: string
+          setting_value: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          setting_key: string
+          setting_value: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       lead_feed: {
         Row: {
           business_name: string
@@ -1440,6 +1605,152 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_queue: {
+        Row: {
+          attempts: number
+          buyer_id: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          lead_id: string | null
+          max_attempts: number
+          metadata: Json | null
+          payment_status: string | null
+          queue_type: string
+          scheduled_delivery: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          buyer_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          lead_id?: string | null
+          max_attempts?: number
+          metadata?: Json | null
+          payment_status?: string | null
+          queue_type: string
+          scheduled_delivery?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          buyer_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          lead_id?: string | null
+          max_attempts?: number
+          metadata?: Json | null
+          payment_status?: string | null
+          queue_type?: string
+          scheduled_delivery?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_queue_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_queue_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_responses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_routing_history: {
+        Row: {
+          buyers_assigned: Json
+          executed_at: string
+          id: string
+          lead_id: string
+          routing_decision: Json
+          routing_type: string
+          rule_id: string | null
+        }
+        Insert: {
+          buyers_assigned?: Json
+          executed_at?: string
+          id?: string
+          lead_id: string
+          routing_decision: Json
+          routing_type: string
+          rule_id?: string | null
+        }
+        Update: {
+          buyers_assigned?: Json
+          executed_at?: string
+          id?: string
+          lead_id?: string
+          routing_decision?: Json
+          routing_type?: string
+          rule_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_routing_history_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "lead_routing_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_routing_rules: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          lead_criteria: Json
+          max_buyers: number | null
+          priority: number
+          routing_type: string
+          rule_name: string
+          target_buyers: Json
+          updated_at: string
+          weights: Json | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          lead_criteria?: Json
+          max_buyers?: number | null
+          priority?: number
+          routing_type: string
+          rule_name: string
+          target_buyers?: Json
+          updated_at?: string
+          weights?: Json | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          lead_criteria?: Json
+          max_buyers?: number | null
+          priority?: number
+          routing_type?: string
+          rule_name?: string
+          target_buyers?: Json
+          updated_at?: string
+          weights?: Json | null
+        }
+        Relationships: []
+      }
       lead_simulation_submissions: {
         Row: {
           created_at: string | null
@@ -1502,6 +1813,131 @@ export type Database = {
           source_category?: string
           source_name?: string
           source_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      lead_suppliers: {
+        Row: {
+          api_endpoint: string | null
+          api_key_hash: string | null
+          contact_email: string | null
+          created_at: string
+          created_by: string | null
+          daily_cap: number | null
+          id: string
+          is_active: boolean
+          monthly_cap: number | null
+          name: string
+          quality_score: number | null
+          updated_at: string
+          weekly_cap: number | null
+        }
+        Insert: {
+          api_endpoint?: string | null
+          api_key_hash?: string | null
+          contact_email?: string | null
+          created_at?: string
+          created_by?: string | null
+          daily_cap?: number | null
+          id?: string
+          is_active?: boolean
+          monthly_cap?: number | null
+          name: string
+          quality_score?: number | null
+          updated_at?: string
+          weekly_cap?: number | null
+        }
+        Update: {
+          api_endpoint?: string | null
+          api_key_hash?: string | null
+          contact_email?: string | null
+          created_at?: string
+          created_by?: string | null
+          daily_cap?: number | null
+          id?: string
+          is_active?: boolean
+          monthly_cap?: number | null
+          name?: string
+          quality_score?: number | null
+          updated_at?: string
+          weekly_cap?: number | null
+        }
+        Relationships: []
+      }
+      lead_validation_results: {
+        Row: {
+          error_message: string | null
+          id: string
+          lead_id: string
+          metadata: Json | null
+          rule_id: string | null
+          validated_at: string
+          validation_status: string
+        }
+        Insert: {
+          error_message?: string | null
+          id?: string
+          lead_id: string
+          metadata?: Json | null
+          rule_id?: string | null
+          validated_at?: string
+          validation_status: string
+        }
+        Update: {
+          error_message?: string | null
+          id?: string
+          lead_id?: string
+          metadata?: Json | null
+          rule_id?: string | null
+          validated_at?: string
+          validation_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_validation_results_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "lead_validation_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_validation_rules: {
+        Row: {
+          actions: Json
+          conditions: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          priority: number
+          rule_name: string
+          rule_type: string
+          updated_at: string
+        }
+        Insert: {
+          actions?: Json
+          conditions?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          priority?: number
+          rule_name: string
+          rule_type: string
+          updated_at?: string
+        }
+        Update: {
+          actions?: Json
+          conditions?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          priority?: number
+          rule_name?: string
+          rule_type?: string
           updated_at?: string
         }
         Relationships: []
@@ -1850,6 +2286,86 @@ export type Database = {
         }
         Relationships: []
       }
+      ping_campaigns: {
+        Row: {
+          active_buyers: Json
+          bid_timeout_seconds: number
+          campaign_name: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          lead_criteria: Json
+          minimum_bid: number | null
+          updated_at: string
+        }
+        Insert: {
+          active_buyers?: Json
+          bid_timeout_seconds?: number
+          campaign_name: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          lead_criteria?: Json
+          minimum_bid?: number | null
+          updated_at?: string
+        }
+        Update: {
+          active_buyers?: Json
+          bid_timeout_seconds?: number
+          campaign_name?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          lead_criteria?: Json
+          minimum_bid?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ping_responses: {
+        Row: {
+          bid_amount: number
+          buyer_id: string | null
+          created_at: string
+          id: string
+          metadata: Json | null
+          ping_id: string
+          response_time_ms: number
+          status: string
+        }
+        Insert: {
+          bid_amount: number
+          buyer_id?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          ping_id: string
+          response_time_ms: number
+          status: string
+        }
+        Update: {
+          bid_amount?: number
+          buyer_id?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          ping_id?: string
+          response_time_ms?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ping_responses_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -2176,6 +2692,41 @@ export type Database = {
           submission_type?: string
         }
         Relationships: []
+      }
+      supplier_lead_counts: {
+        Row: {
+          date: string
+          id: string
+          last_reset_at: string | null
+          lead_count: number
+          period_type: string
+          supplier_id: string | null
+        }
+        Insert: {
+          date: string
+          id?: string
+          last_reset_at?: string | null
+          lead_count?: number
+          period_type: string
+          supplier_id?: string | null
+        }
+        Update: {
+          date?: string
+          id?: string
+          last_reset_at?: string | null
+          lead_count?: number
+          period_type?: string
+          supplier_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_lead_counts_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "lead_suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       usa_application_drafts: {
         Row: {

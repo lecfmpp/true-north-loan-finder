@@ -113,6 +113,7 @@ import ReportDashboard from '@/components/admin/ReportDashboard';
 import Footer from '@/components/Footer';
 import PartnerROIDashboard from '@/components/partner/PartnerROIDashboard';
 import ReconciliationManagement from '@/components/admin/ReconciliationManagement';
+import LeadEngineManagement from '@/components/admin/LeadEngineManagement';
 interface QuizResponse {
   id: string;
   name: string;
@@ -2821,6 +2822,8 @@ const Admin = () => {
                 No leads found matching your criteria.
               </div>}
           </div>
+      case 'lead-engine':
+        return <LeadEngineManagement />;
       case 'applications':
         return <SimplifiedPartnersManagement />;
       case 'partners':
