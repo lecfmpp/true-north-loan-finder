@@ -9,6 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Settings, Activity, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 import ValidationRulesManagement from './ValidationRulesManagement';
 import RoutingRulesManagement from './RoutingRulesManagement';
+import SupplierManagement from './SupplierManagement';
+import BuyerManagement from './BuyerManagement';
 import LeadQueueManagement from './LeadQueueManagement';
 import EngineAnalytics from './EngineAnalytics';
 
@@ -297,9 +299,11 @@ const LeadEngineManagement = () => {
 
       {/* Engine Management Tabs */}
       <Tabs defaultValue="validation" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="validation">Validation Rules</TabsTrigger>
           <TabsTrigger value="routing">Routing Rules</TabsTrigger>
+          <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
+          <TabsTrigger value="buyers">Buyers</TabsTrigger>
           <TabsTrigger value="queue">Queue Management</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
@@ -310,6 +314,14 @@ const LeadEngineManagement = () => {
 
         <TabsContent value="routing">
           <RoutingRulesManagement />
+        </TabsContent>
+
+        <TabsContent value="suppliers">
+          <SupplierManagement />
+        </TabsContent>
+
+        <TabsContent value="buyers">
+          <BuyerManagement />
         </TabsContent>
 
         <TabsContent value="queue">
