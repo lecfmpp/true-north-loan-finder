@@ -1751,6 +1751,45 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_score_rules: {
+        Row: {
+          created_at: string
+          criteria_field: string
+          criteria_operator: string
+          criteria_value: string
+          description: string | null
+          id: string
+          is_active: boolean
+          rule_name: string
+          score_points: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          criteria_field: string
+          criteria_operator: string
+          criteria_value: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          rule_name: string
+          score_points?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          criteria_field?: string
+          criteria_operator?: string
+          criteria_value?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          rule_name?: string
+          score_points?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lead_simulation_submissions: {
         Row: {
           created_at: string | null

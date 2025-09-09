@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Settings, Activity, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
-import ValidationRulesManagement from './ValidationRulesManagement';
+import ScoreRulesManagement from './ScoreRulesManagement';
 import BiddingTreeManagement from './BiddingTreeManagement';
 import BuyerManagement from './BuyerManagement';
 import LeadQueueManagement from './LeadQueueManagement';
@@ -306,17 +306,17 @@ const LeadEngineManagement = () => {
       </Card>
 
       {/* Engine Management Tabs */}
-      <Tabs defaultValue="validation" className="space-y-4">
+      <Tabs defaultValue="scoring" className="space-y-4">
         <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="validation">Validation Rules</TabsTrigger>
+          <TabsTrigger value="scoring">Score Rules</TabsTrigger>
           <TabsTrigger value="bidding">Bidding Tree</TabsTrigger>
           <TabsTrigger value="buyers">Buyers</TabsTrigger>
           <TabsTrigger value="queue">Queue Management</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="validation">
-          <ValidationRulesManagement />
+        <TabsContent value="scoring">
+          <ScoreRulesManagement />
         </TabsContent>
 
         <TabsContent value="bidding">
