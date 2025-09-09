@@ -9,7 +9,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Settings, Activity, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 import ValidationRulesManagement from './ValidationRulesManagement';
 import BiddingTreeManagement from './BiddingTreeManagement';
-import SupplierManagement from './SupplierManagement';
 import BuyerManagement from './BuyerManagement';
 import LeadQueueManagement from './LeadQueueManagement';
 import EngineAnalytics from './EngineAnalytics';
@@ -26,9 +25,9 @@ interface EngineSettings {
 interface EngineStats {
   total_leads_processed: number;
   leads_validated: number;
-  leads_routed: number;
+  leads_bid_on: number;
   validation_success_rate: number;
-  routing_success_rate: number;
+  bidding_success_rate: number;
   avg_processing_time: number;
 }
 
@@ -44,9 +43,9 @@ const LeadEngineManagement = () => {
   const [stats, setStats] = useState<EngineStats>({
     total_leads_processed: 0,
     leads_validated: 0,
-    leads_routed: 0,
+    leads_bid_on: 0,
     validation_success_rate: 0,
-    routing_success_rate: 0,
+    bidding_success_rate: 0,
     avg_processing_time: 0
   });
   const [loading, setLoading] = useState(true);
@@ -95,9 +94,9 @@ const LeadEngineManagement = () => {
       const mockStats: EngineStats = {
         total_leads_processed: 1247,
         leads_validated: 1198,
-        leads_routed: 1156,
+        leads_bid_on: 1156,
         validation_success_rate: 96.1,
-        routing_success_rate: 92.8,
+        bidding_success_rate: 92.8,
         avg_processing_time: 2.3
       };
       
@@ -215,9 +214,9 @@ const LeadEngineManagement = () => {
           status="success"
         />
         <StatusCard
-          title="Routing Rate"
-          value={`${stats.routing_success_rate}%`}
-          subtitle="Successfully routed"
+          title="Bidding Rate"
+          value={`${stats.bidding_success_rate}%`}
+          subtitle="Successfully bid on"
           icon={CheckCircle}
           status="success"
         />
@@ -308,10 +307,9 @@ const LeadEngineManagement = () => {
 
       {/* Engine Management Tabs */}
       <Tabs defaultValue="validation" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="validation">Validation Rules</TabsTrigger>
           <TabsTrigger value="bidding">Bidding Tree</TabsTrigger>
-          <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
           <TabsTrigger value="buyers">Buyers</TabsTrigger>
           <TabsTrigger value="queue">Queue Management</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -323,10 +321,6 @@ const LeadEngineManagement = () => {
 
         <TabsContent value="bidding">
           <BiddingTreeManagement />
-        </TabsContent>
-
-        <TabsContent value="suppliers">
-          <SupplierManagement />
         </TabsContent>
 
         <TabsContent value="buyers">
