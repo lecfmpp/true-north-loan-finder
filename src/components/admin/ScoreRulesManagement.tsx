@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Plus, Edit3 } from 'lucide-react';
+import { Trash2, Plus, Edit3, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -71,35 +71,13 @@ const ScoreRulesManagement = () => {
 
   const fetchScoreRules = async () => {
     try {
-      // Mock data until TypeScript types are updated
-      const mockRules: ScoreRule[] = [
-        {
-          id: '1',
-          rule_name: 'High Loan Amount',
-          criteria_field: 'loan_amount',
-          criteria_operator: 'greater_than',
-          criteria_value: '100000',
-          score_points: 15,
-          is_active: true,
-          description: 'Higher scores for loan amounts above $100k',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        },
-        {
-          id: '2',
-          rule_name: 'High Monthly Revenue',
-          criteria_field: 'monthly_revenue',
-          criteria_operator: 'greater_than',
-          criteria_value: '50000',
-          score_points: 10,
-          is_active: true,
-          description: 'Bonus points for monthly revenue above $50k',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      ];
-      
-      setRules(mockRules);
+      const { data, error } = await supabase
+        .from('lead_score_rules')
+        .select('*')
+        .order('score_points', { ascending: false });
+
+      if (error) throw error;
+      setRules(data || []);
     } catch (error) {
       console.error('Error fetching score rules:', error);
       toast({
@@ -116,11 +94,49 @@ const ScoreRulesManagement = () => {
     e.preventDefault();
     
     try {
-      // For now, just show success message - will be connected to real DB once types are updated
-      toast({
-        title: "Success",
-        description: editingRule ? "Score rule updated successfully" : "Score rule created successfully"
-      });
+      if (editingRule) {
+        // Update existing rule
+        const { error } = await supabase
+          .from('lead_score_rules')
+          .update({
+            rule_name: formData.rule_name,
+            criteria_field: formData.criteria_field,
+            criteria_operator: formData.criteria_operator,
+            criteria_value: formData.criteria_value,
+            score_points: formData.score_points,
+            description: formData.description,
+            is_active: formData.is_active,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', editingRule.id);
+
+        if (error) throw error;
+        
+        toast({
+          title: "Success",
+          description: "Score rule updated successfully"
+        });
+      } else {
+        // Create new rule
+        const { error } = await supabase
+          .from('lead_score_rules')
+          .insert({
+            rule_name: formData.rule_name,
+            criteria_field: formData.criteria_field,
+            criteria_operator: formData.criteria_operator,
+            criteria_value: formData.criteria_value,
+            score_points: formData.score_points,
+            description: formData.description,
+            is_active: formData.is_active
+          });
+
+        if (error) throw error;
+        
+        toast({
+          title: "Success",
+          description: "Score rule created successfully"
+        });
+      }
 
       await fetchScoreRules();
       handleDialogClose();
@@ -154,7 +170,13 @@ const ScoreRulesManagement = () => {
     }
 
     try {
-      // For now, just show success message - will be connected to real DB once types are updated
+      const { error } = await supabase
+        .from('lead_score_rules')
+        .delete()
+        .eq('id', ruleId);
+
+      if (error) throw error;
+      
       toast({
         title: "Success",
         description: "Score rule deleted successfully"
@@ -166,6 +188,31 @@ const ScoreRulesManagement = () => {
       toast({
         title: "Error",
         description: "Failed to delete score rule",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const recalculateAllScores = async () => {
+    try {
+      toast({
+        title: "Processing",
+        description: "Recalculating scores for all leads..."
+      });
+
+      const { error } = await supabase.functions.invoke('recalculate-all-scores');
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "All lead scores have been recalculated"
+      });
+    } catch (error) {
+      console.error('Error recalculating scores:', error);
+      toast({
+        title: "Error",
+        description: "Failed to recalculate scores",
         variant: "destructive"
       });
     }
@@ -207,14 +254,20 @@ const ScoreRulesManagement = () => {
           </p>
         </div>
         
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => setDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Score Rule
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={recalculateAllScores}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Recalculate All Scores
+          </Button>
+          
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={() => setDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Score Rule
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
             <form onSubmit={handleSubmit}>
               <DialogHeader>
                 <DialogTitle>
@@ -326,6 +379,7 @@ const ScoreRulesManagement = () => {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <Card>
