@@ -372,22 +372,39 @@ const LeadTierAnalytics = () => {
       const totalApplications = Object.values(tierStats).reduce((sum, tier) => sum + tier.applications_sent, 0);
       const totalFilesUploaded = Object.values(tierStats).reduce((sum, tier) => sum + tier.files_uploaded, 0);
       
+      // Calculate filtered cost based on applied filters
+      let filteredTotalCost = totalSpend; // Default to total spend
+      
+      if (channelFilter !== 'all') {
+        // If channel filter is applied, use only that channel's spend
+        filteredTotalCost = spendByChannel[channelFilter] || 0;
+      } else if (filterType !== 'all' || actualTotalLeads !== (leads?.length || 0)) {
+        // If other filters are applied, calculate proportional cost
+        const allLeadsInRange = leads?.length || 0;
+        if (allLeadsInRange > 0 && actualTotalLeads !== allLeadsInRange) {
+          const proportionOfLeads = actualTotalLeads / allLeadsInRange;
+          filteredTotalCost = totalSpend * proportionOfLeads;
+        }
+      }
+      
       // Calculate filtered cost per conversion based on the actual filter applied
-      const filteredCostPerLead = actualTotalLeads > 0 ? totalSpend / actualTotalLeads : 0;
+      const filteredCostPerLead = actualTotalLeads > 0 ? filteredTotalCost / actualTotalLeads : 0;
       
       console.log('Metrics calculation:', {
         actualTotalLeads,
         totalSpend,
+        filteredTotalCost,
         filteredCostPerLead,
         dateRange,
-        filterType
+        filterType,
+        channelFilter
       });
       
       setTierData(Object.values(tierStats));
       setDailyData(dailyArray);
       setTotalStats({
         totalLeads: actualTotalLeads,
-        totalCost: totalSpend, // Already filtered by date range above
+        totalCost: filteredTotalCost, // Use filtered cost that matches filtered leads
         avgCostPerLead: filteredCostPerLead, // Use filtered calculation
         applicationRate: actualTotalLeads > 0 ? (totalApplications / actualTotalLeads) * 100 : 0,
         fileUploadRate: actualTotalLeads > 0 ? (totalFilesUploaded / actualTotalLeads) * 100 : 0
