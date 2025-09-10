@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { format, intervalToDuration } from 'date-fns';
 import { Search, Filter, DollarSign, Clock, Building, User, Phone, Mail, AlertTriangle, CheckCircle, XCircle, CreditCard, ChevronUp, ChevronDown, ArrowUpDown } from 'lucide-react';
+import { EmailVerificationIcon } from '@/components/EmailVerificationIcon';
 
 // Helper function to get credit score number from classification
 const getCreditScoreNumber = (creditScore: string) => {
@@ -157,6 +158,8 @@ interface QuizResponse {
   attribution_url?: string | null;
   bank_account_type?: string;
   homeowner_status?: string;
+  email_verified?: boolean;
+  email_verified_at?: string;
   // Marketplace specific fields
   base_price: number;
   current_highest_bid?: number;
@@ -209,7 +212,31 @@ const LeadMarketplace: React.FC = () => {
       // Fetch real leads from Supabase - last 20 leads
       const { data: quizResponses, error } = await supabase
         .from('quiz_responses')
-        .select('*')
+        .select(`
+          id,
+          name,
+          email,
+          phone,
+          website,
+          company_name,
+          monthly_revenue,
+          loan_amount,
+          credit_score,
+          time_in_business,
+          use_of_funds,
+          score,
+          status,
+          admin_notes,
+          created_at,
+          country,
+          city_province,
+          attribution_channel,
+          attribution_url,
+          bank_account_type,
+          homeowner_status,
+          email_verified,
+          email_verified_at
+        `)
         .order('created_at', { ascending: false })
         .limit(20);
 
@@ -241,6 +268,8 @@ const LeadMarketplace: React.FC = () => {
           attribution_url: lead.attribution_url,
           bank_account_type: lead.bank_account_type,
           homeowner_status: lead.homeowner_status,
+          email_verified: lead.email_verified || false,
+          email_verified_at: lead.email_verified_at,
           // Marketplace fields with tier-based pricing
           base_price: await calculateLeadBasePrice(lead),
           current_highest_bid: undefined,
@@ -635,6 +664,7 @@ const LeadMarketplace: React.FC = () => {
                   </Button>
                 </TableHead>
                 <TableHead className="min-w-[200px]">Email</TableHead>
+                <TableHead className="min-w-[100px]">Verified</TableHead>
                 <TableHead className="min-w-[120px]">Phone</TableHead>
                 <TableHead className="min-w-[80px]">Country</TableHead>
                 <TableHead className="min-w-[120px]">
@@ -697,6 +727,13 @@ const LeadMarketplace: React.FC = () => {
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">{lead.email}</div>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <EmailVerificationIcon 
+                      isVerified={lead.email_verified || false}
+                      verifiedAt={lead.email_verified_at}
+                      size="md"
+                    />
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">{lead.phone}</div>

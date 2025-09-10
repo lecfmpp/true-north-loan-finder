@@ -811,6 +811,21 @@ const Quiz = () => {
 
       if (error) throw error;
 
+      // Send email verification
+      try {
+        await supabase.functions.invoke('send-email-verification', {
+          body: {
+            leadId: savedResponseId,
+            email: data.email,
+            name: data.name
+          }
+        });
+        console.log('Email verification sent successfully');
+      } catch (verificationError) {
+        console.error('Failed to send email verification:', verificationError);
+        // Don't throw error - continue with flow even if email fails
+      }
+
       // Submit to external tracking system
       await EXTERNAL_TRACKER.submitLead(data, score);
 

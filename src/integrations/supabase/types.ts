@@ -2694,6 +2694,10 @@ export type Database = {
           created_at: string
           credit_score: string
           email: string
+          email_verification_sent_at: string | null
+          email_verification_token: string | null
+          email_verified: boolean | null
+          email_verified_at: string | null
           founding_day: number | null
           founding_month: number | null
           founding_year: number | null
@@ -2729,6 +2733,10 @@ export type Database = {
           created_at?: string
           credit_score: string
           email: string
+          email_verification_sent_at?: string | null
+          email_verification_token?: string | null
+          email_verified?: boolean | null
+          email_verified_at?: string | null
           founding_day?: number | null
           founding_month?: number | null
           founding_year?: number | null
@@ -2764,6 +2772,10 @@ export type Database = {
           created_at?: string
           credit_score?: string
           email?: string
+          email_verification_sent_at?: string | null
+          email_verification_token?: string | null
+          email_verified?: boolean | null
+          email_verified_at?: string | null
           founding_day?: number | null
           founding_month?: number | null
           founding_year?: number | null
