@@ -66,9 +66,9 @@ const LeadTierAnalytics = () => {
 
   const getTierCriteria = (tier: string): string => {
     switch (tier) {
-      case 'Exceptional (85+)': return '700+ credit • 2+ years';
-      case 'Qualified (45-84)': return '6+ months in business';
-      case 'Potential (0-44)': return '<$10K revenue • <6 months';
+      case 'Exceptional (85+)': return '$100K+ revenue • 750+ credit • 5+ years';
+      case 'Qualified (45-84)': return '$25K+ revenue • 600+ credit • 1+ years';
+      case 'Potential (0-44)': return '<$25K revenue • <580 credit • <1 year';
       default: return 'Score not calculated or incomplete data';
     }
   };
