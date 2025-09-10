@@ -50,8 +50,9 @@ const handler = async (req: Request): Promise<Response> => {
     const verificationUrl = `${baseUrl}/functions/v1/verify-email?token=${verificationToken}`;
 
     // Send verification email with branded template
+    const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "True North Business Funding <onboarding@resend.dev>";
     const emailResponse = await resend.emails.send({
-      from: "True North Business Funding <noreply@truenorth.com>",
+      from: fromEmail,
       to: [email],
       subject: "Please verify your email address - True North Business Funding",
       html: `
@@ -248,7 +249,21 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
-    console.log("Verification email sent successfully:", emailResponse);
+    if (emailResponse?.error) {
+      console.error("Resend error sending verification email:", emailResponse.error);
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: emailResponse.error 
+      }), {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        },
+      });
+    }
+
+    console.log("Verification email queued:", emailResponse.data);
 
     return new Response(JSON.stringify({ 
       success: true, 
