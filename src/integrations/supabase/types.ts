@@ -2018,6 +2018,42 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_tier_pricing: {
+        Row: {
+          base_price_max: number
+          base_price_min: number
+          created_at: string
+          currency: string
+          id: string
+          is_active: boolean
+          tier_description: string | null
+          tier_name: string
+          updated_at: string
+        }
+        Insert: {
+          base_price_max: number
+          base_price_min: number
+          created_at?: string
+          currency?: string
+          id?: string
+          is_active?: boolean
+          tier_description?: string | null
+          tier_name: string
+          updated_at?: string
+        }
+        Update: {
+          base_price_max?: number
+          base_price_min?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          is_active?: boolean
+          tier_description?: string | null
+          tier_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lead_validation_results: {
         Row: {
           error_message: string | null
