@@ -51,24 +51,27 @@ const getCreditScoreApprox = (creditScore: string) => {
   }
 };
 
-// Calculate base price based on lead tier criteria (simple, synchronous approach)
-const calculateLeadBasePrice = (lead: any): number => {
+// Helper function to get tier from score (matches LeadTierAnalytics)
+const getScoreTier = (score: number | null): string => {
+  if (!score) return 'No Score';
+  if (score >= 85) return 'Exceptional (85+)';
+  if (score >= 65) return 'Strong (65-84)';
+  if (score >= 45) return 'Good (45-64)';
+  return 'Potential (0-44)';
+};
+
+// Calculate base price with margin over actual lead cost
+const calculateLeadBasePrice = (lead: any, tierCosts: Record<string, number>): number => {
   const score = lead.score || 0;
+  const leadTier = getScoreTier(score);
+  const costPerLead = tierCosts[leadTier] || 0;
   
-  // Tier-based pricing (matches LeadTierAnalytics criteria)
-  if (score >= 85) {
-    // Exceptional (85+): $100K+ revenue • 750+ credit • 5+ years
-    return 450; // Premium tier
-  } else if (score >= 65) {
-    // Strong (65-84): $50K-100K revenue • 650-750 credit • 2-5 years
-    return 320; // High tier
-  } else if (score >= 45) {
-    // Good (45-64): $25K-50K revenue • 580-650 credit • 1-2 years  
-    return 220; // Medium tier
-  } else {
-    // Potential (0-44): <$25K revenue • <580 credit • <1 year
-    return 150; // Entry tier
-  }
+  // Apply margin based on score
+  const margin = score >= 45 ? 1.5 : 1.3; // 50% margin for 45+, 30% margin for below 45
+  const basePrice = costPerLead * margin;
+  
+  // Ensure minimum price and round to nearest dollar
+  return Math.max(Math.round(basePrice), 50);
 };
 
 // Qualified rule: revenue >= $10k, business age >= 6 months, credit score >= 600
@@ -153,6 +156,45 @@ const LeadMarketplace: React.FC = () => {
     try {
       setLoading(true);
       
+      // First, get analytics data to calculate real tier costs
+      let tierCosts: Record<string, number> = {};
+      
+      try {
+        // Get all ad spend data
+        const { data: adSpend, error: spendError } = await supabase
+          .from('ad_spend_records')
+          .select('amount, date, channel');
+
+        if (spendError) throw spendError;
+
+        // Calculate total spend (convert from cents to dollars)
+        const totalSpend = (adSpend || []).reduce((sum, record) => sum + (record.amount / 100), 0);
+        
+        // Get all leads to calculate tier-specific costs
+        const { data: allLeads, error: leadsError } = await supabase
+          .from('quiz_responses')
+          .select('id, score');
+          
+        if (leadsError) throw leadsError;
+
+        // Count leads by tier (same logic as LeadTierAnalytics)
+        const tierCounts: Record<string, number> = {};
+        (allLeads || []).forEach(l => {
+          const tier = getScoreTier(l.score);
+          tierCounts[tier] = (tierCounts[tier] || 0) + 1;
+        });
+
+        // Calculate cost per lead for each tier
+        Object.keys(tierCounts).forEach(tier => {
+          const tierLeadCount = tierCounts[tier] || 1;
+          tierCosts[tier] = totalSpend / tierLeadCount;
+        });
+        
+      } catch (analyticsError) {
+        console.error('Error fetching analytics data:', analyticsError);
+        // Will use minimum pricing in calculateLeadBasePrice
+      }
+      
       // Fetch real leads from Supabase - last 20 leads
       const { data: quizResponses, error } = await supabase
         .from('quiz_responses')
@@ -188,7 +230,7 @@ const LeadMarketplace: React.FC = () => {
         bank_account_type: lead.bank_account_type,
         homeowner_status: lead.homeowner_status,
         // Marketplace fields - all set to available since bidding is not working yet
-        base_price: calculateLeadBasePrice(lead), // Dynamic pricing based on tier criteria
+        base_price: calculateLeadBasePrice(lead, tierCosts), // Dynamic pricing with margin over cost
         current_highest_bid: undefined,
         bid_count: 0,
         marketplace_status: 'available' as const, // All leads are available
