@@ -51,6 +51,28 @@ const getCreditScoreApprox = (creditScore: string) => {
   }
 };
 
+// Calculate base price based on lead tier criteria
+const calculateLeadBasePrice = (lead: any): number => {
+  const revenue = lead.monthly_revenue || 0;
+  const creditScore = getCreditScoreApprox(lead.credit_score);
+  const score = lead.score || 0;
+  
+  // Tier-based pricing (matches LeadTierAnalytics criteria)
+  if (score >= 85) {
+    // Exceptional (85+): $100K+ revenue • 750+ credit • 5+ years
+    return 450; // Premium tier
+  } else if (score >= 65) {
+    // Strong (65-84): $50K-100K revenue • 650-750 credit • 2-5 years
+    return 320; // High tier
+  } else if (score >= 45) {
+    // Good (45-64): $25K-50K revenue • 580-650 credit • 1-2 years  
+    return 220; // Medium tier
+  } else {
+    // Potential (0-44): <$25K revenue • <580 credit • <1 year
+    return 150; // Entry tier
+  }
+};
+
 // Qualified rule: revenue >= $10k, business age >= 6 months, credit score >= 600
 const isTimeInBusinessAtLeast6Months = (tib?: string) => {
   return tib !== 'startup' && tib !== '0-6';
@@ -168,7 +190,7 @@ const LeadMarketplace: React.FC = () => {
         bank_account_type: lead.bank_account_type,
         homeowner_status: lead.homeowner_status,
         // Marketplace fields - all set to available since bidding is not working yet
-        base_price: 200, // Default base price
+        base_price: calculateLeadBasePrice(lead), // Dynamic pricing based on tier criteria
         current_highest_bid: undefined,
         bid_count: 0,
         marketplace_status: 'available' as const, // All leads are available
