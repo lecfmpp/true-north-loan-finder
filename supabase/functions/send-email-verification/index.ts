@@ -49,8 +49,8 @@ const handler = async (req: Request): Promise<Response> => {
     const baseUrl = Deno.env.get('SUPABASE_URL')?.replace('/rest/v1', '') || 'http://localhost:54321';
     const verificationUrl = `${baseUrl}/functions/v1/verify-email?token=${verificationToken}`;
 
-    // Send verification email with branded template
-    const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "True North Business Funding <onboarding@resend.dev>";
+    // Send verification email with the same domain as partner emails
+    const fromEmail = "True North Business Loan <noreply@email.truenorthbusinessloan.ca>";
     const emailResponse = await resend.emails.send({
       from: fromEmail,
       to: [email],
