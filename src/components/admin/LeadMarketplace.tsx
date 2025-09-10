@@ -51,16 +51,15 @@ const getCreditScoreApprox = (creditScore: string) => {
   }
 };
 
-// Helper function to get tier from score (matches LeadTierAnalytics)
+// Helper function to get tier from score (merged Strong and Good into Qualified)
 const getScoreTier = (score: number | null): string => {
   if (!score) return 'No Score';
   if (score >= 85) return 'Exceptional (85+)';
-  if (score >= 65) return 'Strong (65-84)';
-  if (score >= 45) return 'Good (45-64)';
+  if (score >= 45) return 'Qualified (45-84)';
   return 'Potential (0-44)';
 };
 
-// Calculate base price with margin over actual lead cost
+// Calculate base price with margin and fairness multipliers
 const calculateLeadBasePrice = (lead: any, tierCosts: Record<string, number>): number => {
   const score = lead.score || 0;
   const leadTier = getScoreTier(score);
@@ -68,7 +67,42 @@ const calculateLeadBasePrice = (lead: any, tierCosts: Record<string, number>): n
   
   // Apply margin based on score
   const margin = score >= 45 ? 1.5 : 1.3; // 50% margin for 45+, 30% margin for below 45
-  const basePrice = costPerLead * margin;
+  let basePrice = costPerLead * margin;
+  
+  // Apply fairness multipliers for Qualified tier (45-84) only
+  if (score >= 45 && score < 85) {
+    let multiplier = 1.0;
+    
+    // Score gradient multiplier (0.8 to 1.2 range)
+    const scoreRange = 84 - 45;
+    const scorePosition = (score - 45) / scoreRange;
+    multiplier *= 0.8 + (scorePosition * 0.4);
+    
+    // Revenue multiplier (bounded: 0.9 to 1.1)
+    const revenue = lead.monthly_revenue || 0;
+    if (revenue >= 100000) multiplier *= 1.1;
+    else if (revenue >= 50000) multiplier *= 1.05;
+    else if (revenue < 25000) multiplier *= 0.95;
+    else multiplier *= 0.9;
+    
+    // Credit score multiplier (bounded: 0.95 to 1.05)
+    const creditApprox = getCreditScoreApprox(lead.credit_score);
+    if (creditApprox >= 750) multiplier *= 1.05;
+    else if (creditApprox >= 700) multiplier *= 1.02;
+    else if (creditApprox < 650) multiplier *= 0.97;
+    else multiplier *= 0.95;
+    
+    // Time in business multiplier (bounded: 0.95 to 1.05)
+    const tib = lead.time_in_business;
+    if (tib === '+5') multiplier *= 1.05;
+    else if (tib === '2-5') multiplier *= 1.02;
+    else if (tib === '1-2') multiplier *= 0.98;
+    else multiplier *= 0.95;
+    
+    // Bound the final multiplier to prevent extreme swings
+    multiplier = Math.max(0.7, Math.min(1.4, multiplier));
+    basePrice *= multiplier;
+  }
   
   // Ensure minimum price and round to nearest dollar
   return Math.max(Math.round(basePrice), 50);
@@ -334,8 +368,7 @@ const LeadMarketplace: React.FC = () => {
 
   const getQualityBadge = (score: number) => {
     if (score >= 85) return <Badge className="bg-green-600">Exceptional</Badge>;
-    if (score >= 65) return <Badge className="bg-blue-600">Strong</Badge>;
-    if (score >= 45) return <Badge className="bg-yellow-600">Good</Badge>;
+    if (score >= 45) return <Badge className="bg-blue-600">Qualified</Badge>;
     return <Badge variant="outline">Potential</Badge>;
   };
 

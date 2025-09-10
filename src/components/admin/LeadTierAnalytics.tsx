@@ -51,16 +51,14 @@ const LeadTierAnalytics = () => {
   const getScoreTier = (score: number | null): string => {
     if (!score) return 'No Score';
     if (score >= 85) return 'Exceptional (85+)';
-    if (score >= 65) return 'Strong (65-84)';
-    if (score >= 45) return 'Good (45-64)';
+    if (score >= 45) return 'Qualified (45-84)';
     return 'Potential (0-44)';
   };
 
   const getTierColor = (tier: string): string => {
     switch (tier) {
       case 'Exceptional (85+)': return '#22c55e'; // green
-      case 'Strong (65-84)': return '#3b82f6';    // blue  
-      case 'Good (45-64)': return '#f59e0b';      // yellow
+      case 'Qualified (45-84)': return '#3b82f6';    // blue  
       case 'Potential (0-44)': return '#ef4444';  // red
       default: return '#9ca3af';                   // gray
     }
@@ -69,8 +67,7 @@ const LeadTierAnalytics = () => {
   const getTierCriteria = (tier: string): string => {
     switch (tier) {
       case 'Exceptional (85+)': return '$100K+ revenue • 750+ credit • 5+ years';
-      case 'Strong (65-84)': return '$50K-100K revenue • 650-750 credit • 2-5 years';  
-      case 'Good (45-64)': return '$25K-50K revenue • 580-650 credit • 1-2 years';
+      case 'Qualified (45-84)': return '$25K+ revenue • 580+ credit • 1+ years';
       case 'Potential (0-44)': return '<$25K revenue • <580 credit • <1 year';
       default: return 'Score not calculated or incomplete data';
     }
