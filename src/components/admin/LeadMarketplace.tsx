@@ -108,7 +108,7 @@ const calculateLeadBasePrice = (lead: any, tierCosts: Record<string, number>): n
   return Math.max(Math.round(basePrice), 50);
 };
 
-// Qualified rule: revenue >= $10k, business age >= 6 months, credit score >= 600
+// Qualified rule: revenue >= $10k, business age >= 6 months, credit score 600-749
 const isTimeInBusinessAtLeast6Months = (tib?: string) => {
   return tib !== 'startup' && tib !== '0-6';
 };
@@ -116,7 +116,8 @@ const isTimeInBusinessAtLeast6Months = (tib?: string) => {
 const isQualified = (lead: QuizResponse) => {
   const revenueOk = (lead.monthly_revenue || 0) >= 10000;
   const tibOk = isTimeInBusinessAtLeast6Months(lead.time_in_business);
-  const creditOk = getCreditScoreApprox(lead.credit_score) >= 600;
+  const creditScore = getCreditScoreApprox(lead.credit_score);
+  const creditOk = creditScore >= 600 && creditScore <= 749;
   return revenueOk && tibOk && creditOk;
 };
 
