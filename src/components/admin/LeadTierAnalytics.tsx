@@ -48,10 +48,53 @@ const LeadTierAnalytics = () => {
     }
   }, [dateRange, filterType, channelFilter, isSuperAdmin]);
 
-  const getScoreTier = (score: number | null): string => {
-    if (!score) return 'No Score';
-    if (score >= 85) return 'Exceptional (85+)';
-    if (score >= 45) return 'Qualified (45-84)';
+  // Helper to map credit score category to an approximate numeric value
+  const getCreditScoreApprox = (creditScore: string) => {
+    switch (creditScore) {
+      case "excellent":
+        return 775;
+      case "good":
+        return 725;
+      case "fair":
+        return 675;
+      case "poor":
+        return 625;
+      case "unsure":
+        return 650;
+      default:
+        // If it's a direct number, parse it
+        const n = parseInt(creditScore, 10);
+        return isNaN(n) ? 0 : n;
+    }
+  };
+
+  const isTimeInBusinessAtLeast6Months = (tib?: string) => {
+    return tib !== 'startup' && tib !== '0-6';
+  };
+
+  const isTimeInBusinessAtLeast2Years = (tib?: string) => {
+    return tib === '2-5' || tib === '5+' || tib === '+5';
+  };
+
+  const getScoreTier = (lead: any): string => {
+    if (!lead) return 'No Score';
+    
+    const revenue = lead.monthly_revenue || 0;
+    const creditScore = getCreditScoreApprox(lead.credit_score || '');
+    const hasAtLeast6Months = isTimeInBusinessAtLeast6Months(lead.time_in_business);
+    const hasAtLeast2Years = isTimeInBusinessAtLeast2Years(lead.time_in_business);
+    
+    // Exceptional: 2+ years AND 700+ credit score
+    if (hasAtLeast2Years && creditScore >= 700) {
+      return 'Exceptional (85+)';
+    }
+    
+    // Qualified: 6+ months in business
+    if (hasAtLeast6Months) {
+      return 'Qualified (45-84)';
+    }
+    
+    // Potential: everything else (including <10K revenue and <6 months)
     return 'Potential (0-44)';
   };
 
@@ -119,6 +162,9 @@ const LeadTierAnalytics = () => {
           status,
           conversion_status,
           attribution_channel,
+          monthly_revenue,
+          credit_score,
+          time_in_business,
           usa_applications(id, document_files),
           canadian_applications(id, document_files, processing_statements)
         `);
@@ -234,7 +280,7 @@ const LeadTierAnalytics = () => {
       });
 
       filteredLeads.forEach(lead => {
-        const tier = getScoreTier(lead.score);
+        const tier = getScoreTier(lead);
         const normalizedChannel = normalizeChannel(lead.attribution_channel);
         const date = new Date(lead.created_at).toISOString().split('T')[0];
         
