@@ -133,92 +133,49 @@ const LeadMarketplace: React.FC = () => {
     try {
       setLoading(true);
       
-      // Mock data based on real lead structure - in real implementation, this would come from your leads API
-      const mockLeads: QuizResponse[] = [
-        {
-          id: '1',
-          name: 'John Smith',
-          email: 'john.smith@restaurantsolutions.com',
-          phone: '(555) 123-4567',
-          website: 'restaurantsolutions.com',
-          company_name: 'Restaurant Solutions Inc',
-          monthly_revenue: 45000,
-          loan_amount: 150000,
-          credit_score: 'good',
-          time_in_business: '2-5', 
-          use_of_funds: 'Equipment Purchase and Working Capital',
-          score: 78,
-          status: 'New',
-          admin_notes: '',
-          created_at: '2024-01-09T10:30:00Z',
-          country: 'US',
-          city_province: 'California',
-          attribution_channel: 'Google Ads',
-          bank_account_type: 'business',
-          homeowner_status: 'own',
-          base_price: 250,
-          current_highest_bid: 320,
-          bid_count: 3,
-          marketplace_status: 'bidding',
-          expires_at: '2024-01-10T10:30:00Z'
-        },
-        {
-          id: '2',
-          name: 'Sarah Johnson',
-          email: 'sarah.johnson@techstartup.com',
-          phone: '(555) 987-8901',
-          website: 'techstartup.com',
-          company_name: 'Tech Startup LLC',
-          monthly_revenue: 25000,
-          loan_amount: 75000,
-          credit_score: 'fair',
-          time_in_business: '1-2',
-          use_of_funds: 'Technology Upgrade',
-          score: 65,
-          status: 'New',
-          admin_notes: '',
-          created_at: '2024-01-09T14:15:00Z',
-          country: 'US',
-          city_province: 'Texas',
-          attribution_channel: 'Facebook',
-          bank_account_type: 'business',
-          homeowner_status: 'rent',
-          base_price: 180,
-          current_highest_bid: 180,
-          bid_count: 0,
-          marketplace_status: 'available',
-          expires_at: '2024-01-10T14:15:00Z'
-        },
-        {
-          id: '3',
-          name: 'Mike Davis',
-          email: 'mike.davis@constructionco.com',
-          phone: '(555) 456-2345',
-          website: 'constructionco.com',
-          company_name: 'Davis Construction Co',
-          monthly_revenue: 85000,
-          loan_amount: 500000,
-          credit_score: 'excellent',
-          time_in_business: '+5',
-          use_of_funds: 'Business Expansion',
-          score: 92,
-          status: 'New',
-          admin_notes: '',
-          created_at: '2024-01-08T09:00:00Z',
-          country: 'US',
-          city_province: 'Florida',
-          attribution_channel: 'Direct',
-          bank_account_type: 'business',
-          homeowner_status: 'own',
-          base_price: 450,
-          current_highest_bid: 525,
-          bid_count: 5,
-          marketplace_status: 'sold',
-          expires_at: '2024-01-09T09:00:00Z'
-        }
-      ];
+      // Fetch real leads from Supabase - last 20 leads
+      const { data: quizResponses, error } = await supabase
+        .from('quiz_responses')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (error) {
+        throw error;
+      }
+
+      // Map Supabase data to LeadMarketplace format
+      const mappedLeads: QuizResponse[] = (quizResponses || []).map(lead => ({
+        id: lead.id,
+        name: lead.name || 'Unknown',
+        email: lead.email || '',
+        phone: lead.phone || '',
+        website: lead.website || '',
+        company_name: lead.company_name || 'Unknown Company',
+        monthly_revenue: lead.monthly_revenue || 0,
+        loan_amount: lead.loan_amount || 0,
+        credit_score: lead.credit_score || 'unknown',
+        time_in_business: lead.time_in_business || 'unknown',
+        use_of_funds: lead.use_of_funds || '',
+        score: lead.score || 0,
+        status: lead.status || 'New',
+        admin_notes: lead.admin_notes || '',
+        created_at: lead.created_at || new Date().toISOString(),
+        country: lead.country || 'US',
+        city_province: lead.city_province || '',
+        attribution_channel: lead.attribution_channel,
+        attribution_url: lead.attribution_url,
+        bank_account_type: lead.bank_account_type,
+        homeowner_status: lead.homeowner_status,
+        // Marketplace fields - all set to available since bidding is not working yet
+        base_price: 200, // Default base price
+        current_highest_bid: undefined,
+        bid_count: 0,
+        marketplace_status: 'available' as const, // All leads are available
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days from now
+      }));
       
-      setLeads(mockLeads);
+      setLeads(mappedLeads);
     } catch (error) {
       console.error('Error fetching leads:', error);
       toast({
