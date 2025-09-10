@@ -23,11 +23,13 @@ import {
   ExternalLink,
   HelpCircle,
   DollarSign,
-  Webhook
+  Webhook,
+  TrendingDown
 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import NotificationEmailSettings from './NotificationEmailSettings';
 import LeadPricingManagement from './LeadPricingManagement';
+import PriceDecayRulesManagement from './PriceDecayRulesManagement';
 import MakeIntegrationManagement from './MakeIntegrationManagement';
 import VideoManagement from './VideoManagement';
 
@@ -210,6 +212,10 @@ const SettingsManagement = () => {
             <DollarSign className="h-4 w-4" />
             Lead Pricing
           </TabsTrigger>
+          <TabsTrigger value="price-decay" className="flex items-center gap-2">
+            <TrendingDown className="h-4 w-4" />
+            Price Decay
+          </TabsTrigger>
           <TabsTrigger value="video" className="flex items-center gap-2">
             <Video className="h-4 w-4" />
             Video Settings
@@ -228,6 +234,10 @@ const SettingsManagement = () => {
 
         <TabsContent value="pricing" className="space-y-6">
           <LeadPricingManagement />
+        </TabsContent>
+        
+        <TabsContent value="price-decay" className="space-y-6">
+          <PriceDecayRulesManagement />
         </TabsContent>
 
         <TabsContent value="video" className="space-y-6">

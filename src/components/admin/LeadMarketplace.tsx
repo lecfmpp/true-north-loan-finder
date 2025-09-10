@@ -67,7 +67,7 @@ const getScoreTierName = (score: number | null): string => {
   return 'Potential';
 };
 
-// Calculate lead base price using tier-based pricing
+// Calculate lead base price using tier-based pricing with decay
 const calculateLeadBasePrice = async (lead: any): Promise<number> => {
   const score = lead.score || 0;
   const tierName = getScoreTierName(score);
@@ -81,22 +81,42 @@ const calculateLeadBasePrice = async (lead: any): Promise<number> => {
       .eq('is_active', true)
       .single();
 
+    let basePriceCents = 5000; // Default $50 in cents
+
     if (error || !tierPricing) {
       console.error('Error fetching tier pricing:', error);
-      // Fallback to default pricing based on tier
+      // Fallback to default pricing based on tier (in cents)
       switch (tierName) {
         case 'Exceptional':
-          return 280; // $2.80 (converted from cents)
+          basePriceCents = 28000; // $280 in cents
+          break;
         case 'Qualified':
-          return 70; // $0.70 (converted from cents)
+          basePriceCents = 7000; // $70 in cents
+          break;
         case 'Potential':
         default:
-          return 37; // $0.37 (converted from cents)
+          basePriceCents = 3700; // $37 in cents
+          break;
       }
+    } else {
+      // Use the average of min and max as base price (already in cents)
+      basePriceCents = Math.round((tierPricing.base_price_min + tierPricing.base_price_max) / 2);
     }
 
-    // Use the average of min and max as base price, convert from cents to dollars
-    return Math.round((tierPricing.base_price_min + tierPricing.base_price_max) / 2 / 100);
+    // Apply price decay based on lead age
+    const { data: decayedPrice, error: decayError } = await supabase
+      .rpc('calculate_lead_price_with_decay', {
+        lead_created_at: lead.created_at,
+        base_price: basePriceCents
+      });
+    
+    if (decayError) {
+      console.error('Error calculating price decay:', decayError);
+      return Math.round(basePriceCents / 100); // Return base price in dollars if decay fails
+    }
+    
+    // Convert from cents to dollars
+    return Math.round((decayedPrice || basePriceCents) / 100);
   } catch (error) {
     console.error('Error calculating base price:', error);
     return 50; // $50 fallback

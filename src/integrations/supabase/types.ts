@@ -1689,6 +1689,39 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_price_decay_rules: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          rule_name: string
+          time_brackets: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          rule_name: string
+          time_brackets?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          rule_name?: string
+          time_brackets?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lead_pricing: {
         Row: {
           created_at: string
@@ -3404,6 +3437,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_lead_price_with_decay: {
+        Args: { base_price: number; lead_created_at: string }
+        Returns: number
+      }
       check_email_exists: {
         Args: { email_address: string }
         Returns: boolean
