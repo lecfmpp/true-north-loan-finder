@@ -17,6 +17,8 @@ interface MakeSettings {
   event_toggles: {
     lead_created: boolean;
     partner_assigned: boolean;
+    lead_updated: boolean;
+    application_submitted: boolean;
     auto_send_on_assignment: boolean;
   };
   field_mappings: {
@@ -89,6 +91,8 @@ export default function MakeIntegrationManagement() {
     event_toggles: {
       lead_created: false,
       partner_assigned: false,
+      lead_updated: false,
+      application_submitted: true,
       auto_send_on_assignment: true
     },
     field_mappings: {
@@ -140,13 +144,17 @@ export default function MakeIntegrationManagement() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isBackfilling, setIsBackfilling] = useState(false);
   const [recentLogs, setRecentLogs] = useState<MakeLog[]>([]);
+  const [queueStats, setQueueStats] = useState<{pending: number, processing: number, failed: number} | null>(null);
 
   const { toast } = useToast();
 
   useEffect(() => {
     loadSettings();
     loadRecentLogs();
+    loadQueueStats();
   }, []);
 
   const loadSettings = async () => {
@@ -171,6 +179,8 @@ export default function MakeIntegrationManagement() {
           event_toggles: {
             lead_created: eventToggles?.lead_created || false,
             partner_assigned: eventToggles?.partner_assigned || false,
+            lead_updated: eventToggles?.lead_updated || false,
+            application_submitted: eventToggles?.application_submitted !== false,
             auto_send_on_assignment: eventToggles?.auto_send_on_assignment !== false
           },
           field_mappings: fieldMappings || settings.field_mappings
@@ -204,6 +214,96 @@ export default function MakeIntegrationManagement() {
       setRecentLogs(data || []);
     } catch (error) {
       console.error('Error loading Make logs:', error);
+    }
+  };
+
+  const loadQueueStats = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('make_integration_queue')
+        .select('status')
+
+      if (error) {
+        console.error('Error loading queue stats:', error);
+        return;
+      }
+
+      const stats = data?.reduce((acc, item) => {
+        acc[item.status] = (acc[item.status] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>) || {};
+
+      setQueueStats({
+        pending: (stats.pending || 0) + (stats.retrying || 0),
+        processing: stats.processing || 0,
+        failed: stats.failed || 0
+      });
+    } catch (error) {
+      console.error('Error loading queue stats:', error);
+    }
+  };
+
+  const processQueue = async () => {
+    setIsProcessing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('process-make-queue');
+
+      if (error) throw error;
+
+      toast({
+        title: "Queue Processing Complete",
+        description: `Processed ${data.processed} items${data.failed > 0 ? `, ${data.failed} failed` : ''}`,
+      });
+
+      // Refresh stats and logs
+      loadQueueStats();
+      loadRecentLogs();
+    } catch (error) {
+      console.error('Error processing queue:', error);
+      toast({
+        title: "Error",
+        description: "Failed to process Make.com queue.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const backfillLeads = async () => {
+    setIsBackfilling(true);
+    try {
+      const dateFrom = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // 30 days ago
+      const dateTo = new Date().toISOString().split('T')[0]; // today
+
+      const { data, error } = await supabase.functions.invoke('backfill-make', {
+        body: {
+          dateFrom,
+          dateTo,
+          eventTypes: ['lead_created'],
+          batchSize: 50,
+          dryRun: false
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Backfill Complete",
+        description: `Queued ${data.queuedItems} leads from the last 30 days.`,
+      });
+
+      // Refresh stats
+      loadQueueStats();
+    } catch (error) {
+      console.error('Error backfilling leads:', error);
+      toast({
+        title: "Error",
+        description: "Failed to backfill leads to Make.com.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsBackfilling(false);
     }
   };
 
@@ -431,6 +531,50 @@ export default function MakeIntegrationManagement() {
             </TabsList>
 
             <TabsContent value="general" className="space-y-4 mt-4">
+              {queueStats && (
+                <Card className="mb-4">
+                  <CardHeader>
+                    <CardTitle className="text-base">Queue Status</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-blue-600">{queueStats.pending}</div>
+                        <div className="text-sm text-muted-foreground">Pending</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-yellow-600">{queueStats.processing}</div>
+                        <div className="text-sm text-muted-foreground">Processing</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-red-600">{queueStats.failed}</div>
+                        <div className="text-sm text-muted-foreground">Failed</div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                      <Button 
+                        onClick={processQueue} 
+                        disabled={isProcessing}
+                        size="sm"
+                        variant="outline"
+                      >
+                        {isProcessing && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                        Process Queue
+                      </Button>
+                      <Button 
+                        onClick={backfillLeads} 
+                        disabled={isBackfilling}
+                        size="sm"
+                        variant="outline"
+                      >
+                        {isBackfilling && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                        Backfill Last 30 Days
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -488,6 +632,38 @@ export default function MakeIntegrationManagement() {
                           setSettings(prev => ({
                             ...prev,
                             event_toggles: { ...prev.event_toggles, partner_assigned: checked }
+                          }))
+                        }
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="trigger-lead-updated" className="font-normal">
+                        Lead status updated
+                      </Label>
+                      <Switch
+                        id="trigger-lead-updated"
+                        checked={settings.event_toggles.lead_updated}
+                        onCheckedChange={(checked) =>
+                          setSettings(prev => ({
+                            ...prev,
+                            event_toggles: { ...prev.event_toggles, lead_updated: checked }
+                          }))
+                        }
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="trigger-application-submitted" className="font-normal">
+                        Application submitted
+                      </Label>
+                      <Switch
+                        id="trigger-application-submitted"
+                        checked={settings.event_toggles.application_submitted}
+                        onCheckedChange={(checked) =>
+                          setSettings(prev => ({
+                            ...prev,
+                            event_toggles: { ...prev.event_toggles, application_submitted: checked }
                           }))
                         }
                       />

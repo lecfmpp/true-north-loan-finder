@@ -136,3 +136,12 @@ verify_jwt = true
 
 [functions.send-application-email]
 verify_jwt = true
+
+[functions.process-make-queue]
+verify_jwt = false
+
+[functions.backfill-make]
+verify_jwt = true
+
+[functions.setup-make-cron]
+verify_jwt = true

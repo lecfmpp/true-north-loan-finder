@@ -2307,6 +2307,65 @@ export type Database = {
           },
         ]
       }
+      make_integration_queue: {
+        Row: {
+          attempts: number
+          created_at: string
+          error_message: string | null
+          event_type: string
+          id: string
+          lead_id: string
+          max_attempts: number
+          payload: Json | null
+          priority: number
+          processed_at: string | null
+          response_data: Json | null
+          scheduled_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          error_message?: string | null
+          event_type: string
+          id?: string
+          lead_id: string
+          max_attempts?: number
+          payload?: Json | null
+          priority?: number
+          processed_at?: string | null
+          response_data?: Json | null
+          scheduled_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          error_message?: string | null
+          event_type?: string
+          id?: string
+          lead_id?: string
+          max_attempts?: number
+          payload?: Json | null
+          priority?: number
+          processed_at?: string | null
+          response_data?: Json | null
+          scheduled_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "make_integration_queue_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_responses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       make_integration_settings: {
         Row: {
           created_at: string
@@ -3425,6 +3484,10 @@ export type Database = {
       is_user_superadmin: {
         Args: { _user_id: string }
         Returns: boolean
+      }
+      queue_lead_for_make: {
+        Args: { p_event_type: string; p_lead_id: string; p_priority?: number }
+        Returns: string
       }
       submit_quiz_response: {
         Args: { p: Json }
