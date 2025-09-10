@@ -53,59 +53,54 @@ const getCreditScoreApprox = (creditScore: string) => {
 
 // Helper function to get tier from score (merged Strong and Good into Qualified)
 const getScoreTier = (score: number | null): string => {
-  if (!score) return 'No Score';
+  if (!score) return 'Potential (0-44)';
   if (score >= 85) return 'Exceptional (85+)';
   if (score >= 45) return 'Qualified (45-84)';
   return 'Potential (0-44)';
 };
 
-// Calculate base price with margin and fairness multipliers
-const calculateLeadBasePrice = (lead: any, tierCosts: Record<string, number>): number => {
+// Helper to get tier name without score range
+const getScoreTierName = (score: number | null): string => {
+  if (!score) return 'Potential';
+  if (score >= 85) return 'Exceptional';
+  if (score >= 45) return 'Qualified';
+  return 'Potential';
+};
+
+// Calculate lead base price using tier-based pricing
+const calculateLeadBasePrice = async (lead: any): Promise<number> => {
   const score = lead.score || 0;
-  const leadTier = getScoreTier(score);
-  const costPerLead = tierCosts[leadTier] || 0;
+  const tierName = getScoreTierName(score);
   
-  // Apply margin based on score
-  const margin = score >= 45 ? 1.5 : 1.3; // 50% margin for 45+, 30% margin for below 45
-  let basePrice = costPerLead * margin;
-  
-  // Apply fairness multipliers for Qualified tier (45-84) only
-  if (score >= 45 && score < 85) {
-    let multiplier = 1.0;
-    
-    // Score gradient multiplier (0.8 to 1.2 range)
-    const scoreRange = 84 - 45;
-    const scorePosition = (score - 45) / scoreRange;
-    multiplier *= 0.8 + (scorePosition * 0.4);
-    
-    // Revenue multiplier (bounded: 0.9 to 1.1)
-    const revenue = lead.monthly_revenue || 0;
-    if (revenue >= 100000) multiplier *= 1.1;
-    else if (revenue >= 50000) multiplier *= 1.05;
-    else if (revenue < 25000) multiplier *= 0.95;
-    else multiplier *= 0.9;
-    
-    // Credit score multiplier (bounded: 0.95 to 1.05)
-    const creditApprox = getCreditScoreApprox(lead.credit_score);
-    if (creditApprox >= 750) multiplier *= 1.05;
-    else if (creditApprox >= 700) multiplier *= 1.02;
-    else if (creditApprox < 650) multiplier *= 0.97;
-    else multiplier *= 0.95;
-    
-    // Time in business multiplier (bounded: 0.95 to 1.05)
-    const tib = lead.time_in_business;
-    if (tib === '+5') multiplier *= 1.05;
-    else if (tib === '2-5') multiplier *= 1.02;
-    else if (tib === '1-2') multiplier *= 0.98;
-    else multiplier *= 0.95;
-    
-    // Bound the final multiplier to prevent extreme swings
-    multiplier = Math.max(0.7, Math.min(1.4, multiplier));
-    basePrice *= multiplier;
+  try {
+    // Fetch tier pricing from database
+    const { data: tierPricing, error } = await supabase
+      .from('lead_tier_pricing')
+      .select('base_price_min, base_price_max')
+      .eq('tier_name', tierName)
+      .eq('is_active', true)
+      .single();
+
+    if (error || !tierPricing) {
+      console.error('Error fetching tier pricing:', error);
+      // Fallback to default pricing based on tier
+      switch (tierName) {
+        case 'Exceptional':
+          return 280; // $2.80 (converted from cents)
+        case 'Qualified':
+          return 70; // $0.70 (converted from cents)
+        case 'Potential':
+        default:
+          return 37; // $0.37 (converted from cents)
+      }
+    }
+
+    // Use the average of min and max as base price, convert from cents to dollars
+    return Math.round((tierPricing.base_price_min + tierPricing.base_price_max) / 2 / 100);
+  } catch (error) {
+    console.error('Error calculating base price:', error);
+    return 50; // $50 fallback
   }
-  
-  // Ensure minimum price and round to nearest dollar
-  return Math.max(Math.round(basePrice), 50);
 };
 
 // Qualified rule: revenue >= $10k, business age >= 6 months, credit score >= 600
@@ -191,45 +186,6 @@ const LeadMarketplace: React.FC = () => {
     try {
       setLoading(true);
       
-      // First, get analytics data to calculate real tier costs
-      let tierCosts: Record<string, number> = {};
-      
-      try {
-        // Get all ad spend data
-        const { data: adSpend, error: spendError } = await supabase
-          .from('ad_spend_records')
-          .select('amount, date, channel');
-
-        if (spendError) throw spendError;
-
-        // Calculate total spend (convert from cents to dollars)
-        const totalSpend = (adSpend || []).reduce((sum, record) => sum + (record.amount / 100), 0);
-        
-        // Get all leads to calculate tier-specific costs
-        const { data: allLeads, error: leadsError } = await supabase
-          .from('quiz_responses')
-          .select('id, score');
-          
-        if (leadsError) throw leadsError;
-
-        // Count leads by tier (same logic as LeadTierAnalytics)
-        const tierCounts: Record<string, number> = {};
-        (allLeads || []).forEach(l => {
-          const tier = getScoreTier(l.score);
-          tierCounts[tier] = (tierCounts[tier] || 0) + 1;
-        });
-
-        // Calculate cost per lead for each tier
-        Object.keys(tierCounts).forEach(tier => {
-          const tierLeadCount = tierCounts[tier] || 1;
-          tierCosts[tier] = totalSpend / tierLeadCount;
-        });
-        
-      } catch (analyticsError) {
-        console.error('Error fetching analytics data:', analyticsError);
-        // Will use minimum pricing in calculateLeadBasePrice
-      }
-      
       // Fetch real leads from Supabase - last 20 leads
       const { data: quizResponses, error } = await supabase
         .from('quiz_responses')
@@ -241,36 +197,38 @@ const LeadMarketplace: React.FC = () => {
         throw error;
       }
 
-      // Map Supabase data to LeadMarketplace format
-      const mappedLeads: QuizResponse[] = (quizResponses || []).map(lead => ({
-        id: lead.id,
-        name: lead.name || 'Unknown',
-        email: lead.email || '',
-        phone: lead.phone || '',
-        website: lead.website || '',
-        company_name: lead.company_name || 'Unknown Company',
-        monthly_revenue: lead.monthly_revenue || 0,
-        loan_amount: lead.loan_amount || 0,
-        credit_score: lead.credit_score || 'unknown',
-        time_in_business: lead.time_in_business || 'unknown',
-        use_of_funds: lead.use_of_funds || '',
-        score: lead.score || 0,
-        status: lead.status || 'New',
-        admin_notes: lead.admin_notes || '',
-        created_at: lead.created_at || new Date().toISOString(),
-        country: lead.country || 'US',
-        city_province: lead.city_province || '',
-        attribution_channel: lead.attribution_channel,
-        attribution_url: lead.attribution_url,
-        bank_account_type: lead.bank_account_type,
-        homeowner_status: lead.homeowner_status,
-        // Marketplace fields - all set to available since bidding is not working yet
-        base_price: calculateLeadBasePrice(lead, tierCosts), // Dynamic pricing with margin over cost
-        current_highest_bid: undefined,
-        bid_count: 0,
-        marketplace_status: 'available' as const, // All leads are available
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days from now
-      }));
+      // Map Supabase data to LeadMarketplace format with tier-based pricing
+      const mappedLeads: QuizResponse[] = await Promise.all(
+        (quizResponses || []).map(async (lead) => ({
+          id: lead.id,
+          name: lead.name || 'Unknown',
+          email: lead.email || '',
+          phone: lead.phone || '',
+          website: lead.website || '',
+          company_name: lead.company_name || 'Unknown Company',
+          monthly_revenue: lead.monthly_revenue || 0,
+          loan_amount: lead.loan_amount || 0,
+          credit_score: lead.credit_score || 'unknown',
+          time_in_business: lead.time_in_business || 'unknown',
+          use_of_funds: lead.use_of_funds || '',
+          score: lead.score || 0,
+          status: lead.status || 'New',
+          admin_notes: lead.admin_notes || '',
+          created_at: lead.created_at || new Date().toISOString(),
+          country: lead.country || 'US',
+          city_province: lead.city_province || '',
+          attribution_channel: lead.attribution_channel,
+          attribution_url: lead.attribution_url,
+          bank_account_type: lead.bank_account_type,
+          homeowner_status: lead.homeowner_status,
+          // Marketplace fields with tier-based pricing
+          base_price: await calculateLeadBasePrice(lead),
+          current_highest_bid: undefined,
+          bid_count: 0,
+          marketplace_status: 'available' as const,
+          expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+        }))
+      );
       
       setLeads(mappedLeads);
     } catch (error) {
@@ -309,55 +267,19 @@ const LeadMarketplace: React.FC = () => {
     try {
       setRecalculatingPrices(true);
       
-      // Get fresh analytics data to calculate real tier costs
-      let tierCosts: Record<string, number> = {};
-      
-      try {
-        // Get all ad spend data
-        const { data: adSpend, error: spendError } = await supabase
-          .from('ad_spend_records')
-          .select('amount, date, channel');
-
-        if (spendError) throw spendError;
-
-        // Calculate total spend (convert from cents to dollars)
-        const totalSpend = (adSpend || []).reduce((sum, record) => sum + (record.amount / 100), 0);
-        
-        // Get all leads to calculate tier-specific costs
-        const { data: allLeads, error: leadsError } = await supabase
-          .from('quiz_responses')
-          .select('id, score');
-          
-        if (leadsError) throw leadsError;
-
-        // Count leads by NEW tier structure (Qualified combines Strong + Good)
-        const tierCounts: Record<string, number> = {};
-        (allLeads || []).forEach(l => {
-          const tier = getScoreTier(l.score);
-          tierCounts[tier] = (tierCounts[tier] || 0) + 1;
-        });
-
-        // Calculate cost per lead for each tier
-        Object.keys(tierCounts).forEach(tier => {
-          const tierLeadCount = tierCounts[tier] || 1;
-          tierCosts[tier] = totalSpend / tierLeadCount;
-        });
-        
-      } catch (analyticsError) {
-        console.error('Error fetching analytics data:', analyticsError);
-      }
-      
-      // Update all leads with recalculated prices
-      const updatedLeads = leads.map(lead => ({
-        ...lead,
-        base_price: calculateLeadBasePrice(lead, tierCosts)
-      }));
+      // Update all leads with recalculated tier-based prices
+      const updatedLeads = await Promise.all(
+        leads.map(async (lead) => ({
+          ...lead,
+          base_price: await calculateLeadBasePrice(lead)
+        }))
+      );
       
       setLeads(updatedLeads);
       
       toast({
         title: "Prices Recalculated",
-        description: "All base prices updated with new tier structure",
+        description: "All base prices updated with tier-based pricing structure",
       });
       
     } catch (error) {
