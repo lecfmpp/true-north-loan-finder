@@ -164,6 +164,7 @@ const LeadMarketplace: React.FC = () => {
   const [leads, setLeads] = useState<QuizResponse[]>([]);
   const [bids, setBids] = useState<Bid[]>([]);
   const [loading, setLoading] = useState(true);
+  const [recalculatingPrices, setRecalculatingPrices] = useState(false);
   const [selectedLead, setSelectedLead] = useState<QuizResponse | null>(null);
   const [bidAmount, setBidAmount] = useState('');
   const [bidNotes, setBidNotes] = useState('');
@@ -301,6 +302,73 @@ const LeadMarketplace: React.FC = () => {
       setBids(mockBids);
     } catch (error) {
       console.error('Error fetching bids:', error);
+    }
+  };
+
+  const recalculateAllPrices = async () => {
+    try {
+      setRecalculatingPrices(true);
+      
+      // Get fresh analytics data to calculate real tier costs
+      let tierCosts: Record<string, number> = {};
+      
+      try {
+        // Get all ad spend data
+        const { data: adSpend, error: spendError } = await supabase
+          .from('ad_spend_records')
+          .select('amount, date, channel');
+
+        if (spendError) throw spendError;
+
+        // Calculate total spend (convert from cents to dollars)
+        const totalSpend = (adSpend || []).reduce((sum, record) => sum + (record.amount / 100), 0);
+        
+        // Get all leads to calculate tier-specific costs
+        const { data: allLeads, error: leadsError } = await supabase
+          .from('quiz_responses')
+          .select('id, score');
+          
+        if (leadsError) throw leadsError;
+
+        // Count leads by NEW tier structure (Qualified combines Strong + Good)
+        const tierCounts: Record<string, number> = {};
+        (allLeads || []).forEach(l => {
+          const tier = getScoreTier(l.score);
+          tierCounts[tier] = (tierCounts[tier] || 0) + 1;
+        });
+
+        // Calculate cost per lead for each tier
+        Object.keys(tierCounts).forEach(tier => {
+          const tierLeadCount = tierCounts[tier] || 1;
+          tierCosts[tier] = totalSpend / tierLeadCount;
+        });
+        
+      } catch (analyticsError) {
+        console.error('Error fetching analytics data:', analyticsError);
+      }
+      
+      // Update all leads with recalculated prices
+      const updatedLeads = leads.map(lead => ({
+        ...lead,
+        base_price: calculateLeadBasePrice(lead, tierCosts)
+      }));
+      
+      setLeads(updatedLeads);
+      
+      toast({
+        title: "Prices Recalculated",
+        description: "All base prices updated with new tier structure",
+      });
+      
+    } catch (error) {
+      console.error('Error recalculating prices:', error);
+      toast({
+        title: "Error",
+        description: "Failed to recalculate prices",
+        variant: "destructive"
+      });
+    } finally {
+      setRecalculatingPrices(false);
     }
   };
 
@@ -443,9 +511,19 @@ const LeadMarketplace: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold">Lead Marketplace</h1>
-        <p className="text-muted-foreground">Browse and bid on qualified business loan leads</p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold">Lead Marketplace</h1>
+          <p className="text-muted-foreground">Browse and bid on qualified business loan leads</p>
+        </div>
+        <Button 
+          onClick={recalculateAllPrices}
+          disabled={recalculatingPrices}
+          className="flex items-center gap-2"
+        >
+          <DollarSign className="h-4 w-4" />
+          {recalculatingPrices ? 'Recalculating...' : 'Recalculate Prices'}
+        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -720,14 +798,19 @@ const LeadMarketplace: React.FC = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className={`w-3 h-3 rounded-full ${lead.score >= 85 ? 'bg-green-500' : lead.score >= 65 ? 'bg-blue-500' : lead.score >= 45 ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
-                      <span className="font-medium">{lead.score}/100</span>
-                    </div>
+                     <div className="flex items-center gap-2">
+                       <div className={`w-3 h-3 rounded-full ${lead.score >= 85 ? 'bg-green-500' : lead.score >= 45 ? 'bg-blue-500' : 'bg-red-500'}`}></div>
+                       <span className="font-medium">{lead.score}/100</span>
+                     </div>
                   </TableCell>
-                  <TableCell>
-                    <div className="font-medium text-green-600">${lead.base_price}</div>
-                  </TableCell>
+                   <TableCell>
+                     <div className="font-medium text-green-600">
+                       ${lead.base_price}
+                       <div className="text-xs text-muted-foreground">
+                         {getScoreTier(lead.score)}
+                       </div>
+                     </div>
+                   </TableCell>
                   <TableCell>
                     <div className="font-medium">
                       {lead.current_highest_bid ? `$${lead.current_highest_bid}` : '-'}
