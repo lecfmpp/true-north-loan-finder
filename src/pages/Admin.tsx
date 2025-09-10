@@ -104,7 +104,6 @@ import SettingsManagement from '@/components/admin/SettingsManagement';
 import SimplifiedPartnersManagement from '@/components/admin/SimplifiedPartnersManagement';
 // Lead analytics component
 import LeadTierAnalytics from '@/components/admin/LeadTierAnalytics';
-import LeadPriceCalculator from '@/components/admin/LeadPriceCalculator';
 import BillingManagement from '@/components/admin/BillingManagement';
 import ROIManagement from '@/components/admin/ROIManagement';
 import ClientsManagement from '@/components/admin/ClientsManagement';
@@ -1965,10 +1964,6 @@ const Admin = () => {
         value: "lead-analytics",
         icon: TrendingUp
       }, {
-        title: "Lead Price Calculator",
-        value: "lead-price-calculator",
-        icon: Calculator
-      }, {
         title: "Partners",
         value: "partners",
         icon: Users,
@@ -2846,8 +2841,6 @@ const Admin = () => {
         return <BlogManagement />;
       case 'lead-analytics':
         return <LeadTierAnalytics />;
-      case 'lead-price-calculator':
-        return <LeadPriceCalculator />;
       case 'social-proof':
         return <SocialProofManagement />;
       case 'settings':
