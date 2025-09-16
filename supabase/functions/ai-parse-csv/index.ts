@@ -124,6 +124,9 @@ IMPORTANT: Look for columns that contain ACTUAL DATES (like "8/27/2025", "2025-0
 Common date column names: "Day", "Date", "Period", "Time"
 Common campaign column names: "Campaign", "Campaign name", "Ad group"
 Common amount column names: "Cost", "Spend", "Amount", "Budget"
+Common impressions column names: "Impressions", "Impressões", "Impressoes", "Impress"
+Common conversion column names: "Conversions", "Quiz TrueNorth Submitted", "TrueNorth Quiz Submitted", "Leads", "Conv"
+Common clicks column names: "Clicks", "Link clicks", "Visits"
 
 Return column indices (0-based) for mapping:
 {
@@ -134,7 +137,8 @@ Return column indices (0-based) for mapping:
     "campaign_name": [index of campaign name column],
     "clicks": [index of clicks column or null],
     "ctr": [index of CTR column or null],
-    "conversions": [index of conversions column or null]
+    "conversions": [index of conversions column or null],
+    "impressions": [index of impressions column or null]
   },
   "confidence": 0.95
 }`;
@@ -324,11 +328,12 @@ function detectColumnsPattern(headers: string[]) {
   };
 
   console.log('Standardized header detection for:', headers);
+  console.log('Looking specifically for Portuguese Impressões and Quiz TrueNorth Submitted columns...');
 
   headers.forEach((header, index) => {
     const cleanHeader = header.toLowerCase().trim();
     
-    // Exact matches for standardized headers
+    // Exact matches for standardized headers (case-insensitive)
     if (cleanHeader === 'campaign' && mapping.campaign_name === null) {
       mapping.campaign_name = index;
     }
@@ -345,6 +350,12 @@ function detectColumnsPattern(headers: string[]) {
       mapping.ctr = index;
     }
     else if (cleanHeader === 'conversions' && mapping.conversions === null) {
+      mapping.conversions = index;
+    }
+    else if (cleanHeader === 'impressions' || cleanHeader === 'impressões' || cleanHeader === 'impressoes') {
+      mapping.impressions = index;
+    }
+    else if (cleanHeader === 'quiz truenorth submitted' || cleanHeader.includes('quiz') && cleanHeader.includes('truenorth') && cleanHeader.includes('submitted')) {
       mapping.conversions = index;
     }
     // Fallback patterns for other variations
@@ -366,10 +377,10 @@ function detectColumnsPattern(headers: string[]) {
     else if (/rate/.test(cleanHeader) && mapping.ctr === null) {
       mapping.ctr = index;
     }
-    else if (/conversion|conv|action|quiz.*truenorth.*submitted|truenorth.*quiz.*submitted|leads/.test(cleanHeader) && mapping.conversions === null) {
+    else if (/conversion|conv|action|quiz.*truenorth.*submitted|truenorth.*quiz.*submitted|leads|quiz\s*truenorth\s*submitted/i.test(cleanHeader) && mapping.conversions === null) {
       mapping.conversions = index;
     }
-    else if (/impression|impressao|impressoes|impress/.test(cleanHeader) && mapping.impressions === null) {
+    else if (/impression|impressao|impressoes|impress/i.test(cleanHeader) && mapping.impressions === null) {
       mapping.impressions = index;
     }
   });
