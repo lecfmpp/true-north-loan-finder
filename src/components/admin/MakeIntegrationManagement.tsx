@@ -181,7 +181,7 @@ export default function MakeIntegrationManagement() {
         setSettings({
           enabled: data.enabled,
           spreadsheet_format: data.spreadsheet_format || false,
-          auto_process_queue: data.auto_process_queue || false,
+          auto_process_queue: (data as any).auto_process_queue || false,
           event_toggles: {
             lead_created: eventToggles?.lead_created || false,
             partner_assigned: eventToggles?.partner_assigned || false,
