@@ -2,11 +2,32 @@ import { useEffect } from 'react';
 
 const PopupWidget = () => {
   useEffect(() => {
-    // Clear popup limiting storage to bypass cooldown
-    localStorage.removeItem('widget_popup_count');
-    localStorage.removeItem('widget_last_popup');
-    sessionStorage.removeItem('widget_popup_count');
-    sessionStorage.removeItem('widget_last_popup');
+    // Clear all possible widget storage keys to bypass cooldown
+    const widgetKeys = [
+      'widget_popup_count',
+      'widget_last_popup', 
+      'widget_cooldown',
+      'widget_session_count',
+      'widget_ca501164-4ae2-4ca7-83a6-c15a39a5f599_popup_count',
+      'widget_ca501164-4ae2-4ca7-83a6-c15a39a5f599_last_popup',
+      'lovable_widget_popup_count',
+      'lovable_widget_last_popup'
+    ];
+    
+    widgetKeys.forEach(key => {
+      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
+    });
+    
+    // Also clear any keys that might contain the widget ID
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.includes('widget') || key.includes('ca501164-4ae2-4ca7-83a6-c15a39a5f599'))) {
+        localStorage.removeItem(key);
+      }
+    }
+    
+    console.log('Widget storage cleared, loading widget...');
     
     // Set a 5-second delay before loading the widget
     const timer = setTimeout(() => {
