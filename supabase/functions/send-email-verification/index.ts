@@ -49,207 +49,100 @@ const handler = async (req: Request): Promise<Response> => {
     const baseUrl = Deno.env.get('SUPABASE_URL')?.replace('/rest/v1', '') || 'http://localhost:54321';
     const verificationUrl = `${baseUrl}/functions/v1/verify-email?token=${verificationToken}`;
 
-    // Send verification email with the same domain as partner emails
+    // Send verification email with clean, deliverable format
     const fromEmail = "True North Business Loan <noreply@email.truenorthbusinessloan.ca>";
     const emailResponse = await resend.emails.send({
       from: fromEmail,
       to: [email],
-      subject: "Welcome! Please verify your email - True North Business Loan",
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Email Verification - True North Business Funding</title>
-            <style>
-                body { 
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-                    line-height: 1.6; 
-                    margin: 0; 
-                    padding: 0; 
-                    background-color: #f8fafc; 
-                }
-                .container { 
-                    max-width: 600px; 
-                    margin: 20px auto; 
-                    background: #ffffff; 
-                    border-radius: 8px; 
-                    overflow: hidden; 
-                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
-                }
-                .header { 
-                    background: #1e3a8a; 
-                    color: #ffffff; 
-                    padding: 40px 30px; 
-                    text-align: center; 
-                }
-                .header h1 { 
-                    margin: 0; 
-                    font-size: 28px; 
-                    font-weight: 600; 
-                    color: #ffffff; 
-                }
-                .header p { 
-                    margin: 10px 0 0 0; 
-                    font-size: 16px; 
-                    color: #ffffff; 
-                    opacity: 0.9; 
-                }
-                .content { 
-                    padding: 40px 30px; 
-                    background: #ffffff; 
-                }
-                .greeting {
-                    font-size: 18px;
-                    color: #1e3a8a;
-                    margin-bottom: 20px;
-                    font-weight: 500;
-                }
-                .message {
-                    font-size: 16px;
-                    color: #1e3a8a;
-                    margin-bottom: 30px;
-                    line-height: 1.6;
-                }
-                .cta-section { 
-                    background: #ffffff; 
-                    padding: 30px; 
-                    margin: 30px 0; 
-                    border-radius: 8px; 
-                    text-align: center; 
-                    border: 2px solid #10b981;
-                }
-                .cta-button { 
-                    display: inline-block; 
-                    background: #10b981; 
-                    color: #ffffff; 
-                    padding: 15px 35px; 
-                    border-radius: 8px; 
-                    text-decoration: none; 
-                    font-weight: 600; 
-                    font-size: 16px;
-                    margin: 10px 0; 
-                }
-                .cta-button:hover {
-                    background: #059669;
-                }
-                .alternative {
-                    background: #f8fafc;
-                    padding: 25px;
-                    border-radius: 8px;
-                    margin: 25px 0;
-                    border: 1px solid #e5e7eb;
-                }
-                .alternative h3 {
-                    margin: 0 0 15px 0;
-                    color: #1e3a8a;
-                    font-size: 16px;
-                    font-weight: 600;
-                }
-                .alternative p {
-                    margin: 10px 0;
-                    color: #1e3a8a;
-                    font-size: 14px;
-                }
-                .link-text {
-                    word-break: break-all;
-                    background: #ffffff;
-                    padding: 15px;
-                    border-radius: 4px;
-                    border: 1px solid #e5e7eb;
-                    font-family: monospace;
-                    font-size: 12px;
-                    color: #10b981;
-                    margin: 10px 0;
-                }
-                .security-note {
-                    background: #fef3c7;
-                    border: 1px solid #f59e0b;
-                    padding: 20px;
-                    border-radius: 8px;
-                    margin: 25px 0;
-                }
-                .security-note p {
-                    margin: 0;
-                    color: #92400e;
-                    font-size: 14px;
-                    font-weight: 500;
-                }
-                .footer { 
-                    background: #f8fafc; 
-                    padding: 25px; 
-                    text-align: center; 
-                    color: #1e3a8a; 
-                    font-size: 14px; 
-                    border-top: 1px solid #e5e7eb;
-                }
-                .footer p {
-                    margin: 5px 0;
-                    color: #1e3a8a;
-                }
-                .footer strong {
-                    color: #1e3a8a;
-                }
-                @media (max-width: 600px) {
-                    .container { margin: 10px; }
-                    .header, .content { padding: 20px; }
-                    .cta-section { padding: 20px; }
-                }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>🔐 Email Verification</h1>
-                    <p>True North Business Funding</p>
+      subject: "Please verify your email - True North Business Loan",
+      html: `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification - True North Business Funding</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f4f4f4;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+        <tr>
+            <td style="background-color: #2563eb; padding: 30px; text-align: center;">
+                <h1 style="margin: 0; color: #ffffff; font-size: 24px;">Email Verification</h1>
+                <p style="margin: 10px 0 0 0; color: #ffffff; font-size: 16px;">True North Business Funding</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 30px;">
+                <p style="font-size: 18px; color: #2563eb; margin-bottom: 20px;">Hi ${name || 'there'},</p>
+                
+                <p style="color: #333333; margin-bottom: 20px;"><strong>Welcome to True North Business Funding!</strong></p>
+                
+                <p style="color: #333333; margin-bottom: 20px;">
+                    Thank you for your interest in our business funding solutions. We are already working to find the best funding matches for your business, and our team is reviewing your submission to connect you with the most suitable lenders from our network.
+                </p>
+                
+                <p style="color: #333333; margin-bottom: 30px;">
+                    To proceed and ensure you receive your personalized funding options, please verify your email address by clicking the button below. This verification helps us confirm you are a real business owner and ensures our communications reach you directly.
+                </p>
+                
+                <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td style="text-align: center; padding: 20px 0;">
+                            <a href="${verificationUrl}" style="display: inline-block; background-color: #10b981; color: #ffffff; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">Verify My Email Address</a>
+                        </td>
+                    </tr>
+                </table>
+                
+                <p style="color: #333333; text-align: center; margin-bottom: 30px; font-size: 14px;">
+                    Click the button above to verify your email and unlock your funding matches
+                </p>
+                
+                <div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
+                    <h3 style="margin: 0 0 15px 0; color: #2563eb; font-size: 16px;">Alternative Method:</h3>
+                    <p style="color: #333333; margin: 10px 0;">If the button does not work, copy and paste this link into your browser:</p>
+                    <p style="word-break: break-all; background-color: #ffffff; padding: 10px; border: 1px solid #e5e7eb; border-radius: 3px; font-family: monospace; font-size: 12px; color: #10b981;">${verificationUrl}</p>
                 </div>
                 
-                <div class="content">
-                    <div class="greeting">
-                        Hi ${name || 'there'},
-                    </div>
-                    
-                    <div class="message">
-                        <strong>Welcome to True North Business Funding!</strong><br><br>
-                        Thank you for your interest in our business funding solutions. We're already working to find the best funding matches for your business needs.<br><br>
-                        
-                        To proceed and ensure you receive your personalized funding options, please verify your email address by clicking the button below. This helps us confirm you're a real business owner and ensures our communications reach you directly.
-                    </div>
-                    
-                    <div class="cta-section">
-                        <a href="${verificationUrl}" class="cta-button">
-                            ✓ Verify My Email Address
-                        </a>
-                        <p style="margin-top: 15px; color: #1e3a8a; font-size: 14px;">
-                            Click the button above to verify your email and unlock your funding matches
-                        </p>
-                    </div>
-                    
-                    <div class="alternative">
-                        <h3>Alternative Method:</h3>
-                        <p>If the button doesn't work, copy and paste this link into your browser:</p>
-                        <div class="link-text">${verificationUrl}</div>
-                    </div>
-                    
-                    <div class="security-note">
-                        <p>
-                            🛡️ Security Notice: This verification link will expire in 24 hours for your protection.
-                        </p>
-                    </div>
-                </div>
-                
-                <div class="footer">
-                    <p><strong>True North Business Funding</strong></p>
-                    <p>Connecting businesses with the right funding solutions</p>
-                    <p style="font-size: 12px; margin-top: 15px;">
-                        If you didn't request this verification, you can safely ignore this email.
+                <div style="background-color: #fef3c7; border: 1px solid #f59e0b; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                    <p style="margin: 0; color: #92400e; font-size: 14px;">
+                        Security Notice: This verification link will expire in 24 hours for your protection.
                     </p>
                 </div>
-            </div>
-        </body>
-        </html>
-      `,
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+                <p style="margin: 5px 0; color: #2563eb; font-weight: bold;">True North Business Funding</p>
+                <p style="margin: 5px 0; color: #2563eb;">Connecting businesses with the right funding solutions</p>
+                <p style="margin: 15px 0 5px 0; color: #6b7280; font-size: 12px;">
+                    If you did not request this verification, you can safely ignore this email.
+                </p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>`,
+      text: `EMAIL VERIFICATION - True North Business Funding
+
+Hi ${name || 'there'},
+
+Welcome to True North Business Funding!
+
+Thank you for your interest in our business funding solutions. We are already working to find the best funding matches for your business, and our team is reviewing your submission to connect you with the most suitable lenders from our network.
+
+To proceed and ensure you receive your personalized funding options, please verify your email address by clicking the link below. This verification helps us confirm you are a real business owner and ensures our communications reach you directly.
+
+VERIFY YOUR EMAIL:
+${verificationUrl}
+
+Click or copy the link above to verify your email and unlock your funding matches.
+
+SECURITY NOTICE: This verification link will expire in 24 hours for your protection.
+
+---
+True North Business Funding
+Connecting businesses with the right funding solutions
+
+If you did not request this verification, you can safely ignore this email.`,
     });
 
     if (emailResponse?.error) {
