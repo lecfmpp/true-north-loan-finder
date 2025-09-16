@@ -2,6 +2,12 @@ import { useEffect } from 'react';
 
 const PopupWidget = () => {
   useEffect(() => {
+    // Clear popup limiting storage to bypass cooldown
+    localStorage.removeItem('widget_popup_count');
+    localStorage.removeItem('widget_last_popup');
+    sessionStorage.removeItem('widget_popup_count');
+    sessionStorage.removeItem('widget_last_popup');
+    
     // Set a 5-second delay before loading the widget
     const timer = setTimeout(() => {
       // Load widget script dynamically using the new approach
