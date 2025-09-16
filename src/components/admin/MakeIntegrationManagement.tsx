@@ -15,6 +15,7 @@ import { Loader2, ExternalLink, Send, AlertTriangle, Settings, Database } from "
 interface MakeSettings {
   enabled: boolean;
   spreadsheet_format: boolean;
+  auto_process_queue: boolean;
   event_toggles: {
     lead_created: boolean;
     partner_assigned: boolean;
@@ -90,6 +91,7 @@ export default function MakeIntegrationManagement() {
   const [settings, setSettings] = useState<MakeSettings>({
     enabled: false,
     spreadsheet_format: false,
+    auto_process_queue: false,
     event_toggles: {
       lead_created: false,
       partner_assigned: false,
@@ -179,6 +181,7 @@ export default function MakeIntegrationManagement() {
         setSettings({
           enabled: data.enabled,
           spreadsheet_format: data.spreadsheet_format || false,
+          auto_process_queue: data.auto_process_queue || false,
           event_toggles: {
             lead_created: eventToggles?.lead_created || false,
             partner_assigned: eventToggles?.partner_assigned || false,
@@ -317,6 +320,7 @@ export default function MakeIntegrationManagement() {
         body: {
           enabled: settings.enabled,
           spreadsheetFormat: settings.spreadsheet_format,
+          autoProcessQueue: settings.auto_process_queue,
           webhookUrl: webhookUrl.trim(),
           eventToggles: settings.event_toggles,
           fieldMappings: settings.field_mappings
@@ -617,6 +621,22 @@ export default function MakeIntegrationManagement() {
                       checked={settings.spreadsheet_format}
                       onCheckedChange={(checked) => 
                         setSettings(prev => ({ ...prev, spreadsheet_format: checked }))
+                      }
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <Label htmlFor="auto-process-queue">Auto Process Queue</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Automatically process leads to Make.com immediately when they arrive
+                      </p>
+                    </div>
+                    <Switch
+                      id="auto-process-queue"
+                      checked={settings.auto_process_queue}
+                      onCheckedChange={(checked) => 
+                        setSettings(prev => ({ ...prev, auto_process_queue: checked }))
                       }
                     />
                   </div>
