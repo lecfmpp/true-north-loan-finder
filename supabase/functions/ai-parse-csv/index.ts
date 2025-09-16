@@ -319,7 +319,8 @@ function detectColumnsPattern(headers: string[]) {
     campaign_name: null,
     clicks: null,
     ctr: null,
-    conversions: null
+    conversions: null,
+    impressions: null
   };
 
   console.log('Standardized header detection for:', headers);
@@ -367,6 +368,9 @@ function detectColumnsPattern(headers: string[]) {
     }
     else if (/conversion|conv|action|quiz.*truenorth.*submitted|truenorth.*quiz.*submitted|leads/.test(cleanHeader) && mapping.conversions === null) {
       mapping.conversions = index;
+    }
+    else if (/impression|impressao|impressoes|impress/.test(cleanHeader) && mapping.impressions === null) {
+      mapping.impressions = index;
     }
   });
 
@@ -418,7 +422,8 @@ function processRow(row: string[], mapping: any, rowIndex: number, defaultChanne
     campaign_name: campaignName,
     clicks: Math.min(parseInt(getColumnValue('clicks')) || 0, 1000000), // Cap clicks at 1M
     ctr: Math.min(Math.max(parseFloat(getColumnValue('ctr')) || 0, 0), 100), // Keep CTR as percentage, cap at 100%
-    conversions: Math.min(parseInt(getColumnValue('conversions')) || 0, 100000) // Cap conversions at 100k
+    conversions: Math.min(parseInt(getColumnValue('conversions')) || 0, 100000), // Cap conversions at 100k
+    impressions: Math.min(parseInt(getColumnValue('impressions')) || 0, 10000000) // Cap impressions at 10M
   };
 
   // Additional validation for amount overflow
