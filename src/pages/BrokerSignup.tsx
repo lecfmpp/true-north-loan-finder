@@ -344,44 +344,75 @@ const BrokerSignup = () => {
       {/* Target Audience */}
       <section className="py-16 bg-muted/30">
         <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Our Target Audience
+                Quality Leads That Match Our $100 Price Point
               </h2>
               <p className="text-lg text-muted-foreground">
-                <span className="text-primary font-semibold">Business Owners ready to Fund</span>
+                <span className="text-primary font-semibold">Pre-qualified business owners actively seeking funding</span>
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8">
-              {targetAudience.map((audience, index) => <Card key={index} className="h-full">
-                  <CardHeader>
-                    <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                      <Users className="w-8 h-8 text-primary" />
+            <Card className="bg-primary/5 border border-primary/20">
+              <CardContent className="p-8">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <Users className="w-8 h-8 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-foreground">Good Tier Business Leads</h3>
+                    <p className="text-primary font-semibold">$25K+ Monthly Revenue | 6+ Months Operating</p>
+                  </div>
+                </div>
+                
+                <p className="text-muted-foreground mb-6 text-lg">
+                  Established small businesses with consistent cash flow looking for growth capital, equipment financing, or working capital solutions.
+                </p>
+                
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-foreground mb-3">Lead Qualifications:</h4>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>Minimum $25K monthly revenue</span>
                     </div>
-                    <CardTitle className="text-xl text-foreground">{audience.title}</CardTitle>
-                    <p className="text-primary font-semibold">{audience.revenue}</p>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">{audience.description}</p>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-green-600" />
-                        <span>{audience.timeInBusiness}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-green-600" />
-                        <span>{audience.creditScore}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-green-600" />
-                        <span>{audience.fundingNeed}</span>
-                      </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>6+ months in business</span>
                     </div>
-                  </CardContent>
-                </Card>)}
-            </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>600+ personal credit score</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>$25K - $500K funding need</span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-foreground mb-3">What You Get:</h4>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>100% exclusive leads</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>Pre-screened and qualified</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>Same-day delivery</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>Complete contact information</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
