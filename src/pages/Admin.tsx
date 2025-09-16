@@ -111,7 +111,7 @@ import ClientsManagement from '@/components/admin/ClientsManagement';
 import ReportDashboard from '@/components/admin/ReportDashboard';
 import Footer from '@/components/Footer';
 import PartnerROIDashboard from '@/components/partner/PartnerROIDashboard';
-import LeadEngineManagement from '@/components/admin/LeadEngineManagement';
+
 import LeadMarketplace from '@/components/admin/LeadMarketplace';
 interface QuizResponse {
   id: string;
@@ -1969,10 +1969,6 @@ const Admin = () => {
         icon: Users,
         count: partners.length
       }, {
-        title: "Lead Engine",
-        value: "lead-engine", 
-        icon: SettingsIcon
-      }, {
         title: "Lead Marketplace",
         value: "lead-marketplace",
         icon: DollarSign
@@ -2817,8 +2813,6 @@ const Admin = () => {
                 No leads found matching your criteria.
               </div>}
           </div>
-      case 'lead-engine':
-        return <LeadEngineManagement />;
       case 'lead-marketplace':
         return <LeadMarketplace />;
       case 'applications':
