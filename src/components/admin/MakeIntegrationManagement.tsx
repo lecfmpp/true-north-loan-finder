@@ -14,6 +14,7 @@ import { Loader2, ExternalLink, Send, AlertTriangle, Settings, Database } from "
 
 interface MakeSettings {
   enabled: boolean;
+  spreadsheet_format: boolean;
   event_toggles: {
     lead_created: boolean;
     partner_assigned: boolean;
@@ -88,6 +89,7 @@ const METADATA_FIELD_LABELS = {
 export default function MakeIntegrationManagement() {
   const [settings, setSettings] = useState<MakeSettings>({
     enabled: false,
+    spreadsheet_format: false,
     event_toggles: {
       lead_created: false,
       partner_assigned: false,
@@ -176,6 +178,7 @@ export default function MakeIntegrationManagement() {
         
         setSettings({
           enabled: data.enabled,
+          spreadsheet_format: data.spreadsheet_format || false,
           event_toggles: {
             lead_created: eventToggles?.lead_created || false,
             partner_assigned: eventToggles?.partner_assigned || false,
@@ -313,6 +316,7 @@ export default function MakeIntegrationManagement() {
       const { error } = await supabase.functions.invoke('update-make-settings', {
         body: {
           enabled: settings.enabled,
+          spreadsheetFormat: settings.spreadsheet_format,
           webhookUrl: webhookUrl.trim(),
           eventToggles: settings.event_toggles,
           fieldMappings: settings.field_mappings
@@ -600,6 +604,22 @@ export default function MakeIntegrationManagement() {
                       Create a webhook in your Make.com scenario and paste the URL here.
                     </p>
                   </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <Label htmlFor="spreadsheet-format">Spreadsheet Format</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Send data in flat spreadsheet format instead of nested JSON
+                      </p>
+                    </div>
+                    <Switch
+                      id="spreadsheet-format"
+                      checked={settings.spreadsheet_format}
+                      onCheckedChange={(checked) => 
+                        setSettings(prev => ({ ...prev, spreadsheet_format: checked }))
+                      }
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-4">
@@ -716,14 +736,61 @@ export default function MakeIntegrationManagement() {
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
-                  Select which fields to include in the payload sent to Make.com. Only selected fields will be visible to your clients.
+                  {settings.spreadsheet_format 
+                    ? "Spreadsheet format is enabled. Data will be sent as flat columns matching standard spreadsheet headers."
+                    : "Select which fields to include in the payload sent to Make.com. Only selected fields will be visible to your clients."
+                  }
                 </AlertDescription>
               </Alert>
 
-              {renderFieldSection("Lead Information", "lead_fields", LEAD_FIELD_LABELS)}
-              {renderFieldSection("Partner Information", "partner_fields", PARTNER_FIELD_LABELS)}
-              {renderFieldSection("Application Data", "application_fields", APPLICATION_FIELD_LABELS)}
-              {renderFieldSection("System Metadata", "metadata_fields", METADATA_FIELD_LABELS)}
+              {settings.spreadsheet_format ? (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Spreadsheet Format Fields</CardTitle>
+                    <CardDescription>
+                      When spreadsheet format is enabled, the following fields will be sent:
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <h4 className="font-medium mb-2">Basic Information</h4>
+                        <ul className="space-y-1 text-muted-foreground">
+                          <li>• First Name</li>
+                          <li>• Last Name</li>
+                          <li>• Company</li>
+                          <li>• Email</li>
+                          <li>• Mobile (10 digits only)</li>
+                          <li>• Phone (10 digits only)</li>
+                          <li>• Date of Birth (DD/MM/YYYY)</li>
+                          <li>• Language</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <h4 className="font-medium mb-2">Business & Location</h4>
+                        <ul className="space-y-1 text-muted-foreground">
+                          <li>• Requested Amount (Currency)</li>
+                          <li>• Annual Revenue (Currency)</li>
+                          <li>• Monthly Sales (Currency)</li>
+                          <li>• Street, City, Province, Country</li>
+                          <li>• Postal Code</li>
+                          <li>• Years in Business (Integer)</li>
+                          <li>• Entity Type, Industry</li>
+                          <li>• Use of Funds</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+
+                <>
+                  {renderFieldSection("Lead Information", "lead_fields", LEAD_FIELD_LABELS)}
+                  {renderFieldSection("Partner Information", "partner_fields", PARTNER_FIELD_LABELS)}
+                  {renderFieldSection("Application Data", "application_fields", APPLICATION_FIELD_LABELS)}
+                  {renderFieldSection("System Metadata", "metadata_fields", METADATA_FIELD_LABELS)}
+                </>
+              )}
 
               <div className="flex gap-2 pt-4">
                 <Button 

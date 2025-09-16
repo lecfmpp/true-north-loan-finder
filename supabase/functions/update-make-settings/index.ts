@@ -6,6 +6,7 @@ const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
 interface UpdateSettingsRequest {
   enabled: boolean
+  spreadsheetFormat?: boolean
   webhookUrl?: string
   eventToggles: {
     lead_created: boolean
@@ -53,7 +54,7 @@ Deno.serve(async (req) => {
       )
     }
 
-    const { enabled, webhookUrl, eventToggles, fieldMappings }: UpdateSettingsRequest = await req.json()
+    const { enabled, spreadsheetFormat, webhookUrl, eventToggles, fieldMappings }: UpdateSettingsRequest = await req.json()
 
     // Update settings in database
     const { data: existingSettings } = await supabase
@@ -68,6 +69,7 @@ Deno.serve(async (req) => {
         .from('make_integration_settings')
         .update({
           enabled,
+          spreadsheet_format: spreadsheetFormat,
           event_toggles: eventToggles,
           field_mappings: fieldMappings,
           webhook_url: webhookUrl,
@@ -82,6 +84,7 @@ Deno.serve(async (req) => {
         .from('make_integration_settings')
         .insert({
           enabled,
+          spreadsheet_format: spreadsheetFormat,
           event_toggles: eventToggles,
           field_mappings: fieldMappings,
           webhook_url: webhookUrl,

@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
     // Check if Make.com integration is enabled
     const { data: settings, error: settingsError } = await supabase
       .from('make_integration_settings')
-      .select('enabled, event_toggles, webhook_url, field_mappings')
+      .select('enabled, event_toggles, webhook_url, field_mappings, spreadsheet_format')
       .single()
 
     if (settingsError) {
@@ -124,6 +124,122 @@ Deno.serve(async (req) => {
       })
       return filtered
     }
+
+    // Helper function to transform data to spreadsheet format
+    const transformToSpreadsheetFormat = (lead: any, partner: any, usaApp: any, canadianApp: any) => {
+      // Split name into first and last
+      const nameParts = (lead.name || '').split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      // Clean phone numbers to 10 digits only
+      const cleanPhone = (phone: string) => {
+        if (!phone) return '';
+        const digits = phone.replace(/[^0-9]/g, '');
+        return digits.length >= 10 ? digits.slice(-10) : digits;
+      };
+
+      // Format date to DD/MM/YYYY
+      const formatDate = (dateStr: string) => {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+      };
+
+      // Map time_in_business to integer years
+      const mapTimeInBusiness = (timeStr: string) => {
+        if (!timeStr) return '';
+        switch (timeStr.toLowerCase()) {
+          case 'less-than-1': case '<1': return '0';
+          case '1-2': return '1';
+          case '2-5': return '3';
+          case '5+': case '+5': return '5';
+          case '6-12': return '1';
+          default: return '';
+        }
+      };
+
+      // Map entity type based on application data or default
+      const getEntityType = () => {
+        const appData = canadianApp || usaApp;
+        if (appData?.type_of_entity) {
+          switch (appData.type_of_entity.toLowerCase()) {
+            case 'sole_proprietorship': return 'Sole Proprietorship';
+            case 'corporation': return 'Corporation';
+            case 'limited_partnership': return 'Limited Partnership';
+            case 'partnership': return 'Partnership';
+            case 'general_partnership': return 'General Partnership';
+            default: return 'Sole Proprietorship';
+          }
+        }
+        return '';
+      };
+
+      // Map use_of_funds to industry
+      const mapIndustry = (useOfFunds: string) => {
+        if (!useOfFunds) return '';
+        const use = useOfFunds.toLowerCase();
+        if (use.includes('auto') || use.includes('vehicle')) return 'Auto-Related';
+        if (use.includes('construction') || use.includes('contractor')) return 'Construction';
+        if (use.includes('food') || use.includes('restaurant')) return 'Food & Beverage';
+        if (use.includes('beauty') || use.includes('salon')) return 'Hair & Beauty';
+        if (use.includes('health') || use.includes('medical')) return 'Health';
+        if (use.includes('professional') || use.includes('service')) return 'Professional Services';
+        if (use.includes('recreation') || use.includes('entertainment')) return 'Recreation';
+        if (use.includes('retail') || use.includes('store')) return 'Retail';
+        if (use.includes('transport')) return 'Transportation';
+        return 'Other';
+      };
+
+      // Get province/state mapping for Canada
+      const mapProvince = (province: string) => {
+        if (!province) return '';
+        const prov = province.toLowerCase();
+        if (prov.includes('british') || prov.includes('bc')) return 'BC';
+        if (prov.includes('alberta') || prov.includes('ab')) return 'AB';
+        if (prov.includes('saskatchewan') || prov.includes('sk')) return 'SK';
+        if (prov.includes('manitoba') || prov.includes('mb')) return 'MB';
+        if (prov.includes('ontario') || prov.includes('on')) return 'ON';
+        if (prov.includes('quebec') || prov.includes('qc')) return 'QC';
+        if (prov.includes('new brunswick') || prov.includes('nb')) return 'NB';
+        if (prov.includes('nova scotia') || prov.includes('ns')) return 'NS';
+        if (prov.includes('prince edward') || prov.includes('pe')) return 'PE';
+        if (prov.includes('newfoundland') || prov.includes('nl')) return 'NL';
+        if (prov.includes('yukon') || prov.includes('yt')) return 'YT';
+        if (prov.includes('northwest') || prov.includes('nt')) return 'NT';
+        if (prov.includes('nunavut') || prov.includes('nu')) return 'NU';
+        return province.toUpperCase();
+      };
+
+      // Use application data where available, fallback to lead data
+      const appData = canadianApp || usaApp;
+      
+      return {
+        "First Name": firstName,
+        "Last Name": lastName,
+        "Company": lead.company_name || appData?.legal_business_name || '',
+        "Email": lead.email || appData?.email_address || '',
+        "Mobile! (10 digits only)": cleanPhone(lead.phone || appData?.cell_phone || ''),
+        "Phone! (10 digits only)": cleanPhone(appData?.business_phone || lead.phone || ''),
+        "Date of Birth (DD/MM/YYYY)": appData?.dob ? formatDate(appData.dob) : '',
+        "Language!": lead.country === 'CA' ? 'English' : 'English',
+        "Requested Amount! (Currency)": lead.loan_amount || appData?.amount_requested || '',
+        "Annual Revenue! (Currency)": appData?.annual_gross_sales || (lead.monthly_revenue * 12) || '',
+        "Estimated Monthly Sales! (Currency)": lead.monthly_revenue || Math.floor((appData?.annual_gross_sales || 0) / 12) || '',
+        "Street": appData?.physical_address || appData?.home_address || '',
+        "City": appData?.city || appData?.city_owner || '',
+        "Province!": mapProvince(lead.city_province || appData?.state || appData?.state_owner || ''),
+        "Country!": lead.country === 'CA' ? 'Canada' : lead.country || '',
+        "Postal Code!": appData?.zip || appData?.zip_owner || '',
+        "Years in Business! (Integer only)": mapTimeInBusiness(lead.time_in_business || ''),
+        "Entity Type!": getEntityType(),
+        "Industry!": mapIndustry(lead.use_of_funds || ''),
+        "Use of Funds": lead.use_of_funds || appData?.use_of_funds || ''
+      };
+    };
 
     // Build Make.com payload with selective field inclusion
     let payload = overridePayload
@@ -239,13 +355,19 @@ Deno.serve(async (req) => {
       const filteredMetadata = filterFields(potentialMetadata, metadataFields)
 
       // Construct final payload
-      payload = {
-        event_type: eventType,
-        idempotency_key: `${leadId}:${eventType}:${new Date().getTime()}`,
-        lead: filteredLead,
-        partner: filteredPartner,
-        applications,
-        metadata: filteredMetadata
+      if (settings.spreadsheet_format) {
+        // Use spreadsheet format transformation
+        payload = transformToSpreadsheetFormat(lead, filteredPartner, usaApplication, canadianApplication);
+      } else {
+        // Use original JSON format
+        payload = {
+          event_type: eventType,
+          idempotency_key: `${leadId}:${eventType}:${new Date().getTime()}`,
+          lead: filteredLead,
+          partner: filteredPartner,
+          applications,
+          metadata: filteredMetadata
+        };
       }
     }
 

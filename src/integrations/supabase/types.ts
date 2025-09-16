@@ -2407,6 +2407,7 @@ export type Database = {
           event_toggles: Json
           field_mappings: Json | null
           id: string
+          spreadsheet_format: boolean | null
           updated_at: string
           webhook_url: string | null
         }
@@ -2417,6 +2418,7 @@ export type Database = {
           event_toggles?: Json
           field_mappings?: Json | null
           id?: string
+          spreadsheet_format?: boolean | null
           updated_at?: string
           webhook_url?: string | null
         }
@@ -2427,6 +2429,7 @@ export type Database = {
           event_toggles?: Json
           field_mappings?: Json | null
           id?: string
+          spreadsheet_format?: boolean | null
           updated_at?: string
           webhook_url?: string | null
         }
