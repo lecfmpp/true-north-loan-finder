@@ -365,7 +365,7 @@ function detectColumnsPattern(headers: string[]) {
     else if (/rate/.test(cleanHeader) && mapping.ctr === null) {
       mapping.ctr = index;
     }
-    else if (/conversion|conv|action/.test(cleanHeader) && mapping.conversions === null) {
+    else if (/conversion|conv|action|quiz.*truenorth.*submitted|truenorth.*quiz.*submitted|leads/.test(cleanHeader) && mapping.conversions === null) {
       mapping.conversions = index;
     }
   });
