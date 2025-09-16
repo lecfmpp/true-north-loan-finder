@@ -214,8 +214,53 @@ Deno.serve(async (req) => {
         return province.toUpperCase();
       };
 
-      // Use application data where available, fallback to lead data
+    // Use application data where available, fallback to lead data
       const appData = canadianApp || usaApp;
+      
+      // Collect all file URLs from both applications
+      const collectFileUrls = () => {
+        const allFiles: string[] = [];
+        
+        // Helper to convert files to URLs
+        const convertToUrls = (files: any[]) => {
+          if (!Array.isArray(files)) return [];
+          return files.map(file => {
+            if (typeof file === 'string') {
+              return `${supabaseUrl}/storage/v1/object/public/application-documents/${file}`;
+            }
+            if (file?.name) {
+              return `${supabaseUrl}/storage/v1/object/public/application-documents/${file.name}`;
+            }
+            return file;
+          }).filter(url => url && typeof url === 'string');
+        };
+        
+        // Collect from both USA and Canadian applications
+        [usaApp, canadianApp].forEach(app => {
+          if (app?.document_files) {
+            allFiles.push(...convertToUrls(app.document_files));
+          }
+          if (app?.processing_statements) {
+            allFiles.push(...convertToUrls(app.processing_statements));
+          }
+        });
+        
+        return allFiles.join(', ');
+      };
+      
+      // Count total files
+      const countFiles = () => {
+        let count = 0;
+        [usaApp, canadianApp].forEach(app => {
+          if (app?.document_files && Array.isArray(app.document_files)) {
+            count += app.document_files.length;
+          }
+          if (app?.processing_statements && Array.isArray(app.processing_statements)) {
+            count += app.processing_statements.length;
+          }
+        });
+        return count;
+      };
       
       return {
         "First Name": firstName,
@@ -237,7 +282,9 @@ Deno.serve(async (req) => {
         "Years in Business! (Integer only)": mapTimeInBusiness(lead.time_in_business || ''),
         "Entity Type!": getEntityType(),
         "Industry!": mapIndustry(lead.use_of_funds || ''),
-        "Use of Funds": lead.use_of_funds || appData?.use_of_funds || ''
+        "Use of Funds": lead.use_of_funds || appData?.use_of_funds || '',
+        "Attached Files": collectFileUrls(),
+        "File Count": countFiles().toString()
       };
     };
 
