@@ -23,16 +23,20 @@ const BrokerSignup = () => {
   const roi = totalSpend > 0 ? Math.round((totalCommission - totalSpend) / totalSpend * 100) : 0;
 
   // Load video settings for the trial section video
-  const [videoSettings, setVideoSettings] = useState<{ video_url: string | null; embed_code: string | null; video_title: string | null } | null>(null);
+  const [videoSettings, setVideoSettings] = useState<{
+    video_url: string | null;
+    embed_code: string | null;
+    video_title: string | null;
+  } | null>(null);
   const [videoError, setVideoError] = useState<string | null>(null);
   useEffect(() => {
     const loadVideo = async () => {
-      const { data, error } = await supabase
-        .from('video_settings')
-        .select('*')
-        .order('updated_at', { ascending: false })
-        .limit(1)
-        .single();
+      const {
+        data,
+        error
+      } = await supabase.from('video_settings').select('*').order('updated_at', {
+        ascending: false
+      }).limit(1).single();
       if (error && (error as any).code !== 'PGRST116') {
         setVideoError(error.message);
       } else {
@@ -48,7 +52,6 @@ const BrokerSignup = () => {
     script.defer = true;
     script.src = 'https://spyme.ca/pixel/F97YJqTQolJXpl1J';
     document.head.appendChild(script);
-
     return () => {
       // Cleanup: remove the script when component unmounts
       if (document.head.contains(script)) {
@@ -164,11 +167,9 @@ const BrokerSignup = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-3 lg:gap-4 justify-center mb-8 lg:mb-12">
-              <Button 
-                size="lg" 
-                className="bg-green-500 hover:bg-green-600 text-white px-6 lg:px-8 py-3 lg:py-4 text-base lg:text-lg font-medium rounded-lg"
-                onClick={() => document.getElementById('hero-calendly')?.scrollIntoView({ behavior: 'smooth' })}
-              >
+              <Button size="lg" className="bg-green-500 hover:bg-green-600 text-white px-6 lg:px-8 py-3 lg:py-4 text-base lg:text-lg font-medium rounded-lg" onClick={() => document.getElementById('hero-calendly')?.scrollIntoView({
+              behavior: 'smooth'
+            })}>
                 Book "25 Leads Trial" Strategy Call
               </Button>
             </div>
@@ -177,10 +178,7 @@ const BrokerSignup = () => {
         
         {/* Always Visible Calendly Widget - Outside container for full width */}
         <div id="hero-calendly" className="w-full">
-          <CalendlyInline 
-            url="https://calendly.com/leandro-truenorth-businessloan/30min?hide_gdpr_banner=1" 
-            height={700} 
-          />
+          <CalendlyInline url="https://calendly.com/leandro-truenorth-businessloan/30min?hide_gdpr_banner=1" height={700} />
         </div>
       </section>
 
@@ -389,49 +387,10 @@ const BrokerSignup = () => {
       </section>
 
       {/* Partnership Benefits */}
-      <section className="py-16 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Partnership Benefits
-              </h2>
-              <p className="text-lg text-muted-foreground">
-                
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              {benefits.map((benefit, index) => <Card key={index} className="text-center h-full">
-                  <CardContent className="p-6">
-                    <div className="text-4xl font-bold text-primary mb-2">{benefit.percentage}</div>
-                    <div className="text-sm text-muted-foreground mb-4">{benefit.metric}</div>
-                    <h3 className="text-lg font-semibold text-foreground mb-3">{benefit.title}</h3>
-                    <p className="text-muted-foreground text-sm">{benefit.description}</p>
-                  </CardContent>
-                </Card>)}
-            </div>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Calendly Section */}
-      <section id="calendly-section" className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-              Ready to Start Getting Exclusive Leads?
-            </h2>
-            <p className="text-xl text-muted-foreground mb-8">
-              Book a strategy call to discuss your lead requirements and get started with your first batch of pre-qualified leads.
-            </p>
-          </div>
-
-          <div className="max-w-4xl mx-auto">
-            <CalendlyInline url="https://calendly.com/leandro-truenorth-businessloan/30min?hide_gdpr_banner=1" height={1200} />
-          </div>
-        </div>
-      </section>
+      
 
       {/* FAQ Section */}
       <section className="py-16 bg-muted/30">
