@@ -18,7 +18,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import OptimizedImage from "@/components/OptimizedImage";
-import PopupWidget from "@/components/PopupWidget";
+
 
 
 const Home = () => {
@@ -364,7 +364,6 @@ const Home = () => {
       </section>
 
       <Footer />
-      <PopupWidget />
     </div>
   );
 };
