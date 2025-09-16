@@ -49,6 +49,7 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [bulkChannelDialog, setBulkChannelDialog] = useState(false);
   const [bulkChannel, setBulkChannel] = useState('');
+  const [bulkDeleteDialog, setBulkDeleteDialog] = useState(false);
   const [newRecord, setNewRecord] = useState({
     date: new Date(),
     channel: '',
@@ -327,6 +328,69 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (selectedRows.size === 0) {
+      toast({
+        title: "Error",
+        description: "Please select at least one row to delete",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('ad_spend_records')
+        .delete()
+        .in('id', Array.from(selectedRows));
+
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: `Deleted ${selectedRows.size} records successfully`
+      });
+      
+      setSelectedRows(new Set());
+      setBulkDeleteDialog(false);
+      onDataUpdate();
+    } catch (error) {
+      console.error('Error deleting records:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete records",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const deleteMetaAdsFromAug1 = async () => {
+    try {
+      const aug1Date = '2024-08-01';
+      const { error } = await supabase
+        .from('ad_spend_records')
+        .delete()
+        .eq('channel', 'meta')
+        .gte('date', aug1Date);
+
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "All Meta Ads entries from August 1st onwards have been deleted"
+      });
+      
+      onDataUpdate();
+    } catch (error) {
+      console.error('Error deleting Meta Ads records:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete Meta Ads records",
+        variant: "destructive"
+      });
+    }
+  };
+
   const EditableCell = ({ record, field, value, isMonetary = false }: { 
     record: AdSpendRecord; 
     field: string; 
@@ -598,6 +662,13 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
           </Button>
           <Button
             size="sm"
+            variant="destructive"
+            onClick={() => setBulkDeleteDialog(true)}
+          >
+            Delete Selected
+          </Button>
+          <Button
+            size="sm"
             variant="outline"
             onClick={() => setSelectedRows(new Set())}
           >
@@ -605,6 +676,24 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
           </Button>
         </div>
       )}
+
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold">Ad Spend Records</h3>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={deleteMetaAdsFromAug1}
+            className="text-destructive hover:text-destructive"
+          >
+            Delete Meta Ads (Aug 1+)
+          </Button>
+          <Button onClick={addNewRecord} size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Add New Record
+          </Button>
+        </div>
+      </div>
       
       <div className="rounded-md border">
         <Table>
@@ -849,6 +938,26 @@ export default function EditableAdSpendTable({ adSpends, onDataUpdate }: Editabl
             </Button>
             <Button onClick={handleBulkChannelUpdate} disabled={!bulkChannel}>
               Update {selectedRows.size} Records
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Delete Dialog */}
+      <Dialog open={bulkDeleteDialog} onOpenChange={setBulkDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Selected Records</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete {selectedRows.size} selected records? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkDeleteDialog(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleBulkDelete}>
+              Delete {selectedRows.size} Records
             </Button>
           </DialogFooter>
         </DialogContent>
