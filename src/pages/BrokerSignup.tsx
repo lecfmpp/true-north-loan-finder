@@ -22,6 +22,39 @@ const BrokerSignup = () => {
   const totalCommission = funded * avgRevenuePerDeal[0];
   const roi = totalSpend > 0 ? Math.round((totalCommission - totalSpend) / totalSpend * 100) : 0;
 
+  // Traffic Split Logic: 50/50 between Calendly and Video versions
+  useEffect(() => {
+    const splitVersion = sessionStorage.getItem('broker-split-version');
+    
+    if (!splitVersion) {
+      const shouldRedirectToVideo = Math.random() < 0.5;
+      const version = shouldRedirectToVideo ? 'video' : 'calendly';
+      
+      sessionStorage.setItem('broker-split-version', version);
+      
+      // Track the split decision
+      if ((window as any).gtag) {
+        (window as any).gtag('event', shouldRedirectToVideo ? 'broker_split_video_assigned' : 'broker_split_calendly_assigned', {
+          event_category: 'A/B Test',
+          event_label: 'Broker Signup Split Test'
+        });
+      }
+      
+      if (shouldRedirectToVideo) {
+        window.location.replace('/broker-lp-video');
+        return;
+      }
+    }
+    
+    // Track that user is viewing the Calendly version
+    if ((window as any).gtag) {
+      (window as any).gtag('event', 'broker_split_calendly_view', {
+        event_category: 'A/B Test',
+        event_label: 'Broker Signup Calendly Version'
+      });
+    }
+  }, []);
+
   // Load video settings for the trial section video
   const [videoSettings, setVideoSettings] = useState<{
     video_url: string | null;
