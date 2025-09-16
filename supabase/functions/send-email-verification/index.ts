@@ -54,7 +54,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: fromEmail,
       to: [email],
-      subject: "Please verify your email address - True North Business Funding",
+      subject: "Welcome! Please verify your email - True North Business Loan",
       html: `
         <!DOCTYPE html>
         <html>
@@ -211,7 +211,10 @@ const handler = async (req: Request): Promise<Response> => {
                     </div>
                     
                     <div class="message">
-                        Thank you for your interest in our business funding solutions! To complete your lead submission and ensure we can communicate with you effectively, please verify your email address.
+                        <strong>Welcome to True North Business Funding!</strong><br><br>
+                        Thank you for your interest in our business funding solutions. We're already working to find the best funding matches for your business needs.<br><br>
+                        
+                        To proceed and ensure you receive your personalized funding options, please verify your email address by clicking the button below. This helps us confirm you're a real business owner and ensures our communications reach you directly.
                     </div>
                     
                     <div class="cta-section">
@@ -219,7 +222,7 @@ const handler = async (req: Request): Promise<Response> => {
                             ✓ Verify My Email Address
                         </a>
                         <p style="margin-top: 15px; color: #1e3a8a; font-size: 14px;">
-                            Click the button above to verify your email instantly
+                            Click the button above to verify your email and unlock your funding matches
                         </p>
                     </div>
                     

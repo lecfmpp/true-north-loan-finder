@@ -664,8 +664,9 @@ const LeadMarketplace: React.FC = () => {
                   </Button>
                 </TableHead>
                 <TableHead className="min-w-[200px]">Email</TableHead>
-                <TableHead className="min-w-[100px]">Verified</TableHead>
+                <TableHead className="min-w-[100px] text-center">Email Verified</TableHead>
                 <TableHead className="min-w-[120px]">Phone</TableHead>
+                <TableHead className="min-w-[100px] text-center">Phone Verified</TableHead>
                 <TableHead className="min-w-[80px]">Country</TableHead>
                 <TableHead className="min-w-[120px]">
                   <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent hover:text-current" onClick={() => handleSort('monthly_revenue')}>
@@ -737,6 +738,12 @@ const LeadMarketplace: React.FC = () => {
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">{lead.phone}</div>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <EmailVerificationIcon 
+                      isVerified={false}
+                      size="md"
+                    />
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">{lead.country}</div>
