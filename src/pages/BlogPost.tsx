@@ -271,6 +271,8 @@ const BlogPost = () => {
 
             {/* Content Container with new blog-content styling */}
             <div className="blog-content" ref={contentRef}>
+              {/* Main title as H1 for proper heading hierarchy */}
+              <h1>{post.title}</h1>
               <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />
             </div>
 
