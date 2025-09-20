@@ -40,20 +40,27 @@ export default defineConfig(({ mode }) => ({
           editor: ['react-quill'],
           // Charts (load on demand)
           charts: ['recharts'],
+          // Lucide icons separate chunk
+          icons: ['lucide-react'],
         },
       },
     },
     // Enable CSS code splitting for better performance
     cssCodeSplit: true,
     // Optimize assets - inline small assets to reduce requests
-    assetsInlineLimit: 8192, // Inline assets < 8kb
+    assetsInlineLimit: 4096, // Reduced for better mobile performance
     // Enable compression and optimization
     minify: 'esbuild',
     esbuild: {
       drop: mode === 'production' ? ['console', 'debugger'] : [],
+      legalComments: 'none', // Remove legal comments to reduce bundle size
     },
     // Target modern browsers for better optimization
     target: 'es2020',
+    // Improve chunk size warnings
+    chunkSizeWarningLimit: 1000,
+    // Enable source maps for better debugging in production
+    sourcemap: mode === 'production' ? false : true,
   },
   // Optimize CSS processing
   css: {
@@ -61,6 +68,14 @@ export default defineConfig(({ mode }) => ({
   },
   // Add performance optimizations
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom'],
+    include: ['react', 'react-dom', 'react-router-dom', 'lucide-react'],
+    exclude: ['@vite/client', '@vite/env'],
+  },
+  // Preload module directives
+  experimental: {
+    renderBuiltUrl(filename) {
+      // Add preload hints for critical resources
+      return { runtime: `window.__vitePreload("${filename}")` };
+    },
   },
 }));

@@ -1,0 +1,76 @@
+/* Mobile-optimized styles for industry pages */
+
+/* Responsive typography */
+@media (max-width: 768px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Improve text readability on mobile */
+  p, li {
+    line-height: 1.6;
+  }
+  
+  /* Better spacing for mobile cards */
+  .mobile-card-padding {
+    padding: 1rem;
+  }
+  
+  /* Optimize chart containers for mobile */
+  .recharts-wrapper {
+    font-size: 12px;
+  }
+  
+  /* Mobile-friendly table scrolling */
+  .mobile-table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Touch-friendly buttons */
+  .mobile-button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Improved mobile navigation */
+  .mobile-nav-item {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+  }
+}
+
+/* Image optimization for mobile */
+@media (max-width: 640px) {
+  .hero-image {
+    aspect-ratio: 16/10;
+    object-fit: cover;
+  }
+  
+  .card-image {
+    aspect-ratio: 4/3;
+    object-fit: cover;
+  }
+}
+
+/* Performance optimizations */
+.lazy-image {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.lazy-image.loaded {
+  opacity: 1;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .hover\\:shadow-lg {
+    transition: none;
+  }
+  
+  .hover\\:-translate-y-1 {
+    transform: none;
+  }
+}

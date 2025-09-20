@@ -35,6 +35,8 @@ import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import { MobileOptimizedImage } from "@/components/MobileOptimizedImage";
+import { generateBusinessStructuredData, generateFAQStructuredData, generateIndustryKeywords } from "@/utils/seo-utils";
 import franchiseBusinessImage from "@/assets/established-franchises-business.webp";
 
 const EstablishedFranchises = () => {
@@ -177,38 +179,52 @@ const EstablishedFranchises = () => {
     ]
   };
 
+  const businessSchema = {
+    name: "Established Franchises",
+    industry: "Franchise Operations", 
+    description: "Specialized financing solutions for established franchise operations with proven business models and growth potential.",
+    services: ["Franchise expansion loans", "Multi-unit financing", "Equipment upgrades", "Working capital"],
+    location: "Canada",
+    benefits: ["Fast approval process", "Flexible terms", "Competitive rates", "Franchise-specific expertise"]
+  };
+
+  const structuredData = generateBusinessStructuredData(businessSchema, "/established-franchises");
+  const faqStructuredData = generateFAQStructuredData(faqData);
+  const keywords = generateIndustryKeywords("franchise");
+
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
         title="Business Loans for Established Franchises | Franchise Financing Canada & US"
         description="Get business loans for established franchises. Expand your franchise locations, renovate existing stores, and manage working capital with specialized franchise financing in Canada and US."
-        keywords={["franchise loans", "franchise financing", "established franchise funding", "multi-unit franchise loans", "franchise expansion loans", "business loans for franchises"]}
+        keywords={keywords}
         canonicalUrl="https://truenorthbusinessloan.ca/established-franchises"
+        structuredData={[structuredData, faqStructuredData]}
       />
       <Header />
       
       {/* Hero Section */}
-      <section className="py-20 lg:py-32 bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+      <section className="py-12 md:py-16 lg:py-20 bg-gradient-to-br from-primary/5 via-background to-secondary/5">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm font-medium">
+            <Badge variant="secondary" className="mb-4 md:mb-6 px-3 md:px-4 py-1 md:py-2 text-xs md:text-sm font-medium">
               Franchise Business Financing
             </Badge>
             
-            <h1 className="text-4xl lg:text-6xl font-bold font-sans text-primary mb-6 leading-tight">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold font-sans text-primary mb-4 md:mb-6 leading-tight">
               Business Loans for
               <span className="text-secondary"> Established Franchises</span>
             </h1>
             
-            <p className="text-xl lg:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto font-serif">
+            <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground mb-6 md:mb-8 max-w-3xl mx-auto font-serif px-2">
               Expand your franchise empire with $50K to $2M+ in financing. Fund new locations, renovations, and working capital for your established franchise business.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Button asChild variant="cta" size="xl" className="text-lg px-8">
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center mb-8 md:mb-12 px-4">
+              <Button asChild variant="cta" size="lg" className="text-base md:text-lg px-6 md:px-8 w-full sm:w-auto">
                 <Link to="/loan-estimator">Get My Franchise Loan Quote</Link>
               </Button>
-              <Button asChild variant="outline" size="xl" className="text-lg px-8">
+              <Button asChild variant="outline" size="lg" className="text-base md:text-lg px-6 md:px-8 w-full sm:w-auto">
                 <Link to="/how-it-works">How It Works</Link>
               </Button>
             </div>
@@ -217,34 +233,34 @@ const EstablishedFranchises = () => {
       </section>
 
       {/* Business Overview Section */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-12 md:py-16 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              <div>
-                <h2 className="text-3xl lg:text-4xl font-bold font-sans text-primary mb-6">
+            <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
+              <div className="order-2 lg:order-1">
+                <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold font-sans text-primary mb-4 md:mb-6">
                   Established Franchise Success
                 </h2>
-                <p className="text-lg text-muted-foreground mb-6 font-serif">
+                <p className="text-base md:text-lg text-muted-foreground mb-4 md:mb-6 font-serif">
                   Franchise businesses benefit from proven business models, established brand recognition, and ongoing corporate support. With the right financing, franchise owners can expand locations, renovate existing stores, and optimize operations for maximum profitability.
                 </p>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-background rounded-lg p-4 border">
-                    <div className="text-2xl font-bold text-secondary mb-1">85%</div>
-                    <div className="text-sm text-muted-foreground">Success Rate</div>
+                <div className="grid grid-cols-2 gap-3 md:gap-4">
+                  <div className="bg-background rounded-lg p-3 md:p-4 border">
+                    <div className="text-xl md:text-2xl font-bold text-secondary mb-1">85%</div>
+                    <div className="text-xs md:text-sm text-muted-foreground">Success Rate</div>
                   </div>
-                  <div className="bg-background rounded-lg p-4 border">
-                    <div className="text-2xl font-bold text-secondary mb-1">2.5x</div>
-                    <div className="text-sm text-muted-foreground">ROI Potential</div>
+                  <div className="bg-background rounded-lg p-3 md:p-4 border">
+                    <div className="text-xl md:text-2xl font-bold text-secondary mb-1">2.5x</div>
+                    <div className="text-xs md:text-sm text-muted-foreground">ROI Potential</div>
                   </div>
                 </div>
               </div>
-              <div className="relative">
-                <img 
+              <div className="relative order-1 lg:order-2">
+                <MobileOptimizedImage 
                   src={franchiseBusinessImage} 
                   alt="Established franchise business storefront with professional branding and customer activity"
-                  className="w-full h-auto rounded-xl shadow-xl object-cover"
-                  loading="lazy"
+                  className="w-full aspect-[4/3] rounded-xl shadow-xl"
+                  priority={true}
                 />
               </div>
             </div>
@@ -315,25 +331,25 @@ const EstablishedFranchises = () => {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-12 md:py-16 lg:py-20 bg-muted/30">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold font-sans text-primary mb-4">
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold font-sans text-primary mb-3 md:mb-4">
               Why Established Franchises Get Better Loan Terms
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-serif">
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto font-serif px-2">
               Proven business models and franchisor support reduce lender risk
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8 max-w-6xl mx-auto">
             {benefits.map((benefit, index) => (
               <Card key={index} className="text-center border-0 shadow-[var(--shadow-card)] hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <CardContent className="p-6">
-                  <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <CardContent className="p-4 md:p-6">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-secondary/10 rounded-lg flex items-center justify-center mx-auto mb-3 md:mb-4">
                     {benefit.icon}
                   </div>
-                  <h3 className="text-lg font-semibold font-sans text-primary mb-3">
+                  <h3 className="text-base md:text-lg font-semibold font-sans text-primary mb-2 md:mb-3">
                     {benefit.title}
                   </h3>
                   <p className="text-muted-foreground font-serif text-sm">

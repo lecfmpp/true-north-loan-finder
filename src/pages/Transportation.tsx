@@ -37,6 +37,8 @@ import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar } from "recharts";
+import { MobileOptimizedImage } from "@/components/MobileOptimizedImage";
+import { generateBusinessStructuredData, generateFAQStructuredData, generateIndustryKeywords } from "@/utils/seo-utils";
 import transportationBusinessImage from "@/assets/transportation-business.webp";
 
 const Transportation = () => {
@@ -182,38 +184,52 @@ const Transportation = () => {
     ]
   };
 
+  const businessSchema = {
+    name: "Transportation & Logistics",
+    industry: "Transportation",
+    description: "Specialized financing solutions for transportation and logistics companies to fund fleet expansion, equipment purchases, and working capital needs.",
+    services: ["Fleet financing", "Equipment loans", "Working capital", "Route expansion funding"],
+    location: "Canada",
+    benefits: ["Fast approval process", "Flexible terms", "Transportation industry expertise", "Equipment financing options"]
+  };
+
+  const structuredData = generateBusinessStructuredData(businessSchema, "/transportation");
+  const faqStructuredData = generateFAQStructuredData(faqData);
+  const keywords = generateIndustryKeywords("transportation");
+
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
         title="Business Loans for Transportation Companies | Fleet Financing Canada & US"
         description="Get business loans for transportation and logistics companies. Finance fleet expansion, equipment purchases, and working capital with specialized transportation business funding in Canada and US."
-        keywords={["transportation loans", "fleet financing", "truck loans", "logistics business loans", "transportation equipment financing", "commercial vehicle loans"]}
+        keywords={keywords}
         canonicalUrl="https://truenorthbusinessloan.ca/transportation"
+        structuredData={[structuredData, faqStructuredData]}
       />
       <Header />
       
       {/* Hero Section */}
-      <section className="py-20 lg:py-32 bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+      <section className="py-12 md:py-16 lg:py-20 bg-gradient-to-br from-primary/5 via-background to-secondary/5">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm font-medium">
+            <Badge variant="secondary" className="mb-4 md:mb-6 px-3 md:px-4 py-1 md:py-2 text-xs md:text-sm font-medium">
               Transportation & Logistics Financing
             </Badge>
             
-            <h1 className="text-4xl lg:text-6xl font-bold font-sans text-primary mb-6 leading-tight">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold font-sans text-primary mb-4 md:mb-6 leading-tight">
               Business Loans for
               <span className="text-secondary"> Transportation Companies</span>
             </h1>
             
-            <p className="text-xl lg:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto font-serif">
+            <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground mb-6 md:mb-8 max-w-3xl mx-auto font-serif px-2">
               Fuel your fleet expansion with $25K to $2M+ in transportation financing. Fund new vehicles, equipment, and working capital to grow your logistics business.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Button asChild variant="cta" size="xl" className="text-lg px-8">
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center mb-8 md:mb-12 px-4">
+              <Button asChild variant="cta" size="lg" className="text-base md:text-lg px-6 md:px-8 w-full sm:w-auto">
                 <Link to="/loan-estimator">Get My Fleet Financing Quote</Link>
               </Button>
-              <Button asChild variant="outline" size="xl" className="text-lg px-8">
+              <Button asChild variant="outline" size="lg" className="text-base md:text-lg px-6 md:px-8 w-full sm:w-auto">
                 <Link to="/how-it-works">How It Works</Link>
               </Button>
             </div>
@@ -222,34 +238,34 @@ const Transportation = () => {
       </section>
 
       {/* Business Overview Section */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-12 md:py-16 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              <div>
-                <h2 className="text-3xl lg:text-4xl font-bold font-sans text-primary mb-6">
+            <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
+              <div className="order-2 lg:order-1">
+                <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold font-sans text-primary mb-4 md:mb-6">
                   Transportation & Logistics Excellence
                 </h2>
-                <p className="text-lg text-muted-foreground mb-6 font-serif">
+                <p className="text-base md:text-lg text-muted-foreground mb-4 md:mb-6 font-serif">
                   The transportation industry is the backbone of commerce, moving goods and materials across Canada and the US. With strategic financing, transportation companies can expand their fleets, upgrade equipment, and capture new market opportunities in this growing sector.
                 </p>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-background rounded-lg p-4 border">
-                    <div className="text-2xl font-bold text-secondary mb-1">7.2%</div>
-                    <div className="text-sm text-muted-foreground">Annual Growth</div>
+                <div className="grid grid-cols-2 gap-3 md:gap-4">
+                  <div className="bg-background rounded-lg p-3 md:p-4 border">
+                    <div className="text-xl md:text-2xl font-bold text-secondary mb-1">7.2%</div>
+                    <div className="text-xs md:text-sm text-muted-foreground">Annual Growth</div>
                   </div>
-                  <div className="bg-background rounded-lg p-4 border">
-                    <div className="text-2xl font-bold text-secondary mb-1">$12-35K</div>
-                    <div className="text-sm text-muted-foreground">Monthly Revenue/Vehicle</div>
+                  <div className="bg-background rounded-lg p-3 md:p-4 border">
+                    <div className="text-xl md:text-2xl font-bold text-secondary mb-1">$12-35K</div>
+                    <div className="text-xs md:text-sm text-muted-foreground">Monthly Revenue/Vehicle</div>
                   </div>
                 </div>
               </div>
-              <div className="relative">
-                <img 
+              <div className="relative order-1 lg:order-2">
+                <MobileOptimizedImage 
                   src={transportationBusinessImage} 
                   alt="Transportation logistics business with modern delivery trucks and warehouse operations"
-                  className="w-full h-auto rounded-xl shadow-xl object-cover"
-                  loading="lazy"
+                  className="w-full aspect-[4/3] rounded-xl shadow-xl"
+                  priority={true}
                 />
               </div>
             </div>

@@ -125,3 +125,51 @@ export const checkPerformanceBudget = () => {
     }
   }
 };
+
+// Mobile performance optimization
+export const optimizeForMobile = () => {
+  if ('connection' in navigator) {
+    const connection = (navigator as any).connection;
+    if (connection && connection.effectiveType === 'slow-2g') {
+      // Reduce animations and heavy effects for slow connections
+      document.documentElement.style.setProperty('--animation-duration', '0.1s');
+    }
+  }
+};
+
+// Critical resource preloading
+export const preloadCriticalResources = () => {
+  const criticalResources = [
+    '/src/index.css',
+    '/src/assets/business-owner-hero.jpg'
+  ];
+  
+  criticalResources.forEach(resource => {
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = resource.endsWith('.css') ? 'style' : 'image';
+    link.href = resource;
+    document.head.appendChild(link);
+  });
+};
+
+// Intersection Observer for lazy loading optimization
+export const createOptimizedImageObserver = () => {
+  if ('IntersectionObserver' in window) {
+    return new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const img = entry.target as HTMLImageElement;
+          if (img.dataset.src) {
+            img.src = img.dataset.src;
+            img.removeAttribute('data-src');
+          }
+        }
+      });
+    }, {
+      rootMargin: '50px 0px',
+      threshold: 0.01
+    });
+  }
+  return null;
+};

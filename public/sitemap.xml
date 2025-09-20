@@ -86,6 +86,44 @@
     <priority>0.3</priority>
   </url>
 
+  <!-- Industry Pages -->
+  <url>
+    <loc>https://truenorthbusinessloan.ca/established-franchises</loc>
+    <lastmod>2025-09-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://truenorthbusinessloan.ca/transportation</loc>
+    <lastmod>2025-09-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://truenorthbusinessloan.ca/manufacturing</loc>
+    <lastmod>2025-09-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://truenorthbusinessloan.ca/property-management</loc>
+    <lastmod>2025-09-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://truenorthbusinessloan.ca/self-storage</loc>
+    <lastmod>2025-09-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://truenorthbusinessloan.ca/cannabis-dispensary</loc>
+    <lastmod>2025-09-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- Blog Posts -->
   <url>
     <loc>https://truenorthbusinessloan.ca/blog/mca-help-restaurant-survive-slow-season</loc>
