@@ -29,6 +29,12 @@ const EquipmentFinancing = lazy(() => import("./pages/EquipmentFinancing"));
 const SmallBusinessLoans = lazy(() => import("./pages/SmallBusinessLoans"));
 const MerchantCashAdvance = lazy(() => import("./pages/MerchantCashAdvance"));
 const InvoiceFactoring = lazy(() => import("./pages/InvoiceFactoring"));
+const EstablishedFranchises = lazy(() => import("./pages/EstablishedFranchises"));
+const Transportation = lazy(() => import("./pages/Transportation"));
+const Manufacturing = lazy(() => import("./pages/Manufacturing"));
+const PropertyManagement = lazy(() => import("./pages/PropertyManagement"));
+const SelfStorage = lazy(() => import("./pages/SelfStorage"));
+const CannabisDispensary = lazy(() => import("./pages/CannabisDispensary"));
 const Auth = lazy(() => import("./pages/Auth"));
 import Admin from "./pages/Admin";
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
@@ -128,6 +134,36 @@ const App = () => {
               <Route path="/invoice-factoring" element={
                 <Suspense fallback={<PageLoader />}>
                   <InvoiceFactoring />
+                </Suspense>
+              } />
+              <Route path="/established-franchises" element={
+                <Suspense fallback={<PageLoader />}>
+                  <EstablishedFranchises />
+                </Suspense>
+              } />
+              <Route path="/transportation" element={
+                <Suspense fallback={<PageLoader />}>
+                  <Transportation />
+                </Suspense>
+              } />
+              <Route path="/manufacturing" element={
+                <Suspense fallback={<PageLoader />}>
+                  <Manufacturing />
+                </Suspense>
+              } />
+              <Route path="/property-management" element={
+                <Suspense fallback={<PageLoader />}>
+                  <PropertyManagement />
+                </Suspense>
+              } />
+              <Route path="/self-storage" element={
+                <Suspense fallback={<PageLoader />}>
+                  <SelfStorage />
+                </Suspense>
+              } />
+              <Route path="/cannabis-dispensary" element={
+                <Suspense fallback={<PageLoader />}>
+                  <CannabisDispensary />
                 </Suspense>
               } />
               <Route path="/compare" element={
