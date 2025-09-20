@@ -71,9 +71,49 @@ const Header = () => {
               Blog
             </Link>
 
-            <Link to="/industries-we-serve" className={`text-xs font-medium transition-colors hover:text-primary-foreground/80 ${isActive("/industries-we-serve") ? "text-primary-foreground" : "text-primary-foreground/70"}`}>
-              Industries We Serve
-            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center text-xs font-medium text-primary-foreground/70 hover:text-primary-foreground/80 transition-colors">
+                Industries We Serve
+                <ChevronDown className="ml-1 h-4 w-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-64">
+                <DropdownMenuItem asChild>
+                  <Link to="/industries-we-serve" className="w-full text-xs">
+                    All Industries Overview
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/established-franchises" className="w-full text-xs">
+                    Established Franchises
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/transportation" className="w-full text-xs">
+                    Transportation & Logistics
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/manufacturing" className="w-full text-xs">
+                    Manufacturing
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/property-management" className="w-full text-xs">
+                    Multi-Unit Property Management
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/self-storage" className="w-full text-xs">
+                    Self-Storage Facilities
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/cannabis-dispensary" className="w-full text-xs">
+                    Cannabis Businesses
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             <Link to="/about" className={`text-xs font-medium transition-colors hover:text-primary-foreground/80 ${isActive("/about") ? "text-primary-foreground" : "text-primary-foreground/70"}`}>
               About Us
@@ -149,9 +189,32 @@ const Header = () => {
               <Link to="/blog" className="block text-xs font-medium text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
                 Blog
               </Link>
-              <Link to="/industries-we-serve" className="block text-xs font-medium text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
-                Industries We Serve
-              </Link>
+              <div className="space-y-2">
+                <div className="text-xs font-medium text-primary-foreground/70">Industries We Serve</div>
+                <div className="pl-4 space-y-2">
+                  <Link to="/industries-we-serve" className="block text-xs text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
+                    All Industries Overview
+                  </Link>
+                  <Link to="/established-franchises" className="block text-xs text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
+                    Established Franchises
+                  </Link>
+                  <Link to="/transportation" className="block text-xs text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
+                    Transportation & Logistics
+                  </Link>
+                  <Link to="/manufacturing" className="block text-xs text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
+                    Manufacturing
+                  </Link>
+                  <Link to="/property-management" className="block text-xs text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
+                    Multi-Unit Property Management
+                  </Link>
+                  <Link to="/self-storage" className="block text-xs text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
+                    Self-Storage Facilities
+                  </Link>
+                  <Link to="/cannabis-dispensary" className="block text-xs text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
+                    Cannabis Businesses
+                  </Link>
+                </div>
+              </div>
               <Link to="/about" className="block text-xs font-medium text-primary-foreground/70 hover:text-primary-foreground transition-colors" onClick={() => setIsMenuOpen(false)}>
                 About Us
               </Link>
