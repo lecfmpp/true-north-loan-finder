@@ -71,11 +71,4 @@ export default defineConfig(({ mode }) => ({
     include: ['react', 'react-dom', 'react-router-dom', 'lucide-react'],
     exclude: ['@vite/client', '@vite/env'],
   },
-  // Preload module directives
-  experimental: {
-    renderBuiltUrl(filename) {
-      // Add preload hints for critical resources
-      return { runtime: `window.__vitePreload("${filename}")` };
-    },
-  },
 }));
