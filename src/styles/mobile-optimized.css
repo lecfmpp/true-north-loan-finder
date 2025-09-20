@@ -41,6 +41,38 @@
   }
 }
 
+/* Chart responsive styles */
+@media (max-width: 768px) {
+  [data-recharts-wrapper] {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .recharts-surface {
+    min-width: 320px;
+    max-width: 100%;
+  }
+  
+  .recharts-cartesian-axis-tick-value {
+    font-size: 12px;
+  }
+  
+  .recharts-tooltip-wrapper {
+    z-index: 50;
+  }
+  
+  /* Responsive chart container heights */
+  .chart-container-mobile {
+    height: 200px;
+  }
+}
+
+@media (min-width: 768px) {
+  .chart-container-mobile {
+    height: 300px;
+  }
+}
+
 /* Image optimization for mobile */
 @media (max-width: 640px) {
   .hero-image {
@@ -66,11 +98,11 @@
 
 /* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
-  .hover\\:shadow-lg {
+  .hover\:shadow-lg {
     transition: none;
   }
   
-  .hover\\:-translate-y-1 {
+  .hover\:-translate-y-1 {
     transform: none;
   }
 }

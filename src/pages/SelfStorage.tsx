@@ -270,10 +270,10 @@ const SelfStorage = () => {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8 mb-16">
+            <div className="grid lg:grid-cols-2 gap-6 md:gap-8 mb-16">
               <Card className="border-0 shadow-[var(--shadow-card)]">
                 <CardHeader>
-                  <CardTitle className="text-xl font-semibold font-sans text-primary">
+                  <CardTitle className="text-lg md:text-xl font-semibold font-sans text-primary">
                     {cashFlowSection.title}
                   </CardTitle>
                 </CardHeader>
@@ -292,7 +292,7 @@ const SelfStorage = () => {
               {/* Revenue Chart */}
               <Card className="border-0 shadow-[var(--shadow-card)]">
                 <CardHeader>
-                  <CardTitle className="text-xl font-semibold font-sans text-primary">
+                  <CardTitle className="text-lg md:text-xl font-semibold font-sans text-primary">
                     Occupancy Rate & Revenue Growth
                   </CardTitle>
                 </CardHeader>
@@ -300,12 +300,16 @@ const SelfStorage = () => {
                   <ChartContainer config={{ 
                     occupancy: { label: "Occupancy %", color: "hsl(var(--secondary))" },
                     revenue: { label: "Monthly Revenue ($)", color: "hsl(var(--primary))" }
-                  }} className="h-64">
+                  }} className="h-48 md:h-64">
                     <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={revenueData}>
+                      <LineChart data={revenueData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" />
-                        <YAxis />
+                        <XAxis 
+                          dataKey="month" 
+                          tick={{ fontSize: 12 }}
+                          interval="preserveStartEnd"
+                        />
+                        <YAxis tick={{ fontSize: 12 }} />
                         <ChartTooltip content={<ChartTooltipContent />} />
                         <Line type="monotone" dataKey="occupancy" stroke="var(--color-occupancy)" strokeWidth={2} />
                         <Line type="monotone" dataKey="revenue" stroke="var(--color-revenue)" strokeWidth={3} />
@@ -319,7 +323,7 @@ const SelfStorage = () => {
             {/* Facility Growth Chart */}
             <Card className="border-0 shadow-[var(--shadow-card)]">
               <CardHeader>
-                <CardTitle className="text-xl font-semibold font-sans text-primary text-center">
+                <CardTitle className="text-lg md:text-xl font-semibold font-sans text-primary text-center">
                   Facility Expansion & Revenue Scaling
                 </CardTitle>
               </CardHeader>
@@ -327,12 +331,16 @@ const SelfStorage = () => {
                 <ChartContainer config={{ 
                   units: { label: "Storage Units", color: "hsl(var(--primary))" },
                   monthlyRevenue: { label: "Monthly Revenue ($)", color: "hsl(var(--secondary))" }
-                }} className="h-80">
+                }} className="h-64 md:h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={facilityGrowthData}>
+                    <BarChart data={facilityGrowthData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="phase" />
-                      <YAxis />
+                      <XAxis 
+                        dataKey="phase" 
+                        tick={{ fontSize: 12 }}
+                        interval="preserveStartEnd"
+                      />
+                      <YAxis tick={{ fontSize: 12 }} />
                       <ChartTooltip content={<ChartTooltipContent />} />
                       <Bar dataKey="units" fill="var(--color-units)" />
                       <Bar dataKey="monthlyRevenue" fill="var(--color-monthlyRevenue)" />

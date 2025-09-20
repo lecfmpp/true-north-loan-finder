@@ -270,10 +270,10 @@ const PropertyManagement = () => {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8 mb-16">
+            <div className="grid lg:grid-cols-2 gap-6 md:gap-8 mb-16">
               <Card className="border-0 shadow-[var(--shadow-card)]">
                 <CardHeader>
-                  <CardTitle className="text-xl font-semibold font-sans text-primary">
+                  <CardTitle className="text-lg md:text-xl font-semibold font-sans text-primary">
                     {cashFlowSection.title}
                   </CardTitle>
                 </CardHeader>
@@ -292,7 +292,7 @@ const PropertyManagement = () => {
               {/* Cash Flow Chart */}
               <Card className="border-0 shadow-[var(--shadow-card)]">
                 <CardHeader>
-                  <CardTitle className="text-xl font-semibold font-sans text-primary">
+                  <CardTitle className="text-lg md:text-xl font-semibold font-sans text-primary">
                     Monthly Property Income & Expenses
                   </CardTitle>
                 </CardHeader>
@@ -301,12 +301,16 @@ const PropertyManagement = () => {
                     rental: { label: "Rental Income", color: "hsl(var(--secondary))" },
                     expenses: { label: "Operating Expenses", color: "hsl(var(--muted))" },
                     netIncome: { label: "Net Operating Income", color: "hsl(var(--primary))" }
-                  }} className="h-64">
+                  }} className="h-48 md:h-64">
                     <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={cashFlowData}>
+                      <LineChart data={cashFlowData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" />
-                        <YAxis />
+                        <XAxis 
+                          dataKey="month" 
+                          tick={{ fontSize: 12 }}
+                          interval="preserveStartEnd"
+                        />
+                        <YAxis tick={{ fontSize: 12 }} />
                         <ChartTooltip content={<ChartTooltipContent />} />
                         <Line type="monotone" dataKey="rental" stroke="var(--color-rental)" strokeWidth={2} />
                         <Line type="monotone" dataKey="expenses" stroke="var(--color-expenses)" strokeWidth={2} />
@@ -321,7 +325,7 @@ const PropertyManagement = () => {
             {/* Portfolio Growth Chart */}
             <Card className="border-0 shadow-[var(--shadow-card)]">
               <CardHeader>
-                <CardTitle className="text-xl font-semibold font-sans text-primary text-center">
+                <CardTitle className="text-lg md:text-xl font-semibold font-sans text-primary text-center">
                   Portfolio Growth & Income Scaling
                 </CardTitle>
               </CardHeader>
@@ -329,12 +333,16 @@ const PropertyManagement = () => {
                 <ChartContainer config={{ 
                   units: { label: "Number of Units", color: "hsl(var(--primary))" },
                   monthlyRent: { label: "Monthly Rental Income ($)", color: "hsl(var(--secondary))" }
-                }} className="h-80">
+                }} className="h-64 md:h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={portfolioGrowthData}>
+                    <BarChart data={portfolioGrowthData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="year" />
-                      <YAxis />
+                      <XAxis 
+                        dataKey="year" 
+                        tick={{ fontSize: 12 }}
+                        interval="preserveStartEnd"
+                      />
+                      <YAxis tick={{ fontSize: 12 }} />
                       <ChartTooltip content={<ChartTooltipContent />} />
                       <Bar dataKey="units" fill="var(--color-units)" />
                       <Bar dataKey="monthlyRent" fill="var(--color-monthlyRent)" />

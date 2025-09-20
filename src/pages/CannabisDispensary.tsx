@@ -270,10 +270,10 @@ const CannabisDispensary = () => {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8 mb-16">
+            <div className="grid lg:grid-cols-2 gap-6 md:gap-8 mb-16">
               <Card className="border-0 shadow-[var(--shadow-card)]">
                 <CardHeader>
-                  <CardTitle className="text-xl font-semibold font-sans text-primary">
+                  <CardTitle className="text-lg md:text-xl font-semibold font-sans text-primary">
                     {cashFlowSection.title}
                   </CardTitle>
                 </CardHeader>
@@ -292,7 +292,7 @@ const CannabisDispensary = () => {
               {/* Revenue Chart */}
               <Card className="border-0 shadow-[var(--shadow-card)]">
                 <CardHeader>
-                  <CardTitle className="text-xl font-semibold font-sans text-primary">
+                  <CardTitle className="text-lg md:text-xl font-semibold font-sans text-primary">
                     Marihuana Dispensary Revenue Growth
                   </CardTitle>
                 </CardHeader>
@@ -301,12 +301,16 @@ const CannabisDispensary = () => {
                     dispensaryRevenue: { label: "Dispensary Revenue ($)", color: "hsl(var(--secondary))" },
                     costs: { label: "Operating Costs ($)", color: "hsl(var(--muted))" },
                     netProfit: { label: "Net Profit ($)", color: "hsl(var(--primary))" }
-                  }} className="h-64">
+                  }} className="h-48 md:h-64">
                     <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={revenueData}>
+                      <LineChart data={revenueData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" />
-                        <YAxis />
+                        <XAxis 
+                          dataKey="month" 
+                          tick={{ fontSize: 12 }}
+                          interval="preserveStartEnd"
+                        />
+                        <YAxis tick={{ fontSize: 12 }} />
                         <ChartTooltip content={<ChartTooltipContent />} />
                         <Line type="monotone" dataKey="dispensaryRevenue" stroke="var(--color-dispensaryRevenue)" strokeWidth={2} />
                         <Line type="monotone" dataKey="costs" stroke="var(--color-costs)" strokeWidth={2} />
@@ -321,7 +325,7 @@ const CannabisDispensary = () => {
             {/* Compliance Investment Chart */}
             <Card className="border-0 shadow-[var(--shadow-card)]">
               <CardHeader>
-                <CardTitle className="text-xl font-semibold font-sans text-primary text-center">
+                <CardTitle className="text-lg md:text-xl font-semibold font-sans text-primary text-center">
                   Cannabis Dispensary & Marihuana Dispensary Compliance Investment
                 </CardTitle>
               </CardHeader>
@@ -329,12 +333,19 @@ const CannabisDispensary = () => {
                 <ChartContainer config={{ 
                   initial: { label: "Initial Investment ($)", color: "hsl(var(--primary))" },
                   ongoing: { label: "Annual Ongoing Costs ($)", color: "hsl(var(--secondary))" }
-                }} className="h-80">
+                }} className="h-64 md:h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={complianceInvestmentData}>
+                    <BarChart data={complianceInvestmentData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="category" />
-                      <YAxis />
+                      <XAxis 
+                        dataKey="category" 
+                        tick={{ fontSize: 10 }}
+                        angle={-45}
+                        textAnchor="end"
+                        interval={0}
+                        height={60}
+                      />
+                      <YAxis tick={{ fontSize: 12 }} />
                       <ChartTooltip content={<ChartTooltipContent />} />
                       <Bar dataKey="initial" fill="var(--color-initial)" />
                       <Bar dataKey="ongoing" fill="var(--color-ongoing)" />
