@@ -37,6 +37,7 @@ import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar } from "recharts";
+import propertyManagementBusinessImage from "@/assets/property-management-business.webp";
 
 const PropertyManagement = () => {
   const benefits = [
@@ -215,6 +216,42 @@ const PropertyManagement = () => {
               <Button asChild variant="outline" size="xl" className="text-lg px-8">
                 <Link to="/how-it-works">How It Works</Link>
               </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Business Overview Section */}
+      <section className="py-16 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <h2 className="text-3xl lg:text-4xl font-bold font-sans text-primary mb-6">
+                  Multi-Unit Property Management Success
+                </h2>
+                <p className="text-lg text-muted-foreground mb-6 font-serif">
+                  Property management businesses generate consistent cash flow through rental income while building long-term wealth through appreciation. Strategic financing enables acquisition of additional properties, renovations to increase value, and operational improvements for better tenant satisfaction.
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-background rounded-lg p-4 border">
+                    <div className="text-2xl font-bold text-secondary mb-1">95%</div>
+                    <div className="text-sm text-muted-foreground">Target Occupancy</div>
+                  </div>
+                  <div className="bg-background rounded-lg p-4 border">
+                    <div className="text-2xl font-bold text-secondary mb-1">15-25%</div>
+                    <div className="text-sm text-muted-foreground">Annual Returns</div>
+                  </div>
+                </div>
+              </div>
+              <div className="relative">
+                <img 
+                  src={propertyManagementBusinessImage} 
+                  alt="Multi-unit property management business with modern apartment complex and professional management"
+                  className="w-full h-auto rounded-xl shadow-xl object-cover"
+                  loading="lazy"
+                />
+              </div>
             </div>
           </div>
         </div>

@@ -37,6 +37,7 @@ import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar } from "recharts";
+import selfStorageBusinessImage from "@/assets/self-storage-business.webp";
 
 const SelfStorage = () => {
   const benefits = [
@@ -215,6 +216,42 @@ const SelfStorage = () => {
               <Button asChild variant="outline" size="xl" className="text-lg px-8">
                 <Link to="/how-it-works">How It Works</Link>
               </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Business Overview Section */}
+      <section className="py-16 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <h2 className="text-3xl lg:text-4xl font-bold font-sans text-primary mb-6">
+                  Self-Storage Industry Excellence
+                </h2>
+                <p className="text-lg text-muted-foreground mb-6 font-serif">
+                  Self-storage facilities provide essential space solutions for individuals and businesses, generating steady recurring revenue with minimal operating costs. With strategic investment in expansion and technology, storage facilities can achieve exceptional profitability and long-term value appreciation.
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-background rounded-lg p-4 border">
+                    <div className="text-2xl font-bold text-secondary mb-1">90%</div>
+                    <div className="text-sm text-muted-foreground">Industry Occupancy</div>
+                  </div>
+                  <div className="bg-background rounded-lg p-4 border">
+                    <div className="text-2xl font-bold text-secondary mb-1">65%</div>
+                    <div className="text-sm text-muted-foreground">Profit Margins</div>
+                  </div>
+                </div>
+              </div>
+              <div className="relative">
+                <img 
+                  src={selfStorageBusinessImage} 
+                  alt="Self-storage facility business with modern storage units and security features"
+                  className="w-full h-auto rounded-xl shadow-xl object-cover"
+                  loading="lazy"
+                />
+              </div>
             </div>
           </div>
         </div>

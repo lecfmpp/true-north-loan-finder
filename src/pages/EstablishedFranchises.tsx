@@ -35,6 +35,7 @@ import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import franchiseBusinessImage from "@/assets/established-franchises-business.webp";
 
 const EstablishedFranchises = () => {
   const benefits = [
@@ -210,6 +211,42 @@ const EstablishedFranchises = () => {
               <Button asChild variant="outline" size="xl" className="text-lg px-8">
                 <Link to="/how-it-works">How It Works</Link>
               </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Business Overview Section */}
+      <section className="py-16 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <h2 className="text-3xl lg:text-4xl font-bold font-sans text-primary mb-6">
+                  Established Franchise Success
+                </h2>
+                <p className="text-lg text-muted-foreground mb-6 font-serif">
+                  Franchise businesses benefit from proven business models, established brand recognition, and ongoing corporate support. With the right financing, franchise owners can expand locations, renovate existing stores, and optimize operations for maximum profitability.
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-background rounded-lg p-4 border">
+                    <div className="text-2xl font-bold text-secondary mb-1">85%</div>
+                    <div className="text-sm text-muted-foreground">Success Rate</div>
+                  </div>
+                  <div className="bg-background rounded-lg p-4 border">
+                    <div className="text-2xl font-bold text-secondary mb-1">2.5x</div>
+                    <div className="text-sm text-muted-foreground">ROI Potential</div>
+                  </div>
+                </div>
+              </div>
+              <div className="relative">
+                <img 
+                  src={franchiseBusinessImage} 
+                  alt="Established franchise business storefront with professional branding and customer activity"
+                  className="w-full h-auto rounded-xl shadow-xl object-cover"
+                  loading="lazy"
+                />
+              </div>
             </div>
           </div>
         </div>
