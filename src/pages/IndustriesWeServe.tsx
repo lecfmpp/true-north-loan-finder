@@ -12,7 +12,13 @@ import {
   ChefHat,
   ShoppingCart,
   Stethoscope,
-  Users
+  Users,
+  Store,
+  Truck,
+  Factory,
+  Building2,
+  Warehouse,
+  Leaf
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -24,6 +30,12 @@ import restaurantImage from "@/assets/restaurant-industry.jpg";
 import retailImage from "@/assets/retail-industry.jpg";
 import medicalImage from "@/assets/medical-industry.jpg";
 import b2bServicesImage from "@/assets/b2b-services-industry.jpg";
+import establishedFranchisesImage from "@/assets/established-franchises-industry.jpg";
+import transportationImage from "@/assets/transportation-industry.jpg";
+import manufacturingImage from "@/assets/manufacturing-industry.jpg";
+import propertyManagementImage from "@/assets/property-management-industry.jpg";
+import selfStorageImage from "@/assets/self-storage-industry.jpg";
+import cannabisDispensaryImage from "@/assets/cannabis-dispensary-industry.jpg";
 
 const IndustriesWeServe = () => {
   // Cash flow chart data (simplified representation)
@@ -116,6 +128,102 @@ const IndustriesWeServe = () => {
         { title: "Business Lines of Credit", description: "Access funds as needed for new opportunities." }
       ],
       ctaButton: "Estimate My Service Business Funding"
+    },
+    {
+      id: "established-franchises",
+      title: "Established Franchises",
+      image: establishedFranchisesImage,
+      icon: <Store className="h-6 w-6 text-secondary" />,
+      challenge: {
+        headline: "Business Loans for Established Franchises in Canada & US",
+        description: "Franchise businesses need capital to expand locations, renovate existing stores, and maintain working capital. Our **business loan** solutions are tailored for franchise operations in Canada and the United States."
+      },
+      solutions: [
+        { title: "Expansion Financing", description: "Fund new franchise locations and territory growth." },
+        { title: "Renovation Loans", description: "Upgrade existing locations to meet brand standards." },
+        { title: "Working Capital Loans", description: "Manage cash flow and seasonal fluctuations." }
+      ],
+      ctaButton: "Estimate My Franchise Funding"
+    },
+    {
+      id: "transportation",
+      title: "Transportation & Logistics",
+      image: transportationImage,
+      icon: <Truck className="h-6 w-6 text-secondary" />,
+      challenge: {
+        headline: "Business Loans for Transportation Companies in Canada & US",
+        description: "Transportation businesses require capital for vehicle fleets, fuel costs, and operational expenses. Our **business loan** options help logistics companies maintain operations and expand in Canada and the United States."
+      },
+      solutions: [
+        { title: "Equipment Financing", description: "Purchase trucks, trailers, and transportation equipment." },
+        { title: "Fleet Expansion Loans", description: "Grow your fleet to meet increasing demand." },
+        { title: "Working Capital Loans", description: "Cover fuel, maintenance, and operational costs." }
+      ],
+      ctaButton: "Estimate My Transportation Funding"
+    },
+    {
+      id: "manufacturing",
+      title: "Manufacturing",
+      image: manufacturingImage,
+      icon: <Factory className="h-6 w-6 text-secondary" />,
+      challenge: {
+        headline: "Business Loans for Manufacturing Companies in Canada & US",
+        description: "Manufacturing businesses need capital for equipment, raw materials, and expansion. Our **business loan** solutions support manufacturers' unique cash flow needs in Canada and the United States."
+      },
+      solutions: [
+        { title: "Equipment Financing", description: "Purchase manufacturing machinery and production equipment." },
+        { title: "Inventory Financing", description: "Fund raw materials and work-in-progress inventory." },
+        { title: "Expansion Loans", description: "Scale production capacity and open new facilities." }
+      ],
+      ctaButton: "Estimate My Manufacturing Funding"
+    },
+    {
+      id: "property-management",
+      title: "Multi-unit Property Management",
+      image: propertyManagementImage,
+      icon: <Building2 className="h-6 w-6 text-secondary" />,
+      challenge: {
+        headline: "Business Loans for Property Management Companies in Canada & US",
+        description: "Property management businesses require capital for property improvements, tenant improvements, and operational cash flow. Our **business loan** solutions support property managers in Canada and the United States."
+      },
+      solutions: [
+        { title: "Property Improvement Loans", description: "Fund renovations and capital improvements." },
+        { title: "Working Capital Loans", description: "Manage cash flow between rent collections." },
+        { title: "Acquisition Financing", description: "Purchase additional properties for management." }
+      ],
+      ctaButton: "Estimate My Property Management Funding"
+    },
+    {
+      id: "self-storage",
+      title: "Self-Storage Facilities",
+      image: selfStorageImage,
+      icon: <Warehouse className="h-6 w-6 text-secondary" />,
+      challenge: {
+        headline: "Business Loans for Self-Storage Facilities in Canada & US",
+        description: "Self-storage businesses need capital for facility expansion, technology upgrades, and operational improvements. Our **business loan** options help storage facilities grow in Canada and the United States."
+      },
+      solutions: [
+        { title: "Facility Expansion Loans", description: "Build additional storage units and facilities." },
+        { title: "Technology Financing", description: "Upgrade security systems and management software." },
+        { title: "Working Capital Loans", description: "Maintain operations and marketing efforts." }
+      ],
+      ctaButton: "Estimate My Self-Storage Funding"
+    },
+    {
+      id: "cannabis-dispensary",
+      title: "Cannabis Businesses",
+      image: cannabisDispensaryImage,
+      icon: <Leaf className="h-6 w-6 text-secondary" />,
+      challenge: {
+        headline: "Business Loans for Cannabis Dispensary & Marihuana Dispensary in Canada & US",
+        description: "Cannabis businesses including **marihuana dispensary** operations need specialized financing for compliance, inventory, and expansion. Our **business loan** solutions serve the cannabis industry in Canada and the United States."
+      },
+      solutions: [
+        { title: "Inventory Financing", description: "Fund cannabis product inventory and supplies." },
+        { title: "Compliance Loans", description: "Meet regulatory requirements and licensing costs." },
+        { title: "Expansion Financing", description: "Open new dispensary locations and grow operations." }
+      ],
+      ctaButton: "Estimate My Cannabis Business Funding"
     }
   ];
 
