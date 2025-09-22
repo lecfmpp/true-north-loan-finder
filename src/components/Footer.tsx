@@ -3,7 +3,7 @@ import { MapPin, Phone, Mail } from "lucide-react";
 const Footer = () => {
   return <footer className="bg-primary text-primary-foreground">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Company Info */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center space-x-2">
@@ -24,7 +24,7 @@ const Footer = () => {
               <Link to="/how-it-works" className="block text-primary-foreground/80 hover:text-primary-foreground text-sm transition-colors">
                 How It Works
               </Link>
-              <Link to="/loan-estimator" className="block text-primary-foreground/80 hover:text-primary-foreground text-sm transition-colors">
+              <Link to="/quiz" className="block text-primary-foreground/80 hover:text-primary-foreground text-sm transition-colors">
                 Loan Estimator
               </Link>
               <Link to="/industries-we-serve" className="block text-primary-foreground/80 hover:text-primary-foreground text-sm transition-colors">
@@ -41,6 +41,31 @@ const Footer = () => {
               </Link>
               <Link to="/broker-signup" className="block text-primary-foreground/80 hover:text-primary-foreground text-sm transition-colors">
                 Broker Partnership
+              </Link>
+            </div>
+          </div>
+
+          {/* Industries */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-lg">Industries</h3>
+            <div className="space-y-2">
+              <Link to="/manufacturing" className="block text-primary-foreground/80 hover:text-primary-foreground text-sm transition-colors">
+                Manufacturing
+              </Link>
+              <Link to="/transportation" className="block text-primary-foreground/80 hover:text-primary-foreground text-sm transition-colors">
+                Transportation
+              </Link>
+              <Link to="/established-franchises" className="block text-primary-foreground/80 hover:text-primary-foreground text-sm transition-colors">
+                Established Franchises
+              </Link>
+              <Link to="/property-management" className="block text-primary-foreground/80 hover:text-primary-foreground text-sm transition-colors">
+                Property Management
+              </Link>
+              <Link to="/self-storage" className="block text-primary-foreground/80 hover:text-primary-foreground text-sm transition-colors">
+                Self Storage
+              </Link>
+              <Link to="/cannabis-dispensary" className="block text-primary-foreground/80 hover:text-primary-foreground text-sm transition-colors">
+                Cannabis Dispensary
               </Link>
             </div>
           </div>
