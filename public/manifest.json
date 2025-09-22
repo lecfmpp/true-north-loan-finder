@@ -1,0 +1,27 @@
+{
+  "name": "True North Business Loan",
+  "short_name": "True North Loans",
+  "description": "Fast business loans and financing solutions for Canadian businesses. Get $5K-$800K approved in 24 hours.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1a365d",
+  "icons": [
+    {
+      "src": "/lovable-uploads/eae8a3b3-6d86-4fe4-9e17-17b808de0d2e.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/lovable-uploads/eae8a3b3-6d86-4fe4-9e17-17b808de0d2e.png", 
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "business"],
+  "lang": "en-CA",
+  "scope": "/",
+  "orientation": "portrait-primary"
+}

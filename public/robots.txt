@@ -13,5 +13,15 @@ Allow: /
 User-agent: *
 Allow: /
 
+# Block specific paths if needed
+Disallow: /admin/
+Disallow: /api/
+Disallow: /private/
+Disallow: /_vite/
+Disallow: /src/
+
 # Sitemap location
 Sitemap: https://truenorthbusinessloan.ca/sitemap.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
