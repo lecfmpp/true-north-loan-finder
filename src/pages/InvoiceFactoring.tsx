@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/accordion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
 
 const InvoiceFactoring = () => {
   const benefits = [
@@ -154,6 +155,38 @@ const InvoiceFactoring = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Invoice Factoring | Get 80-95% Cash in 24hrs Canada"
+        description="Convert invoices to cash in 24hrs! Get 80-95% of invoice value immediately. No debt, flexible funding grows with your business."
+        keywords={[
+          "invoice factoring canada",
+          "accounts receivable factoring",
+          "cash flow solutions",
+          "B2B financing",
+          "invoice financing",
+          "immediate cash flow",
+          "working capital factoring",
+          "receivables financing",
+          "business cash flow problems",
+          "invoice cash advance"
+        ]}
+        canonicalUrl="https://truenorthbusinessloan.ca/invoice-factoring"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "FinancialProduct",
+          "name": "Invoice Factoring - True North Business Loan", 
+          "description": "Convert your outstanding invoices into immediate cash flow. Get 80-95% of invoice value within 24 hours.",
+          "provider": {
+            "@type": "Organization",
+            "name": "True North Business Loan",
+            "url": "https://truenorthbusinessloan.ca"
+          },
+          "offers": {
+            "@type": "Offer",
+            "description": "Invoice factoring with 80-95% advance rates and 24-hour funding"
+          }
+        }}
+      />
       <Header />
       
       {/* Hero Section */}
@@ -165,20 +198,20 @@ const InvoiceFactoring = () => {
             </Badge>
             
             <h1 className="text-4xl lg:text-6xl font-bold font-sans text-primary mb-6 leading-tight">
-              Convert Your Invoices into 
-              <span className="text-secondary"> Immediate Cash Flow</span>
+              Turn Invoices into 
+              <span className="text-secondary">Cash in 24 Hours</span>
             </h1>
             
             <p className="text-xl lg:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto font-serif">
-              Get 80-95% of your invoice value within 24 hours. Perfect for B2B businesses with 30-90 day payment terms.
+              Solve cash flow problems instantly! Get 80-95% of your invoice value in 24 hours. No debt on your balance sheet. Perfect for B2B businesses waiting 30-90 days for payment.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Button asChild variant="cta" size="xl" className="text-lg px-8">
-                <Link to="/loan-estimator">Get My Factoring Estimate</Link>
+              <Button asChild variant="cta" size="xl" className="text-lg px-8 shadow-lg hover:shadow-xl transition-all">
+                <Link to="/loan-estimator">Get Cash in 24 Hours →</Link>
               </Button>
-              <Button asChild variant="outline" size="xl" className="text-lg px-8">
-                <Link to="/how-it-works">How It Works</Link>
+              <Button asChild variant="outline" size="xl" className="text-lg px-8 border-2 hover:bg-primary hover:text-primary-foreground">
+                <Link to="/how-it-works">See How Factoring Works</Link>
               </Button>
             </div>
             

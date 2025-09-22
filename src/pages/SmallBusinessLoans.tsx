@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/accordion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
 
 const SmallBusinessLoans = () => {
   const benefits = [
@@ -133,6 +134,39 @@ const SmallBusinessLoans = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Small Business Loans $10K-$800K | Fast Approval CA"
+        description="Get small business loans up to $800K with fast approval. Flexible terms, competitive rates. Equipment, expansion, working capital."
+        keywords={[
+          "small business loans canada",
+          "business term loans", 
+          "equipment financing",
+          "working capital loans",
+          "business expansion loans",
+          "canadian business funding",
+          "competitive business loan rates",
+          "fast business loan approval",
+          "flexible business financing",
+          "business growth loans"
+        ]}
+        canonicalUrl="https://truenorthbusinessloan.ca/small-business-loans"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "FinancialProduct",
+          "name": "Small Business Loans - True North Business Loan",
+          "description": "Get small business loans from $10K to $800K with competitive rates starting at Prime + 2%. Fast approval in 24-48 hours.",
+          "provider": {
+            "@type": "Organization",
+            "name": "True North Business Loan",
+            "url": "https://truenorthbusinessloan.ca"
+          },
+          "offers": {
+            "@type": "Offer",
+            "priceRange": "$10,000 - $800,000",
+            "description": "Business term loans with 1-7 year repayment terms"
+          }
+        }}
+      />
       <Header />
       
       {/* Hero Section */}
@@ -144,20 +178,20 @@ const SmallBusinessLoans = () => {
             </Badge>
             
             <h1 className="text-4xl lg:text-6xl font-bold font-sans text-primary mb-6 leading-tight">
-              Fuel Your Business Growth with 
-              <span className="text-secondary"> Flexible Financing</span>
+              Get Small Business Loans 
+              <span className="text-secondary">$10K-$800K Fast</span>
             </h1>
             
             <p className="text-xl lg:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto font-serif">
-              Get $10K to $800K for expansion, working capital, equipment, or any business need. Connect with Canada's top small business lenders.
+              Competitive rates from Prime + 2%. Use for expansion, equipment, working capital, or any business purpose. Get approved in 24-48 hours from Canada's top lenders.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Button asChild variant="cta" size="xl" className="text-lg px-8">
-                <Link to="/loan-estimator">Check My Loan Options</Link>
+              <Button asChild variant="cta" size="xl" className="text-lg px-8 shadow-lg hover:shadow-xl transition-all">
+                <Link to="/loan-estimator">Get Pre-Approved Today →</Link>
               </Button>
-              <Button asChild variant="outline" size="xl" className="text-lg px-8">
-                <Link to="/how-it-works">How It Works</Link>
+              <Button asChild variant="outline" size="xl" className="text-lg px-8 border-2 hover:bg-primary hover:text-primary-foreground">
+                <Link to="/how-it-works">View Loan Options</Link>
               </Button>
             </div>
             

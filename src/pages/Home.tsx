@@ -132,21 +132,21 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Find the Right Business Loan for Your Small Business | True North Business Loan"
-        description="Take our 60-second quiz to see your loan options from top lenders in the US and Canada. Get $5K to $800K for your small business. Equipment financing, working capital, and more."
+        title="Get Business Loans in 24hrs | True North Business Loan"
+        description="Need fast business funding? Get $5K-$800K approved in 24 hours. Compare top Canadian lenders instantly. Start your application now!"
         keywords={[
-          "business loans",
-          "small business loans",
+          "fast business loans",
+          "24 hour approval",
+          "canadian business funding", 
+          "quick business loans",
+          "business loan approval",
+          "same day funding",
+          "business financing canada",
           "equipment financing",
-          "small business financing",
-          "business loan calculator", 
-          "business funding",
-          "commercial loans",
-          "business line of credit",
-          "merchant cash advance",
           "working capital loans",
-          "business loans USA",
-          "business loans Canada"
+          "merchant cash advance",
+          "small business loans",
+          "business funding solutions"
         ]}
         canonicalUrl="https://truenorthbusinessloan.ca"
         structuredData={structuredData}
@@ -165,16 +165,19 @@ const Home = () => {
               </Badge>
               
               <h1 className="text-4xl lg:text-6xl font-bold font-sans text-primary mb-6 leading-tight">
-                Need <span className="text-accent">business loan</span>, like, <span className="text-accent">yesterday</span>?
+                Need <span className="text-accent">business funding</span>, like, <span className="text-accent">yesterday</span>?
               </h1>
               
               <p className="text-xl lg:text-2xl text-muted-foreground mb-8 font-serif">
-                Stop chasing paperwork and waiting weeks for an answer. Get the capital you need to cover payroll, buy inventory, or seize your next big opportunity. Apply in minutes, get a decision today.
+                Stop waiting weeks for bank approvals. Get $5K-$800K deposited in your account within 24 hours. Perfect for payroll, inventory, equipment, or seizing time-sensitive opportunities. Apply in 60 seconds, get approved today.
               </p>
               
-              <div className="mb-6">
-                <Button asChild variant="cta" size="xl" className="text-lg px-8 bg-accent hover:bg-accent/90 text-accent-foreground">
-                  <Link to="/loan-estimator">Get My Funding Estimate</Link>
+              <div className="mb-6 flex flex-col sm:flex-row gap-4 justify-start">
+                <Button asChild variant="cta" size="xl" className="text-lg px-8 bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg hover:shadow-xl transition-all">
+                  <Link to="/loan-estimator">Get Approved in 24 Hours →</Link>
+                </Button>
+                <Button asChild variant="outline" size="xl" className="text-lg px-8 border-2 hover:bg-primary hover:text-primary-foreground">
+                  <Link to="/how-it-works">See How It Works</Link>
                 </Button>
               </div>
               
@@ -182,15 +185,19 @@ const Home = () => {
               <div className="mb-6 space-y-3">
                 <div className="flex items-center gap-3 text-primary">
                   <CheckCircle className="h-5 w-5 text-secondary flex-shrink-0" />
-                  <span className="font-medium">Business Bank Account</span>
+                  <span className="font-medium">✅ Business Bank Account</span>
                 </div>
                 <div className="flex items-center gap-3 text-primary">
                   <CheckCircle className="h-5 w-5 text-secondary flex-shrink-0" />
-                  <span className="font-medium">6+ Months in Business</span>
+                  <span className="font-medium">✅ 6+ Months in Business</span>
                 </div>
                 <div className="flex items-center gap-3 text-primary">
                   <CheckCircle className="h-5 w-5 text-secondary flex-shrink-0" />
-                  <span className="font-medium">$10k+ Average Monthly Revenue</span>
+                  <span className="font-medium">✅ $10k+ Monthly Revenue</span>
+                </div>
+                <div className="flex items-center gap-3 text-primary">
+                  <CheckCircle className="h-5 w-5 text-secondary flex-shrink-0" />
+                  <span className="font-medium">✅ Bad Credit OK (550+ Score)</span>
                 </div>
               </div>
               

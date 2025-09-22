@@ -79,10 +79,28 @@ const Compare = () => {
   return (
     <>
       <SEOHead
-        title="Compare Business Loan Options - Traditional Banks vs True North Business Loan"
-        description="See how we compare to banks. Get better business loan terms, faster approval, and personalized service. Compare loan options side by side."
-        keywords={["business loan comparison", "banks vs alternative lenders", "fast business loans", "small business financing comparison"]}
-        canonicalUrl="https://www.truenorthbusinessloan.ca/compare"
+        title="Banks vs Alternative Lenders | Business Loan Comparison"
+        description="Compare business loan options: Banks vs Alternative Lenders. See approval times, rates, and requirements side-by-side. Choose better!"
+        keywords={[
+          "business loan comparison",
+          "banks vs alternative lenders", 
+          "loan approval comparison",
+          "business financing options",
+          "loan requirements",
+          "fast business loan approval",
+          "flexible loan requirements",
+          "bank alternatives",
+          "quick business funding",
+          "alternative business lenders"
+        ]}
+        canonicalUrl="https://truenorthbusinessloan.ca/compare"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          "name": "Business Loan Comparison - Banks vs Alternative Lenders",
+          "description": "Compare business loan options, approval times, requirements, and terms between traditional banks and alternative lenders.",
+          "url": "https://truenorthbusinessloan.ca/compare"
+        }}
       />
       <Header />
       
@@ -92,18 +110,17 @@ const Compare = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <h1 className="text-4xl lg:text-5xl font-bold font-sans text-primary mb-6">
-                Why Choose Us Over <span className="text-primary">Traditional Banks?</span>
+                Banks Taking Too Long? <span className="text-secondary">Compare Your Options</span>
               </h1>
               <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto font-serif">
-                See the clear differences and discover why thousands of Canadian businesses choose 
-                our flexible financing over traditional bank loans.
+                See exactly why thousands of Canadian businesses choose alternative lenders over banks: 24-48hr approval, lower credit requirements, and flexible terms that actually work for your business.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" variant="cta" asChild>
-                  <Link to="/loan-estimator">Get Your Quote Now</Link>
+                <Button size="lg" variant="cta" asChild className="shadow-lg hover:shadow-xl transition-all">
+                  <Link to="/loan-estimator">Skip the Bank - Apply Now →</Link>
                 </Button>
-                <Button size="lg" variant="outline" asChild>
-                  <Link to="/how-it-works">How It Works</Link>
+                <Button size="lg" variant="outline" asChild className="border-2 hover:bg-primary hover:text-primary-foreground">
+                  <Link to="/how-it-works">See Why We're Better</Link>
                 </Button>
               </div>
             </div>

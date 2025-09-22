@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/accordion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
 
 const MerchantCashAdvance = () => {
   const benefits = [
@@ -129,6 +130,39 @@ const MerchantCashAdvance = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Merchant Cash Advance | $5K-$500K | No Fixed Payments"
+        description="Need working capital fast? Get $5K-$500K based on credit card sales. Flexible daily repayments. 24-48hr approval for restaurants & retail."
+        keywords={[
+          "merchant cash advance",
+          "restaurant funding",
+          "retail financing", 
+          "credit card sales funding",
+          "flexible business funding",
+          "no fixed payments",
+          "daily payment funding",
+          "seasonal business funding",
+          "merchant funding solutions",
+          "fast business cash"
+        ]}
+        canonicalUrl="https://truenorthbusinessloan.ca/merchant-cash-advance"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "FinancialProduct",
+          "name": "Merchant Cash Advance - True North Business Loan",
+          "description": "Get working capital based on your credit card sales. Flexible daily repayments, no fixed monthly payments.",
+          "provider": {
+            "@type": "Organization", 
+            "name": "True North Business Loan",
+            "url": "https://truenorthbusinessloan.ca"
+          },
+          "offers": {
+            "@type": "Offer",
+            "priceRange": "$5,000 - $500,000",
+            "description": "Merchant cash advance with flexible daily repayment"
+          }
+        }}
+      />
       <Header />
       
       {/* Hero Section */}
@@ -140,20 +174,20 @@ const MerchantCashAdvance = () => {
             </Badge>
             
             <h1 className="text-4xl lg:text-6xl font-bold font-sans text-primary mb-6 leading-tight">
-              Get Instant Working Capital with 
-              <span className="text-secondary"> Merchant Cash Advance</span>
+              Working Capital with 
+              <span className="text-secondary">No Fixed Payments</span>
             </h1>
             
             <p className="text-xl lg:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto font-serif">
-              Access $5K to $500K in business funding based on your credit card sales. No fixed monthly payments - repay as you earn.
+              Get $5K-$500K based on your credit card sales! Perfect for restaurants, retail, and seasonal businesses. Repay from daily sales, not fixed monthly payments. Get approved in 24-48 hours.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Button asChild variant="cta" size="xl" className="text-lg px-8">
-                <Link to="/loan-estimator">Get My Advance Estimate</Link>
+              <Button asChild variant="cta" size="xl" className="text-lg px-8 shadow-lg hover:shadow-xl transition-all">
+                <Link to="/loan-estimator">Get Approved Today →</Link>
               </Button>
-              <Button asChild variant="outline" size="xl" className="text-lg px-8">
-                <Link to="/how-it-works">How It Works</Link>
+              <Button asChild variant="outline" size="xl" className="text-lg px-8 border-2 hover:bg-primary hover:text-primary-foreground">
+                <Link to="/how-it-works">See MCA Benefits</Link>
               </Button>
             </div>
             
