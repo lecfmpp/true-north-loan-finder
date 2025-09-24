@@ -19,6 +19,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     const url = new URL(req.url);
     const token = url.searchParams.get('token');
+    
+    console.log('Starting email verification process for token:', token);
 
     if (!token) {
       return new Response(
@@ -37,12 +39,15 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Find lead with this verification token
+    console.log('Looking for lead with token:', token);
     const { data: lead, error: findError } = await supabase
       .from('quiz_responses')
       .select('*')
       .eq('email_verification_token', token)
       .eq('email_verified', false)
       .single();
+
+    console.log('Database query result:', { lead: lead?.id, error: findError });
 
     if (findError || !lead) {
       console.error('Lead not found or already verified:', findError);

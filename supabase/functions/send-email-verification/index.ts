@@ -45,9 +45,12 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Failed to update lead with verification token');
     }
 
-    // Create verification URL
-    const baseUrl = Deno.env.get('SUPABASE_URL')?.replace('/rest/v1', '') || 'http://localhost:54321';
-    const verificationUrl = `${baseUrl}/functions/v1/verify-email?token=${verificationToken}`;
+    // Create verification URL - ensure we use the correct project URL format
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+    const projectRef = supabaseUrl.split('.')[0].split('//')[1]; // Extract project reference
+    const verificationUrl = `https://${projectRef}.supabase.co/functions/v1/verify-email?token=${verificationToken}`;
+    
+    console.log('Generated verification URL:', verificationUrl);
 
     // Send verification email with clean, deliverable format
     const fromEmail = "True North Business Loan <noreply@email.truenorthbusinessloan.ca>";
