@@ -185,19 +185,15 @@ const Home = () => {
               <div className="mb-6 space-y-3">
                 <div className="flex items-center gap-3 text-primary">
                   <CheckCircle className="h-5 w-5 text-secondary flex-shrink-0" />
-                  <span className="font-medium">✅ Business Bank Account</span>
+                  <span className="font-medium">Business Bank Account</span>
                 </div>
                 <div className="flex items-center gap-3 text-primary">
                   <CheckCircle className="h-5 w-5 text-secondary flex-shrink-0" />
-                  <span className="font-medium">✅ 6+ Months in Business</span>
+                  <span className="font-medium">6+ Months in Business</span>
                 </div>
                 <div className="flex items-center gap-3 text-primary">
                   <CheckCircle className="h-5 w-5 text-secondary flex-shrink-0" />
-                  <span className="font-medium">✅ $10k+ Monthly Revenue</span>
-                </div>
-                <div className="flex items-center gap-3 text-primary">
-                  <CheckCircle className="h-5 w-5 text-secondary flex-shrink-0" />
-                  <span className="font-medium">✅ Bad Credit OK (550+ Score)</span>
+                  <span className="font-medium">$10k+ Monthly Revenue</span>
                 </div>
               </div>
               
