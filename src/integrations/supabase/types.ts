@@ -133,7 +133,7 @@ export type Database = {
           action: string
           created_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           new_values: Json | null
           old_values: Json | null
           record_id: string | null
@@ -145,7 +145,7 @@ export type Database = {
           action: string
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           record_id?: string | null
@@ -157,7 +157,7 @@ export type Database = {
           action?: string
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           record_id?: string | null
@@ -939,7 +939,7 @@ export type Database = {
           contact_data: Json
           created_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           record_id: string | null
           risk_score: number | null
           table_name: string
@@ -951,7 +951,7 @@ export type Database = {
           contact_data: Json
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           record_id?: string | null
           risk_score?: number | null
           table_name: string
@@ -963,7 +963,7 @@ export type Database = {
           contact_data?: Json
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           record_id?: string | null
           risk_score?: number | null
           table_name?: string
@@ -2086,7 +2086,11 @@ export type Database = {
       partners: {
         Row: {
           application_type: string
+          auto_send_to_clickup: boolean | null
           broker_commission_percentage: number | null
+          clickup_api_key: string | null
+          clickup_enabled: boolean | null
+          clickup_list_id: string | null
           commission_percentage: number | null
           company_name: string
           created_at: string
@@ -2105,7 +2109,11 @@ export type Database = {
         }
         Insert: {
           application_type: string
+          auto_send_to_clickup?: boolean | null
           broker_commission_percentage?: number | null
+          clickup_api_key?: string | null
+          clickup_enabled?: boolean | null
+          clickup_list_id?: string | null
           commission_percentage?: number | null
           company_name: string
           created_at?: string
@@ -2124,7 +2132,11 @@ export type Database = {
         }
         Update: {
           application_type?: string
+          auto_send_to_clickup?: boolean | null
           broker_commission_percentage?: number | null
+          clickup_api_key?: string | null
+          clickup_enabled?: boolean | null
+          clickup_list_id?: string | null
           commission_percentage?: number | null
           company_name?: string
           created_at?: string
@@ -2389,7 +2401,7 @@ export type Database = {
           action: string
           created_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           record_id: string
           table_name: string
           user_agent: string | null
@@ -2400,7 +2412,7 @@ export type Database = {
           action: string
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           record_id: string
           table_name: string
           user_agent?: string | null
@@ -2411,7 +2423,7 @@ export type Database = {
           action?: string
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           record_id?: string
           table_name?: string
           user_agent?: string | null
@@ -2959,18 +2971,12 @@ export type Database = {
         Args: { base_price: number; lead_created_at: string }
         Returns: number
       }
-      check_email_exists: {
-        Args: { email_address: string }
-        Returns: boolean
-      }
+      check_email_exists: { Args: { email_address: string }; Returns: boolean }
       generate_application_reference: {
         Args: { app_type: string }
         Returns: string
       }
-      get_current_user_email: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      get_current_user_email: { Args: never; Returns: string }
       get_lead_source_analytics: {
         Args: { end_date?: string; start_date?: string }
         Returns: {
@@ -3017,10 +3023,7 @@ export type Database = {
           total_spend: number
         }[]
       }
-      has_any_management_role: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
+      has_any_management_role: { Args: { _user_id: string }; Returns: boolean }
       has_management_access: {
         Args: { user_id_param: string }
         Returns: boolean
@@ -3032,26 +3035,14 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_superadmin: {
-        Args: { user_id_param: string }
-        Returns: boolean
-      }
-      is_user_superadmin: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
+      is_superadmin: { Args: { user_id_param: string }; Returns: boolean }
+      is_user_superadmin: { Args: { _user_id: string }; Returns: boolean }
       queue_lead_for_make: {
         Args: { p_event_type: string; p_lead_id: string; p_priority?: number }
         Returns: string
       }
-      submit_quiz_response: {
-        Args: { p: Json }
-        Returns: string
-      }
-      sync_lead_assignments: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      submit_quiz_response: { Args: { p: Json }; Returns: string }
+      sync_lead_assignments: { Args: never; Returns: undefined }
       update_partner_credits: {
         Args: {
           p_created_by?: string
@@ -3063,14 +3054,8 @@ export type Database = {
         }
         Returns: boolean
       }
-      validate_email: {
-        Args: { email_address: string }
-        Returns: boolean
-      }
-      validate_phone: {
-        Args: { phone_number: string }
-        Returns: boolean
-      }
+      validate_email: { Args: { email_address: string }; Returns: boolean }
+      validate_phone: { Args: { phone_number: string }; Returns: boolean }
     }
     Enums: {
       app_role: "superadmin" | "lender" | "broker" | "user" | "client"
