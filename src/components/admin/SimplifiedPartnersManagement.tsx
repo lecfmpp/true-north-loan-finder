@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Mail, Phone, Building2, Edit3, Trash2, Key, Users, Plus } from "lucide-react";
-import PartnerClickUpSettings from "./PartnerClickUpSettings";
 import {
   Dialog,
   DialogContent,
@@ -708,19 +707,6 @@ export default function SimplifiedPartnersManagement() {
                   <p className="col-span-2 text-xs text-muted-foreground">Applies to funded loan amounts for this partner.</p>
                 </div>
               )}
-
-              <div className="border-t pt-4">
-                <PartnerClickUpSettings
-                  partnerId={editingPartner.id}
-                  currentSettings={{
-                    clickup_api_key: (editingPartner as any).clickup_api_key,
-                    clickup_list_id: (editingPartner as any).clickup_list_id,
-                    clickup_enabled: (editingPartner as any).clickup_enabled,
-                    auto_send_to_clickup: (editingPartner as any).auto_send_to_clickup
-                  }}
-                  onUpdate={fetchPartners}
-                />
-              </div>
 
               {isSuperAdmin && editingPartner.user_id && (
                 <div className="rounded-md border p-3 space-y-3">

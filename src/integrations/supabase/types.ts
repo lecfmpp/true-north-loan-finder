@@ -2086,11 +2086,7 @@ export type Database = {
       partners: {
         Row: {
           application_type: string
-          auto_send_to_clickup: boolean | null
           broker_commission_percentage: number | null
-          clickup_api_key: string | null
-          clickup_enabled: boolean | null
-          clickup_list_id: string | null
           commission_percentage: number | null
           company_name: string
           created_at: string
@@ -2109,11 +2105,7 @@ export type Database = {
         }
         Insert: {
           application_type: string
-          auto_send_to_clickup?: boolean | null
           broker_commission_percentage?: number | null
-          clickup_api_key?: string | null
-          clickup_enabled?: boolean | null
-          clickup_list_id?: string | null
           commission_percentage?: number | null
           company_name: string
           created_at?: string
@@ -2132,11 +2124,7 @@ export type Database = {
         }
         Update: {
           application_type?: string
-          auto_send_to_clickup?: boolean | null
           broker_commission_percentage?: number | null
-          clickup_api_key?: string | null
-          clickup_enabled?: boolean | null
-          clickup_list_id?: string | null
           commission_percentage?: number | null
           company_name?: string
           created_at?: string
