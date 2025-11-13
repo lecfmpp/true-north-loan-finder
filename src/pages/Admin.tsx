@@ -174,6 +174,9 @@ interface Partner {
 const Admin = () => {
   const [leads, setLeads] = useState<QuizResponse[]>([]);
   const [filteredLeads, setFilteredLeads] = useState<QuizResponse[]>([]);
+  const [totalLeadsCount, setTotalLeadsCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(50); // Load 50 leads per page
   // Removed approvedPartners - using partners instead for consistency
   const [applicationsCount, setApplicationsCount] = useState(0);
   const [usaApplicationsCount, setUsaApplicationsCount] = useState(0);
@@ -711,9 +714,30 @@ const Admin = () => {
       fetchPartnerApplicationsCounts();
     }
   }, [user, isAdmin, isSuperAdmin, userRoles]);
+  // Refetch when page changes
+  useEffect(() => {
+    if (user && isAdmin) {
+      if (userRoles.includes('partner')) {
+        fetchPartnerAssignedLeads();
+      } else {
+        fetchLeads();
+      }
+    }
+  }, [currentPage]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    } else {
+      filterLeads();
+    }
+  }, [searchTerm, statusFilter, countryFilter, monthlyRevenueFilter, loanAmountFilter, timeInBusinessFilter, applicationSentFilter, partnerFilter, selectedDateRange, sortField, sortDirection]);
+
+  // Filter when leads change or on page 1
   useEffect(() => {
     filterLeads();
-  }, [leads, searchTerm, statusFilter, countryFilter, monthlyRevenueFilter, loanAmountFilter, timeInBusinessFilter, applicationSentFilter, partnerFilter, selectedDateRange, sortField, sortDirection]);
+  }, [leads]);
 
   // Update application counts when date range changes
   useEffect(() => {
@@ -742,6 +766,18 @@ const Admin = () => {
   }, [user, isAdmin]);
   const fetchLeads = async () => {
     try {
+      // Get total count first
+      const { count, error: countError } = await supabase
+        .from('quiz_responses')
+        .select('*', { count: 'exact', head: true });
+      
+      if (countError) throw countError;
+      setTotalLeadsCount(count || 0);
+
+      // Fetch paginated data
+      const from = (currentPage - 1) * pageSize;
+      const to = from + pageSize - 1;
+
       const {
         data,
         error
@@ -750,10 +786,11 @@ const Admin = () => {
         partners!assigned_partner_id(id, name)
       `).order('created_at', {
         ascending: false
-      });
+      }).range(from, to);
+      
       if (error) throw error;
 
-      // Fetch application status for each lead
+      // Fetch application status for each lead (only for current page)
       const enrichedLeads = await Promise.all((data || []).map(async lead => {
         try {
           // Check for USA applications
@@ -2162,10 +2199,15 @@ const Admin = () => {
                           <SelectItem value="US">United States</SelectItem>
                         </SelectContent>
                       </Select>
-                    </div>
-                  </div>
-                  
-                   {/* Additional Filters in Grid */}
+                     </div>
+                   </div>
+                   
+                   {/* Page Info */}
+                   <div className="text-sm text-muted-foreground">
+                     Page {currentPage} • {totalLeadsCount.toLocaleString()} total leads • {filteredLeads.length} on this page
+                   </div>
+                   
+                    {/* Additional Filters in Grid */}
                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
                     <Select value={monthlyRevenueFilter} onValueChange={setMonthlyRevenueFilter}>
                       <SelectTrigger className="w-full">
@@ -2805,6 +2847,38 @@ const Admin = () => {
                         </TableRow>)}
                     </TableBody>
                   </Table>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Pagination Controls */}
+            <Card>
+              <CardContent className="py-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-muted-foreground">
+                    Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalLeadsCount)} of {totalLeadsCount} leads
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1 || loading}
+                    >
+                      Previous
+                    </Button>
+                    <div className="text-sm">
+                      Page {currentPage} of {Math.ceil(totalLeadsCount / pageSize)}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(p => Math.min(Math.ceil(totalLeadsCount / pageSize), p + 1))}
+                      disabled={currentPage >= Math.ceil(totalLeadsCount / pageSize) || loading}
+                    >
+                      Next
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
