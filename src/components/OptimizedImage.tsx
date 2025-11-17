@@ -13,6 +13,7 @@ interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> 
   fallback?: string;
   responsive?: boolean;
   sizes?: string;
+  fetchPriority?: 'high' | 'low' | 'auto';
 }
 
 const OptimizedImage: React.FC<OptimizedImageProps> = ({
@@ -25,6 +26,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   fallback = '/placeholder.svg',
   responsive = true,
   sizes,
+  fetchPriority = 'auto',
   ...props
 }) => {
   const { imgRef, isLoaded, isInView, hasError, handleLoad, handleError } = useImageOptimization({
@@ -65,7 +67,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
           onLoad={handleLoad}
           onError={handleError}
           loading={priority ? 'eager' : 'lazy'}
-          fetchPriority={priority ? 'high' : 'auto'}
+          fetchPriority={fetchPriority}
           decoding={priority ? 'sync' : 'async'}
           className={cn(
             "transition-opacity duration-300 w-full h-full object-cover",

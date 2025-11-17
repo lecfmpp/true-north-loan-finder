@@ -20,28 +20,63 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    // Optimize bundle splitting for better caching and performance
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Vendor chunk for React and core libraries
-          vendor: ['react', 'react-dom'],
-          // Router chunk
-          router: ['react-router-dom'],
-          // UI components chunk (keep smaller for faster loading)
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
-          // Supabase chunk
-          supabase: ['@supabase/supabase-js'],
-          // Query chunk
-          query: ['@tanstack/react-query'],
-          // Form handling
-          forms: ['react-hook-form'],
-          // Rich text editor (heavy component) - load separately
-          editor: ['react-quill'],
-          // Charts (load on demand)
-          charts: ['recharts'],
-          // Lucide icons separate chunk
-          icons: ['lucide-react'],
+        manualChunks: (id) => {
+          // Core dependencies
+          if (id.includes('node_modules')) {
+            // React core
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor-react';
+            }
+            // Router
+            if (id.includes('react-router-dom')) {
+              return 'vendor-router';
+            }
+            // UI components
+            if (id.includes('@radix-ui')) {
+              return 'vendor-ui';
+            }
+            // Supabase
+            if (id.includes('@supabase')) {
+              return 'vendor-supabase';
+            }
+            // Query
+            if (id.includes('@tanstack/react-query')) {
+              return 'vendor-query';
+            }
+            // Forms
+            if (id.includes('react-hook-form') || id.includes('zod') || id.includes('@hookform')) {
+              return 'vendor-forms';
+            }
+            // Heavy dependencies - load on demand
+            if (id.includes('react-quill')) {
+              return 'heavy-editor';
+            }
+            if (id.includes('recharts')) {
+              return 'heavy-charts';
+            }
+            if (id.includes('jspdf')) {
+              return 'heavy-pdf';
+            }
+            // Icons
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons';
+            }
+            // All other node_modules
+            return 'vendor-misc';
+          }
+          
+          // App code splitting
+          if (id.includes('/src/pages/Admin')) {
+            return 'page-admin';
+          }
+          if (id.includes('/src/pages/') && !id.includes('Home')) {
+            return 'pages';
+          }
+          if (id.includes('/src/components/admin/')) {
+            return 'admin-components';
+          }
         },
       },
     },

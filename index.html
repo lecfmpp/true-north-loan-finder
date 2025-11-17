@@ -16,33 +16,25 @@
     <!-- Updated Canonical URL -->
     <link rel="canonical" href="https://truenorthbusinessloan.ca/" />
     
-    <!-- Resource Hints for Performance -->
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
-    <link rel="dns-prefetch" href="https://www.googletagmanager.com">
-    <link rel="dns-prefetch" href="https://spyme.ca">
-    <link rel="dns-prefetch" href="https://analytics.tiktok.com">
-    <link rel="dns-prefetch" href="https://connect.facebook.net">
-    <link rel="dns-prefetch" href="//truenorthbusinessloan.ca">
-    <link rel="dns-prefetch" href="//supabase.co">
+    <!-- Resource Hints for Performance (Optimized) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://kgwcogltpsmapxnjzjhm.supabase.co" />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+    <link rel="dns-prefetch" href="https://connect.facebook.net" />
+    <link rel="dns-prefetch" href="https://analytics.tiktok.com" />
     
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#1a365d" />
     <meta name="msapplication-config" content="/browserconfig.xml" />
     
-    <!-- Optimized Font Loading -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://kgwcogltpsmapxnjzjhm.supabase.co" crossorigin>
-    <link rel="preconnect" href="https://analytics.tiktok.com" crossorigin>
-    <link rel="preconnect" href="https://connect.facebook.net" crossorigin>
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Merriweather:wght@400;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Merriweather:wght@400;700&display=swap"></noscript>
+    <!-- Google Fonts (Optimized - Only weights used) -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" as="style" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
     
     <!-- Preload Critical Assets -->
     <link rel="preload" href="/lovable-uploads/b490bc99-b9b3-432b-aac9-6a6af67fd9fc.png" as="image" fetchpriority="high">
-    <link rel="preload" href="/lovable-uploads/eae8a3b3-6d86-4fe4-9e17-17b808de0d2e.png" as="image">
     <link rel="modulepreload" href="/src/main.tsx">
     <style>
       /* Critical CSS - Inline this for fastest rendering */
@@ -118,31 +110,7 @@
       .font-serif { font-family: Georgia, 'Times New Roman', serif; }
     </style>
 
-    <!-- Defer Analytics for Performance -->
-    <script>
-      // Defer Google Analytics until page is interactive
-      window.addEventListener('load', function() {
-        const gtag = document.createElement('script');
-        gtag.async = true;
-        gtag.src = 'https://www.googletagmanager.com/gtag/js?id=G-3TZTL45442';
-        document.head.appendChild(gtag);
-        
-        gtag.onload = function() {
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', 'G-3TZTL45442');
-        };
-      });
-      
-      // Defer Pixel Code
-      window.addEventListener('load', function() {
-        const pixel = document.createElement('script');
-        pixel.defer = true;
-        pixel.src = 'https://spyme.ca/pixel/3YiUwaJMoFidT1dt';
-        document.head.appendChild(pixel);
-      });
-    </script>
+    <!-- Third-party scripts loaded via optimized loader (deferred until user interaction) -->
 
     <meta property="og:title" content="Get Business Loans in 24hrs | True North Business Loan" />
     <meta property="og:description" content="Need fast business funding? Get $5K-$800K approved in 24 hours. Compare top Canadian lenders instantly. Start your application now!" />

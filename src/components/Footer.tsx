@@ -7,7 +7,14 @@ const Footer = () => {
           {/* Company Info */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center space-x-2">
-              <img alt="TrueNorth Business Loan" src="/lovable-uploads/327718f8-3972-44ab-9e0a-0ab928587c31.png" className="h-12 object-contain" />
+              <img 
+                alt="TrueNorth Business Loan Logo" 
+                src="/lovable-uploads/327718f8-3972-44ab-9e0a-0ab928587c31.png" 
+                className="h-12 object-contain"
+                width="180"
+                height="48"
+                loading="lazy"
+              />
             </Link>
             <p className="text-primary-foreground/80 text-sm">
               Empowering Canadian and US small businesses with simple, transparent access to financing.
