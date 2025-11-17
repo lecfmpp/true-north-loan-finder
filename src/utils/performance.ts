@@ -1,6 +1,13 @@
-// Performance monitoring and optimization utilities
+// Performance monitoring and optimization utilities for Core Web Vitals
 
-// Core Web Vitals tracking
+// Declare gtag for TypeScript
+declare global {
+  interface Window {
+    gtag?: (command: string, ...args: any[]) => void;
+  }
+}
+
+// Enhanced Core Web Vitals tracking with reporting
 export const trackWebVitals = () => {
   if (typeof window !== 'undefined' && 'performance' in window) {
     // Track Largest Contentful Paint (LCP)
@@ -8,7 +15,18 @@ export const trackWebVitals = () => {
       const lcpObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
         const lastEntry = entries[entries.length - 1];
-        console.log('LCP:', lastEntry.startTime);
+        const lcpValue = lastEntry.startTime;
+        console.log('LCP:', lcpValue, 'ms');
+        
+        // Send to analytics if available
+        if (typeof window.gtag !== 'undefined') {
+          window.gtag('event', 'web_vitals', {
+            event_category: 'Web Vitals',
+            event_label: 'LCP',
+            value: Math.round(lcpValue),
+            non_interaction: true,
+          });
+        }
       });
       
       try {
@@ -17,12 +35,23 @@ export const trackWebVitals = () => {
         // Fallback for older browsers
       }
 
-      // Track First Input Delay (FID)
+      // Track First Input Delay (FID) / Interaction to Next Paint (INP)
       const fidObserver = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          const fidEntry = entry as any; // Cast for FID-specific properties
+          const fidEntry = entry as any;
           if (fidEntry.processingStart) {
-            console.log('FID:', fidEntry.processingStart - entry.startTime);
+            const fidValue = fidEntry.processingStart - entry.startTime;
+            console.log('FID:', fidValue, 'ms');
+            
+            // Send to analytics
+            if (typeof window.gtag !== 'undefined') {
+              window.gtag('event', 'web_vitals', {
+                event_category: 'Web Vitals',
+                event_label: 'FID',
+                value: Math.round(fidValue),
+                non_interaction: true,
+              });
+            }
           }
         }
       });
@@ -35,14 +64,30 @@ export const trackWebVitals = () => {
 
       // Track Cumulative Layout Shift (CLS)
       let clsValue = 0;
+      let clsReported = false;
       const clsObserver = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          const clsEntry = entry as any; // Cast for CLS-specific properties
+          const clsEntry = entry as any;
           if (!clsEntry.hadRecentInput && clsEntry.value) {
             clsValue += clsEntry.value;
           }
         }
         console.log('CLS:', clsValue);
+        
+        // Report once when user leaves page
+        if (!clsReported) {
+          clsReported = true;
+          window.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden' && typeof window.gtag !== 'undefined') {
+              window.gtag('event', 'web_vitals', {
+                event_category: 'Web Vitals',
+                event_label: 'CLS',
+                value: Math.round(clsValue * 1000),
+                non_interaction: true,
+              });
+            }
+          }, { once: true });
+        }
       });
       
       try {

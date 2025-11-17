@@ -19,11 +19,12 @@ const Header = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
             <img
-              alt="TrueNorth Business Loan"
+              alt="TrueNorth Business Loan Logo"
               src="/lovable-uploads/327718f8-3972-44ab-9e0a-0ab928587c31.png"
-              width={240}
-              height={64}
+              width="240"
+              height="64"
               className="w-60 h-16 object-contain p-2"
+              loading="eager"
             />
             
           </Link>
