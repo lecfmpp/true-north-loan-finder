@@ -1,0 +1,159 @@
+project_id = "kgwcogltpsmapxnjzjhm"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+enabled = true
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[db.pooler]
+enabled = false
+port = 54329
+pool_mode = "transaction"
+default_pool_size = 20
+max_client_conn = 100
+
+[realtime]
+enabled = true
+port = 54323
+max_header_length = 4096
+
+[studio]
+enabled = true
+port = 54324
+api_url = "http://127.0.0.1:54321"
+openai_api_key = "env(OPENAI_API_KEY)"
+
+[inbucket]
+enabled = true
+port = 54325
+smtp_port = 54326
+pop3_port = 54327
+
+[storage]
+enabled = true
+port = 54328
+file_size_limit = "50MiB"
+image_transformation_enabled = true
+
+[auth]
+enabled = true
+port = 54329
+site_url = "http://127.0.0.1:3000"
+additional_redirect_urls = ["https://127.0.0.1:3000"]
+jwt_expiry = 3600
+enable_signup = true
+enable_email_confirmations = false
+enable_sms_confirmations = false
+enable_email_change_confirmations = true
+enable_phone_change_confirmations = true
+
+[edge_runtime]
+enabled = true
+port = 54330
+
+[functions.dataforseo-search]
+verify_jwt = true
+
+[functions.generate-content-brief]
+verify_jwt = true
+
+[functions.generate-blog-post]
+verify_jwt = true
+
+[functions.resend-webhook]
+verify_jwt = false
+
+[functions.send-admin-notification]
+verify_jwt = false
+
+[functions.send-application-confirmation]
+verify_jwt = false
+
+[functions.send-email-sequence]
+verify_jwt = false
+
+[functions.send-lead-email]
+verify_jwt = false
+
+[functions.auto-enroll-lead]
+verify_jwt = false
+
+[functions.process-scheduled-emails]
+verify_jwt = false
+
+[functions.chat-with-ai]
+verify_jwt = false
+
+[functions.create-google-meet-event]
+verify_jwt = true
+
+[functions.test-google-connection]
+verify_jwt = true
+
+[functions.update-google-settings]
+verify_jwt = true
+
+[analytics]
+enabled = false
+port = 54327
+vector_port = 54328
+backend = "postgres"
+
+[functions.send-partner-confirmation]
+verify_jwt = false
+
+[functions.create-partner]
+verify_jwt = true
+
+[functions.create-partner-payment]
+verify_jwt = true
+
+[functions.create-broker-payment]
+verify_jwt = true
+
+[functions.create-client-payment]
+verify_jwt = true
+
+[functions.send-to-make]
+verify_jwt = true
+
+[functions.update-make-settings]
+verify_jwt = true
+
+[functions.auto-send-make-on-assignment]
+verify_jwt = false
+
+[functions.download-application-file]
+verify_jwt = true
+
+[functions.send-application-email]
+verify_jwt = true
+
+[functions.process-make-queue]
+verify_jwt = false
+
+[functions.backfill-make]
+verify_jwt = true
+
+[functions.setup-make-cron]
+verify_jwt = true
+
+[functions.verify-email]
+verify_jwt = false
+
+[functions.send-email-verification]
+verify_jwt = false
+
+[functions.auto-send-email-verification]
+verify_jwt = false
+
+[functions.process-email-verification-queue]
+verify_jwt = false

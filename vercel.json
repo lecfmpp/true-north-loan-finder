@@ -1,0 +1,23 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "comment": "Host-portable config for agent discovery. Netlify/Cloudflare Pages use public/_headers and public/_redirects instead; this file makes the same Link headers work when deploying to Vercel. Whatever host you use MUST serve these headers for RFC 8288 agent discovery to work.",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Link",
+          "value": "</.well-known/api-catalog>; rel=\"api-catalog\"; type=\"application/linkset+json\", </.well-known/agent-skills/index.json>; rel=\"service-meta\"; type=\"application/json\", </.well-known/mcp/server-card.json>; rel=\"service-desc\"; type=\"application/json\", </.well-known/oauth-protected-resource>; rel=\"http://openid.net/specs/connect/1.0/issuer\"; type=\"application/json\", </auth.md>; rel=\"service-doc\"; type=\"text/markdown\", </how-it-works>; rel=\"service-doc\"; type=\"text/html\""
+        }
+      ]
+    },
+    {
+      "source": "/.well-known/(.*)",
+      "headers": [{ "key": "Content-Type", "value": "application/json; charset=utf-8" }]
+    },
+    {
+      "source": "/auth.md",
+      "headers": [{ "key": "Content-Type", "value": "text/markdown; charset=utf-8" }]
+    }
+  ]
+}

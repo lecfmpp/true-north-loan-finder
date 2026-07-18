@@ -1,0 +1,405 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* True North Brand Colors */
+    --background: 210 20% 98%;
+    --foreground: 210 11% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 210 11% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 11% 15%;
+
+    /* Northern Blue - Primary Brand Color */
+    --primary: 210 22% 22%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 210 22% 35%;
+
+    /* Forest Green - Secondary Brand Color */
+    --secondary: 145 63% 42%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-light: 145 50% 55%;
+
+    /* Forest Green - Accent Color */
+    --accent: 145 63% 42%;
+    --accent-foreground: 0 0% 100%;
+
+    --muted: 210 20% 95%;
+    --muted-foreground: 210 6% 46%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Status Colors */
+    --status-active: 145 63% 42%; /* Forest Green for active/enabled */
+    --status-active-foreground: 0 0% 100%;
+    --status-inactive: 35 84% 62%; /* Compass Gold for disabled/paused */
+    --status-inactive-foreground: 210 22% 22%;
+    --status-draft: 32 95% 55%; /* Orange for drafts */
+    --status-draft-foreground: 0 0% 100%;
+
+    /* Success Toast Colors */
+    --success-bg: 145 45% 85%; /* Light green background */
+    --success-border: 145 63% 42%; /* Dark green outline */
+    --success-text: 210 40% 25%; /* Dark blue text */
+
+    --border: 210 20% 90%;
+    --input: 210 20% 90%;
+    --ring: 210 22% 22%;
+
+    /* Brand Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(210 22% 22%), hsl(145 63% 42%));
+    --gradient-hero: linear-gradient(135deg, hsl(210 22% 22%) 0%, hsl(210 22% 30%) 50%, hsl(145 63% 42%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(210 20% 98%) 100%);
+
+    /* Shadows */
+    --shadow-primary: 0 10px 30px -10px hsl(210 22% 22% / 0.3);
+    --shadow-card: 0 4px 20px -4px hsl(210 22% 22% / 0.1);
+    --shadow-button: 0 4px 15px -3px hsl(35 84% 62% / 0.4);
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Status Colors - Dark Mode */
+    --status-active: 145 63% 42%; /* Forest Green for active/enabled */
+    --status-active-foreground: 0 0% 100%;
+    --status-inactive: 35 84% 62%; /* Compass Gold for disabled/paused */
+    --status-inactive-foreground: 222.2 47.4% 11.2%;
+    --status-draft: 32 95% 55%; /* Orange for drafts */
+    --status-draft-foreground: 0 0% 100%;
+
+    /* Success Toast Colors - Dark Mode */
+    --success-bg: 145 30% 25%; /* Dark green background for dark mode */
+    --success-border: 145 63% 42%; /* Dark green outline */
+    --success-text: 210 40% 80%; /* Light blue text for dark mode */
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Blog content styles with proper typography hierarchy */
+.blog-content {
+  @apply text-left;
+}
+
+.blog-content h1 {
+  @apply text-4xl md:text-5xl font-bold mb-8 mt-4 text-foreground leading-tight text-left;
+}
+
+.blog-content h2 {
+  @apply text-2xl md:text-3xl font-semibold mb-6 mt-12 text-foreground leading-tight text-left;
+}
+
+.blog-content h3 {
+  @apply text-xl md:text-2xl font-medium mb-4 mt-8 text-foreground leading-tight text-left;
+}
+
+.blog-content h4 {
+  @apply text-lg md:text-xl font-medium mb-3 mt-6 text-foreground leading-tight text-left;
+}
+
+.blog-content p {
+  @apply mb-6 text-base leading-relaxed text-muted-foreground text-left;
+  line-height: 1.7;
+}
+
+.blog-content p strong {
+  @apply font-semibold text-foreground;
+}
+
+.blog-content p em {
+  @apply italic text-muted-foreground;
+}
+
+.blog-content ul, .blog-content ol {
+  @apply mb-6 ml-6 space-y-3;
+}
+
+.blog-content li {
+  @apply text-base leading-relaxed text-muted-foreground;
+  line-height: 1.6;
+}
+
+.blog-content li strong {
+  @apply font-semibold text-foreground;
+}
+
+.blog-content blockquote {
+  @apply border-l-4 border-primary pl-6 py-4 my-8 italic text-lg text-muted-foreground bg-muted/30 rounded-r-lg;
+}
+
+.blog-content code {
+  @apply bg-muted px-2 py-1 rounded text-sm font-mono text-foreground;
+}
+
+.blog-content pre {
+  @apply bg-muted p-6 rounded-lg overflow-x-auto my-8 text-sm;
+}
+
+.blog-content a {
+  @apply text-primary hover:text-primary/80 underline decoration-2 underline-offset-2 transition-colors;
+}
+
+/* Blog CTA button styling */
+.blog-content .cta-button {
+  @apply inline-block bg-primary text-primary-foreground px-8 py-4 text-center no-underline font-semibold rounded-lg hover:bg-primary/90 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-lg;
+}
+
+/* Blog table styling */
+.blog-content table {
+  @apply w-full border-collapse mb-8 mt-6 bg-card rounded-lg overflow-hidden shadow-sm border border-border;
+}
+
+.blog-content th {
+  @apply border-b-2 border-border p-4 text-left bg-muted font-semibold text-foreground text-sm uppercase tracking-wide;
+}
+
+.blog-content td {
+  @apply border-b border-border p-4 text-muted-foreground text-base;
+}
+
+.blog-content td strong {
+  @apply font-semibold text-foreground;
+}
+
+.blog-content table tr:nth-child(even) {
+  @apply bg-muted/20;
+}
+
+.blog-content table tr:hover {
+  @apply bg-muted/40 transition-colors;
+}
+
+/* Mathematical formula styling */
+.blog-content .formula {
+  @apply font-mono bg-muted px-3 py-2 rounded-md text-sm border border-border;
+}
+
+/* Section dividers */
+.blog-content hr {
+  @apply border-t-2 border-border my-12;
+}
+
+/* First paragraph after headings */
+.blog-content h1 + p,
+.blog-content h2 + p,
+.blog-content h3 + p {
+  @apply mt-4;
+}
+
+/* Better spacing for nested lists */
+.blog-content ul ul,
+.blog-content ol ol,
+.blog-content ul ol,
+.blog-content ol ul {
+  @apply mt-3 mb-0;
+}
+
+/* Image styling */
+.blog-content img {
+  @apply rounded-lg shadow-md my-8 max-w-full h-auto;
+}
+
+/* Emphasis and strong text */
+.blog-content strong {
+  @apply font-semibold text-foreground;
+}
+
+.blog-content em {
+  @apply italic;
+}
+
+/* Better paragraph spacing for readability */
+.blog-content p + p {
+  @apply mt-6;
+}
+
+.blog-content p + ul,
+.blog-content p + ol,
+.blog-content ul + p,
+.blog-content ol + p {
+  @apply mt-4;
+}
+
+/* Dashboard layout styles */
+/* Mobile Layout (overlay sidebar) */
+@media (max-width: 1023px) {
+  .dashboard-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .app-header {
+    order: 1;
+  }
+
+  .dashboard-header {
+    order: 2;
+  }
+
+  .app-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 280px;
+    z-index: 1000;
+    background-color: hsl(var(--background));
+    border-right: 1px solid hsl(var(--border));
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .app-sidebar[data-state="open"] {
+    transform: translateX(0);
+  }
+
+  .main-content {
+    order: 3;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .app-footer {
+    order: 4;
+  }
+}
+
+/* Desktop Layout (grid-based sidebar) */
+@media (min-width: 1024px) {
+  .dashboard-container {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    grid-template-rows: auto auto 1fr auto;
+    grid-template-areas:
+      "header   header"
+      "sidebar  dashboard-header"
+      "sidebar  main"
+      "footer   footer";
+    min-height: 100vh;
+  }
+
+  .app-header {
+    grid-area: header;
+  }
+
+  .dashboard-header {
+    grid-area: dashboard-header;
+  }
+
+  .app-sidebar {
+    grid-area: sidebar;
+    position: static;
+    height: 100%;
+    overflow-y: auto;
+    transform: none;
+    transition: none;
+  }
+
+  .main-content {
+    grid-area: main;
+    overflow-y: auto;
+  }
+
+  .app-footer {
+    grid-area: footer;
+  }
+}
+
+/* Table container with horizontal scroll */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Visual scroll indicator for tables */
+.table-container[data-scrollable="true"] {
+  box-shadow: inset -10px 0 8px -8px rgba(0,0,0,0.1);
+}
+
+/* Social Proof Widget Animation */
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.5s ease-out;
+}

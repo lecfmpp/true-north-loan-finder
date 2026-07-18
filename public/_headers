@@ -1,0 +1,25 @@
+/*
+  Link: </.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"
+  Link: </.well-known/agent-skills/index.json>; rel="service-meta"; type="application/json"
+  Link: </.well-known/mcp/server-card.json>; rel="service-desc"; type="application/json"
+  Link: </.well-known/oauth-protected-resource>; rel="http://openid.net/specs/connect/1.0/issuer"; type="application/json"
+  Link: </.well-known/oauth-authorization-server>; rel="http://openid.net/specs/connect/1.0/issuer"; type="application/json"
+  Link: </auth.md>; rel="service-doc"; type="text/markdown"
+  Link: </how-it-works>; rel="service-doc"; type="text/html"
+
+/.well-known/*
+  Content-Type: application/json; charset=utf-8
+  Access-Control-Allow-Origin: *
+
+/auth.md
+  Content-Type: text/markdown; charset=utf-8
+  Access-Control-Allow-Origin: *
+
+/
+  Link: </.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"
+  Link: </.well-known/agent-skills/index.json>; rel="service-meta"; type="application/json"
+  Link: </.well-known/mcp/server-card.json>; rel="service-desc"; type="application/json"
+  Link: </.well-known/oauth-protected-resource>; rel="http://openid.net/specs/connect/1.0/issuer"; type="application/json"
+  Link: </.well-known/oauth-authorization-server>; rel="http://openid.net/specs/connect/1.0/issuer"; type="application/json"
+  Link: </auth.md>; rel="service-doc"; type="text/markdown"
+  Link: </how-it-works>; rel="service-doc"; type="text/html"

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://modelcontextprotocol.io/schemas/server-card/draft/server-card.schema.json",
+  "serverInfo": {
+    "name": "true-north-business-loan",
+    "version": "0.1.0",
+    "title": "True North Business Loan",
+    "description": "Public informational MCP surface for True North Business Loan. No MCP transport endpoint is currently published; this card exists for discovery and will be updated when a live endpoint is available."
+  },
+  "capabilities": {
+    "tools": {},
+    "resources": {},
+    "prompts": {}
+  },
+  "contact": {
+    "url": "https://truenorthbusinessloan.ca/"
+  }
+}

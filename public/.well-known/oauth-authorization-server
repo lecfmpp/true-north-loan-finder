@@ -1,0 +1,19 @@
+{
+  "issuer": "https://kgwcogltpsmapxnjzjhm.supabase.co/auth/v1",
+  "authorization_endpoint": "https://kgwcogltpsmapxnjzjhm.supabase.co/auth/v1/authorize",
+  "token_endpoint": "https://kgwcogltpsmapxnjzjhm.supabase.co/auth/v1/token",
+  "jwks_uri": "https://kgwcogltpsmapxnjzjhm.supabase.co/auth/v1/.well-known/jwks.json",
+  "response_types_supported": ["code", "token"],
+  "grant_types_supported": ["authorization_code", "refresh_token", "password"],
+  "token_endpoint_auth_methods_supported": ["client_secret_basic", "none"],
+  "scopes_supported": ["openid", "email", "profile"],
+  "service_documentation": "https://truenorthbusinessloan.ca/auth.md",
+  "agent_auth": {
+    "status": "manual",
+    "description": "True North does not yet offer self-serve dynamic client registration for autonomous agents. Partner and lead-buyer integrations are provisioned through a manual onboarding review.",
+    "register_uri": "https://truenorthbusinessloan.ca/partners",
+    "identity_types_supported": ["human", "delegated"],
+    "credential_types_supported": ["api_key"],
+    "contact": "https://truenorthbusinessloan.ca/partners"
+  }
+}

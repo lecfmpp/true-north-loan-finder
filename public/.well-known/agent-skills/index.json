@@ -1,0 +1,25 @@
+{
+  "$schema": "https://agentskills.io/schemas/v0.2.0/index.json",
+  "name": "True North Business Loan agent skills",
+  "description": "Discovery index of agent-facing capabilities exposed by truenorthbusinessloan.ca.",
+  "skills": [
+    {
+      "name": "loan-estimator",
+      "type": "web-form",
+      "description": "60-second quiz that matches Canadian and US small businesses to business loan offers from $5K to $800K.",
+      "url": "https://truenorthbusinessloan.ca/loan-estimator"
+    },
+    {
+      "name": "loan-products",
+      "type": "content",
+      "description": "Human-readable descriptions of available loan products (equipment financing, small business loans, MCA, invoice factoring).",
+      "url": "https://truenorthbusinessloan.ca/small-business-loans"
+    },
+    {
+      "name": "industries-served",
+      "type": "content",
+      "description": "Directory of industries True North serves, with per-industry landing pages.",
+      "url": "https://truenorthbusinessloan.ca/industries-we-serve"
+    }
+  ]
+}

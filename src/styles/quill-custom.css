@@ -1,0 +1,81 @@
+/* Lazy-loaded ReactQuill styles - only loaded when editor is used */
+.ql-editor {
+  font-family: inherit;
+  line-height: 1.6;
+  color: hsl(var(--foreground));
+}
+
+.ql-toolbar {
+  border-top: 1px solid hsl(var(--border));
+  border-left: 1px solid hsl(var(--border));
+  border-right: 1px solid hsl(var(--border));
+  background: hsl(var(--background));
+}
+
+.ql-container {
+  border-bottom: 1px solid hsl(var(--border));
+  border-left: 1px solid hsl(var(--border));
+  border-right: 1px solid hsl(var(--border));
+  background: hsl(var(--background));
+}
+
+.ql-editor.ql-blank::before {
+  color: hsl(var(--muted-foreground));
+  font-style: normal;
+}
+
+.ql-editor h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 1.5rem 0 1rem 0;
+  color: hsl(var(--foreground));
+}
+
+.ql-editor h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.75rem 0;
+  color: hsl(var(--foreground));
+}
+
+.ql-editor p {
+  margin: 0.75rem 0;
+}
+
+.ql-editor a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+}
+
+.ql-editor a:hover {
+  color: hsl(var(--primary)) / 0.8;
+}
+
+.ql-toolbar .ql-stroke {
+  stroke: hsl(var(--foreground));
+}
+
+.ql-toolbar .ql-fill {
+  fill: hsl(var(--foreground));
+}
+
+.ql-toolbar .ql-picker-label {
+  color: hsl(var(--foreground));
+}
+
+.ql-toolbar button:hover {
+  background: hsl(var(--muted));
+}
+
+.ql-toolbar button.ql-active {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.ql-toolbar button.ql-active .ql-stroke {
+  stroke: hsl(var(--primary-foreground));
+}
+
+.ql-toolbar button.ql-active .ql-fill {
+  fill: hsl(var(--primary-foreground));
+}

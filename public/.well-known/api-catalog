@@ -1,0 +1,27 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://truenorthbusinessloan.ca/",
+      "service-doc": [
+        {
+          "href": "https://truenorthbusinessloan.ca/how-it-works",
+          "type": "text/html",
+          "title": "How True North Business Loan works"
+        }
+      ],
+      "service-meta": [
+        {
+          "href": "https://truenorthbusinessloan.ca/.well-known/agent-skills/index.json",
+          "type": "application/json",
+          "title": "Agent skills index"
+        }
+      ],
+      "status": [
+        {
+          "href": "https://truenorthbusinessloan.ca/",
+          "type": "text/html"
+        }
+      ]
+    }
+  ]
+}
