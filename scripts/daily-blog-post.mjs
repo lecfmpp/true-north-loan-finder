@@ -14,6 +14,8 @@ const SUPABASE_URL = process.env.SUPABASE_URL || 'https://kgwcogltpsmapxnjzjhm.s
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const GEMINI_KEY = process.env.GEMINI_API_KEY;
 const MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+// Overridable for offline testing; defaults to the real Google endpoint.
+const GEMINI_BASE_URL = process.env.GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com';
 const DRY = String(process.env.DRY_RUN).toLowerCase() === 'true';
 
 if (!SERVICE_KEY) { console.error('Missing SUPABASE_SERVICE_ROLE_KEY secret.'); process.exit(1); }
@@ -93,7 +95,7 @@ HARD RULES:
   named lender. Do not give personalised financial advice.`;
 
 const res = await fetch(
-  `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${GEMINI_KEY}`,
+  `${GEMINI_BASE_URL}/v1beta/models/${MODEL}:generateContent?key=${GEMINI_KEY}`,
   {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -113,6 +115,18 @@ catch { console.error('Gemini did not return valid JSON:', raw.slice(0, 600)); p
 post.slug = slug;
 post.author = 'True North Team';
 post.status = 'published';
+
+// Title/slug coherence guard: the model must stay on the assigned topic. If its title
+// drifts (little token overlap with the working title), fall back to the working title so
+// the headline, slug and URL never disagree.
+const tokens = s => new Set(String(s).toLowerCase().match(/[a-z]{4,}/g) || []);
+const wantTok = tokens(workingTitle), gotTok = tokens(post.title || '');
+const overlap = [...wantTok].filter(t => gotTok.has(t)).length / Math.max(wantTok.size, 1);
+if (!post.title || overlap < 0.4) {
+  console.warn(`Title drift detected (overlap ${(overlap * 100).toFixed(0)}%). Model title: "${post.title}". Using working title instead.`);
+  post.title = workingTitle;
+  if (!post.meta_title || tokens(post.meta_title).size === 0) post.meta_title = workingTitle.slice(0, 60);
+}
 
 /* ---------- 4. QA gate ---------- */
 const fail = [];
