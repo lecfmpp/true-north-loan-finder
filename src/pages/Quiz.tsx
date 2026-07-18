@@ -172,73 +172,6 @@ const Quiz = () => {
   const [showResults, setShowResults] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // External tracking system integration
-  const EXTERNAL_TRACKER = {
-    wizardId: 'e3f3c9bd-38c2-488c-9c3c-4740420f140d',
-    apiBase: 'https://yzasxwyibutfqdweaxxo.supabase.co',
-    
-    async trackVisitor() {
-      let sessionId = localStorage.getItem('visitor_session_id');
-      if (!sessionId) {
-        sessionId = 'vs_' + Math.random().toString(36).substr(2, 9) + Date.now();
-        localStorage.setItem('visitor_session_id', sessionId);
-      }
-
-      try {
-        await fetch(`${this.apiBase}/functions/v1/track-visitor`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            wizard_id: this.wizardId,
-            visitor_session_id: sessionId,
-            source_url: window.location.href,
-            user_agent: navigator.userAgent
-          })
-        });
-        console.log('Visitor tracked successfully');
-      } catch (error) {
-        console.error('Failed to track visitor:', error);
-      }
-    },
-
-    async submitLead(formData: QuizData, quizScore: number) {
-      const sessionId = localStorage.getItem('visitor_session_id');
-      const leadSource = localStorage.getItem('lead_attribution') || 'direct';
-      
-      try {
-        const response = await fetch(`${this.apiBase}/functions/v1/submit-lead`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            wizard_id: this.wizardId,
-            email: formData.email,
-            visitor_session_id: sessionId,
-            lead_data: {
-              name: formData.name,
-              phone: formData.phone,
-              loan_amount: formData.loanAmount[0],
-              use_of_funds: formData.useOfFunds,
-              time_in_business: formData.timeInBusiness,
-              monthly_revenue: formData.monthlyRevenue[0],
-              credit_score: formData.creditScore,
-              quiz_score: quizScore,
-              source: 'business_loan_quiz',
-              lead_source: leadSource,
-              submitted_at: new Date().toISOString()
-            }
-          })
-        });
-
-        const result = await response.json();
-        console.log('Lead submitted to external tracker:', result);
-        return result;
-      } catch (error) {
-        console.error('Failed to submit lead to external tracker:', error);
-        return { success: false, error: 'Network error' };
-      }
-    }
-  };
-
   // Enhanced attribution tracking function with better Google Ads detection
   const getAttributionSource = () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -370,10 +303,8 @@ const Quiz = () => {
     return 'direct';
   };
 
-  // Track visitor when component mounts and extract lead source from URL
+  // Extract lead source from URL when component mounts
   useEffect(() => {
-    EXTERNAL_TRACKER.trackVisitor();
-    
     // Get attribution source with enhanced tracking
     const attributionSource = getAttributionSource();
     
@@ -825,9 +756,6 @@ const Quiz = () => {
         console.error('Failed to send email verification:', verificationError);
         // Don't throw error - continue with flow even if email fails
       }
-
-      // Submit to external tracking system
-      await EXTERNAL_TRACKER.submitLead(data, score);
 
       // Send admin notification
       try {
