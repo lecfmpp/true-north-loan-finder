@@ -1,0 +1,69 @@
+name: Daily blog post
+
+# Fully autonomous SEO/AEO blog post generator + publisher.
+# Runs on GitHub's infrastructure, so it has real network access to Supabase
+# (unlike a local sandbox) and does not require any app to be open.
+#
+# One-time setup — add these repository secrets
+# (Settings -> Secrets and variables -> Actions -> New repository secret):
+#   SUPABASE_SERVICE_ROLE_KEY   Supabase -> Project Settings -> API -> service_role
+#   GEMINI_API_KEY              Google AI Studio API key
+# Optional repository variables:
+#   SUPABASE_URL   (defaults to the True North project URL)
+#   GEMINI_MODEL   (defaults to gemini-2.0-flash)
+
+on:
+  schedule:
+    # 06:00 UTC = 2:00 AM Eastern (EDT). Adjust to '0 7 * * *' during EST if you care.
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: 'Optional: force a specific topic (leave blank to auto-pick)'
+        required: false
+      dry_run:
+        description: 'Build the post but do NOT publish (true/false)'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write   # needed to commit the updated sitemap
+
+concurrency:
+  group: daily-blog-post
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install @supabase/supabase-js sharp --no-audit --no-fund
+
+      - name: Generate and publish post
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL || 'https://kgwcogltpsmapxnjzjhm.supabase.co' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL || 'gemini-2.0-flash' }}
+          FORCE_TOPIC: ${{ github.event.inputs.topic }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+        run: node scripts/daily-blog-post.mjs
+
+      - name: Commit sitemap update
+        run: |
+          if [ -n "$(git status --porcelain public/sitemap.xml)" ]; then
+            git config user.name  "truenorth-bot"
+            git config user.email "bot@truenorthbusinessloan.ca"
+            git add public/sitemap.xml blog-framework/published-log.md
+            git commit -m "blog: add today's post to sitemap [skip ci]"
+            git push
+          else
+            echo "No sitemap change to commit."
+          fi

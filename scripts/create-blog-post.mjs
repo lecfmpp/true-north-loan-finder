@@ -17,7 +17,7 @@
  * Without it, the file's own `status` is used ("draft" by default), so you can
  * review a draft before it goes live.
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { createClient } from '@supabase/supabase-js';
 
 // Load .env.local if present (no dependency on dotenv).
@@ -84,7 +84,21 @@ const { data, error } = await supabase
 if (error) { console.error('Supabase error:', error.message); process.exit(1); }
 
 console.log(`✓ ${data.status === 'published' ? 'Published' : 'Saved draft'}: ${data.slug} (id ${data.id})`);
+
+// On publish, add the URL to public/sitemap.xml (idempotent).
+function updateSitemap(slug) {
+  const path = new URL('../public/sitemap.xml', import.meta.url);
+  if (!existsSync(path)) { console.log('  (no public/sitemap.xml found — skipped)'); return; }
+  const xml = readFileSync(path, 'utf8');
+  const loc = `https://truenorthbusinessloan.ca/blog/${slug}`;
+  if (xml.includes(loc)) { console.log('  Sitemap already contains this URL.'); return; }
+  const today = new Date().toISOString().slice(0, 10);
+  const entry = `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>\n`;
+  writeFileSync(path, xml.replace('</urlset>', entry + '</urlset>'));
+  console.log('  Added to public/sitemap.xml — commit + push to deploy.');
+}
+
 if (data.status === 'published') {
   console.log(`  Live at: https://truenorthbusinessloan.ca/blog/${data.slug}`);
-  console.log('  Reminder: add this URL to public/sitemap.xml with today\'s lastmod.');
+  updateSitemap(data.slug);
 }
