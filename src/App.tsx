@@ -59,7 +59,10 @@ const PageLoader = () => (
 );
 
 
-const App = () => {
+// Everything inside the router. Kept separate from the router itself so the
+// SSR/prerender entry can wrap it in a StaticRouter instead of a BrowserRouter
+// (BrowserRouter needs window.history and cannot render on the server).
+export const AppRoutes = () => {
   const [widgetsReady, setWidgetsReady] = React.useState(false);
   React.useEffect(() => {
     const onLoad = () => setWidgetsReady(true);
@@ -69,22 +72,13 @@ const App = () => {
   }, []);
 
   return (
-    
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <ConsentBanner />
-          <WebMCPTools />
-          
-          
-          {/* Defer non-critical widgets until after load */}
-          <BrowserRouter>
-            <ScrollToTop />
-            <Suspense fallback={null}>
-              {widgetsReady && <LazySocialProofWidget />}
-            </Suspense>
-            <Routes>
+    <>
+      <ScrollToTop />
+      {/* Defer non-critical widgets until after load */}
+      <Suspense fallback={null}>
+        {widgetsReady && <LazySocialProofWidget />}
+      </Suspense>
+      <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/loan-estimator" element={<Quiz />} />
               <Route path="/results/:responseId" element={<Results />} />
@@ -236,12 +230,31 @@ const App = () => {
                   <NotFound />
                 </Suspense>
               } />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
-    
+      </Routes>
+    </>
   );
 };
+
+// Provider stack, router-agnostic. Shared by the browser entry and the
+// prerender entry so the two can never drift apart.
+export const AppProviders = ({ children }: { children: React.ReactNode }) => (
+  <AuthProvider>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <ConsentBanner />
+      <WebMCPTools />
+      {children}
+    </TooltipProvider>
+  </AuthProvider>
+);
+
+const App = () => (
+  <AppProviders>
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
+  </AppProviders>
+);
 
 export default App;

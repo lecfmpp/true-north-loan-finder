@@ -4,7 +4,7 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode, isSsrBuild }) => ({
   server: {
     host: "::",
     port: 8080,
@@ -22,7 +22,9 @@ export default defineConfig(({ mode }) => ({
   build: {
     // Optimize bundle splitting for better caching and performance
     rollupOptions: {
-      output: {
+      // Manual chunking is a browser-bundle concern. The SSR build is a single
+      // Node module, and forcing these chunks on it breaks the build.
+      output: isSsrBuild ? {} : {
         manualChunks: {
           // Vendor chunk for React and core libraries
           vendor: ['react', 'react-dom'],

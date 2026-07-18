@@ -13,9 +13,17 @@ name: Daily blog post
 #   GEMINI_MODEL   (defaults to gemini-2.0-flash)
 
 on:
-  schedule:
-    # 06:00 UTC = 2:00 AM Eastern (EDT). Adjust to '0 7 * * *' during EST if you care.
-    - cron: '0 6 * * *'
+  # The daily schedule is DISABLED until the two secrets above are set.
+  # Without them every scheduled run fails immediately (it exits 1 before
+  # touching the database), which just produces a daily failure email.
+  #
+  # TO RE-ENABLE: add SUPABASE_SERVICE_ROLE_KEY + GEMINI_API_KEY under
+  # Settings -> Secrets and variables -> Actions, verify a manual run with
+  # dry_run=true, then uncomment the two lines below.
+  #
+  # schedule:
+  #   # 06:00 UTC = 2:00 AM Eastern (EDT). Adjust to '0 7 * * *' during EST if you care.
+  #   - cron: '0 6 * * *'
   workflow_dispatch:
     inputs:
       topic:

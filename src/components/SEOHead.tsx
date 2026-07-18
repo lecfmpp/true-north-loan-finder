@@ -1,5 +1,7 @@
 
 import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { IS_SERVER, setSsrHead } from '@/lib/ssr-head';
 
 interface SEOHeadProps {
   title?: string;
@@ -29,11 +31,14 @@ const SEOHead = ({
   structuredData
 }: SEOHeadProps) => {
   
+  // Router location works on both the client and the server; window does not.
+  const { pathname } = useLocation();
+
   // Auto-generate canonical URL if not provided - more robust handling
   const getCanonicalUrl = () => {
     if (canonicalUrl) return canonicalUrl;
-    
-    const currentPath = window.location.pathname;
+
+    const currentPath = pathname;
     // Remove trailing slash for consistency and handle edge cases
     const cleanPath = currentPath === '/' ? '/' : currentPath.replace(/\/+$/, '');
     
@@ -42,6 +47,21 @@ const SEOHead = ({
     return `${baseUrl}${cleanPath}`;
   };
   
+  // Pre-rendering: effects never run, so hand the resolved metadata to the
+  // prerender script instead of mutating a document that doesn't exist.
+  if (IS_SERVER) {
+    setSsrHead({
+      title,
+      description,
+      keywords,
+      canonicalUrl: getCanonicalUrl(),
+      ogType,
+      ogImage,
+      article,
+      structuredData,
+    });
+  }
+
   useEffect(() => {
     // Update document title
     document.title = title;
