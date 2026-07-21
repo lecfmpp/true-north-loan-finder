@@ -185,8 +185,8 @@ const CannabisDispensary = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Business Loans for Cannabis Dispensary & Marihuana Dispensary | Cannabis Business Financing Canada & US"
-        description="Get business loans for cannabis dispensary and marihuana dispensary operations. Finance inventory, compliance, and expansion with specialized cannabis business funding in Canada and US."
+        title="Business Loans for Cannabis Dispensary & Marihuana Dispensary | Cannabis Business Financing Canada"
+        description="Get business loans for cannabis dispensary and marihuana dispensary operations. Finance inventory, compliance, and expansion with specialized cannabis business funding in Canada."
         keywords={["cannabis dispensary loans", "marihuana dispensary financing", "cannabis business loans", "dispensary financing", "cannabis industry funding", "marihuana business loans"]}
         canonicalUrl="https://truenorthbusinessloan.ca/cannabis-dispensary"
       />
@@ -231,7 +231,7 @@ const CannabisDispensary = () => {
                   Cannabis Dispensary & Marihuana Dispensary Growth
                 </h2>
                 <p className="text-lg text-muted-foreground mb-6 font-serif">
-                  The cannabis dispensary and marihuana dispensary industry represents one of the fastest-growing sectors in North America. With proper financing, dispensary owners can ensure compliance, maintain quality inventory, and expand their marihuana dispensary operations to capture market opportunities in this regulated industry.
+                  The cannabis dispensary and marihuana dispensary industry represents one of the fastest-growing sectors in Canada. With proper financing, dispensary owners can ensure compliance, maintain quality inventory, and expand their marihuana dispensary operations to capture market opportunities in this regulated industry.
                 </p>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-background rounded-lg p-4 border">

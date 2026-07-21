@@ -185,8 +185,8 @@ const Manufacturing = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Business Loans for Manufacturing Companies | Equipment Financing Canada & US"
-        description="Get business loans for manufacturing companies. Finance equipment purchases, facility expansion, and working capital with specialized manufacturing business funding in Canada and US."
+        title="Business Loans for Manufacturing Companies | Equipment Financing Canada"
+        description="Get business loans for manufacturing companies. Finance equipment purchases, facility expansion, and working capital with specialized manufacturing business funding in Canada."
         keywords={["manufacturing loans", "equipment financing", "manufacturing business loans", "industrial equipment financing", "production facility loans", "manufacturing working capital"]}
         canonicalUrl="https://truenorthbusinessloan.ca/manufacturing"
       />

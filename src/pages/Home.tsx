@@ -76,13 +76,13 @@ const Home = () => {
       flag: "🇨🇦"
     },
     {
-      name: "Mike Rodriguez", 
+      name: "Mike Rodriguez",
       business: "Rodriguez Construction",
-      location: "Austin, TX",
-      country: "United States",
+      location: "Calgary, AB",
+      country: "Canada",
       quote: "True North connected us with the perfect lender for our truck financing. The process was seamless and we got funded fast.",
       rating: 5,
-      flag: "🇺🇸"
+      flag: "🇨🇦"
     },
     {
       name: "Jennifer Thompson",
@@ -96,11 +96,11 @@ const Home = () => {
     {
       name: "David Johnson",
       business: "Johnson's Auto Repair",
-      location: "Phoenix, AZ",
-      country: "United States", 
+      location: "Halifax, NS",
+      country: "Canada",
       quote: "I needed equipment financing fast, and True North delivered. Got approved in 3 days with competitive rates. Highly recommend!",
       rating: 5,
-      flag: "🇺🇸"
+      flag: "🇨🇦"
     }
   ];
 

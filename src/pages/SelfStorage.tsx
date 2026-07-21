@@ -185,8 +185,8 @@ const SelfStorage = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Business Loans for Self-Storage Facilities | Storage Facility Financing Canada & US"
-        description="Get business loans for self-storage facilities. Finance facility expansion, security upgrades, and technology improvements with specialized self-storage business funding in Canada and US."
+        title="Business Loans for Self-Storage Facilities | Storage Facility Financing Canada"
+        description="Get business loans for self-storage facilities. Finance facility expansion, security upgrades, and technology improvements with specialized self-storage business funding in Canada."
         keywords={["self storage loans", "storage facility financing", "self storage business loans", "storage facility expansion loans", "storage business financing", "storage facility development"]}
         canonicalUrl="https://truenorthbusinessloan.ca/self-storage"
       />

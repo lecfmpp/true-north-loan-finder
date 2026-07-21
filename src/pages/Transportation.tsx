@@ -200,8 +200,8 @@ const Transportation = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Business Loans for Transportation Companies | Fleet Financing Canada & US"
-        description="Get business loans for transportation and logistics companies. Finance fleet expansion, equipment purchases, and working capital with specialized transportation business funding in Canada and US."
+        title="Business Loans for Transportation Companies | Fleet Financing Canada"
+        description="Get business loans for transportation and logistics companies. Finance fleet expansion, equipment purchases, and working capital with specialized transportation business funding in Canada."
         keywords={keywords}
         canonicalUrl="https://truenorthbusinessloan.ca/transportation"
         structuredData={[structuredData, faqStructuredData]}

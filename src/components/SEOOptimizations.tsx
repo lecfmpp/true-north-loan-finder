@@ -145,7 +145,7 @@ export const generateEnhancedStructuredData = {
           "@type": "PostalAddress",
           "addressCountry": ["CA", "US"]
         },
-        "areaServed": ["Canada", "United States"],
+        "areaServed": ["Canada"],
         "serviceType": "Financial Services",
         "sameAs": []
       },
@@ -154,7 +154,7 @@ export const generateEnhancedStructuredData = {
         "@id": "https://truenorthbusinessloan.ca/#website",
         "url": "https://truenorthbusinessloan.ca",
         "name": "True North Business Loan",
-        "description": "Fast business loans and financing solutions for Canadian and US businesses",
+        "description": "Fast business loans and financing solutions for Canadian businesses",
         "publisher": {
           "@id": "https://truenorthbusinessloan.ca/#organization"
         },
@@ -175,7 +175,7 @@ export const generateEnhancedStructuredData = {
         },
         "serviceType": "Business Financing",
         "description": "Connect with pre-screened lenders for business loans, equipment financing, working capital, and merchant cash advances.",
-        "areaServed": ["Canada", "United States"],
+        "areaServed": ["Canada"],
         "offers": {
           "@type": "Offer",
           "description": "Business loans from $5,000 to $800,000",

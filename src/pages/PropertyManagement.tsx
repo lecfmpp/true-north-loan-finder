@@ -185,8 +185,8 @@ const PropertyManagement = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Business Loans for Multi-Unit Property Management | Real Estate Financing Canada & US"
-        description="Get business loans for multi-unit property management companies. Finance property acquisitions, renovations, and working capital with specialized real estate business funding in Canada and US."
+        title="Business Loans for Multi-Unit Property Management | Real Estate Financing Canada"
+        description="Get business loans for multi-unit property management companies. Finance property acquisitions, renovations, and working capital with specialized real estate business funding in Canada."
         keywords={["property management loans", "multi-unit property financing", "real estate business loans", "rental property loans", "commercial property financing", "apartment building loans"]}
         canonicalUrl="https://truenorthbusinessloan.ca/property-management"
       />

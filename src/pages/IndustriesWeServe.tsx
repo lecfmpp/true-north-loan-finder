@@ -55,7 +55,7 @@ const IndustriesWeServe = () => {
       image: constructionImage,
       icon: <Hammer className="h-6 w-6 text-secondary" />,
       challenge: {
-        headline: "Business Loans for Construction in Canada & US",
+        headline: "Business Loans for Construction in Canada",
         description: "Securing a **small business loan in Canada or the US** is often the key to bidding on bigger construction projects. We provide the capital needed to purchase equipment and manage cash flow with confidence."
       },
       solutions: [
@@ -71,8 +71,8 @@ const IndustriesWeServe = () => {
       image: restaurantImage,
       icon: <ChefHat className="h-6 w-6 text-secondary" />,
       challenge: {
-        headline: "Business Loans for Restaurants in Canada & US",
-        description: "The restaurant industry faces unique cash flow challenges. Our **business loan** solutions help you manage seasonal fluctuations, upgrade equipment, and expand your operations in Canada and the United States."
+        headline: "Business Loans for Restaurants in Canada",
+        description: "The restaurant industry faces unique cash flow challenges. Our **business loan** solutions help you manage seasonal fluctuations, upgrade equipment, and expand your operations in Canada."
       },
       solutions: [
         { title: "Equipment Financing", description: "Fund kitchen equipment, POS systems, and renovations." },
@@ -87,7 +87,7 @@ const IndustriesWeServe = () => {
       image: retailImage,
       icon: <ShoppingCart className="h-6 w-6 text-secondary" />,
       challenge: {
-        headline: "Business Loans for Retail in Canada & US",
+        headline: "Business Loans for Retail in Canada",
         description: "Whether you're expanding inventory or launching online, **business financing in Canada and the US** for retail businesses helps you stay competitive and grow your customer base."
       },
       solutions: [
@@ -103,8 +103,8 @@ const IndustriesWeServe = () => {
       image: medicalImage,
       icon: <Stethoscope className="h-6 w-6 text-secondary" />,
       challenge: {
-        headline: "Business Loans for Medical Practices in Canada & US",
-        description: "Medical practices require specialized equipment and often face long payment cycles. Our **small business loan** options are designed for healthcare professionals' unique needs in both Canada and the United States."
+        headline: "Business Loans for Medical Practices in Canada",
+        description: "Medical practices require specialized equipment and often face long payment cycles. Our **small business loan** options are designed for healthcare professionals' unique needs in Canada."
       },
       solutions: [
         { title: "Equipment Financing", description: "Fund medical equipment and technology upgrades." },
@@ -119,8 +119,8 @@ const IndustriesWeServe = () => {
       image: b2bServicesImage,
       icon: <Users className="h-6 w-6 text-secondary" />,
       challenge: {
-        headline: "Business Loans for B2B Services in Canada & US",
-        description: "Service businesses like staffing agencies and consulting firms need capital to scale operations and manage client payment delays. Our **business loan** solutions provide the flexibility you need in Canada and the United States."
+        headline: "Business Loans for B2B Services in Canada",
+        description: "Service businesses like staffing agencies and consulting firms need capital to scale operations and manage client payment delays. Our **business loan** solutions provide the flexibility you need in Canada."
       },
       solutions: [
         { title: "Working Capital Loans", description: "Cover payroll and operating expenses during growth." },
@@ -135,8 +135,8 @@ const IndustriesWeServe = () => {
       image: establishedFranchisesImage,
       icon: <Store className="h-6 w-6 text-secondary" />,
       challenge: {
-        headline: "Business Loans for Established Franchises in Canada & US",
-        description: "Franchise businesses need capital to expand locations, renovate existing stores, and maintain working capital. Our **business loan** solutions are tailored for franchise operations in Canada and the United States."
+        headline: "Business Loans for Established Franchises in Canada",
+        description: "Franchise businesses need capital to expand locations, renovate existing stores, and maintain working capital. Our **business loan** solutions are tailored for franchise operations in Canada."
       },
       solutions: [
         { title: "Expansion Financing", description: "Fund new franchise locations and territory growth." },
@@ -151,8 +151,8 @@ const IndustriesWeServe = () => {
       image: transportationImage,
       icon: <Truck className="h-6 w-6 text-secondary" />,
       challenge: {
-        headline: "Business Loans for Transportation Companies in Canada & US",
-        description: "Transportation businesses require capital for vehicle fleets, fuel costs, and operational expenses. Our **business loan** options help logistics companies maintain operations and expand in Canada and the United States."
+        headline: "Business Loans for Transportation Companies in Canada",
+        description: "Transportation businesses require capital for vehicle fleets, fuel costs, and operational expenses. Our **business loan** options help logistics companies maintain operations and expand in Canada."
       },
       solutions: [
         { title: "Equipment Financing", description: "Purchase trucks, trailers, and transportation equipment." },
@@ -167,8 +167,8 @@ const IndustriesWeServe = () => {
       image: manufacturingImage,
       icon: <Factory className="h-6 w-6 text-secondary" />,
       challenge: {
-        headline: "Business Loans for Manufacturing Companies in Canada & US",
-        description: "Manufacturing businesses need capital for equipment, raw materials, and expansion. Our **business loan** solutions support manufacturers' unique cash flow needs in Canada and the United States."
+        headline: "Business Loans for Manufacturing Companies in Canada",
+        description: "Manufacturing businesses need capital for equipment, raw materials, and expansion. Our **business loan** solutions support manufacturers' unique cash flow needs in Canada."
       },
       solutions: [
         { title: "Equipment Financing", description: "Purchase manufacturing machinery and production equipment." },
@@ -183,8 +183,8 @@ const IndustriesWeServe = () => {
       image: propertyManagementImage,
       icon: <Building2 className="h-6 w-6 text-secondary" />,
       challenge: {
-        headline: "Business Loans for Property Management Companies in Canada & US",
-        description: "Property management businesses require capital for property improvements, tenant improvements, and operational cash flow. Our **business loan** solutions support property managers in Canada and the United States."
+        headline: "Business Loans for Property Management Companies in Canada",
+        description: "Property management businesses require capital for property improvements, tenant improvements, and operational cash flow. Our **business loan** solutions support property managers in Canada."
       },
       solutions: [
         { title: "Property Improvement Loans", description: "Fund renovations and capital improvements." },
@@ -199,8 +199,8 @@ const IndustriesWeServe = () => {
       image: selfStorageImage,
       icon: <Warehouse className="h-6 w-6 text-secondary" />,
       challenge: {
-        headline: "Business Loans for Self-Storage Facilities in Canada & US",
-        description: "Self-storage businesses need capital for facility expansion, technology upgrades, and operational improvements. Our **business loan** options help storage facilities grow in Canada and the United States."
+        headline: "Business Loans for Self-Storage Facilities in Canada",
+        description: "Self-storage businesses need capital for facility expansion, technology upgrades, and operational improvements. Our **business loan** options help storage facilities grow in Canada."
       },
       solutions: [
         { title: "Facility Expansion Loans", description: "Build additional storage units and facilities." },
@@ -215,8 +215,8 @@ const IndustriesWeServe = () => {
       image: cannabisDispensaryImage,
       icon: <Leaf className="h-6 w-6 text-secondary" />,
       challenge: {
-        headline: "Business Loans for Cannabis Dispensary & Marihuana Dispensary in Canada & US",
-        description: "Cannabis businesses including **marihuana dispensary** operations need specialized financing for compliance, inventory, and expansion. Our **business loan** solutions serve the cannabis industry in Canada and the United States."
+        headline: "Business Loans for Cannabis Dispensary & Marihuana Dispensary in Canada",
+        description: "Cannabis businesses including **marihuana dispensary** operations need specialized financing for compliance, inventory, and expansion. Our **business loan** solutions serve the cannabis industry in Canada."
       },
       solutions: [
         { title: "Inventory Financing", description: "Fund cannabis product inventory and supplies." },
@@ -231,12 +231,12 @@ const IndustriesWeServe = () => {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    "name": "Industries We Serve - Small Business Loans in Canada & US",
-    "description": "Specialized business financing in Canada and the United States for construction, restaurants, retail, medical practices, and B2B services. Get a business loan tailored for your industry.",
+    "name": "Industries We Serve - Small Business Loans in Canada",
+    "description": "Specialized business financing in Canada for construction, restaurants, retail, medical practices, and B2B services. Get a business loan tailored for your industry.",
     "url": "https://truenorthbusinessloan.ca/industries-we-serve",
     "mainEntity": {
       "@type": "Service",
-      "name": "Small Business Loans in Canada & US",
+      "name": "Small Business Loans in Canada",
       "provider": {
         "@type": "Organization",
         "name": "True North Business Loan"
@@ -247,8 +247,8 @@ const IndustriesWeServe = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Industries We Serve - Small Business Loans in Canada & US | True North Business Loan"
-        description="Specialized business financing in Canada and the United States for construction, restaurants, retail, medical practices, and B2B services. Get a business loan tailored for your industry."
+        title="Industries We Serve - Small Business Loans in Canada | True North Business Loan"
+        description="Specialized business financing in Canada for construction, restaurants, retail, medical practices, and B2B services. Get a business loan tailored for your industry."
         keywords={["small business loans canada", "small business loans usa", "business financing canada", "business financing usa", "construction loans", "restaurant financing", "retail loans", "medical practice loans"]}
         canonicalUrl="https://truenorthbusinessloan.ca/industries-we-serve"
         structuredData={structuredData}
@@ -263,10 +263,10 @@ const IndustriesWeServe = () => {
               Industries We Serve
             </h1>
             <h2 className="text-2xl lg:text-3xl font-bold font-sans text-secondary mb-6">
-              Small Business Loans in Canada & US, Tailored for Your Industry
+              Small Business Loans in Canada, Tailored for Your Industry
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto font-serif mb-8">
-              We provide specialized <strong>business financing in Canada and the United States</strong> to help entrepreneurs overcome their unique challenges. From a <strong>business loan for expansion</strong> to equipment financing, we have the right funding for your company.
+              We provide specialized <strong>business financing in Canada</strong> to help entrepreneurs overcome their unique challenges. From a <strong>business loan for expansion</strong> to equipment financing, we have the right funding for your company.
             </p>
             <Button asChild size="lg" variant="cta">
               <Link to="/loan-estimator">
