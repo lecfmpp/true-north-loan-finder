@@ -92,6 +92,11 @@ const escapeHtml = (value) =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
 
+const ORIGIN = 'https://truenorthbusinessloan.ca'
+
+/** Absolute canonical URL for a route (no trailing slash, per site convention). */
+const canonicalFor = (route) => (route === '/' ? ORIGIN : `${ORIGIN}${route}`)
+
 /**
  * Fold per-page metadata into the template's <head>.
  *
@@ -99,37 +104,50 @@ const escapeHtml = (value) =>
  * page. Left alone, every pre-rendered page would repeat it, so the managed
  * tags are stripped and replaced with the ones SEOHead resolved for this route.
  * (This also fixes index.html declaring rel="canonical" twice.)
+ *
+ * The canonical is ALWAYS rewritten to this route's own URL, even for pages
+ * that render no <SEOHead>. Otherwise those pages would inherit index.html's
+ * canonical (the homepage), telling search engines they duplicate the home
+ * page — worse than having no canonical at all.
  */
-function applyHead(template, head) {
-  if (!head) return template
+function applyHead(template, head, route) {
+  const canonicalUrl = head?.canonicalUrl || canonicalFor(route)
+
+  // Always strip the template's canonical (and the eager duplicate) and
+  // re-add exactly one pointing at this route.
+  let html = template.replace(/<link\s+rel="canonical"[^>]*>\s*/gi, '')
+
+  // The remaining managed tags are only replaced when SEOHead gave us values;
+  // without it we keep index.html's generic title/description as a fallback.
+  const tags = [`<link rel="canonical" href="${escapeHtml(canonicalUrl)}" />`]
+
+  if (!head) {
+    return html.replace('</head>', `    ${tags.join('\n    ')}\n  </head>`)
+  }
 
   const managed = [
     /<title>[\s\S]*?<\/title>\s*/gi,
     /<meta\s+name="description"[^>]*>\s*/gi,
     /<meta\s+name="keywords"[^>]*>\s*/gi,
-    /<link\s+rel="canonical"[^>]*>\s*/gi,
     /<meta\s+property="og:(?:title|description|type|image|url)"[^>]*>\s*/gi,
     /<meta\s+name="twitter:(?:title|description|image|card)"[^>]*>\s*/gi,
   ]
-
-  let html = template
   for (const pattern of managed) html = html.replace(pattern, '')
 
-  const tags = [
+  tags.push(
     `<title>${escapeHtml(head.title)}</title>`,
     `<meta name="description" content="${escapeHtml(head.description)}" />`,
     `<meta name="keywords" content="${escapeHtml((head.keywords || []).join(', '))}" />`,
-    `<link rel="canonical" href="${escapeHtml(head.canonicalUrl)}" />`,
     `<meta property="og:title" content="${escapeHtml(head.title)}" />`,
     `<meta property="og:description" content="${escapeHtml(head.description)}" />`,
     `<meta property="og:type" content="${escapeHtml(head.ogType)}" />`,
     `<meta property="og:image" content="${escapeHtml(head.ogImage)}" />`,
-    `<meta property="og:url" content="${escapeHtml(head.canonicalUrl)}" />`,
+    `<meta property="og:url" content="${escapeHtml(canonicalUrl)}" />`,
     `<meta name="twitter:card" content="summary_large_image" />`,
     `<meta name="twitter:title" content="${escapeHtml(head.title)}" />`,
     `<meta name="twitter:description" content="${escapeHtml(head.description)}" />`,
     `<meta name="twitter:image" content="${escapeHtml(head.ogImage)}" />`,
-  ]
+  )
 
   if (head.article && head.ogType === 'article') {
     const a = head.article
@@ -167,7 +185,6 @@ function writeRoute(route, html) {
  * this rewrites it at build time with the Supabase-backed blog URLs added.
  */
 function writeSitemap(routes, blogPosts) {
-  const ORIGIN = 'https://truenorthbusinessloan.ca'
   const today = new Date().toISOString().slice(0, 10)
   const lastmodFor = new Map(
     blogPosts.map((p) => [`/blog/${p.slug}`, (p.updatedAt || '').slice(0, 10) || today]),
@@ -175,7 +192,7 @@ function writeSitemap(routes, blogPosts) {
 
   const urls = routes
     .map((route) => {
-      const loc = route === '/' ? ORIGIN : `${ORIGIN}${route}`
+      const loc = canonicalFor(route)
       const lastmod = lastmodFor.get(route) || today
       return `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n  </url>`
     })
@@ -237,7 +254,7 @@ async function main() {
         missingHead++
         console.warn(`  ! ${route} rendered no <SEOHead> — falls back to generic metadata.`)
       }
-      const page = applyHead(template, head).replace('<!--app-html-->', appHtml)
+      const page = applyHead(template, head, route).replace('<!--app-html-->', appHtml)
       const written = writeRoute(route, page)
       console.log(`  ✓ ${route} -> ${written}`)
     } catch (err) {
