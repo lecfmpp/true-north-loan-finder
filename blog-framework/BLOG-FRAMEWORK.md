@@ -87,7 +87,12 @@ only `.tn-cta` and `.tn-pullquote` (plus the `.tn-center` helper) center their t
 | `tn-note` | caveat / rule of thumb / formula |
 | `tn-link-card` (on `<a>`) | one cross-link (max 1, not in intro) |
 | `tn-faq` | 4–6 `<details>` Q&A pairs |
-| `tn-cta` + `.cta-button` | closing conversion (exactly 1, last) |
+| `tn-cta` + `.cta-button` | closing conversion — **see warning below** |
+
+> **Do NOT put a `tn-cta` in post content.** `BlogPost.tsx` already renders a
+> "Ready to Get Started?" CTA linking to `/loan-estimator` after every article.
+> Adding one to `content` produces two CTA banners stacked at the end of the post.
+> `tn-cta` exists for other surfaces; blog posts get their CTA from the page.
 
 **Element selection pass** — run on every H2 before writing. Use the first that matches;
 otherwise leave the section as prose. **At least 2 sections stay pure prose.** Max **6**
