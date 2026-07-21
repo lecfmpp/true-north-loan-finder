@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>True North blog element standard</title>
+<!--
+  ============================================================================
+  THE STANDARD SET OF VISUAL ELEMENTS FOR True North blog posts.
+
+  How this works:
+  - blog_posts.content is sanitized HTML rendered inside `.blog-content`
+    (src/pages/BlogPost.tsx -> DOMPurify -> <div class="blog-content">).
+  - Every element below is a plain HTML snippet using a `tn-*` class.
+  - The AUTHORITATIVE styling lives in src/index.css (search "Blog element
+    standard"). The CSS in THIS file is only a copy so the file previews
+    standalone in a browser. If you change a style, change it in index.css.
+  - Author posts by pasting these snippets into `content`. Keep to <= 6
+    inline elements per post; at least 2 sections stay pure prose; never stack
+    two boxed elements without a prose paragraph between them.
+  - All body copy is left-aligned by default. Only .tn-cta and .tn-pullquote
+    (and the .tn-center helper) center their text.
+
+  DOMPurify note: class, href, and <details>/<summary> all survive the default
+  sanitizer, so these elements render as authored.
+  ============================================================================
+-->
+<style>
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 210 11% 15%;
+    --card: 0 0% 100%;
+    --primary: 210 22% 22%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 145 63% 42%;
+    --muted: 210 20% 95%;
+    --muted-foreground: 210 6% 46%;
+    --border: 210 20% 90%;
+    --destructive: 0 84% 60%;
+  }
+  body {
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    max-width: 56rem;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 6rem;
+    line-height: 1.6;
+  }
+  h1.doc { font-size: 2rem; }
+  .doc-lead { color: hsl(var(--muted-foreground)); }
+  .doc-el { border-top: 1px solid hsl(var(--border)); margin-top: 2.5rem; padding-top: 1.5rem; }
+  .doc-el > h2 { font-size: 1.25rem; margin-bottom: .25rem; }
+  .doc-when { color: hsl(var(--muted-foreground)); font-size: .9rem; margin: 0 0 1rem; }
+  pre.doc-code {
+    background: hsl(var(--foreground)); color: #e7edf3;
+    padding: 1rem 1.25rem; border-radius: .5rem; overflow-x: auto;
+    font-size: .8rem; line-height: 1.5; margin-top: 1rem;
+  }
+
+  /* ---- copy of the .blog-content base typography (for accurate preview) ---- */
+  .blog-content p { margin: 0 0 1.5rem; line-height: 1.7; color: hsl(var(--muted-foreground)); text-align: left; }
+  .blog-content h3 { font-size: 1.35rem; font-weight: 600; margin: 2rem 0 1rem; color: hsl(var(--foreground)); }
+  .blog-content strong { font-weight: 600; color: hsl(var(--foreground)); }
+  .blog-content table { width: 100%; border-collapse: collapse; background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: .5rem; overflow: hidden; }
+  .blog-content th { border-bottom: 2px solid hsl(var(--border)); padding: .9rem 1rem; text-align: left; background: hsl(var(--muted)); font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; }
+  .blog-content td { border-bottom: 1px solid hsl(var(--border)); padding: .9rem 1rem; color: hsl(var(--muted-foreground)); }
+
+  /* ---- copy of the .blog-content .tn-* element styles (authoritative: index.css) ---- */
+  .blog-content .tn-key-takeaway { border-left: 4px solid hsl(var(--secondary)); background: hsl(var(--secondary) / .06); padding: 1.25rem 1.5rem; border-radius: 0 .5rem .5rem 0; margin: 2rem 0; }
+  .blog-content .tn-key-takeaway > :first-child { margin-top: 0; } .blog-content .tn-key-takeaway > :last-child { margin-bottom: 0; }
+  .blog-content .tn-label { display: inline-block; font-weight: 700; font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: hsl(var(--secondary)); margin-bottom: .5rem; }
+  .blog-content .tn-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin: 2rem 0; }
+  .blog-content .tn-stat { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: .75rem; padding: 1.25rem; text-align: center; }
+  .blog-content .tn-stat-num { display: block; font-size: 1.875rem; font-weight: 700; line-height: 1.1; color: hsl(var(--secondary)); }
+  .blog-content .tn-stat-label { display: block; font-size: .875rem; color: hsl(var(--muted-foreground)); margin-top: .35rem; }
+  .blog-content .tn-table-wrap { overflow-x: auto; margin: 2rem 0; }
+  .blog-content .tn-table-wrap table { margin: 0; min-width: 32rem; }
+  .blog-content .tn-yes { color: hsl(var(--secondary)); font-weight: 600; } .blog-content .tn-no { color: hsl(var(--destructive)); font-weight: 600; }
+  .blog-content ol.tn-steps { list-style: none; counter-reset: tn-step; margin: 2rem 0; padding: 0; }
+  .blog-content ol.tn-steps > li { position: relative; counter-increment: tn-step; padding: 1rem 1.25rem 1rem 3.5rem; margin: 0 0 1rem; background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: .75rem; }
+  .blog-content ol.tn-steps > li::before { content: counter(tn-step); position: absolute; left: 1rem; top: 1rem; width: 1.75rem; height: 1.75rem; border-radius: 999px; background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .875rem; }
+  .blog-content ol.tn-steps > li > :first-child { margin-top: 0; font-weight: 600; } .blog-content ol.tn-steps > li > :last-child { margin-bottom: 0; }
+  .blog-content ul.tn-pitfalls { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin: 2rem 0; padding: 0; list-style: none; }
+  .blog-content ul.tn-pitfalls > li { border: 1px solid hsl(var(--destructive) / .3); border-left: 4px solid hsl(var(--destructive)); background: hsl(var(--destructive) / .04); border-radius: .5rem; padding: 1rem 1.25rem; margin: 0; }
+  .blog-content ul.tn-checklist { list-style: none; margin: 1.5rem 0; padding: 0; }
+  .blog-content ul.tn-checklist > li { position: relative; padding-left: 1.9rem; margin-bottom: .6rem; }
+  .blog-content ul.tn-checklist > li::before { content: "\2713"; position: absolute; left: 0; top: 0; color: hsl(var(--secondary)); font-weight: 800; }
+  .blog-content blockquote.tn-pullquote { border-top: 2px solid hsl(var(--border)); border-bottom: 2px solid hsl(var(--border)); padding: 1.5rem 0; margin: 2.5rem 0; font-size: 1.5rem; line-height: 1.4; font-weight: 600; color: hsl(var(--primary)); text-align: center; }
+  .blog-content .tn-note { border-left: 4px solid #efab4d; background: rgba(239,171,77,.08); padding: 1rem 1.25rem; border-radius: 0 .5rem .5rem 0; margin: 2rem 0; }
+  .blog-content .tn-note .tn-label { color: #b9791f; } .blog-content .tn-note > :last-child { margin-bottom: 0; }
+  .blog-content a.tn-link-card { display: block; border: 1px solid hsl(var(--border)); border-radius: .75rem; padding: 1.25rem 1.5rem; margin: 2rem 0; background: hsl(var(--card)); text-decoration: none; }
+  .blog-content a.tn-link-card .tn-link-eyebrow { display: block; font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: hsl(var(--secondary)); font-weight: 700; }
+  .blog-content a.tn-link-card .tn-link-title { display: block; font-weight: 600; color: hsl(var(--primary)); margin-top: .15rem; }
+  .blog-content .tn-faq details { border: 1px solid hsl(var(--border)); border-radius: .5rem; margin-bottom: .75rem; background: hsl(var(--card)); overflow: hidden; }
+  .blog-content .tn-faq summary { cursor: pointer; padding: 1rem 1.25rem; font-weight: 600; color: hsl(var(--primary)); list-style: none; display: flex; justify-content: space-between; align-items: center; }
+  .blog-content .tn-faq summary::-webkit-details-marker { display: none; }
+  .blog-content .tn-faq summary::after { content: "+"; font-size: 1.25rem; color: hsl(var(--muted-foreground)); }
+  .blog-content .tn-faq details[open] summary::after { content: "\2212"; }
+  .blog-content .tn-faq details > :not(summary) { padding: 0 1.25rem 1rem; margin: 0; }
+  .blog-content .tn-cta { background: hsl(var(--primary) / .05); border-radius: .75rem; padding: 2rem; margin: 2.5rem 0; text-align: center; }
+  .blog-content .cta-button { display: inline-block; background: hsl(var(--secondary)); color: #fff; padding: .85rem 2rem; border-radius: .5rem; text-decoration: none; font-weight: 600; }
+</style>
+</head>
+<body class="blog-content">
+<h1 class="doc">True North blog element standard</h1>
+<p class="doc-lead">The canonical visual elements for blog posts. Paste the snippet, keep the classes. Authoritative CSS: <strong>src/index.css</strong>. Rules: max 6 elements per post, at least 2 prose-only sections, never two boxed elements back to back.</p>
+
+<section class="doc-el">
+  <h2>1. Key takeaway</h2>
+  <p class="doc-when">TL;DR / bottom line near the top. Max 1 per post.</p>
+  <div class="tn-key-takeaway">
+    <span class="tn-label">Key takeaway</span>
+    <p>Most Canadian small businesses can get $5K–$800K in 24–48 hours by matching to a lender through a 60-second quiz, instead of waiting weeks on a single bank.</p>
+  </div>
+  <pre class="doc-code">&lt;div class="tn-key-takeaway"&gt;
+  &lt;span class="tn-label"&gt;Key takeaway&lt;/span&gt;
+  &lt;p&gt;Your one- or two-sentence answer here.&lt;/p&gt;
+&lt;/div&gt;</pre>
+</section>
+
+<section class="doc-el">
+  <h2>2. Stat row</h2>
+  <p class="doc-when">2–4 headline metrics. Never invent numbers.</p>
+  <div class="tn-stats">
+    <div class="tn-stat"><span class="tn-stat-num">$5K–$800K</span><span class="tn-stat-label">Funding range</span></div>
+    <div class="tn-stat"><span class="tn-stat-num">24–48h</span><span class="tn-stat-label">Approval time</span></div>
+    <div class="tn-stat"><span class="tn-stat-num">60 sec</span><span class="tn-stat-label">To see options</span></div>
+  </div>
+  <pre class="doc-code">&lt;div class="tn-stats"&gt;
+  &lt;div class="tn-stat"&gt;&lt;span class="tn-stat-num"&gt;$5K–$800K&lt;/span&gt;&lt;span class="tn-stat-label"&gt;Funding range&lt;/span&gt;&lt;/div&gt;
+  &lt;div class="tn-stat"&gt;&lt;span class="tn-stat-num"&gt;24–48h&lt;/span&gt;&lt;span class="tn-stat-label"&gt;Approval time&lt;/span&gt;&lt;/div&gt;
+  &lt;div class="tn-stat"&gt;&lt;span class="tn-stat-num"&gt;60 sec&lt;/span&gt;&lt;span class="tn-stat-label"&gt;To see options&lt;/span&gt;&lt;/div&gt;
+&lt;/div&gt;</pre>
+</section>
+
+<section class="doc-el">
+  <h2>3. Comparison / cost table</h2>
+  <p class="doc-when">Two or more options across dollar/verdict rows. Use tn-yes / tn-no for verdicts.</p>
+  <div class="tn-table-wrap">
+    <table>
+      <thead><tr><th>Factor</th><th>Big bank</th><th>True North match</th></tr></thead>
+      <tbody>
+        <tr><td>Time to decision</td><td class="tn-no">2–6 weeks</td><td class="tn-yes">24–48 hours</td></tr>
+        <tr><td>Lenders reached</td><td class="tn-no">One</td><td class="tn-yes">Many, from one quiz</td></tr>
+        <tr><td>Credit check to see options</td><td class="tn-no">Hard pull</td><td class="tn-yes">Soft check first</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre class="doc-code">&lt;div class="tn-table-wrap"&gt;
+  &lt;table&gt;
+    &lt;thead&gt;&lt;tr&gt;&lt;th&gt;Factor&lt;/th&gt;&lt;th&gt;Big bank&lt;/th&gt;&lt;th&gt;True North match&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+    &lt;tbody&gt;
+      &lt;tr&gt;&lt;td&gt;Time to decision&lt;/td&gt;&lt;td class="tn-no"&gt;2–6 weeks&lt;/td&gt;&lt;td class="tn-yes"&gt;24–48 hours&lt;/td&gt;&lt;/tr&gt;
+    &lt;/tbody&gt;
+  &lt;/table&gt;
+&lt;/div&gt;</pre>
+</section>
+
+<section class="doc-el">
+  <h2>4. Decision steps</h2>
+  <p class="doc-when">An ordered how-to. Use this instead of a bare &lt;ol&gt;.</p>
+  <ol class="tn-steps">
+    <li><strong>Take the 60-second quiz.</strong> Tell us your revenue, time in business, and how much you need.</li>
+    <li><strong>Review your matches.</strong> See the lenders and products you pre-qualify for.</li>
+    <li><strong>Complete one application.</strong> Submit once; funding often lands in one business day.</li>
+  </ol>
+  <pre class="doc-code">&lt;ol class="tn-steps"&gt;
+  &lt;li&gt;&lt;strong&gt;Step title.&lt;/strong&gt; Supporting sentence.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Step title.&lt;/strong&gt; Supporting sentence.&lt;/li&gt;
+&lt;/ol&gt;</pre>
+</section>
+
+<section class="doc-el">
+  <h2>5. Pitfall grid</h2>
+  <p class="doc-when">2–4 mistakes / what to avoid, red accent.</p>
+  <ul class="tn-pitfalls">
+    <li><strong>Applying everywhere at once.</strong> Multiple hard pulls drop your score and waste time.</li>
+    <li><strong>Ignoring the fine print.</strong> Factor rates and daily payments can cost more than an APR suggests.</li>
+  </ul>
+  <pre class="doc-code">&lt;ul class="tn-pitfalls"&gt;
+  &lt;li&gt;&lt;strong&gt;Mistake.&lt;/strong&gt; Why it hurts.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Mistake.&lt;/strong&gt; Why it hurts.&lt;/li&gt;
+&lt;/ul&gt;</pre>
+</section>
+
+<section class="doc-el">
+  <h2>6. Checklist</h2>
+  <p class="doc-when">Requirements / "what you need", green checks.</p>
+  <ul class="tn-checklist">
+    <li>6+ months in business</li>
+    <li>$10K+ in monthly revenue</li>
+    <li>A business bank account</li>
+  </ul>
+  <pre class="doc-code">&lt;ul class="tn-checklist"&gt;
+  &lt;li&gt;6+ months in business&lt;/li&gt;
+  &lt;li&gt;$10K+ in monthly revenue&lt;/li&gt;
+&lt;/ul&gt;</pre>
+</section>
+
+<section class="doc-el">
+  <h2>7. Pull quote</h2>
+  <p class="doc-when">One quotable rule of thumb. Centered. Max 1.</p>
+  <blockquote class="tn-pullquote">The best time to line up financing is before you urgently need it.</blockquote>
+  <pre class="doc-code">&lt;blockquote class="tn-pullquote"&gt;Your quotable line.&lt;/blockquote&gt;</pre>
+</section>
+
+<section class="doc-el">
+  <h2>8. Note callout</h2>
+  <p class="doc-when">A caveat, formula, or "rule of thumb", gold accent.</p>
+  <div class="tn-note">
+    <span class="tn-label">Rule of thumb</span>
+    <p>Keep total loan payments under 15% of monthly revenue so debt service never chokes cash flow.</p>
+  </div>
+  <pre class="doc-code">&lt;div class="tn-note"&gt;
+  &lt;span class="tn-label"&gt;Rule of thumb&lt;/span&gt;
+  &lt;p&gt;The caveat or formula.&lt;/p&gt;
+&lt;/div&gt;</pre>
+</section>
+
+<section class="doc-el">
+  <h2>9. Link card</h2>
+  <p class="doc-when">One cross-link to a related page. Not in the intro. Max 1.</p>
+  <a class="tn-link-card" href="/equipment-financing">
+    <span class="tn-link-eyebrow">Related</span>
+    <span class="tn-link-title">Equipment financing: how Canadian businesses fund gear →</span>
+  </a>
+  <pre class="doc-code">&lt;a class="tn-link-card" href="/equipment-financing"&gt;
+  &lt;span class="tn-link-eyebrow"&gt;Related&lt;/span&gt;
+  &lt;span class="tn-link-title"&gt;Anchor text with a keyword →&lt;/span&gt;
+&lt;/a&gt;</pre>
+</section>
+
+<section class="doc-el">
+  <h2>10. FAQ</h2>
+  <p class="doc-when">4–6 Q&amp;A pairs (feeds FAQPage schema). Accordion.</p>
+  <div class="tn-faq">
+    <details open><summary>How fast can I get funded?</summary><p>Most matched applications are approved in 24–48 hours, with funding often in one business day.</p></details>
+    <details><summary>Will checking my options hurt my credit?</summary><p>No. Seeing your matches uses a soft check; a hard pull only happens if you proceed with a lender.</p></details>
+  </div>
+  <pre class="doc-code">&lt;div class="tn-faq"&gt;
+  &lt;details&gt;&lt;summary&gt;Question?&lt;/summary&gt;&lt;p&gt;Answer.&lt;/p&gt;&lt;/details&gt;
+  &lt;details&gt;&lt;summary&gt;Question?&lt;/summary&gt;&lt;p&gt;Answer.&lt;/p&gt;&lt;/details&gt;
+&lt;/div&gt;</pre>
+</section>
+
+<section class="doc-el">
+  <h2>11. CTA block</h2>
+  <p class="doc-when">Closing conversion. Exactly 1, last. Links to /loan-estimator.</p>
+  <div class="tn-cta">
+    <h3>See your loan options in 60 seconds</h3>
+    <p>No hard credit check to start. Match to Canadian lenders for $5K–$800K.</p>
+    <a class="cta-button" href="/loan-estimator">Get my loan estimate</a>
+  </div>
+  <pre class="doc-code">&lt;div class="tn-cta"&gt;
+  &lt;h3&gt;Headline&lt;/h3&gt;
+  &lt;p&gt;One supporting line.&lt;/p&gt;
+  &lt;a class="cta-button" href="/loan-estimator"&gt;Get my loan estimate&lt;/a&gt;
+&lt;/div&gt;</pre>
+</section>
+
+</body>
+</html>

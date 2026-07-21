@@ -10,7 +10,7 @@ The daily scheduled task (`blog-framework/DAILY-TASK.md`) runs this exact proces
 
 ## Layer 0 — What True North is (positioning ground truth)
 
-True North matches **Canadian and US small businesses** with **business loan offers of
+True North matches **Canadian small businesses** with **business loan offers of
 $5K–$800K** through a **60-second loan estimator quiz**, with **approvals in 24–48 hours**
 and funding often in one business day. Products: **equipment financing, small business
 loans (term), merchant cash advance, invoice factoring.** Industry pages: transportation,
@@ -32,7 +32,7 @@ Write "people-first," E-E-A-T content on the Pillar-Cluster model.
 **E-E-A-T "secret sauce" — weave True North's real differentiators into every post:**
 - **Experience:** the 60-second loan estimator that matches a business to real lenders.
 - **Expertise:** the four loan products and when each fits; industry-specific nuances.
-- **Authoritativeness:** $5K–$800K range, 24–48h approvals, Canada + US coverage.
+- **Authoritativeness:** $5K–$800K range, 24–48h approvals, Canada-wide coverage.
 - **Trust:** honest pros/cons, real requirements, no hype; a soft credit check to see options.
 
 **Competitor attack vectors (the "why most options fail" angle):**
@@ -61,18 +61,33 @@ e.g. "How to Get a Small Business Loan in Canada (Approved in 24–48 Hours)".
 ## Layer 2 — Design (element system)
 
 True North renders `blog_posts.content` as **sanitized HTML** (`BlogPost.tsx` → DOMPurify →
-`.blog-content`). We therefore build structured elements as **inline-styled HTML** so they
-render without any app CSS. Brand tokens:
+`.blog-content`). Structured elements are **class-based**: author the HTML with `tn-*`
+classes and let the app style them.
 
-```
---ink   #2b3a47   (Northern Blue, primary)
---green #22a15e   (Forest Green, accent / CTAs / "win")
---gold  #efab4d   (Compass Gold, highlight)
---red   #e0574f   ("lose"/pitfall)
---paper #f7f9fb   (section backgrounds)
---line  #e5e8ec   (borders)
---muted #6f757b   (secondary text)
-```
+- **Copy-paste markup for every element: `blog-framework/elements.html`** (open it in a
+  browser to see each one rendered).
+- **Authoritative CSS: `src/index.css`** (search "Blog element standard"). Change a style
+  there once and every published post updates — no need to touch post HTML.
+- Elements use the app's design tokens, so they work in light and dark mode.
+- Verified: `class`, `href`, `<details>` and `<summary>` all survive DOMPurify's default
+  sanitizer, so these render as authored.
+
+**Do not hand-write inline styles in post content.** Body copy is left-aligned by default;
+only `.tn-cta` and `.tn-pullquote` (plus the `.tn-center` helper) center their text.
+
+| Class | Use |
+|---|---|
+| `tn-key-takeaway` | TL;DR box, near top (max 1) |
+| `tn-stats` / `tn-stat` | 2–4 headline metrics |
+| `tn-table-wrap` + `tn-yes` / `tn-no` | comparison / cost table (scrolls on mobile) |
+| `tn-steps` (on `<ol>`) | ordered how-to as numbered cards |
+| `tn-pitfalls` (on `<ul>`) | 2–4 mistakes to avoid |
+| `tn-checklist` (on `<ul>`) | requirements / "what you need" |
+| `tn-pullquote` (on `<blockquote>`) | one quotable line (max 1) |
+| `tn-note` | caveat / rule of thumb / formula |
+| `tn-link-card` (on `<a>`) | one cross-link (max 1, not in intro) |
+| `tn-faq` | 4–6 `<details>` Q&A pairs |
+| `tn-cta` + `.cta-button` | closing conversion (exactly 1, last) |
 
 **Element selection pass** — run on every H2 before writing. Use the first that matches;
 otherwise leave the section as prose. **At least 2 sections stay pure prose.** Max **6**

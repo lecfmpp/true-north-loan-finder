@@ -290,6 +290,279 @@ All colors MUST be HSL.
   @apply mt-4;
 }
 
+/* ==========================================================================
+   Blog content normalization — force left alignment & remove stray spacing.
+   Legacy posts have inline text-align:center/justify and empty spacer
+   paragraphs baked into the stored HTML. These rules win over inline styles
+   (stylesheet !important beats a normal inline style) so all body copy reads
+   left-aligned, regardless of what the stored markup says.
+   Standard elements that are intentionally centered opt back in via .tn-center
+   (and the .tn-cta / .tn-pullquote elements below), which have higher
+   specificity and come later, so they still center.
+   ========================================================================== */
+.blog-content p,
+.blog-content li,
+.blog-content h1, .blog-content h2, .blog-content h3,
+.blog-content h4, .blog-content h5, .blog-content h6 {
+  text-align: left !important;
+}
+.blog-content [style*="text-align: center"],
+.blog-content [style*="text-align:center"],
+.blog-content [style*="text-align: justify"],
+.blog-content [style*="text-align:justify"],
+.blog-content [align="center"],
+.blog-content [align="justify"] {
+  text-align: left !important;
+}
+/* Collapse empty spacer paragraphs and doubled line breaks used as vertical gaps. */
+.blog-content p:empty { display: none; }
+.blog-content br + br { display: none; }
+
+/* ==========================================================================
+   Blog element standard (class-based). Author post HTML with these classes;
+   they are the single source of truth for how each element looks. See
+   blog-framework/elements.html for copy-paste markup for every element.
+   Colours use the app design tokens, so light/dark mode both work.
+   ========================================================================== */
+
+/* Key takeaway — green-accent summary box, near the top (max 1 per post). */
+.blog-content .tn-key-takeaway {
+  border-left: 4px solid hsl(var(--secondary));
+  background: hsl(var(--secondary) / 0.06);
+  padding: 1.25rem 1.5rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+  margin: 2rem 0;
+}
+.blog-content .tn-key-takeaway > :first-child { margin-top: 0; }
+.blog-content .tn-key-takeaway > :last-child { margin-bottom: 0; }
+.blog-content .tn-label {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--secondary));
+  margin-bottom: 0.5rem;
+}
+
+/* Stat row — 2–4 headline metrics. */
+.blog-content .tn-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+.blog-content .tn-stat {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  text-align: center;
+}
+.blog-content .tn-stat-num {
+  display: block;
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: hsl(var(--secondary));
+}
+.blog-content .tn-stat-label {
+  display: block;
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  margin-top: 0.35rem;
+}
+
+/* Comparison / cost table — wrap tables so they scroll on mobile instead of
+   overflowing the page. Table cells reuse the existing .blog-content table CSS. */
+.blog-content .tn-table-wrap {
+  overflow-x: auto;
+  margin: 2rem 0;
+  -webkit-overflow-scrolling: touch;
+}
+.blog-content .tn-table-wrap table { margin: 0; min-width: 32rem; }
+.blog-content .tn-yes { color: hsl(var(--secondary)); font-weight: 600; }
+.blog-content .tn-no { color: hsl(var(--destructive)); font-weight: 600; }
+
+/* Decision steps — ordered how-to as numbered cards (use instead of a bare ol). */
+.blog-content ol.tn-steps {
+  list-style: none;
+  counter-reset: tn-step;
+  margin: 2rem 0;
+  padding: 0;
+}
+.blog-content ol.tn-steps > li {
+  position: relative;
+  counter-increment: tn-step;
+  padding: 1rem 1.25rem 1rem 3.5rem;
+  margin: 0 0 1rem;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.75rem;
+}
+.blog-content ol.tn-steps > li::before {
+  content: counter(tn-step);
+  position: absolute;
+  left: 1rem;
+  top: 1rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+.blog-content ol.tn-steps > li > :first-child { margin-top: 0; font-weight: 600; }
+.blog-content ol.tn-steps > li > :last-child { margin-bottom: 0; }
+
+/* Pitfall grid — 2–4 mistakes to avoid, red-accent cards. */
+.blog-content ul.tn-pitfalls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+  padding: 0;
+  list-style: none;
+}
+.blog-content ul.tn-pitfalls > li {
+  border: 1px solid hsl(var(--destructive) / 0.3);
+  border-left: 4px solid hsl(var(--destructive));
+  background: hsl(var(--destructive) / 0.04);
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+  margin: 0;
+}
+
+/* Checklist — requirements / "what you need", green check bullets. */
+.blog-content ul.tn-checklist {
+  list-style: none;
+  margin: 1.5rem 0;
+  padding: 0;
+}
+.blog-content ul.tn-checklist > li {
+  position: relative;
+  padding-left: 1.9rem;
+  margin-bottom: 0.6rem;
+}
+.blog-content ul.tn-checklist > li::before {
+  content: "\2713"; /* check mark (not emoji) */
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: hsl(var(--secondary));
+  font-weight: 800;
+}
+
+/* Pull quote — one quotable line (max 1). */
+.blog-content blockquote.tn-pullquote {
+  border-left: none;
+  border-top: 2px solid hsl(var(--border));
+  border-bottom: 2px solid hsl(var(--border));
+  background: none;
+  border-radius: 0;
+  padding: 1.5rem 0;
+  margin: 2.5rem 0;
+  font-size: 1.5rem;
+  line-height: 1.4;
+  font-weight: 600;
+  font-style: normal;
+  color: hsl(var(--primary));
+  text-align: center !important;
+}
+
+/* Note callout — caveat / rule of thumb / formula, gold accent. */
+.blog-content .tn-note {
+  border-left: 4px solid #efab4d;
+  background: rgba(239, 171, 77, 0.08);
+  padding: 1rem 1.25rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+  margin: 2rem 0;
+}
+.blog-content .tn-note .tn-label { color: #b9791f; }
+.blog-content .tn-note > :last-child { margin-bottom: 0; }
+
+/* Link card — one cross-link to a related page (max 1, not in intro). */
+.blog-content a.tn-link-card {
+  display: block;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  margin: 2rem 0;
+  background: hsl(var(--card));
+  text-decoration: none !important;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.blog-content a.tn-link-card:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
+.blog-content a.tn-link-card .tn-link-eyebrow {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--secondary));
+  font-weight: 700;
+}
+.blog-content a.tn-link-card .tn-link-title {
+  display: block;
+  font-weight: 600;
+  color: hsl(var(--primary));
+  margin-top: 0.15rem;
+}
+
+/* FAQ — accordion of question/answer pairs (feeds FAQPage schema). */
+.blog-content .tn-faq { margin: 2rem 0; }
+.blog-content .tn-faq details {
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  margin-bottom: 0.75rem;
+  background: hsl(var(--card));
+  overflow: hidden;
+}
+.blog-content .tn-faq summary {
+  cursor: pointer;
+  padding: 1rem 1.25rem;
+  font-weight: 600;
+  color: hsl(var(--primary));
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.blog-content .tn-faq summary::-webkit-details-marker { display: none; }
+.blog-content .tn-faq summary::after {
+  content: "+";
+  font-size: 1.25rem;
+  color: hsl(var(--muted-foreground));
+  flex-shrink: 0;
+}
+.blog-content .tn-faq details[open] summary::after { content: "\2212"; } /* minus */
+.blog-content .tn-faq details > :not(summary) {
+  padding: 0 1.25rem 1rem;
+  margin: 0;
+}
+
+/* CTA block — closing conversion, centered (exactly 1, last). Uses .cta-button. */
+.blog-content .tn-cta {
+  background: hsl(var(--primary) / 0.05);
+  border-radius: 0.75rem;
+  padding: 2rem;
+  margin: 2.5rem 0;
+  text-align: center !important;
+}
+.blog-content .tn-cta * { text-align: center !important; }
+.blog-content .tn-cta > :first-child { margin-top: 0; }
+
+/* Opt-in centering helper for one-off centered blocks. */
+.blog-content .tn-center,
+.blog-content .tn-center * { text-align: center !important; }
+
 /* Dashboard layout styles */
 /* Mobile Layout (overlay sidebar) */
 @media (max-width: 1023px) {
