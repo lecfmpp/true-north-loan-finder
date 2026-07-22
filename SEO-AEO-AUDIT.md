@@ -17,6 +17,39 @@ Snapshot taken during the Claude migration, 2026-07-17. Use this as the running 
   lazy-loaded non-critical routes and widgets in `App.tsx`.
 - **AEO/agent layer**: see `AGENT-READINESS.md`.
 
+---
+
+## Status as of 2026-07-22 — the five original items are closed
+
+| Original item | Status |
+|---|---|
+| 1. Client-rendered SPA (the #1 risk) | **Done.** `npm run build` = client build → SSR build → prerender. 41 routes ship real HTML, including `/blog` and every `/blog/:slug`. |
+| 2. Blog posts missing from the sitemap | **Done.** `sitemap.xml` is generated at build time from `blog_posts`, with real `lastmod`. |
+| 3. AEO writing standards | **Done.** Class-based element system (`blog-framework/elements.html`), applied to every post. |
+| 4. Internal linking | **Done.** Every post links to `/loan-estimator`; the page renders a CTA after each article. |
+| 5. `Article` + `FAQPage` schema | **Done.** `Article` on all posts; `FAQPage` auto-extracted from Q&A sections. |
+
+Also since: every route has a unique title/description/canonical + JSON-LD; body copy is
+Canada-only; the daily blog pipeline generates to the element standard and triggers a
+rebuild so new posts are prerendered.
+
+### Known, deliberately left open
+
+- **Three posts discuss US regulation** (`cannabis-business-loans…` on Schedule I / SAFE
+  Banking, `merchant-cash-advance-explained…` on TILA, `unsecured-vs-secured…` on UCC-1).
+  This is substantive content, not stray positioning — replacing it means writing the
+  Canadian equivalents (e.g. PPSA in place of UCC-1), which is an editorial job.
+- **13 posts have a `meta_title` over 60 chars** (62–78). Google truncates the display; the
+  tag still works. Shortening them well is editorial, not mechanical.
+- **Six `meta_description`s run 161–182 chars.** Cutting them at a sentence would drop half
+  the text, so they were left; Google trims a few characters instead.
+- **`signs-business-ready-growth-financing`** keeps question-shaped `<h3>` headings rather
+  than a FAQ accordion — its whole structure is questions, so converting would scatter
+  accordions through the article and remove real headings.
+- **The quiz still offers "United States"** — the funnel was deliberately left intact.
+
+---
+
 ## Highest-impact recommendations (prioritized)
 
 ### 1. Rendering: this is a client-rendered SPA — the #1 SEO/AEO risk
