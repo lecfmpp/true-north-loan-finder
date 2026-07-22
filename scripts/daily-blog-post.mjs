@@ -185,6 +185,22 @@ post.slug = slug;
 post.author = 'True North Team';
 post.status = 'published';
 
+// Normalise field types before they reach Postgres. The model returns whatever
+// reads naturally — a dry run produced reading_time: "6 min read" — and
+// blog_posts.reading_time is an integer column, so the insert would fail.
+const wordCount = String(post.content || '').replace(/<[^>]*>/g, ' ').split(/\s+/).filter(Boolean).length;
+const statedMinutes = parseInt(String(post.reading_time ?? '').match(/\d+/)?.[0] ?? '', 10);
+post.reading_time = Number.isFinite(statedMinutes) && statedMinutes > 0
+  ? statedMinutes
+  : Math.max(1, Math.ceil(wordCount / 200));
+
+// Array columns must be arrays, not a comma-joined string.
+const toArray = (v) => Array.isArray(v)
+  ? v.filter(Boolean).map(String)
+  : String(v ?? '').split(',').map(s => s.trim()).filter(Boolean);
+post.tags = toArray(post.tags);
+post.meta_keywords = toArray(post.meta_keywords);
+
 // Title/slug coherence guard: the model must stay on the assigned topic. If its title
 // drifts (little token overlap with the working title), fall back to the working title so
 // the headline, slug and URL never disagree.
