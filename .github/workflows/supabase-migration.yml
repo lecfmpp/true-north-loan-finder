@@ -1,0 +1,97 @@
+name: Supabase migration
+
+# Runs a reviewed SQL file against the True North database from CI, so data and
+# schema changes are versioned and auditable instead of being typed into an
+# interactive connector that might be pointed at the wrong project.
+#
+# How to use:
+#   1. Add the SQL as a file under supabase/manual/ and commit it.
+#   2. Actions -> "Supabase migration" -> Run workflow, pick the file,
+#      leave apply = false. The SQL runs inside a transaction that is ROLLED
+#      BACK, and the log shows the row counts it would have changed.
+#   3. Happy with the counts? Run it again with apply = true to commit.
+#
+# Never runs automatically: workflow_dispatch only.
+
+on:
+  workflow_dispatch:
+    inputs:
+      file:
+        description: 'SQL file name inside supabase/manual/ (e.g. 2026-07-22-fix-titles.sql)'
+        required: true
+      apply:
+        description: 'false = dry run, rolled back. true = COMMIT the change.'
+        required: true
+        default: 'false'
+        type: choice
+        options: ['false', 'true']
+
+# No write access to the repo — this job only touches the database.
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-migration
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve and show the SQL
+        id: sql
+        run: |
+          set -euo pipefail
+          # Reject anything that tries to escape supabase/manual/ — the input is
+          # a file name, not a path.
+          case "${{ github.event.inputs.file }}" in
+            */*|*..*|"") echo "::error::Pass a bare file name inside supabase/manual/."; exit 1 ;;
+          esac
+          FILE="supabase/manual/${{ github.event.inputs.file }}"
+          if [ ! -f "$FILE" ]; then
+            echo "::error::$FILE not found. Commit the SQL file first — that is what makes the change reviewable."
+            echo "Available:"; ls -1 supabase/manual/ 2>/dev/null || echo "  (none)"
+            exit 1
+          fi
+          echo "file=$FILE" >> "$GITHUB_OUTPUT"
+          echo "--- $FILE ---"
+          cat "$FILE"
+
+      - name: Ensure psql
+        run: command -v psql >/dev/null || (sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client)
+
+      - name: Run migration
+        env:
+          # Project-scoped Postgres connection string from Supabase
+          # (Project Settings -> Database -> Connection string -> URI).
+          # Scoped to this database only — not an account-wide access token.
+          PGURL: ${{ secrets.SUPABASE_DB_URL }}
+          APPLY: ${{ github.event.inputs.apply }}
+          FILE: ${{ steps.sql.outputs.file }}
+        run: |
+          set -euo pipefail
+          if [ -z "$PGURL" ]; then
+            echo "::error::SUPABASE_DB_URL secret is not set. Add it under Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+
+          # ON_ERROR_STOP makes any failing statement abort the transaction, so a
+          # partial migration can never be committed.
+          if [ "$APPLY" = "true" ]; then
+            echo "APPLYING — this will COMMIT."
+            printf 'BEGIN;\n\\i %s\nCOMMIT;\n' "$FILE" \
+              | psql "$PGURL" -v ON_ERROR_STOP=1 --echo-errors
+            echo "::notice::Migration committed from $FILE"
+          else
+            echo "DRY RUN — the transaction is rolled back; row counts below are what WOULD change."
+            printf 'BEGIN;\n\\i %s\nROLLBACK;\n' "$FILE" \
+              | psql "$PGURL" -v ON_ERROR_STOP=1 --echo-errors
+            echo "::notice::Dry run only. Nothing was written. Re-run with apply = true to commit."
+          fi
+
+      - name: Remind about the rebuild
+        if: ${{ github.event.inputs.apply == 'true' }}
+        run: |
+          echo "::warning::Blog content is prerendered at build time. If this migration changed blog_posts, trigger a Netlify deploy so the static HTML catches up."
