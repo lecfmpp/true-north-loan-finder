@@ -80,30 +80,21 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-      # Publishing to the database is not enough: the site prerenders /blog and
-      # each /blog/:slug at build time, so without a rebuild the new post is
-      # invisible to anything that doesn't run JavaScript, and /blog still lists
-      # yesterday's set. The sitemap commit below carries [skip ci], so it does
-      # not trigger a deploy on its own.
-      - name: Trigger site rebuild so the new post is prerendered
-        if: ${{ github.event.inputs.dry_run != 'true' }}
-        env:
-          HOOK: ${{ secrets.NETLIFY_BUILD_HOOK }}
+      # Publishing to the database is not enough: /blog and each /blog/:slug are
+      # prerendered at build time, so without a deploy the new post is invisible
+      # to anything that doesn't run JavaScript and /blog keeps listing the
+      # previous set. This push is what triggers that deploy — deliberately
+      # WITHOUT [skip ci]. No workflow in this repo runs on push, so there is no
+      # risk of a loop.
+      - name: Commit sitemap and trigger the rebuild
         run: |
-          if [ -z "$HOOK" ]; then
-            echo "::warning::NETLIFY_BUILD_HOOK is not set — the post is live in the database but will not be prerendered until the next deploy. Create a build hook in Netlify (Site settings -> Build & deploy -> Build hooks) and add it as this secret."
-            exit 0
-          fi
-          curl -fsS -X POST -d '{}' "$HOOK" > /dev/null && echo "Netlify rebuild triggered."
-
-      - name: Commit sitemap update
-        run: |
-          if [ -n "$(git status --porcelain public/sitemap.xml)" ]; then
+          if [ -n "$(git status --porcelain public/sitemap.xml blog-framework/published-log.md)" ]; then
             git config user.name  "truenorth-bot"
             git config user.email "bot@truenorthbusinessloan.ca"
             git add public/sitemap.xml blog-framework/published-log.md
-            git commit -m "blog: add today's post to sitemap [skip ci]"
+            git commit -m "blog: publish today's post"
             git push
+            echo "Pushed — Netlify will rebuild and prerender the new post."
           else
-            echo "No sitemap change to commit."
+            echo "::warning::Nothing to commit, so no rebuild was triggered. The post is live in the database but will not be prerendered until the next deploy."
           fi
