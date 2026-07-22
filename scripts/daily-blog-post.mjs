@@ -68,8 +68,9 @@ const framework = existsSync('blog-framework/BLOG-FRAMEWORK.md')
   ? readFileSync('blog-framework/BLOG-FRAMEWORK.md', 'utf8') : '';
 
 const prompt = `You are the True North Authority Architect, a senior SEO/AEO content strategist for
-True North Business Loan — a service that matches Canadian and US small businesses with business
+True North Business Loan — a service that matches Canadian small businesses with business
 loan offers of $5,000 to $800,000 via a 60-second loan estimator quiz, with approvals in 24-48 hours.
+The company serves Canada only: never reference the United States or North America.
 
 Write ONE blog post. Focus keyword: "${focusKeyword}". Working title: "${workingTitle}".
 
@@ -81,14 +82,26 @@ HARD RULES:
   {"title","slug","excerpt","content","tags":[],"meta_title","meta_description","meta_keywords":[],"reading_time"}
 - "slug" MUST be exactly "${slug}".
 - "content" is sanitized HTML (no <script>, no <style>, no markdown). Use <h2>/<h3>/<p>/<ul>/<li>/<strong>/<a>.
-- Use inline style attributes for structured elements (key-takeaway box, numbered steps, comparison
-  table, note callout, FAQ via <details>, and one CTA block) using these brand colours:
-  ink #2b3a47, green #22a15e, gold #efab4d, paper #f7f9fb, line #e5e8ec, muted #6f757b.
+- NEVER use inline style attributes. Structured elements use the site's CSS classes, which are
+  styled in src/index.css (see blog-framework/elements.html for the markup of each):
+    tn-key-takeaway (with a <span class="tn-label">), max 1, near the top
+    tn-stats / tn-stat / tn-stat-num / tn-stat-label   — 2-4 headline metrics
+    tn-table-wrap  — MUST wrap every <table> so it scrolls on mobile
+    tn-yes / tn-no — on verdict cells inside a comparison table
+    tn-steps       — on an <ol>, for an ordered how-to
+    tn-pitfalls    — on a <ul>, for 2-4 mistakes to avoid
+    tn-checklist   — on a <ul>, for requirements or "what you need"
+    tn-pullquote   — on a <blockquote>, max 1
+    tn-note (with a <span class="tn-label">) — a caveat, formula or rule of thumb
+    tn-faq         — on a <div> wrapping the <details> pairs
+- NEVER include a call-to-action block, a "tn-cta" element, or a "cta-button" link. The blog page
+  already renders a CTA after every article; adding one produces two stacked CTA banners.
 - H2 headings are sentence case and phrased as questions. Answer each in the first 1-2 sentences.
 - Max ~20 words per sentence. No emoji anywhere.
-- Include 4-6 FAQ pairs using <details><summary>.
-- Include EXACTLY ONE call-to-action block linking to /loan-estimator, placed last.
-- Include 2-3 internal links from: /loan-estimator, /small-business-loans, /equipment-financing,
+- Include 4-6 FAQ pairs as <div class="tn-faq"><details><summary>Question?</summary><p>Answer</p></details>...</div>.
+  These are also read to build FAQPage structured data, so each answer must stand on its own.
+- Include 2-3 contextual inline links inside the body copy, with keyword-rich anchor text. At least
+  one must point to /loan-estimator. Others from: /small-business-loans, /equipment-financing,
   /merchant-cash-advance, /invoice-factoring, /how-it-works.
 - meta_title <= 60 chars. meta_description <= 160 chars.
 - 900-1400 words. Evergreen and factual. NEVER invent a specific interest rate, statistic, or a
@@ -133,8 +146,14 @@ const fail = [];
 if (!post.title || !post.content || !post.excerpt) fail.push('missing title/content/excerpt');
 if ((post.meta_title || '').length > 60) fail.push('meta_title > 60');
 if ((post.meta_description || '').length > 160) fail.push('meta_description > 160');
-if (!/loan-estimator/.test(post.content)) fail.push('no CTA to /loan-estimator');
+if (!/loan-estimator/.test(post.content)) fail.push('no internal link to /loan-estimator');
 if (/<script|<style/i.test(post.content)) fail.push('contains script/style');
+// BlogPost.tsx renders a CTA after every article; one in the content shows two banners.
+if (/tn-cta|cta-button/i.test(post.content)) fail.push('contains a CTA block (the page already renders one)');
+// The element standard is class-based; inline styles also fight the left-align rules.
+if (/\sstyle\s*=/i.test(post.content)) fail.push('inline style attributes (use the tn-* classes)');
+if (/<table/i.test(post.content) && !/tn-table-wrap/.test(post.content)) fail.push('table not wrapped in tn-table-wrap');
+if (/united states|north america/i.test(post.content)) fail.push('references the US / North America (Canada-only)');
 if (/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(post.content)) fail.push('contains emoji');
 if ((post.content.match(/<h2/g) || []).length < 4) fail.push('fewer than 4 H2 sections');
 if (!/<details/.test(post.content)) fail.push('no FAQ block');
