@@ -9,6 +9,7 @@ import SEOHead from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
 import OptimizedImage from "@/components/OptimizedImage";
 import DOMPurify from 'dompurify';
+import { getSsrBlogPost } from "@/lib/ssr-data";
 
 interface BlogPost {
   id: string;
@@ -29,8 +30,11 @@ interface BlogPost {
 
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
-  const [post, setPost] = useState<BlogPost | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Preloaded at build time for prerendering; always undefined in the browser,
+  // where the effect below fetches as usual.
+  const ssrPost = getSsrBlogPost(slug);
+  const [post, setPost] = useState<BlogPost | null>(ssrPost ?? null);
+  const [loading, setLoading] = useState(!ssrPost);
   const [notFound, setNotFound] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -277,7 +281,18 @@ const BlogPost = () => {
             <div className="blog-content" ref={contentRef}>
               {/* Main title as H1 for proper heading hierarchy */}
               <h1>{post.title}</h1>
-              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />
+              {/* DOMPurify needs a DOM, so it is unavailable while prerendering
+                  in Node. The build sanitizes the content before injecting it
+                  (see prerender.js), and the browser sanitizes again here on
+                  hydration — so the markup is sanitized on both paths. */}
+              <div
+                dangerouslySetInnerHTML={{
+                  __html:
+                    typeof DOMPurify.sanitize === 'function'
+                      ? DOMPurify.sanitize(post.content)
+                      : post.content,
+                }}
+              />
             </div>
 
             {/* CTA Section */}

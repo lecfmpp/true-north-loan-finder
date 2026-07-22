@@ -7,6 +7,7 @@ import { Clock, User, ArrowRight } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
+import { getSsrBlogList } from "@/lib/ssr-data";
 import { supabase } from "@/integrations/supabase/client";
 import OptimizedImage from "@/components/OptimizedImage";
 
@@ -22,8 +23,12 @@ interface BlogPost {
 }
 
 const Blog = () => {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
+  // During prerendering the effect below never runs, so the list is preloaded
+  // by the build and read synchronously here. In the browser this is always
+  // undefined and the fetch behaves exactly as before.
+  const ssrPosts = getSsrBlogList();
+  const [posts, setPosts] = useState<BlogPost[]>(ssrPosts ?? []);
+  const [loading, setLoading] = useState(!ssrPosts);
 
   useEffect(() => {
     const fetchPosts = async () => {
