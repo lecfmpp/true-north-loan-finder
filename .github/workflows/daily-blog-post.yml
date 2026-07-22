@@ -68,6 +68,18 @@ jobs:
           DRY_RUN: ${{ github.event.inputs.dry_run }}
         run: node scripts/daily-blog-post.mjs
 
+      # A dry run writes the post to drafts/ inside the runner, which is thrown
+      # away with the machine. Keep it so the draft can actually be reviewed
+      # before anyone publishes for real.
+      - name: Upload draft for review
+        if: ${{ github.event.inputs.dry_run == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: blog-draft
+          path: drafts/**
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Commit sitemap update
         run: |
           if [ -n "$(git status --porcelain public/sitemap.xml)" ]; then
