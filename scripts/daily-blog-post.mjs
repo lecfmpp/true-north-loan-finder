@@ -75,7 +75,7 @@ The company serves Canada only: never reference the United States or North Ameri
 Write ONE blog post. Focus keyword: "${focusKeyword}". Working title: "${workingTitle}".
 
 FOLLOW THIS FRAMEWORK STRICTLY:
-${framework.slice(0, 9000)}
+${framework}
 
 HARD RULES:
 - Return ONLY valid minified JSON, no markdown fences, matching exactly this shape:
@@ -96,6 +96,11 @@ HARD RULES:
     tn-faq         — on a <div> wrapping the <details> pairs
 - NEVER include a call-to-action block, a "tn-cta" element, or a "cta-button" link. The blog page
   already renders a CTA after every article; adding one produces two stacked CTA banners.
+- Element budget: at most 6 of the tn-* elements in the whole post, and at most one each of
+  tn-key-takeaway, tn-pullquote and tn-link-card. Leave at least 2 sections as pure prose, and
+  never place two boxed elements back to back — always put a paragraph between them.
+- Only use an element when the content genuinely fits its shape. Never invent a statistic, a
+  table row or a step just to fill one.
 - H2 headings are sentence case and phrased as questions. Answer each in the first 1-2 sentences.
 - Max ~20 words per sentence. No emoji anywhere.
 - Include 4-6 FAQ pairs as <div class="tn-faq"><details><summary>Question?</summary><p>Answer</p></details>...</div>.
@@ -159,6 +164,30 @@ if ((post.content.match(/<h2/g) || []).length < 4) fail.push('fewer than 4 H2 se
 if (!/<details/.test(post.content)) fail.push('no FAQ block');
 if (taken.has(post.slug)) fail.push('duplicate slug');
 if (fail.length) { console.error('QA gate FAILED:', fail.join('; ')); process.exit(1); }
+
+// Quality guardrails from the framework. These warn rather than fail: a post that
+// leans on one element too many is still worth publishing, whereas failing here
+// would cost the day's post entirely.
+const warn = [];
+// Match class names exactly: substring tests would treat "tn-note" as the
+// helper "tn-no" and silently drop it from the count.
+const HELPER_CLASSES = new Set([
+  'tn-label', 'tn-yes', 'tn-no', 'tn-center',
+  'tn-stat', 'tn-stat-num', 'tn-stat-label',
+  'tn-link-eyebrow', 'tn-link-title',
+]);
+const elementCount = [...post.content.matchAll(/class="(tn-[a-z-]+)"/g)]
+  .map(m => m[1])
+  .filter(c => !HELPER_CLASSES.has(c)).length;
+if (elementCount > 6) warn.push(`${elementCount} elements (framework budget is 6)`);
+for (const once of ['tn-key-takeaway', 'tn-pullquote', 'tn-link-card']) {
+  const n = (post.content.match(new RegExp(once, 'g')) || []).length;
+  if (n > 1) warn.push(`${n}x ${once} (max 1)`);
+}
+if (/<\/div>\s*<(?:div|ul|ol|blockquote)[^>]*class="tn-/.test(post.content)) {
+  warn.push('two boxed elements adjacent (needs a paragraph between)');
+}
+if (warn.length) console.warn('QA warnings:', warn.join('; '));
 console.log('QA gate passed.');
 
 /* ---------- 5. Cover image ---------- */
