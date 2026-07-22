@@ -49,6 +49,28 @@ const POOL = [
   ['business loan requirements canada', 'Business Loan Requirements in Canada: The Complete Checklist', 'steps'],
   ['how fast business loan approval', 'How Fast Can You Get a Business Loan? Approval and Funding Timelines', 'bars'],
   ['bank vs alternative lender business loan', 'Bank vs Alternative Lender: Which Business Loan Is Right for You?', 'versus'],
+  // Industry angles, matching the industry pages on the site.
+  ['construction business loans canada', 'Construction Business Loans in Canada: Funding Crews, Gear and Gaps', 'steps'],
+  ['retail business loans canada', 'Retail Business Loans in Canada: Inventory, Fit-Out and Seasonality', 'bars'],
+  ['medical practice financing canada', 'Medical Practice Financing in Canada: Equipment and Expansion', 'spread'],
+  ['staffing agency financing canada', 'Staffing Agency Financing: Covering Payroll Between Client Payments', 'steps'],
+  ['property management financing canada', 'Property Management Financing: Funding Repairs and Turnovers', 'versus'],
+  ['landscaping business loans canada', 'Landscaping Business Loans: Financing a Seasonal Operation', 'bars'],
+  ['auto repair shop financing canada', 'Auto Repair Shop Financing: Lifts, Diagnostics and Working Capital', 'spread'],
+  ['cleaning business loans canada', 'Cleaning Business Loans: Scaling Crews, Contracts and Equipment', 'steps'],
+  // Decision and mechanics questions.
+  ['how much can i borrow business loan', 'How Much Can Your Business Borrow? What Actually Sets the Limit', 'bars'],
+  ['business loan collateral canada', 'What Counts as Collateral for a Canadian Business Loan?', 'versus'],
+  ['personal guarantee business loan', 'Personal Guarantees: What You Are Really Signing and When to Push Back', 'versus'],
+  ['business loan fees explained', 'The Fees Behind a Business Loan: What the Rate Does Not Tell You', 'spread'],
+  ['refinance business debt canada', 'Refinancing Business Debt in Canada: When It Helps and When It Hurts', 'versus'],
+  ['seasonal business financing canada', 'Seasonal Business Financing: Bridging the Slow Months', 'steps'],
+  ['startup business loan canada', 'Startup Business Loans in Canada: Options Before You Have History', 'bars'],
+  ['business loan documents checklist', 'The Document Checklist That Speeds Up a Business Loan Decision', 'steps'],
+  ['improve business credit canada', 'How to Build Business Credit in Canada Before You Need a Loan', 'steps'],
+  ['cash flow forecast small business', 'Cash Flow Forecasting: The Habit That Gets Loans Approved', 'steps'],
+  ['buying commercial equipment used vs new', 'Used vs New Equipment: Which One Lenders Prefer to Finance', 'versus'],
+  ['business acquisition loan canada', 'Business Acquisition Loans in Canada: Financing a Purchase', 'steps'],
 ];
 const slugify = s => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 let choice = null;
@@ -61,7 +83,19 @@ if (process.env.FORCE_TOPIC) {
     if (!taken.has(slugify(cand[1]))) { choice = cand; break; }
   }
 }
-if (!choice) { console.log('All pooled topics are published. Add more to POOL. Exiting cleanly.'); process.exit(0); }
+if (!choice) {
+  // Exit 0 so the run is not a red failure, but annotate it: a silent green run
+  // that quietly stops publishing is the worst outcome for an unattended job.
+  console.log('::warning::Every pooled topic is published — no post today. Add entries to POOL in scripts/daily-blog-post.mjs.');
+  process.exit(0);
+}
+// Surface how much runway is left, so the pool is topped up before it runs dry.
+const remaining = POOL.filter(([, t]) => !taken.has(slugify(t))).length;
+if (remaining <= 5) {
+  console.log(`::warning::Only ${remaining} unused topics left in POOL — add more soon.`);
+} else {
+  console.log(`Topic pool: ${remaining} unused of ${POOL.length}.`);
+}
 const [focusKeyword, workingTitle, coverType] = choice;
 const slug = slugify(workingTitle);
 console.log(`Topic: ${workingTitle}  (slug: ${slug})`);
