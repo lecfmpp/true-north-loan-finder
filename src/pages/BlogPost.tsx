@@ -28,6 +28,47 @@ interface BlogPost {
   reading_time?: number;
 }
 
+/** Strip tags and decode the few entities that appear in stored post HTML. */
+const toPlainText = (html: string) =>
+  html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+
+/**
+ * Pull question/answer pairs out of a post so we can emit FAQPage schema.
+ *
+ * Supports both shapes used in the content: the `tn-faq` accordion
+ * (<details><summary>Q</summary>A</details>) and the older prose form of a
+ * question-shaped <h3> followed by a paragraph. Returns [] when a post has no
+ * FAQ, so no schema is emitted for it.
+ */
+const extractFaqs = (html: string): { question: string; answer: string }[] => {
+  const patterns = [
+    /<details[^>]*>\s*<summary[^>]*>([\s\S]*?)<\/summary>([\s\S]*?)<\/details>/gi,
+    /<h3[^>]*>([^<]*\?)<\/h3>\s*<p[^>]*>([\s\S]*?)<\/p>/gi,
+  ];
+
+  for (const pattern of patterns) {
+    const found: { question: string; answer: string }[] = [];
+    let match: RegExpExecArray | null;
+    while ((match = pattern.exec(html)) !== null) {
+      const question = toPlainText(match[1]);
+      const answer = toPlainText(match[2]);
+      if (question && answer) found.push({ question, answer });
+    }
+    // Prefer the accordion form when present; fall back to the prose form.
+    if (found.length) return found.slice(0, 10);
+  }
+  return [];
+};
+
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
   // Preloaded at build time for prerendering; always undefined in the browser,
@@ -192,6 +233,23 @@ const BlogPost = () => {
     "wordCount": post.reading_time ? post.reading_time * 200 : undefined
   };
 
+  // Posts that contain a Q&A section also get FAQPage schema, which is what
+  // search engines use for rich results and what answer engines quote. Needs
+  // at least two pairs to be worth emitting.
+  const faqs = extractFaqs(post.content || '');
+  const faqSchema = faqs.length >= 2 ? {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map(({ question, answer }) => ({
+      "@type": "Question",
+      "name": question,
+      "acceptedAnswer": { "@type": "Answer", "text": answer }
+    }))
+  } : null;
+
+  // An array of schema objects in one JSON-LD block is valid and supported.
+  const pageSchema = faqSchema ? [structuredData, faqSchema] : structuredData;
+
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
@@ -208,7 +266,7 @@ const BlogPost = () => {
           section: "Business Financing",
           tags: post.tags
         }}
-        structuredData={structuredData}
+        structuredData={pageSchema}
       />
       <Header />
       
