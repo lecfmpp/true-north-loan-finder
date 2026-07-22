@@ -112,7 +112,14 @@ HARD RULES:
   one must point to /loan-estimator. Others from: /small-business-loans, /equipment-financing,
   /merchant-cash-advance, /invoice-factoring, /how-it-works.
 - meta_title <= 60 chars. meta_description <= 160 chars.
-- 900-1400 words. Evergreen and factual. NEVER invent a specific interest rate, statistic, or a
+- LENGTH — this is a hard requirement, and short posts are the most common failure:
+  * At least 1,200 words of body copy; 1,300-1,600 is the target. Never stop before 1,200.
+  * Write 7-9 <h2> sections. Each needs 3-4 full paragraphs of 3-5 sentences — not one or two
+    thin lines. A section that is a single short paragraph is a failure.
+  * Depth comes from substance, not padding: explain the mechanism, give a worked example, say
+    who it suits and who it does not, name the trade-off, and cover the edge case a reader would
+    hit in practice. Never repeat yourself or restate the intro to reach the count.
+- Evergreen and factual. NEVER invent a specific interest rate, statistic, or a
   named lender. Do not give personalised financial advice.`;
 
 /**
@@ -163,23 +170,53 @@ async function resolveModel() {
 
 const MODEL = await resolveModel();
 
-const res = await fetch(
-  `${GEMINI_BASE_URL}/v1beta/models/${MODEL}:generateContent?key=${GEMINI_KEY}`,
-  {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.7, maxOutputTokens: 8192, responseMimeType: 'application/json' },
-    }),
-  }
-);
-if (!res.ok) { console.error('Gemini error', res.status, (await res.text()).slice(0, 500)); process.exit(1); }
-const payload = await res.json();
-const raw = payload?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-let post;
-try { post = JSON.parse(raw.replace(/^```json\s*|\s*```$/g, '').trim()); }
-catch { console.error('Gemini did not return valid JSON:', raw.slice(0, 600)); process.exit(1); }
+const MIN_WORDS = 1100;
+const countWords = (html) =>
+  String(html || '').replace(/<[^>]*>/g, ' ').split(/\s+/).filter(Boolean).length;
+
+async function generate(extra = '') {
+  const res = await fetch(
+    `${GEMINI_BASE_URL}/v1beta/models/${MODEL}:generateContent?key=${GEMINI_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt + extra }] }],
+        // 8192 was tight: a 1,300+ word post, as HTML inside JSON, can run past
+        // it and the model then trims the body to fit.
+        generationConfig: { temperature: 0.7, maxOutputTokens: 16384, responseMimeType: 'application/json' },
+      }),
+    }
+  );
+  if (!res.ok) { console.error('Gemini error', res.status, (await res.text()).slice(0, 500)); process.exit(1); }
+  const payload = await res.json();
+  const raw = payload?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  try { return JSON.parse(raw.replace(/^```json\s*|\s*```$/g, '').trim()); }
+  catch { console.error('Gemini did not return valid JSON:', raw.slice(0, 600)); process.exit(1); }
+}
+
+let post = await generate();
+let words = countWords(post.content);
+console.log(`Draft: ${words} words.`);
+
+// Models reliably undershoot a stated word target — the first published post
+// came in at 687 words against a 900-1400 brief. One retry that names the miss
+// is far more effective than asking harder up front. Keep whichever is longer,
+// so a worse retry can never replace a good first draft.
+if (words < MIN_WORDS) {
+  console.warn(`Below the ${MIN_WORDS}-word floor — regenerating once with an explicit correction.`);
+  const retry = await generate(`
+
+CRITICAL CORRECTION: your previous attempt was only ${words} words. That is far too short and
+would be rejected. Write a substantially longer, deeper post of AT LEAST ${MIN_WORDS} words —
+aim for 1,400. Keep every rule above. Add depth by expanding each <h2> section to 3-4 full
+paragraphs: explain the mechanism, work through a concrete example, state who it suits and who
+it does not, and cover the practical edge cases. Do not pad, repeat, or restate the intro.`);
+  const retryWords = countWords(retry.content);
+  console.log(`Retry: ${retryWords} words.`);
+  if (retryWords > words) { post = retry; words = retryWords; }
+  else console.warn('Retry was not longer — keeping the first draft.');
+}
 
 post.slug = slug;
 post.author = 'True North Team';
@@ -188,11 +225,10 @@ post.status = 'published';
 // Normalise field types before they reach Postgres. The model returns whatever
 // reads naturally — a dry run produced reading_time: "6 min read" — and
 // blog_posts.reading_time is an integer column, so the insert would fail.
-const wordCount = String(post.content || '').replace(/<[^>]*>/g, ' ').split(/\s+/).filter(Boolean).length;
 const statedMinutes = parseInt(String(post.reading_time ?? '').match(/\d+/)?.[0] ?? '', 10);
 post.reading_time = Number.isFinite(statedMinutes) && statedMinutes > 0
   ? statedMinutes
-  : Math.max(1, Math.ceil(wordCount / 200));
+  : Math.max(1, Math.ceil(words / 200));
 
 // Array columns must be arrays, not a comma-joined string.
 const toArray = (v) => Array.isArray(v)
@@ -236,6 +272,9 @@ if (fail.length) { console.error('QA gate FAILED:', fail.join('; ')); process.ex
 // leans on one element too many is still worth publishing, whereas failing here
 // would cost the day's post entirely.
 const warn = [];
+// Not a hard failure: a slightly short post is still worth publishing, and
+// failing here would cost the day's post entirely.
+if (words < MIN_WORDS) warn.push(`${words} words, below the ${MIN_WORDS}-word floor (even after a retry)`);
 // Match class names exactly: substring tests would treat "tn-note" as the
 // helper "tn-no" and silently drop it from the count.
 const HELPER_CLASSES = new Set([
