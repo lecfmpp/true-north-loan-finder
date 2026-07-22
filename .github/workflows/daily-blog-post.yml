@@ -10,20 +10,13 @@ name: Daily blog post
 #   GEMINI_API_KEY              Google AI Studio API key
 # Optional repository variables:
 #   SUPABASE_URL   (defaults to the True North project URL)
-#   GEMINI_MODEL   (defaults to gemini-2.0-flash)
+#   GEMINI_MODEL   (leave unset: the script auto-selects a current model)
 
 on:
-  # The daily schedule is DISABLED until the two secrets above are set.
-  # Without them every scheduled run fails immediately (it exits 1 before
-  # touching the database), which just produces a daily failure email.
-  #
-  # TO RE-ENABLE: add SUPABASE_SERVICE_ROLE_KEY + GEMINI_API_KEY under
-  # Settings -> Secrets and variables -> Actions, verify a manual run with
-  # dry_run=true, then uncomment the two lines below.
-  #
-  # schedule:
-  #   # 06:00 UTC = 2:00 AM Eastern (EDT). Adjust to '0 7 * * *' during EST if you care.
-  #   - cron: '0 6 * * *'
+  schedule:
+    # 06:00 UTC = 2:00 AM Eastern (EDT). Use '0 7 * * *' during EST if the hour matters.
+    # To pause: comment out these two lines. workflow_dispatch below still works.
+    - cron: '0 6 * * *'
   workflow_dispatch:
     inputs:
       topic:
