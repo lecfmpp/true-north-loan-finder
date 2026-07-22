@@ -105,6 +105,10 @@ const BlogPost = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
+        {/* The post itself hasn't loaded, but the slug is known from the route,
+            so at least emit a self-referential canonical instead of inheriting
+            the home page's. Full metadata is set once the post resolves. */}
+        <SEOHead canonicalUrl={`https://truenorthbusinessloan.ca/blog/${slug}`} />
         <Header />
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-4xl mx-auto">

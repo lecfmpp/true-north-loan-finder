@@ -54,23 +54,6 @@ const Blog = () => {
     });
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <div className="container mx-auto px-4 py-12">
-          <div className="text-center">
-            <div className="animate-pulse">
-              <div className="h-8 bg-muted rounded w-64 mx-auto mb-4"></div>
-              <div className="h-4 bg-muted rounded w-96 mx-auto"></div>
-            </div>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
-
   // Structured data for blog listing
   const structuredData = {
     "@context": "https://schema.org",
@@ -99,22 +82,48 @@ const Blog = () => {
     }))
   };
 
+  // Held in a variable so the loading state below renders it too. Previously the
+  // `if (loading)` early return sat above this, so server-side rendering — which
+  // never resolves the fetch — emitted the page with no title, description or
+  // canonical at all.
+  const seoHead = (
+    <SEOHead
+      title="Business Financing Insights | True North Business Loan Blog"
+      description="Expert guidance, tips, and insights to help Canadian businesses secure the right financing for growth and success. Read our latest articles on business loans, equipment financing, and more."
+      keywords={[
+        "business financing blog",
+        "canadian business loans",
+        "small business financing tips",
+        "equipment financing guide",
+        "business loan advice",
+        "entrepreneurship canada"
+      ]}
+      canonicalUrl="https://truenorthbusinessloan.ca/blog"
+      structuredData={structuredData}
+    />
+  );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        {seoHead}
+        <Header />
+        <div className="container mx-auto px-4 py-12">
+          <div className="text-center">
+            <div className="animate-pulse">
+              <div className="h-8 bg-muted rounded w-64 mx-auto mb-4"></div>
+              <div className="h-4 bg-muted rounded w-96 mx-auto"></div>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
-      <SEOHead
-        title="Business Financing Insights | True North Business Loan Blog"
-        description="Expert guidance, tips, and insights to help Canadian businesses secure the right financing for growth and success. Read our latest articles on business loans, equipment financing, and more."
-        keywords={[
-          "business financing blog",
-          "canadian business loans",
-          "small business financing tips",
-          "equipment financing guide",
-          "business loan advice",
-          "entrepreneurship canada"
-        ]}
-        canonicalUrl="https://truenorthbusinessloan.ca/blog"
-        structuredData={structuredData}
-      />
+      {seoHead}
       <Header />
       
       {/* Hero Section */}

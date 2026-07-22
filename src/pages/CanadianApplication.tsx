@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ApplicationAuth } from "@/components/ApplicationAuth";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
 import { useAuth } from "@/hooks/use-auth";
 
 interface CanadianApplicationData {
@@ -1367,9 +1368,29 @@ const CanadianApplication = () => {
     }
   };
 
+  // Held in a variable so the loading state renders it too — server-side the
+  // fetch never resolves, so without this the page ships no metadata at all.
+  const seoHead = (
+    <SEOHead
+      title="Canadian Business Loan Application | True North"
+      description="Apply for a Canadian business loan from $5,000 to $800,000. One application, matched to lenders, with approvals typically in 24-48 hours."
+      canonicalUrl="https://truenorthbusinessloan.ca/application-canadian"
+      keywords={["canadian business loan application", "apply business loan canada"]}
+      structuredData={{
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Canadian Business Loan Application",
+        "url": "https://truenorthbusinessloan.ca/application-canadian",
+        "description": "Application form for Canadian small business financing from $5,000 to $800,000.",
+        "publisher": { "@type": "Organization", "name": "True North Business Loan" }
+      }}
+    />
+  );
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20 flex items-center justify-center">
+        {seoHead}
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-lg">Loading...</p>
@@ -1380,6 +1401,7 @@ const CanadianApplication = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
+      {seoHead}
       <Header />
       
       <div className="container mx-auto px-4 py-4 md:py-8">

@@ -6,6 +6,7 @@ import { ArrowRight, Clock, DollarSign, Users, CheckCircle, Zap, Shield, Calenda
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
 
 const Partners = () => {
   const lenders = [
@@ -133,6 +134,20 @@ const Partners = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Partner With True North | Broker Referral Program"
+        description="Partner with True North Business Loan. Refer Canadian small businesses to a vetted lender network and earn on funded deals."
+        canonicalUrl="https://truenorthbusinessloan.ca/partners"
+        keywords={["business loan broker program", "lender partner canada", "referral partner business financing"]}
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          "name": "Partner With True North Business Loan",
+          "url": "https://truenorthbusinessloan.ca/partners",
+          "description": "Broker and referral partnership program for Canadian business financing.",
+          "publisher": { "@type": "Organization", "name": "True North Business Loan" }
+        }}
+      />
       <Header />
       
       {/* Hero Section */}

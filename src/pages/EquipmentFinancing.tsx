@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/accordion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
 
 const EquipmentFinancing = () => {
   const benefits = [
@@ -123,6 +124,24 @@ const EquipmentFinancing = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* FAQPage schema is rendered inline further down this page, so this
+          SEOHead intentionally carries the Service schema only. */}
+      <SEOHead
+        title="Equipment Financing Canada | Finance Business Equipment"
+        description="Finance business equipment in Canada from $5,000 to $800,000. Preserve working capital, get approvals in 24-48 hours, and use the equipment itself as collateral."
+        canonicalUrl="https://truenorthbusinessloan.ca/equipment-financing"
+        keywords={["equipment financing canada", "business equipment loan", "finance machinery canada", "equipment leasing canada"]}
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          "name": "Equipment Financing",
+          "serviceType": "Business equipment financing",
+          "url": "https://truenorthbusinessloan.ca/equipment-financing",
+          "description": "Financing for business equipment purchases in Canada, from $5,000 to $800,000, secured by the equipment itself.",
+          "areaServed": { "@type": "Country", "name": "Canada" },
+          "provider": { "@type": "Organization", "name": "True North Business Loan", "url": "https://truenorthbusinessloan.ca" }
+        }}
+      />
       <Header />
       
       {/* Hero Section */}

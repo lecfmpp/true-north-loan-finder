@@ -46,6 +46,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import Header from "@/components/Header";
+import SEOHead from "@/components/SEOHead";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -1084,8 +1085,27 @@ const Quiz = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Only the initial quiz view is indexable; the showResults branch above
+          is a post-interaction state on the same URL. */}
+      <SEOHead
+        title="Business Loan Estimator | See Options in 60 Seconds"
+        description="Answer a few questions and see the Canadian business loan options you qualify for. $5,000 to $800,000, approvals in 24-48 hours, no hard credit check to start."
+        canonicalUrl="https://truenorthbusinessloan.ca/loan-estimator"
+        keywords={["business loan estimator", "business loan calculator canada", "see loan options", "small business loan quiz"]}
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          "name": "Business Loan Estimator",
+          "url": "https://truenorthbusinessloan.ca/loan-estimator",
+          "applicationCategory": "FinanceApplication",
+          "operatingSystem": "Web",
+          "description": "A 60-second estimator that matches Canadian small businesses to business loan options from $5,000 to $800,000.",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "CAD" },
+          "provider": { "@type": "Organization", "name": "True North Business Loan", "url": "https://truenorthbusinessloan.ca" }
+        }}
+      />
       <Header />
-      
+
       {/* Hero Section - Condensed for desktop */}
       <section className="py-4 md:py-8 bg-gradient-to-br from-primary/5 via-background to-secondary/5">
         <div className="container mx-auto px-4">

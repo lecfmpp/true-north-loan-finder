@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/accordion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
 
 const HowItWorks = () => {
   const steps = [
@@ -107,6 +108,23 @@ const HowItWorks = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="How It Works | Business Loan Matching in Canada"
+        description="See how True North matches Canadian small businesses with lenders: take the 60-second estimator, compare your matches, then complete one application."
+        canonicalUrl="https://truenorthbusinessloan.ca/how-it-works"
+        keywords={["how business loans work", "business loan process canada", "get matched with lenders"]}
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "HowTo",
+          "name": "How to get matched with a Canadian business lender",
+          "description": "Three steps to see your business loan options with True North.",
+          "step": [
+            { "@type": "HowToStep", "position": 1, "name": "Take the 60-second estimator", "text": "Answer a few questions about your revenue, time in business and how much you need." },
+            { "@type": "HowToStep", "position": 2, "name": "Review your matches", "text": "See the lenders and loan products your business pre-qualifies for." },
+            { "@type": "HowToStep", "position": 3, "name": "Complete one application", "text": "Submit a single application; approvals typically come in 24-48 hours." }
+          ]
+        }}
+      />
       <Header />
       
       {/* Hero Section */}

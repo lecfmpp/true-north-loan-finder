@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Users, Target, Heart, Shield, Handshake, TrendingUp, Award } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
 import businessOwnerImage from "@/assets/business-owner-hero.jpg";
 import manufacturingOwnerImage from "@/assets/manufacturing-owner.jpg";
 const About = () => {
@@ -58,6 +59,31 @@ const About = () => {
     image: "👩‍💻"
   }];
   return <div className="min-h-screen bg-background">
+      <SEOHead
+        title="About True North Business Loan | Canadian Lending"
+        description="We're a Canadian company in Kitchener, Ontario, helping small businesses across Canada find the right financing without the frustration of traditional lending."
+        canonicalUrl="https://truenorthbusinessloan.ca/about"
+        keywords={["about true north business loan", "canadian business lender", "business financing canada"]}
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "AboutPage",
+          "name": "About True North Business Loan",
+          "url": "https://truenorthbusinessloan.ca/about",
+          "mainEntity": {
+            "@type": "Organization",
+            "name": "True North Business Loan",
+            "url": "https://truenorthbusinessloan.ca",
+            "email": "info@truenorthbusinessloan.ca",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Kitchener",
+              "addressRegion": "ON",
+              "addressCountry": "CA"
+            },
+            "areaServed": "CA"
+          }
+        }}
+      />
       <Header />
       
       {/* Hero Section */}

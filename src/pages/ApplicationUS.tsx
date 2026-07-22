@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ApplicationAuth } from "@/components/ApplicationAuth";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SEOHead from "@/components/SEOHead";
 import { useAuth } from "@/hooks/use-auth";
 
 // Reuse the Canadian application UI/flow but submit to the USA table with US-specific IDs
@@ -1226,9 +1227,29 @@ const ApplicationUS = () => {
     }
   };
 
+  // Held in a variable so the loading state renders it too — server-side the
+  // fetch never resolves, so without this the page ships no metadata at all.
+  const seoHead = (
+    <SEOHead
+      title="Business Loan Application | True North Business Loan"
+      description="Complete your business loan application with True North. One application, matched to lenders, with approvals typically in 24-48 hours."
+      canonicalUrl="https://truenorthbusinessloan.ca/application-usa"
+      keywords={["business loan application", "apply for business loan"]}
+      structuredData={{
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Business Loan Application",
+        "url": "https://truenorthbusinessloan.ca/application-usa",
+        "description": "Application form for small business financing from $5,000 to $800,000.",
+        "publisher": { "@type": "Organization", "name": "True North Business Loan" }
+      }}
+    />
+  );
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
+        {seoHead}
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
@@ -1236,6 +1257,7 @@ const ApplicationUS = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {seoHead}
       <Header />
       <main className="flex-1">
         <div className="max-w-4xl mx-auto px-4 py-8">
