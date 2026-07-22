@@ -1,0 +1,47 @@
+name: Blog content check
+
+# Verifies the published blog content still conforms to the element standard.
+#
+# Why this runs in CI rather than through an interactive Supabase connection:
+# the content rules live in the database, not in the repo, so nothing here could
+# catch a regression from a bad daily post or a hand edit in the Supabase
+# dashboard. Running it on every commit also pins the project explicitly, so a
+# check can never land on the wrong Supabase project.
+#
+# Security: this uses only the public anon key, which RLS restricts to published
+# posts. The service_role key is never involved — this job cannot write.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Read-only job: no write access to the repo either.
+permissions:
+  contents: read
+
+concurrency:
+  group: content-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check published blog content
+        env:
+          # Pinned so the check cannot run against another Supabase project.
+          # The script refuses to start if these disagree.
+          SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF || 'kgwcogltpsmapxnjzjhm' }}
+          SUPABASE_URL: ${{ vars.SUPABASE_URL || 'https://kgwcogltpsmapxnjzjhm.supabase.co' }}
+          # Optional: only needed if the public anon key is ever rotated.
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: node scripts/check-blog-content.mjs

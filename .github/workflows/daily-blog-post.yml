@@ -77,8 +77,10 @@ jobs:
       # prerendered at build time, so without a deploy the new post is invisible
       # to anything that doesn't run JavaScript and /blog keeps listing the
       # previous set. This push is what triggers that deploy — deliberately
-      # WITHOUT [skip ci]. No workflow in this repo runs on push, so there is no
-      # risk of a loop.
+      # WITHOUT [skip ci].
+      # No loop risk: the only push-triggered workflow is content-check.yml,
+      # which is read-only and pushes nothing. (GitHub also does not fire
+      # workflows for pushes made with the default GITHUB_TOKEN.)
       - name: Commit sitemap and trigger the rebuild
         run: |
           if [ -n "$(git status --porcelain public/sitemap.xml blog-framework/published-log.md)" ]; then
