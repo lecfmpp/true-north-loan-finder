@@ -13,7 +13,10 @@ import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://kgwcogltpsmapxnjzjhm.supabase.co';
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const GEMINI_KEY = process.env.GEMINI_API_KEY;
-const MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+// Empty means "discover a current model" (see resolveModel). Pinning a name
+// here is what broke this pipeline: gemini-2.0-flash was retired and every run
+// 404'd. Set the GEMINI_MODEL repo variable to override.
+const MODEL_OVERRIDE = process.env.GEMINI_MODEL || '';
 // Overridable for offline testing; defaults to the real Google endpoint.
 const GEMINI_BASE_URL = process.env.GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com';
 const DRY = String(process.env.DRY_RUN).toLowerCase() === 'true';
@@ -111,6 +114,54 @@ HARD RULES:
 - meta_title <= 60 chars. meta_description <= 160 chars.
 - 900-1400 words. Evergreen and factual. NEVER invent a specific interest rate, statistic, or a
   named lender. Do not give personalised financial advice.`;
+
+/**
+ * Pick a text model that currently exists.
+ *
+ * Google retires model names (gemini-2.0-flash 404'd here), which silently
+ * breaks an unattended daily job. Rather than pin a name that expires, ask the
+ * API which models are available and choose the best fit. GEMINI_MODEL still
+ * overrides when a specific model is wanted.
+ */
+async function resolveModel() {
+  if (MODEL_OVERRIDE) return MODEL_OVERRIDE;
+
+  const res = await fetch(`${GEMINI_BASE_URL}/v1beta/models?key=${GEMINI_KEY}`);
+  if (!res.ok) {
+    console.error('Could not list Gemini models', res.status, (await res.text()).slice(0, 300));
+    process.exit(1);
+  }
+  const { models = [] } = await res.json();
+
+  const candidates = models
+    .filter(m => (m.supportedGenerationMethods || []).includes('generateContent'))
+    .map(m => String(m.name).replace(/^models\//, ''))
+    // Text generation only — drop embedding, media and realtime variants.
+    .filter(n => !/embedding|aqa|imagen|veo|tts|audio|image|vision|live/i.test(n));
+
+  // Prefer flash (fast and cheap for a daily post), newest version, and stable
+  // over preview builds. Dated snapshots are fine but rank below the alias.
+  const score = (name) => {
+    let s = 0;
+    if (/flash/.test(name)) s += 100;
+    else if (/pro/.test(name)) s += 60;
+    if (/preview|exp(erimental)?|thinking/.test(name)) s -= 45;
+    if (/lite/.test(name)) s -= 15;
+    if (/\d{3,}/.test(name)) s -= 5; // dated snapshot, e.g. -001 / -0827
+    s += (parseFloat((name.match(/(\d+\.\d+)/) || [])[1]) || 0) * 10;
+    return s;
+  };
+
+  const best = candidates.sort((a, b) => score(b) - score(a))[0];
+  if (!best) {
+    console.error('No usable Gemini text model found. Set the GEMINI_MODEL repo variable.');
+    process.exit(1);
+  }
+  console.log(`Model: ${best} (auto-selected from ${candidates.length} available)`);
+  return best;
+}
+
+const MODEL = await resolveModel();
 
 const res = await fetch(
   `${GEMINI_BASE_URL}/v1beta/models/${MODEL}:generateContent?key=${GEMINI_KEY}`,

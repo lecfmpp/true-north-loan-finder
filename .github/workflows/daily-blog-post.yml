@@ -61,7 +61,9 @@ jobs:
           SUPABASE_URL: ${{ vars.SUPABASE_URL || 'https://kgwcogltpsmapxnjzjhm.supabase.co' }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL: ${{ vars.GEMINI_MODEL || 'gemini-2.0-flash' }}
+          # Left empty on purpose: the script picks a currently-available model.
+          # Set the GEMINI_MODEL repo variable only to pin a specific one.
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
           FORCE_TOPIC: ${{ github.event.inputs.topic }}
           DRY_RUN: ${{ github.event.inputs.dry_run }}
         run: node scripts/daily-blog-post.mjs
