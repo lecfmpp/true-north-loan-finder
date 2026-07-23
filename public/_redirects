@@ -54,9 +54,16 @@ http://truenorthbusinessloan.ca/* https://truenorthbusinessloan.ca/:splat 301!
 /terms/ /terms 301
 /auth/ /auth 301
 
-# Catch-all for any other trailing slashes
-/*/ /:splat 301
+# NOTE: no catch-all trailing-slash stripper here. A `/*/ /:splat 301` rule
+# fought Netlify's own directory handling — the site prerenders each route as a
+# directory (dist/<route>/index.html), so for a MISSING path Netlify appends the
+# slash and the stripper removed it, redirecting the URL to itself forever
+# ("too many redirects"). Missing paths now fall straight through to the SPA
+# fallback below.
 
 # SPA fallback — serve the app for client-side routes (MUST be the last rule).
-# Netlify serves real files first; anything else renders index.html so React Router works.
+# Stays 200, not 404: valid client-rendered routes that aren't prerendered
+# (/results/:id, /application-status, /auth) fall through here and must not be
+# marked 404. Genuinely-missing paths render the NotFound route as a soft 404 —
+# the standard SPA trade-off, and still content rather than a redirect loop.
 /* /index.html 200

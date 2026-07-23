@@ -12,3 +12,8 @@
 # Node 22 also supplies the globals the SSR render relies on.
 [build.environment]
   NODE_VERSION = "22"
+
+# Markdown for Agents lives in netlify/edge-functions/markdown.ts. It declares
+# its own path and excludedPath via an inline `export const config`, so it is
+# NOT registered here — a [[edge_functions]] block without that excludedPath
+# would run the function on static assets too.
