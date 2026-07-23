@@ -39,8 +39,14 @@ const stripTags = (s: string) => decodeEntities(s.replace(/<[^>]+>/g, "")).repla
  * HTML→markdown engine, and does not need to be — the input is our own markup.
  */
 function htmlToMarkdown(html: string): string {
-  // Prefer the <main> region if present, else the first <article>, else body.
+  // Extract the content region, not the whole page chrome. Blog posts wrap the
+  // article body in `.blog-content`; grabbing that (through to </article>, which
+  // also picks up the closing CTA) skips the back-button, featured-image
+  // skeleton and byline badges whose markup otherwise bleeds across block
+  // boundaries and flattens the output onto one line. Other page types have no
+  // <main>/<article>, so they fall through to <body> with chrome stripped below.
   let body =
+    html.match(/<div[^>]*class=["'][^"']*blog-content[^"']*["'][^>]*>([\s\S]*?)<\/article>/i)?.[1] ??
     html.match(/<main[^>]*>([\s\S]*?)<\/main>/i)?.[1] ??
     html.match(/<article[^>]*>([\s\S]*?)<\/article>/i)?.[1] ??
     html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)?.[1] ??
