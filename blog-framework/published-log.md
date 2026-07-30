@@ -10,3 +10,4 @@
 2026-07-26 | how-much-can-your-business-borrow-what-actually-sets-the-limit | how much can i borrow business loan | published
 2026-07-28 | personal-guarantees-what-you-are-really-signing-and-when-to-push-back | personal guarantee business loan | published
 2026-07-29 | the-fees-behind-a-business-loan-what-the-rate-does-not-tell-you | business loan fees explained | published
+2026-07-30 | refinancing-business-debt-in-canada-when-it-helps-and-when-it-hurts | refinance business debt canada | published
