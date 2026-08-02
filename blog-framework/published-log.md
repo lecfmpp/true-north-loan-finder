@@ -13,3 +13,4 @@
 2026-07-30 | refinancing-business-debt-in-canada-when-it-helps-and-when-it-hurts | refinance business debt canada | published
 2026-07-31 | seasonal-business-financing-bridging-the-slow-months | seasonal business financing canada | published
 2026-08-01 | startup-business-loans-in-canada-options-before-you-have-history | startup business loan canada | published
+2026-08-02 | the-document-checklist-that-speeds-up-a-business-loan-decision | business loan documents checklist | published
