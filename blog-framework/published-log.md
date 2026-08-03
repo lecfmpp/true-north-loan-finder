@@ -14,3 +14,4 @@
 2026-07-31 | seasonal-business-financing-bridging-the-slow-months | seasonal business financing canada | published
 2026-08-01 | startup-business-loans-in-canada-options-before-you-have-history | startup business loan canada | published
 2026-08-02 | the-document-checklist-that-speeds-up-a-business-loan-decision | business loan documents checklist | published
+2026-08-03 | how-to-build-business-credit-in-canada-before-you-need-a-loan | improve business credit canada | published
