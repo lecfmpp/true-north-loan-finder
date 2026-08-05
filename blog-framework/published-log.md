@@ -16,3 +16,4 @@
 2026-08-02 | the-document-checklist-that-speeds-up-a-business-loan-decision | business loan documents checklist | published
 2026-08-03 | how-to-build-business-credit-in-canada-before-you-need-a-loan | improve business credit canada | published
 2026-08-04 | cash-flow-forecasting-the-habit-that-gets-loans-approved | cash flow forecast small business | published
+2026-08-05 | used-vs-new-equipment-which-one-lenders-prefer-to-finance | buying commercial equipment used vs new | published
