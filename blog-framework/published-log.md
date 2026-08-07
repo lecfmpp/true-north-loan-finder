@@ -18,3 +18,4 @@
 2026-08-04 | cash-flow-forecasting-the-habit-that-gets-loans-approved | cash flow forecast small business | published
 2026-08-05 | used-vs-new-equipment-which-one-lenders-prefer-to-finance | buying commercial equipment used vs new | published
 2026-08-06 | business-acquisition-loans-in-canada-financing-a-purchase | business acquisition loan canada | published
+2026-08-07 | equipment-financing-in-canada-how-to-qualify-and-what-it-costs | equipment financing canada | published
