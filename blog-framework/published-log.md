@@ -19,3 +19,4 @@
 2026-08-05 | used-vs-new-equipment-which-one-lenders-prefer-to-finance | buying commercial equipment used vs new | published
 2026-08-06 | business-acquisition-loans-in-canada-financing-a-purchase | business acquisition loan canada | published
 2026-08-07 | equipment-financing-in-canada-how-to-qualify-and-what-it-costs | equipment financing canada | published
+2026-08-08 | merchant-cash-advance-in-canada-costs-pros-and-when-it-fits | merchant cash advance canada | published
