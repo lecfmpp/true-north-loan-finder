@@ -21,3 +21,4 @@
 2026-08-07 | equipment-financing-in-canada-how-to-qualify-and-what-it-costs | equipment financing canada | published
 2026-08-08 | merchant-cash-advance-in-canada-costs-pros-and-when-it-fits | merchant cash advance canada | published
 2026-08-09 | invoice-factoring-in-canada-turn-unpaid-invoices-into-cash | invoice factoring canada | published
+2026-08-10 | how-to-get-a-business-loan-with-bad-credit-in-canada | business loan bad credit canada | published
