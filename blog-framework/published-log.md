@@ -23,3 +23,4 @@
 2026-08-09 | invoice-factoring-in-canada-turn-unpaid-invoices-into-cash | invoice factoring canada | published
 2026-08-10 | how-to-get-a-business-loan-with-bad-credit-in-canada | business loan bad credit canada | published
 2026-08-11 | trucking-business-loans-financing-trucks-trailers-and-fuel | trucking business loans | published
+2026-08-12 | manufacturing-equipment-loans-how-to-finance-your-production-line | manufacturing equipment loans | published
