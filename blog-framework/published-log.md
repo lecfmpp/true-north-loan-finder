@@ -24,3 +24,4 @@
 2026-08-10 | how-to-get-a-business-loan-with-bad-credit-in-canada | business loan bad credit canada | published
 2026-08-11 | trucking-business-loans-financing-trucks-trailers-and-fuel | trucking business loans | published
 2026-08-12 | manufacturing-equipment-loans-how-to-finance-your-production-line | manufacturing equipment loans | published
+2026-08-14 | working-capital-loans-when-to-use-one-and-how-to-qualify | working capital loan small business | published
