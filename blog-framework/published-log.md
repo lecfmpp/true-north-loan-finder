@@ -26,3 +26,4 @@
 2026-08-12 | manufacturing-equipment-loans-how-to-finance-your-production-line | manufacturing equipment loans | published
 2026-08-14 | working-capital-loans-when-to-use-one-and-how-to-qualify | working capital loan small business | published
 2026-08-15 | business-line-of-credit-vs-term-loan-which-should-you-choose | business line of credit vs term loan | published
+2026-08-16 | franchise-financing-in-canada-funding-an-established-franchise | franchise financing canada | published
