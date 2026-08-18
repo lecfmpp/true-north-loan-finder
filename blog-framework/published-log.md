@@ -28,3 +28,4 @@
 2026-08-15 | business-line-of-credit-vs-term-loan-which-should-you-choose | business line of credit vs term loan | published
 2026-08-16 | franchise-financing-in-canada-funding-an-established-franchise | franchise financing canada | published
 2026-08-17 | business-loan-requirements-in-canada-the-complete-checklist | business loan requirements canada | published
+2026-08-18 | how-fast-can-you-get-a-business-loan-approval-and-funding-timelines | how fast business loan approval | published
