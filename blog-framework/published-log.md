@@ -32,3 +32,4 @@
 2026-08-19 | bank-vs-alternative-lender-which-business-loan-is-right-for-you | bank vs alternative lender business loan | published
 2026-08-20 | construction-business-loans-in-canada-funding-crews-gear-and-gaps | construction business loans canada | published
 2026-08-21 | retail-business-loans-in-canada-inventory-fit-out-and-seasonality | retail business loans canada | published
+2026-08-22 | medical-practice-financing-in-canada-equipment-and-expansion | medical practice financing canada | published
