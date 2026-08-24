@@ -34,3 +34,4 @@
 2026-08-21 | retail-business-loans-in-canada-inventory-fit-out-and-seasonality | retail business loans canada | published
 2026-08-22 | medical-practice-financing-in-canada-equipment-and-expansion | medical practice financing canada | published
 2026-08-23 | staffing-agency-financing-covering-payroll-between-client-payments | staffing agency financing canada | published
+2026-08-24 | property-management-financing-funding-repairs-and-turnovers | property management financing canada | published
