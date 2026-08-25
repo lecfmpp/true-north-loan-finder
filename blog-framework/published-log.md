@@ -35,3 +35,4 @@
 2026-08-22 | medical-practice-financing-in-canada-equipment-and-expansion | medical practice financing canada | published
 2026-08-23 | staffing-agency-financing-covering-payroll-between-client-payments | staffing agency financing canada | published
 2026-08-24 | property-management-financing-funding-repairs-and-turnovers | property management financing canada | published
+2026-08-25 | what-counts-as-collateral-for-a-canadian-business-loan | business loan collateral canada | published
