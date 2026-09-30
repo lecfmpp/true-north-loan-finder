@@ -1,0 +1,84 @@
+name: Trocar autor dos posts
+
+# One-off byline change (decision tn-autor): blog_posts signed "True North Team"
+# (or with no author) become "Leandro Campos". The job title ("Business Loan
+# Specialist") is not stored: BlogPost.tsx adds it for any non-team author.
+#
+# Uses the Supabase REST API with the SUPABASE_SERVICE_ROLE_KEY secret that
+# daily-blog-post.yml and publish-draft.yml already use. Only the author column
+# is written; nothing is deleted. Re-runnable: after the first run the filter
+# matches nothing.
+#
+# How to use: Actions -> "Trocar autor dos posts" -> Run workflow.
+#   dry_run = true  -> only counts and lists the posts that would change.
+#   dry_run = false -> PATCHes them. Then trigger a Netlify deploy (or merge
+#                      something to main) so the prerendered pages catch up.
+# workflow_dispatch only; never runs on its own.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'true = only count/list. false = WRITE author = Leandro Campos.'
+        required: true
+        default: 'true'
+        type: choice
+        options: ['true', 'false']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: trocar-autor-posts
+  cancel-in-progress: false
+
+jobs:
+  trocar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Count, list and (optionally) update
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL || 'https://kgwcogltpsmapxnjzjhm.supabase.co' }}
+          KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+          NEW_AUTHOR: Leandro Campos
+        run: |
+          set -euo pipefail
+          [ -n "$KEY" ] || { echo "::error::SUPABASE_SERVICE_ROLE_KEY secret is not set."; exit 1; }
+          case "$SUPABASE_URL" in
+            https://kgwcogltpsmapxnjzjhm.supabase.co) ;;
+            *) echo "::error::Unexpected SUPABASE_URL ($SUPABASE_URL); refusing to run."; exit 1 ;;
+          esac
+
+          API="$SUPABASE_URL/rest/v1/blog_posts"
+          FILTER='or=(author.eq.True%20North%20Team,author.is.null)'
+          H=(-H "apikey: $KEY" -H "Authorization: Bearer $KEY")
+
+          echo "== Posts by author (before) =="
+          curl -sS --fail-with-body "${H[@]}" "$API?select=author,status&limit=1000" \
+            | jq -r 'group_by([.author, .status]) | .[] | "\(.[0].author // "(null)") | \(.[0].status) | \(length)"'
+
+          echo "== Posts that match (author = True North Team or null) =="
+          MATCH=$(curl -sS --fail-with-body "${H[@]}" "$API?select=slug,status,author&$FILTER&order=created_at.asc&limit=1000")
+          echo "$MATCH" | jq -r '.[] | "\(.status)\t\(.slug)"'
+          N=$(echo "$MATCH" | jq 'length')
+          echo "Would change: $N posts"
+
+          if [ "$DRY_RUN" != "false" ]; then
+            echo "::notice::DRY RUN: $N posts would change. Nothing was written."
+            exit 0
+          fi
+
+          echo "== Updating =="
+          BODY=$(jq -cn --arg a "$NEW_AUTHOR" '{author: $a}')
+          UPDATED=$(curl -sS --fail-with-body -X PATCH "${H[@]}" \
+            -H "Content-Type: application/json" -H "Prefer: return=representation" \
+            "$API?$FILTER&select=slug,author" -d "$BODY")
+          U=$(echo "$UPDATED" | jq 'length')
+          echo "$UPDATED" | jq -r '.[] | "\(.author)\t\(.slug)"'
+
+          echo "== Posts by author (after) =="
+          curl -sS --fail-with-body "${H[@]}" "$API?select=author,status&limit=1000" \
+            | jq -r 'group_by([.author, .status]) | .[] | "\(.[0].author // "(null)") | \(.[0].status) | \(length)"'
+
+          echo "::notice::Updated $U posts to author = $NEW_AUTHOR. Trigger a Netlify deploy so the prerendered pages catch up."
