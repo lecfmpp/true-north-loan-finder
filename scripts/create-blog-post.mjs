@@ -61,7 +61,7 @@ const row = {
   excerpt: post.excerpt ?? null,
   content: post.content,
   featured_image_url: post.featured_image_url ?? null,
-  author: post.author ?? 'True North Team',
+  author: post.author ?? 'Leandro Campos',
   tags: post.tags ?? null,
   meta_title: post.meta_title ?? null,
   meta_description: post.meta_description ?? null,

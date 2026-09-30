@@ -143,7 +143,7 @@ Map every post to True North's schema (see `CLAUDE.md` for the full column list)
 | `excerpt` | 1–2 sentence answer, used on `/blog` cards |
 | `content` | the assembled inline-styled **HTML** (elements + prose) |
 | `featured_image_url` | uploaded cover URL (or `null`) |
-| `author` | `True North Team` |
+| `author` | `Leandro Campos` (Business Loan Specialist; shown on the post and in the Article JSON-LD as a Person) |
 | `tags` | 4–6 topic tags |
 | `meta_title` | ≤ 60 chars |
 | `meta_description` | ≤ 160 chars |

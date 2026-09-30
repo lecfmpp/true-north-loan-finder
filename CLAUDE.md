@@ -84,7 +84,7 @@ Blog posts are rows in the Supabase `blog_posts` table and render at `/blog/:slu
 | `excerpt` | text | 1–2 sentence summary (used on `/blog` cards + meta) |
 | `content` | text | **required** — sanitized **HTML** (headings, `<p>`, lists, images) |
 | `featured_image_url` | text | full URL or a path in the `blog-images` storage bucket |
-| `author` | text | defaults to `True North Team` |
+| `author` | text | `Leandro Campos` (set by the scripts; the DB column default is still `True North Team`) |
 | `tags` | text[] | topic tags |
 | `meta_title` | text | SEO `<title>` override |
 | `meta_description` | text | SEO meta description (~150–160 chars) |
