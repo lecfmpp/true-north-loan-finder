@@ -247,8 +247,21 @@ const BlogPost = () => {
     }))
   } : null;
 
+  // Breadcrumb trail for this deep page: Home → Blog → post.
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://truenorthbusinessloan.ca" },
+      { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://truenorthbusinessloan.ca/blog" },
+      { "@type": "ListItem", "position": 3, "name": post.title, "item": currentUrl }
+    ]
+  };
+
   // An array of schema objects in one JSON-LD block is valid and supported.
-  const pageSchema = faqSchema ? [structuredData, faqSchema] : structuredData;
+  const pageSchema = faqSchema
+    ? [structuredData, faqSchema, breadcrumbSchema]
+    : [structuredData, breadcrumbSchema];
 
   return (
     <div className="min-h-screen bg-background">
@@ -297,7 +310,7 @@ const BlogPost = () => {
                   }
                   return url;
                 })()}
-                alt={`Featured image for ${post.title} - Canadian business financing guide`}
+                alt={post.excerpt ? `${post.title}: ${post.excerpt}` : post.title}
                 className="w-full h-64 md:h-96 rounded-lg mb-8"
                 priority
               />
