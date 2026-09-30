@@ -1,0 +1,78 @@
+name: Publish reviewed draft
+
+# Publishes a post that was drafted and reviewed as a JSON file in drafts/
+# (the new blog workflow: plan -> draft -> review -> publish). Unlike
+# daily-blog-post.yml, nothing is generated here: the exact reviewed file goes
+# live, upserted on slug with scripts/create-blog-post.mjs.
+#
+# How to use:
+#   1. Commit drafts/<slug>.json on a branch (plus the sitemap entry and cover).
+#   2. Actions -> "Publish reviewed draft" -> Run workflow on that branch,
+#      file = <slug>.json, dry_run = true (validates only, writes nothing).
+#   3. Run again with dry_run = false to publish, then merge the branch so
+#      Netlify rebuilds and prerenders /blog/<slug> with the sitemap entry.
+#
+# Uses the SUPABASE_SERVICE_ROLE_KEY secret already set for daily-blog-post.yml.
+# workflow_dispatch only; never runs on its own.
+
+on:
+  workflow_dispatch:
+    inputs:
+      file:
+        description: 'Draft file name inside drafts/ (e.g. my-post.json)'
+        required: true
+      dry_run:
+        description: 'true = validate only. false = PUBLISH.'
+        required: true
+        default: 'true'
+        type: choice
+        options: ['true', 'false']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-draft
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Resolve and validate the draft
+        id: draft
+        run: |
+          set -euo pipefail
+          case "${{ github.event.inputs.file }}" in
+            */*|*..*|"") echo "::error::Pass a bare file name inside drafts/."; exit 1 ;;
+          esac
+          FILE="drafts/${{ github.event.inputs.file }}"
+          [ -f "$FILE" ] || { echo "::error::$FILE not found on this branch."; exit 1; }
+          echo "file=$FILE" >> "$GITHUB_OUTPUT"
+          node -e '
+            const p = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+            for (const f of ["title", "slug", "content", "excerpt", "meta_title", "meta_description"])
+              if (!p[f]) { console.error("::error::missing " + f); process.exit(1); }
+            if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(p.slug)) { console.error("::error::slug not kebab-case"); process.exit(1); }
+            const words = p.content.replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
+            console.log(`OK: ${p.slug} | ${words} words | meta_description ${p.meta_description.length} chars`);
+          ' "$FILE"
+
+      - name: Install dependencies
+        if: ${{ github.event.inputs.dry_run == 'false' }}
+        run: npm install @supabase/supabase-js --no-audit --no-fund --no-save
+
+      - name: Publish
+        if: ${{ github.event.inputs.dry_run == 'false' }}
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL || 'https://kgwcogltpsmapxnjzjhm.supabase.co' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          node scripts/create-blog-post.mjs "${{ steps.draft.outputs.file }}" --publish
+          echo "::warning::Published in the database. Merge the branch (sitemap + cover) so Netlify rebuilds and prerenders the post."
