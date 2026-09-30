@@ -11,6 +11,9 @@ import OptimizedImage from "@/components/OptimizedImage";
 import DOMPurify from 'dompurify';
 import { getSsrBlogPost } from "@/lib/ssr-data";
 
+const TEAM_AUTHOR = "True North Team";
+const AUTHOR_JOB_TITLE = "Business Loan Specialist";
+
 interface BlogPost {
   id: string;
   title: string;
@@ -202,6 +205,26 @@ const BlogPost = () => {
   const seoDescription = post.meta_description || post.excerpt || post.title;
   const seoKeywords = post.meta_keywords || [...post.tags, 'business loans canada', 'small business financing'];
   
+  // A named person as author is an E-E-A-T signal; legacy posts signed by the
+  // team keep the Organization form.
+  const isTeamAuthor = !post.author || post.author === TEAM_AUTHOR;
+  const authorSchema = isTeamAuthor
+    ? {
+        "@type": "Organization",
+        "name": post.author,
+        "url": "https://truenorthbusinessloan.ca"
+      }
+    : {
+        "@type": "Person",
+        "name": post.author,
+        "jobTitle": AUTHOR_JOB_TITLE,
+        "worksFor": {
+          "@type": "Organization",
+          "name": "True North Business Loan",
+          "url": "https://truenorthbusinessloan.ca"
+        }
+      };
+
   // Structured data for article
   const structuredData = {
     "@context": "https://schema.org",
@@ -209,11 +232,7 @@ const BlogPost = () => {
     "headline": post.title,
     "description": seoDescription,
     "image": post.featured_image_url || "https://truenorthbusinessloan.ca/lovable-uploads/e80bb666-2b36-4875-bd9f-78f3e944d749.png",
-    "author": {
-      "@type": "Organization",
-      "name": post.author,
-      "url": "https://truenorthbusinessloan.ca"
-    },
+    "author": authorSchema,
     "publisher": {
       "@type": "Organization",
       "name": "True North Business Loan",
@@ -318,6 +337,9 @@ const BlogPost = () => {
                 <div className="flex items-center">
                   <User className="h-4 w-4 mr-2" />
                   <span className="font-medium">{post.author}</span>
+                  {!isTeamAuthor && (
+                    <span className="ml-1 text-sm">· {AUTHOR_JOB_TITLE}</span>
+                  )}
                 </div>
                 <div className="flex items-center">
                   <Clock className="h-4 w-4 mr-2" />

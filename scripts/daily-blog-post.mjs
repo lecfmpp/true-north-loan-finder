@@ -253,7 +253,7 @@ it does not, and cover the practical edge cases. Do not pad, repeat, or restate 
 }
 
 post.slug = slug;
-post.author = 'True North Team';
+post.author = 'Leandro Campos';
 post.status = 'published';
 
 // Normalise field types before they reach Postgres. The model returns whatever
