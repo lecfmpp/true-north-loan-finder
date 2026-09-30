@@ -71,11 +71,14 @@ jobs:
 
           echo "== Updating =="
           BODY=$(jq -cn --arg a "$NEW_AUTHOR" '{author: $a}')
-          UPDATED=$(curl -sS --fail-with-body -X PATCH "${H[@]}" \
-            -H "Content-Type: application/json" -H "Prefer: return=representation" \
-            "$API?$FILTER&select=slug,author" -d "$BODY")
-          U=$(echo "$UPDATED" | jq 'length')
-          echo "$UPDATED" | jq -r '.[] | "\(.author)\t\(.slug)"'
+          # Count from Content-Range (return=minimal + count=exact); the
+          # representation body is not reliable for counting here.
+          RANGE=$(curl -sS --fail-with-body -X PATCH "${H[@]}" -o /dev/null -D - \
+            -H "Content-Type: application/json" -H "Prefer: return=minimal, count=exact" \
+            "$API?$FILTER" -d "$BODY" | tr -d '\r' | awk -F'/' 'tolower($0) ~ /^content-range:/ {print $2}')
+          U=${RANGE:-unknown}
+          LEFT=$(curl -sS --fail-with-body "${H[@]}" "$API?select=slug&$FILTER&limit=1000" | jq 'length')
+          echo "Updated: $U | still matching the filter: $LEFT"
 
           echo "== Posts by author (after) =="
           curl -sS --fail-with-body "${H[@]}" "$API?select=author,status&limit=1000" \
