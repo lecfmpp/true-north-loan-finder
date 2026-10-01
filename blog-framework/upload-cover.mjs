@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * Upload a generated cover to Supabase Storage (bucket: blog-images) and print its public URL.
- * Requires SUPABASE_SERVICE_ROLE_KEY (in .env.local). Prefers PNG, falls back to SVG.
+ * Requires SUPABASE_SERVICE_ROLE_KEY (in .env.local). Uses cover.png, then cover.jpg (photo covers
+ * from covers/render-cover.mjs --pick foto), then cover.svg.
  *
  * Usage: node blog-framework/upload-cover.mjs <slug> <coverDir>
  *   -> prints the public URL on the last line (use it as featured_image_url / og_image_url)
@@ -25,18 +26,19 @@ const dir = process.argv[3];
 if (!slug || !dir) { console.error('Usage: upload-cover.mjs <slug> <coverDir>'); process.exit(1); }
 if (!KEY) { console.error('Missing SUPABASE_SERVICE_ROLE_KEY'); process.exit(1); }
 
-const png = join(dir, 'cover.png'), svg = join(dir, 'cover.svg');
-const usePng = existsSync(png);
-const file = usePng ? png : svg;
-if (!existsSync(file)) { console.error('No cover.png/svg in', dir); process.exit(1); }
+const CANDIDATES = [['png', 'image/png'], ['jpg', 'image/jpeg'], ['svg', 'image/svg+xml']];
+const found = CANDIDATES.find(([ext]) => existsSync(join(dir, `cover.${ext}`)));
+if (!found) { console.error('No cover.png/jpg/svg in', dir); process.exit(1); }
+const [ext, contentType] = found;
+const file = join(dir, `cover.${ext}`);
 
 const supabase = createClient(URL_, KEY, { auth: { persistSession: false } });
 const bucket = 'blog-images';
-const path = `covers/${slug}-cover.${usePng ? 'png' : 'svg'}`;
+const path = `covers/${slug}-cover.${ext}`;
 const body = readFileSync(file);
 
 const { error } = await supabase.storage.from(bucket).upload(path, body, {
-  contentType: usePng ? 'image/png' : 'image/svg+xml',
+  contentType,
   upsert: true,
 });
 if (error) { console.error('Upload failed:', error.message); process.exit(1); }
