@@ -1,0 +1,71 @@
+name: Editar post publicado
+
+# Edits ONE exact snippet of a post already in blog_posts (decision tn-backlink),
+# e.g. adding an internal link to an older post. The edit is reviewed as a file
+# in edits/<name>.json (slug, field, find, replace, reason) on a branch.
+#
+# How to use: Actions -> "Editar post publicado" -> Run workflow on the branch.
+#   mode = show  -> prints the post content (slug input), writes nothing.
+#   mode = dry   -> simulates edits/<file>: before/after in the log, writes nothing.
+#   mode = apply -> writes that one field (+ updated_at) and re-reads to verify.
+#                   Then merge the branch so Netlify rebuilds the prerendered page.
+# Safety (scripts/edit-blog-post.mjs): `find` must occur exactly once; re-running
+# an applied edit is a no-op; only content/excerpt/meta_description; no deletes.
+# Uses the SUPABASE_SERVICE_ROLE_KEY secret already used by publish-draft.yml.
+# workflow_dispatch only; never runs on its own.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'show = print post; dry = simulate edit; apply = WRITE edit'
+        required: true
+        default: 'dry'
+        type: choice
+        options: ['show', 'dry', 'apply']
+      slug:
+        description: 'mode=show only: post slug'
+        required: false
+        default: ''
+      file:
+        description: 'mode=dry/apply: edit file name inside edits/ (e.g. mca-backlink.json)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: editar-post-publicado
+  cancel-in-progress: false
+
+jobs:
+  editar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Unit tests
+        run: node --test scripts/edit-blog-post.test.mjs
+
+      - name: Run
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL || 'https://kgwcogltpsmapxnjzjhm.supabase.co' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          MODE: ${{ github.event.inputs.mode }}
+          SLUG: ${{ github.event.inputs.slug }}
+          FILE: ${{ github.event.inputs.file }}
+        run: |
+          set -euo pipefail
+          if [ "$MODE" = "show" ]; then
+            node scripts/edit-blog-post.mjs show "$SLUG"
+          else
+            case "$FILE" in
+              */*|*..*|"") echo "::error::Pass a bare file name inside edits/."; exit 1 ;;
+            esac
+            node scripts/edit-blog-post.mjs "$MODE" "edits/$FILE"
+          fi
