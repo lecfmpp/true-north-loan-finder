@@ -90,12 +90,16 @@ if (!keyFile) {
   const list = [...urls].slice(0, 1000);
   if (!list.length) { log('\n**IndexNow:** no URLs found in sitemaps.'); }
   else {
-    const r = await fetch('https://api.indexnow.org/indexnow', {
+    const send = () => fetch('https://api.indexnow.org/indexnow', {
       method: 'POST', headers: { 'content-type': 'application/json; charset=utf-8' },
       body: JSON.stringify({ host, key, keyLocation: `https://${host}/${keyFile}`, urlList: list }),
     });
-    log(`\n**IndexNow:** ${list.length} URLs sent, HTTP ${r.status} ${r.status === 200 || r.status === 202 ? '(accepted)' : (await r.text()).slice(0, 200)}`);
-    if (![200, 202].includes(r.status)) failed = true;
+    let r = await send();
+    // IndexNow validates the key file asynchronously; a 403/429 right after a deploy or a
+    // repeat submission is usually transient, so retry once before warning.
+    if (![200, 202].includes(r.status)) { await new Promise((ok) => setTimeout(ok, 20000)); r = await send(); }
+    const okNow = [200, 202].includes(r.status);
+    log(`\n**IndexNow:** ${list.length} URLs sent, HTTP ${r.status} ${okNow ? '(accepted)' : `(warning, not fatal) ${(await r.text()).slice(0, 200)}`}`);
   }
 }
 
