@@ -47,7 +47,7 @@ jobs:
           node-version: '22'
 
       - name: Install dependencies
-        run: npm install @supabase/supabase-js sharp --no-audit --no-fund
+        run: npm install @supabase/supabase-js --no-audit --no-fund  # also installs devDependencies (@resvg/resvg-js for covers)
 
       - name: Generate and publish post
         env:
