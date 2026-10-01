@@ -13,6 +13,7 @@ name: Trocar autor dos posts
 #   dry_run = true  -> only counts and lists the posts that would change.
 #   dry_run = false -> PATCHes them. Then trigger a Netlify deploy (or merge
 #                      something to main) so the prerendered pages catch up.
+#   from_author     -> "True North Team" (also matches null) or "Jane Mitchell".
 # workflow_dispatch only; never runs on its own.
 
 on:
@@ -24,6 +25,12 @@ on:
         default: 'true'
         type: choice
         options: ['true', 'false']
+      from_author:
+        description: 'Which byline to replace (decision tn-jane-mitchell added "Jane Mitchell").'
+        required: true
+        default: 'True North Team'
+        type: choice
+        options: ['True North Team', 'Jane Mitchell']
 
 permissions:
   contents: read
@@ -42,6 +49,7 @@ jobs:
           KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           DRY_RUN: ${{ github.event.inputs.dry_run }}
           NEW_AUTHOR: Leandro Campos
+          FROM_AUTHOR: ${{ github.event.inputs.from_author || 'True North Team' }}
         run: |
           set -euo pipefail
           [ -n "$KEY" ] || { echo "::error::SUPABASE_SERVICE_ROLE_KEY secret is not set."; exit 1; }
@@ -51,14 +59,19 @@ jobs:
           esac
 
           API="$SUPABASE_URL/rest/v1/blog_posts"
-          FILTER='or=(author.eq.True%20North%20Team,author.is.null)'
+          case "$FROM_AUTHOR" in
+            "True North Team") FILTER='or=(author.eq.True%20North%20Team,author.is.null)' ;;
+            "Jane Mitchell")   FILTER='author=eq.Jane%20Mitchell' ;;
+            *) echo "::error::Unexpected FROM_AUTHOR ($FROM_AUTHOR)"; exit 1 ;;
+          esac
+          echo "From author: $FROM_AUTHOR"
           H=(-H "apikey: $KEY" -H "Authorization: Bearer $KEY")
 
           echo "== Posts by author (before) =="
           curl -sS --fail-with-body "${H[@]}" "$API?select=author,status&limit=1000" \
             | jq -r 'group_by([.author, .status]) | .[] | "\(.[0].author // "(null)") | \(.[0].status) | \(length)"'
 
-          echo "== Posts that match (author = True North Team or null) =="
+          echo "== Posts that match ($FILTER) =="
           MATCH=$(curl -sS --fail-with-body "${H[@]}" "$API?select=slug,status,author&$FILTER&order=created_at.asc&limit=1000")
           echo "$MATCH" | jq -r '.[] | "\(.status)\t\(.slug)"'
           N=$(echo "$MATCH" | jq 'length')
