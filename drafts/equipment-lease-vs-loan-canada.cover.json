@@ -1,0 +1,63 @@
+{
+  "category": "Equipment Financing",
+  "headline": "Equipment lease vs loan in Canada",
+  "dado": {
+    "kicker": "Lease vs loan · $100K, 5 years",
+    "value": "$7,200",
+    "label": "less to own the equipment with a loan than with a $1 buyout lease",
+    "footer": "Equipment lease vs loan in Canada: <b>which costs less?</b>",
+    "card": {
+      "title": "Total cost to own a $100K machine",
+      "rows": [
+        {
+          "label": "Loan",
+          "value": "$122K",
+          "amount": 122095,
+          "color": "green"
+        },
+        {
+          "label": "$1 buyout lease",
+          "value": "$129K",
+          "amount": 129270,
+          "color": "gold"
+        },
+        {
+          "label": "FMV lease + buyout",
+          "value": "$134K",
+          "amount": 134316,
+          "color": "gray"
+        }
+      ],
+      "note": "Illustrative: 9% loan, 11% lease rate, 60 months"
+    }
+  },
+  "icones": {
+    "kicker": "Equipment Financing",
+    "headline": "Equipment lease vs loan in Canada",
+    "sub": "Which one costs less, and when leasing still wins.",
+    "ghost": "forklift",
+    "vs": true,
+    "tiles": [
+      {
+        "icon": "key-round",
+        "title": "Loan",
+        "text": "You own it from day one. Lower total cost."
+      },
+      {
+        "icon": "repeat",
+        "title": "Lease",
+        "text": "Less cash up front. Easy to upgrade."
+      }
+    ]
+  },
+  "foto": {
+    "kicker": "Equipment Financing",
+    "headline": "Equipment lease vs loan in Canada",
+    "photo": "photos/forklift-carpentry-workshop-pickawood-unsplash.jpg",
+    "position": "50% 60%",
+    "chip": "A loan costs ~$7,200 less to own",
+    "chipIcon": "trending-down",
+    "credit": "Photo: Pickawood / Unsplash",
+    "flip": true
+  }
+}

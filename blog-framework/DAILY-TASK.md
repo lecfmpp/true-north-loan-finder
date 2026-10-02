@@ -16,8 +16,10 @@ post using the WiseFunnel model in `BLOG-FRAMEWORK.md` and auto-publishes it.
    Never invent a specific rate, statistic, or lender name.
 4. **Write** per the readability + element rules. Answer-first H2s. 4–6 FAQ pairs. One CTA to
    `/loan-estimator`. Build the inline-styled HTML `content`.
-5. **Cover:** write a cover config and run
-   `node blog-framework/generate-cover.mjs <cfg.json> drafts/<slug>/`. If `.env.local` has the
+5. **Cover:** pick the variant from `blog-framework/covers/rotation-log.md` (rules in
+   `blog-framework/covers/README.md`), write `drafts/<slug>.cover.json` and run
+   `node blog-framework/covers/render-cover.mjs drafts/<slug>.cover.json drafts/<slug>/ --pick <variant>`.
+   Look at the image, then add the line to `rotation-log.md`. If `.env.local` has the
    service key, run `node blog-framework/upload-cover.mjs <slug> drafts/<slug>/` and use the
    printed URL as `featured_image_url`/`og_image_url`. Otherwise leave `featured_image_url` null.
 6. **Assemble** the post JSON in `drafts/<slug>.json` (Layer 3 fields).

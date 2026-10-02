@@ -116,19 +116,14 @@ inline elements per post. Never fabricate a stat/row to fill an element.
 two boxed elements without a prose paragraph between them. Internal-link with keyword-rich
 anchors to `/loan-estimator` and 2–3 related pages (product/industry/blog).
 
-**Cover image (concept diagram).** Pick ONE type whose shape matches the post's spine:
-- `spread` — a numeric range/multiplier (rate spread, $5K–$800K, X→Y).
-- `versus` — A beats B on one metric (matched vs bank, quiz vs form).
-- `steps` — an ordered process (how-to, N-step flow).
-- `bars` — a benchmark ranking (approval odds by product, cost by loan type).
-
-Generate it with `node blog-framework/generate-cover.mjs` (branded PNG, navy + green/gold,
-no text, 1200×630). This becomes `featured_image_url` + `og_image_url`.
-
-**AI-image upgrade (optional):** to use a real diffusion image instead, set an image API key
-and swap the cover step (formula: `[topic as visual concept], deep navy #2b3a47 background,
-forest green #22a15e and gold #efab4d accents, clean flat financial illustration, no people,
-no text, 16:9`). Gemini image gen fits your existing `GEMINI_API_KEY`.
+**Cover image — 3 templates in rotation (`covers/`).** Every post gets a cover from
+`covers/render-cover.mjs` in one of three variants: `dado` (light, one big sourced number + bars),
+`icones` (site gradient + Lucide icon tiles) or `foto` (real free stock photo of the topic with the
+brand overlay and photo credit). Follow the rotation in `covers/rotation-log.md`
+(foto → dado → icones; never the same twice in a row; at least one photo in every three posts).
+Full how-to, photo-licence rules and credits: `covers/README.md`. Size 1200×630; this becomes
+`featured_image_url` + `og_image_url`. The old `generate-cover.mjs` (one dark template for every
+post, which made the blog grid repetitive) is kept only for old posts.
 
 ---
 
@@ -185,6 +180,6 @@ with today's `lastmod` (the publish script does this with `--publish`).
 3. Outline: Pillar or Cluster; question-shaped H2s; where each element goes.
 4. Draft prose following the readability rules; answer-first per section.
 5. Element pass (Layer 2); assemble the inline-styled HTML `content`.
-6. Generate the cover (`generate-cover.mjs`), upload, set `featured_image_url`/`og_image_url`.
+6. Generate the cover with `covers/render-cover.mjs` (variant from `covers/rotation-log.md`), upload, set `featured_image_url`/`og_image_url`, log the variant.
 7. Build the post JSON (Layer 3 fields). Run the QA gate.
 8. Publish with `create-blog-post.mjs --publish`; confirm `/blog/<slug>` and sitemap.
