@@ -39,3 +39,4 @@
 2026-09-30 | maximum-interest-rate-business-loan-canada | maximum interest rate business loan canada | published
 2026-09-30 | csbfp-vs-bdc-loan | csbfp vs bdc loan | published
 2026-09-30 | merchant-cash-advance-factor-rate-to-apr | merchant cash advance factor rate to apr | published
+2026-10-02 | equipment-lease-vs-loan-canada | equipment lease vs loan canada | published
