@@ -1,2 +1,34 @@
-{ "type": "bars", "category": "Merchant Cash Advance", "headline": "Factor rate to APR: what an MCA really costs",
-  "data": { "bars": [ {"label":"77%","value":77}, {"label":"89%","value":89}, {"label":"255%","value":255} ] } }
+{
+  "category": "Merchant Cash Advance",
+  "headline": "Factor rate to APR: what an MCA really costs",
+  "dado": {
+    "kicker": "$30,000 advance \u00b7 three real-world scenarios",
+    "value": "255%",
+    "label": "estimated APR when a 1.40 factor rate is repaid in about 3 months",
+    "footer": "Factor rate to APR: <b>what an MCA really costs</b>",
+    "card": {
+      "title": "Estimated APR on a $30K advance",
+      "rows": [
+        {
+          "label": "Caf\u00e9, 1.25",
+          "value": "~77%",
+          "amount": 77,
+          "color": "green"
+        },
+        {
+          "label": "Retailer, 1.32",
+          "value": "~89%",
+          "amount": 89,
+          "color": "gold"
+        },
+        {
+          "label": "Restaurant, 1.40",
+          "value": "~255%",
+          "amount": 255,
+          "color": "navy"
+        }
+      ],
+      "note": "Same advance, different repayment speed"
+    }
+  }
+}

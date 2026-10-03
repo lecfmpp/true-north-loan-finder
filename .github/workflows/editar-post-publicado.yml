@@ -10,7 +10,9 @@ name: Editar post publicado
 #   mode = apply -> writes that one field (+ updated_at) and re-reads to verify.
 #                   Then merge the branch so Netlify rebuilds the prerendered page.
 # Safety (scripts/edit-blog-post.mjs): `find` must occur exactly once; re-running
-# an applied edit is a no-op; only content/excerpt/meta_description; no deletes.
+# an applied edit is a no-op; only content/excerpt/meta_description, plus the cover
+# column featured_image_url (edit file with "set": an https://truenorthbusinessloan.ca/
+# blog-images/<name>.png|jpg URL, deployed from public/blog-images/ first); no deletes.
 # Uses the SUPABASE_SERVICE_ROLE_KEY secret already used by publish-draft.yml.
 # workflow_dispatch only; never runs on its own.
 
