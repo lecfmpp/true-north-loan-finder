@@ -1,0 +1,15 @@
+{
+  "category": "Government-Backed Loans",
+  "headline": "CSBFP vs BDC: which government-backed loan fits?",
+  "icones": {
+    "kicker": "Government-Backed Loans",
+    "headline": "CSBFP vs BDC: which loan fits your business?",
+    "sub": "Up to $1.15M through a bank, or up to $350K online.",
+    "ghost": "landmark",
+    "vs": true,
+    "tiles": [
+      { "icon": "landmark", "title": "CSBFP", "text": "Bank loan backed by the government. Up to $1.15M." },
+      { "icon": "building-2", "title": "BDC", "text": "Online loan for growth costs. Up to $350K." }
+    ]
+  }
+}

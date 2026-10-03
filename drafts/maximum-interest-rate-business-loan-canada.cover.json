@@ -1,0 +1,18 @@
+{
+  "category": "Business Loans",
+  "headline": "Is there a maximum interest rate on business loans in Canada?",
+  "dado": {
+    "kicker": "Criminal Code · since 2025",
+    "value": "35%",
+    "label": "APR cap on most credit, up to 48% for incorporated borrowers of $10K–$500K",
+    "footer": "Maximum interest rate on business loans in Canada: <b>what the limit covers</b>",
+    "card": {
+      "title": "Maximum APR by loan type",
+      "rows": [
+        { "label": "Most credit", "value": "35%", "amount": 35, "color": "green" },
+        { "label": "Incorporated, $10K–$500K", "value": "48%", "amount": 48, "color": "gold" }
+      ],
+      "note": "No cap on commercial loans above $500,000"
+    }
+  }
+}

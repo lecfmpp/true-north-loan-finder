@@ -10,6 +10,8 @@
  * Edit file: { "slug", "field": "content"|"excerpt"|"meta_description",
  *              "find": "<exact text, must occur exactly once>",
  *              "replace": "<new text>", "reason": "<why>" }
+ * Cover swap: { "slug", "field": "featured_image_url", "set": "https://truenorthbusinessloan.ca/blog-images/<name>.png|jpg",
+ *               "reason": "<why>" }  (sets that one column; the image file must already be deployed from public/blog-images/)
  *
  * Safety: refuses if `find` occurs 0 or 2+ times; if `replace` is already in the field it
  * reports "already applied" and exits 0 (re-runnable, even when replace contains find).
@@ -20,6 +22,8 @@
 import { readFileSync } from 'node:fs';
 
 const ALLOWED_FIELDS = ['content', 'excerpt', 'meta_description'];
+const COVER_FIELD = 'featured_image_url';
+const COVER_URL = /^https:\/\/truenorthbusinessloan\.ca\/blog-images\/[a-z0-9-]+\.(png|jpg)$/;
 const URL_OK = 'https://kgwcogltpsmapxnjzjhm.supabase.co';
 
 export function countOccurrences(haystack, needle) {
@@ -31,6 +35,10 @@ export function countOccurrences(haystack, needle) {
 
 /** Pure planning step: returns {status, next?, at?, message}. */
 export function planEdit(current, edit) {
+  if (edit.field === COVER_FIELD) {
+    if (current === edit.set) return { status: 'already', message: 'Already applied: the cover URL is already set.' };
+    return { status: 'ok', at: 0, next: edit.set, message: 'Cover URL will be replaced.' };
+  }
   const hits = countOccurrences(current, edit.find);
   const already = edit.replace && current.includes(edit.replace);
   if (already) return { status: 'already', message: 'Already applied: `replace` is already in the field.' };
@@ -44,7 +52,11 @@ export function planEdit(current, edit) {
 export function validateEdit(edit) {
   const errs = [];
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(edit.slug || '')) errs.push('slug must be kebab-case');
-  if (!ALLOWED_FIELDS.includes(edit.field || 'content')) errs.push(`field must be one of ${ALLOWED_FIELDS.join(', ')}`);
+  if (edit.field === COVER_FIELD) {
+    if (!COVER_URL.test(edit.set || '')) errs.push('set must be https://truenorthbusinessloan.ca/blog-images/<name>.png|jpg');
+    return errs;
+  }
+  if (!ALLOWED_FIELDS.includes(edit.field || 'content')) errs.push(`field must be one of ${[...ALLOWED_FIELDS, COVER_FIELD].join(', ')}`);
   if (typeof edit.find !== 'string' || edit.find.length < 20) errs.push('find must be a string of at least 20 characters');
   if (typeof edit.replace !== 'string') errs.push('replace must be a string');
   if (edit.find === edit.replace) errs.push('find and replace are identical');
@@ -101,9 +113,13 @@ async function main() {
   if (plan.status === 'already') return;
   if (plan.status === 'error') process.exit(1);
 
-  console.log('\n== BEFORE ==\n' + context(current, plan.at, edit.find.length));
-  console.log('\n== AFTER ==\n' + context(plan.next, plan.at, edit.replace.length));
-  console.log(`\nLength: ${current.length} -> ${plan.next.length}`);
+  if (edit.field === COVER_FIELD) {
+    console.log(`\n== BEFORE ==\n${current || '(empty)'}\n\n== AFTER ==\n${plan.next}`);
+  } else {
+    console.log('\n== BEFORE ==\n' + context(current, plan.at, edit.find.length));
+    console.log('\n== AFTER ==\n' + context(plan.next, plan.at, edit.replace.length));
+    console.log(`\nLength: ${current.length} -> ${plan.next.length}`);
+  }
 
   if (mode === 'dry') { console.log('\nDRY RUN: nothing was written.'); return; }
 

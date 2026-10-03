@@ -28,3 +28,14 @@ test('validation', () => {
   assert.ok(validateEdit({ ...base, replace: '<a onclick="x">' }).length);
   assert.deepEqual(validateEdit({ ...base, replace: base.replace + ' lesson = fine' }), []);
 });
+
+test('cover swap sets one URL and is re-runnable', () => {
+  const edit = { slug: 'a-post', field: 'featured_image_url', set: 'https://truenorthbusinessloan.ca/blog-images/a-post-v2.png' };
+  assert.deepEqual(validateEdit(edit), []);
+  const r = planEdit('https://truenorthbusinessloan.ca/blog-images/a-post.png', edit);
+  assert.equal(r.status, 'ok');
+  assert.equal(r.next, edit.set);
+  assert.equal(planEdit(edit.set, edit).status, 'already');
+  assert.ok(validateEdit({ ...edit, set: 'https://evil.example/x.png' }).length);
+  assert.ok(validateEdit({ ...edit, set: 'https://truenorthbusinessloan.ca/blog-images/../x.png' }).length);
+});
