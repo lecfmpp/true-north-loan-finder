@@ -6,3 +6,4 @@
 2026-09-30 | maximum-interest-rate-business-loan-canada | dado (cover swap, tn-trocar-capas) | -
 2026-09-30 | csbfp-vs-bdc-loan | icones (cover swap, tn-trocar-capas) | -
 2026-09-30 | merchant-cash-advance-factor-rate-to-apr | dado (cover swap, no free photo available, tn-trocar-capas) | -
+2026-10-07 | business-loans-for-sole-proprietors-canada | icones (swap from dado: no single sourced number; draft, not yet published) | -
