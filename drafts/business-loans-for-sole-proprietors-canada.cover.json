@@ -1,0 +1,28 @@
+{
+  "category": "Business Loans",
+  "headline": "Business loans for sole proprietors in Canada",
+  "icones": {
+    "kicker": "Sole Proprietors",
+    "headline": "Can a sole proprietor get a business loan?",
+    "sub": "Yes. Lenders look at your credit, taxes and cash flow.",
+    "ghost": "landmark",
+    "vs": false,
+    "tiles": [
+      {
+        "icon": "file-text",
+        "title": "Tax returns",
+        "text": "Two years of T1 and Form T2125."
+      },
+      {
+        "icon": "wallet",
+        "title": "Bank statements",
+        "text": "3 to 6 months of deposits."
+      },
+      {
+        "icon": "badge-check",
+        "title": "Personal credit",
+        "text": "You and the business are one borrower."
+      }
+    ]
+  }
+}
