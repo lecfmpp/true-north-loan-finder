@@ -44,6 +44,7 @@ const Application = lazy(() => import("./pages/Application"));
 const ApplicationUS = lazy(() => import("./pages/ApplicationUS"));
 const ApplicationSuccess = lazy(() => import("./pages/ApplicationSuccess"));
 const ApplicationStatus = lazy(() => import("./pages/ApplicationStatus"));
+const EmailVerified = lazy(() => import("./pages/EmailVerified"));
 const CanadianApplication = lazy(() => import("./pages/CanadianApplication"));
 const BrokerSignup = lazy(() => import("./pages/BrokerSignup"));
 const BrokerLpVideo = lazy(() => import("./pages/BrokerLpVideo"));
@@ -185,6 +186,11 @@ export const AppRoutes = () => {
               <Route path="/application-status" element={
                 <Suspense fallback={<PageLoader />}>
                   <ApplicationStatus />
+                </Suspense>
+              } />
+              <Route path="/email-verified" element={
+                <Suspense fallback={<PageLoader />}>
+                  <EmailVerified />
                 </Suspense>
               } />
               <Route path="/auth" element={

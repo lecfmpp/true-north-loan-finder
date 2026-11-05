@@ -19,9 +19,9 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { applicationId, recipientEmail, applicationType }: SendApplicationEmailRequest = await req.json();
+    let { applicationId, recipientEmail, applicationType }: SendApplicationEmailRequest = await req.json();
 
-    if (!applicationId || !recipientEmail || !applicationType) {
+    if (!applicationId || !applicationType) {
       return new Response(
         JSON.stringify({ error: "Missing required fields" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -37,13 +37,53 @@ const handler = async (req: Request): Promise<Response> => {
     // Initialize Resend
     const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-    // Fetch application data
-    const tableName = applicationType === 'canadian' ? 'canadian_applications' : 'usa_applications';
-    const { data: application, error: appError } = await supabase
-      .from(tableName)
-      .select('*')
-      .eq('id', applicationId)
-      .single();
+    // If no explicit recipient was provided, fall back to the configured admin
+    // application-notification email so submissions always reach the business.
+    if (!recipientEmail) {
+      const { data: settings } = await supabase
+        .from('admin_notification_settings')
+        .select('application_notification_email')
+        .single();
+      recipientEmail = settings?.application_notification_email;
+    }
+
+    if (!recipientEmail) {
+      return new Response(
+        JSON.stringify({ error: "No recipient email configured" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Fetch application data. USA applications now live in usa_applications_simplified;
+    // fall back to the legacy usa_applications table for older records.
+    let application: any = null;
+    let appError: any = null;
+    if (applicationType === 'canadian') {
+      const res = await supabase
+        .from('canadian_applications')
+        .select('*')
+        .eq('id', applicationId)
+        .maybeSingle();
+      application = res.data;
+      appError = res.error;
+    } else {
+      const simplified = await supabase
+        .from('usa_applications_simplified')
+        .select('*')
+        .eq('id', applicationId)
+        .maybeSingle();
+      application = simplified.data;
+      appError = simplified.error;
+      if (!application) {
+        const legacy = await supabase
+          .from('usa_applications')
+          .select('*')
+          .eq('id', applicationId)
+          .maybeSingle();
+        application = legacy.data;
+        appError = legacy.error;
+      }
+    }
 
     if (appError || !application) {
       console.error('Application fetch error:', appError);

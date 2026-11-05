@@ -588,15 +588,9 @@ const Application = () => {
 
       try {
         await supabase.functions.invoke('send-admin-notification', {
-          body: { 
-            type: 'new_application',
-            data: {
-              applicant_name: formData.principal_name,
-              applicant_email: formData.email_address,
-              loan_amount: formData.loan_amount_requested,
-              application_type: 'USA Application',
-              application_id: data.id
-            }
+          body: {
+            type: 'application',
+            submissionId: data.id
           }
         });
       } catch (notificationError) {
