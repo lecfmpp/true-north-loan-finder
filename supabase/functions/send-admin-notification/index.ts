@@ -16,7 +16,7 @@ const corsHeaders = {
 
 interface NotificationRequest {
   type: 'quiz' | 'application' | 'canadian_application';
-  data: any;
+  data?: any;
   submissionId: string;
 }
 
@@ -29,7 +29,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { type, data, submissionId }: NotificationRequest = await req.json();
+    let { type, data, submissionId }: NotificationRequest = await req.json();
     console.log('Processing notification:', { type, submissionId });
 
     // Get admin notification settings
@@ -41,6 +41,41 @@ const handler = async (req: Request): Promise<Response> => {
     if (settingsError) {
       console.error('Error fetching notification settings:', settingsError);
       throw new Error('Failed to fetch notification settings');
+    }
+
+    // For application submissions, load the full record from the database so the
+    // email template is populated from the source of truth (the frontend only needs
+    // to send the type + submissionId).
+    if (type === 'application') {
+      let { data: appRow } = await supabase
+        .from('usa_applications_simplified')
+        .select('*')
+        .eq('id', submissionId)
+        .maybeSingle();
+      if (!appRow) {
+        const legacy = await supabase
+          .from('usa_applications')
+          .select('*')
+          .eq('id', submissionId)
+          .maybeSingle();
+        appRow = legacy.data;
+      }
+      if (appRow) {
+        data = appRow;
+      } else {
+        console.error('USA application not found for submissionId:', submissionId);
+      }
+    } else if (type === 'canadian_application') {
+      const { data: appRow } = await supabase
+        .from('canadian_applications')
+        .select('*')
+        .eq('id', submissionId)
+        .maybeSingle();
+      if (appRow) {
+        data = appRow;
+      } else {
+        console.error('Canadian application not found for submissionId:', submissionId);
+      }
     }
 
     let subject: string;
@@ -247,7 +282,7 @@ const handler = async (req: Request): Promise<Response> => {
                   </div>
                   <div class="info-row">
                     <div class="info-label">Business Type:</div>
-                    <div class="info-value">${data.business_type}</div>
+                    <div class="info-value">${data.business_type || data.entity_type || 'N/A'}</div>
                   </div>
                   <div class="info-row">
                     <div class="info-label">Location:</div>
@@ -255,7 +290,7 @@ const handler = async (req: Request): Promise<Response> => {
                   </div>
                   <div class="info-row">
                     <div class="info-label">Time in Business:</div>
-                    <div class="info-value">${data.years_in_business} years, ${data.months_in_business} months</div>
+                    <div class="info-value">${data.years_in_business != null ? `${data.years_in_business} years, ${data.months_in_business ?? 0} months` : (data.date_incorporated ? `Since ${new Date(data.date_incorporated).toLocaleDateString()}` : 'N/A')}</div>
                   </div>
                   <div class="info-row">
                     <div class="info-label">Use of Funds:</div>
@@ -404,7 +439,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emailResponse = await resend.emails.send({
-      from: "Loan Admin <noreply@resend.dev>",
+      from: "True North Business Loan <leads@email.truenorthbusinessloan.ca>",
       to: [notificationEmail],
       subject: subject,
       html: emailTemplate,
