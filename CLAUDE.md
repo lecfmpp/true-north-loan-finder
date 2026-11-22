@@ -132,7 +132,7 @@ first (see `scripts/blog-post.template.json`) so it can be reviewed before publi
 - **AEO writing:** phrase H2/H3s as the questions people (and LLMs) ask; answer in the first
   1–2 sentences before elaborating; use short paragraphs, comparison tables, and explicit
   numbers/ranges. This is what gets quoted in AI answers.
-- **Canonicals:** always absolute, `https://truenorthbusinessloan.ca`, no `www`, no trailing slash.
+- **Canonicals:** always absolute, `https://truenorthbusinessloan.ca`, no `www`, WITH trailing slash (Netlify serves routes as folders; the slash-less URL 301s).
 - **Internal linking:** every product/industry page should link to `/loan-estimator` (the
   conversion goal) and to 2–3 related pages.
 

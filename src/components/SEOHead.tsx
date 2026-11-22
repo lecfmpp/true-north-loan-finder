@@ -35,16 +35,21 @@ const SEOHead = ({
   const { pathname } = useLocation();
 
   // Auto-generate canonical URL if not provided - more robust handling
-  const getCanonicalUrl = () => {
-    if (canonicalUrl) return canonicalUrl;
+  // Netlify serves every route as a folder, so the live URL is the one WITH a
+  // trailing slash (the slash-less form answers 301). Canonical must match it.
+  const withTrailingSlash = (url: string) => {
+    const i = url.search(/[?#]/);
+    const base = i === -1 ? url : url.slice(0, i);
+    const suffix = i === -1 ? '' : url.slice(i);
+    return `${base.replace(/\/+$/, '')}/${suffix}`;
+  };
 
-    const currentPath = pathname;
-    // Remove trailing slash for consistency and handle edge cases
-    const cleanPath = currentPath === '/' ? '/' : currentPath.replace(/\/+$/, '');
-    
+  const getCanonicalUrl = () => {
+    if (canonicalUrl) return withTrailingSlash(canonicalUrl);
+
     // Ensure we're using the correct domain without www
     const baseUrl = 'https://truenorthbusinessloan.ca';
-    return `${baseUrl}${cleanPath}`;
+    return withTrailingSlash(`${baseUrl}${pathname}`);
   };
   
   // Pre-rendering: effects never run, so hand the resolved metadata to the
