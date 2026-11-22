@@ -135,7 +135,7 @@ const escapeHtml = (value) =>
 const ORIGIN = 'https://truenorthbusinessloan.ca'
 
 /** Absolute canonical URL for a route (no trailing slash, per site convention). */
-const canonicalFor = (route) => (route === '/' ? ORIGIN : `${ORIGIN}${route}`)
+const canonicalFor = (route) => (route === '/' ? ORIGIN + '/' : `${ORIGIN}${route.replace(/\/+$/, '')}/`)
 
 /**
  * Fold per-page metadata into the template's <head>.
