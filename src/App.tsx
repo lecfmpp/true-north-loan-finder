@@ -14,10 +14,10 @@ import WebMCPTools from "@/components/WebMCPTools";
 import ScrollToTop from "@/components/ScrollToTop";
 import { AuthProvider } from "@/hooks/use-auth";
 
-// Critical pages loaded immediately for better UX
+// Home is the only page loaded eagerly (LCP). Quiz/Results load on navigation.
 import Home from "./pages/Home";
-import Quiz from "./pages/Quiz";
-import Results from "./pages/Results";
+const Quiz = lazy(() => import("./pages/Quiz"));
+const Results = lazy(() => import("./pages/Results"));
 
 // Lazy load non-critical pages for better performance
 const HowItWorks = lazy(() => import("./pages/HowItWorks"));
@@ -81,8 +81,8 @@ export const AppRoutes = () => {
       </Suspense>
       <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/loan-estimator" element={<Quiz />} />
-              <Route path="/results/:responseId" element={<Results />} />
+              <Route path="/loan-estimator" element={<Suspense fallback={<PageLoader />}><Quiz /></Suspense>} />
+              <Route path="/results/:responseId" element={<Suspense fallback={<PageLoader />}><Results /></Suspense>} />
               <Route path="/how-it-works" element={
                 <Suspense fallback={<PageLoader />}>
                   <HowItWorks />
