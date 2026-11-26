@@ -38,10 +38,6 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
           query: ['@tanstack/react-query'],
           // Form handling
           forms: ['react-hook-form'],
-          // Rich text editor (heavy component) - load separately
-          editor: ['react-quill'],
-          // Charts (load on demand)
-          charts: ['recharts'],
           // Lucide icons separate chunk
           icons: ['lucide-react'],
         },
